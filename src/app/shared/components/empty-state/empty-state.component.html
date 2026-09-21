@@ -1,0 +1,14 @@
+<div class="empty-state">
+  <div class="empty-state-icon">
+    <ng-template [ngTemplateOutlet]="iconTemplate()" />
+    <svg *ngIf="!hasIconSlot()" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-muted-foreground">
+      <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+    </svg>
+  </div>
+  <h3 class="empty-state-title">{{ title() }}</h3>
+  <p class="empty-state-description">{{ description() }}</p>
+  <ng-template [ngTemplateOutlet]="actionTemplate()" />
+  <app-button *ngIf="actionLabel() && !hasActionSlot()" variant="primary" size="sm" (onClick)="actionClick.emit()">
+    {{ actionLabel() }}
+  </app-button>
+</div>

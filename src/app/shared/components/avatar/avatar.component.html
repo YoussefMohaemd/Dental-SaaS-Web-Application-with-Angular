@@ -1,0 +1,6 @@
+<div [class]="avatarClasses()">
+  <span *ngIf="!image(); else imageTemplate">{{ initials() }}</span>
+  <ng-template #imageTemplate>
+    <img [src]="image()" [alt]="name()" class="w-full h-full rounded-full object-cover" />
+  </ng-template>
+</div>

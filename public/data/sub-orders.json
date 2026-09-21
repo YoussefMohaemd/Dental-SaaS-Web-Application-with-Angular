@@ -1,0 +1,6 @@
+[
+  { "id": "so-1", "orderId": "ord-1", "service": "Surgical Guide", "icon": "tooth", "status": "completed", "formsComplete": 3, "formsTotal": 3, "scansComplete": 3, "scansTotal": 3, "teeth": [14, 15, 24, 25], "priority": "High", "dueDate": "2024-12-20", "notes": "Standard surgical guide for dual implant placement." },
+  { "id": "so-2", "orderId": "ord-1", "service": "GFMR", "icon": "settings", "status": "in-progress", "formsComplete": 2, "formsTotal": 3, "scansComplete": 1, "scansTotal": 3, "teeth": [11, 12, 13, 21, 22, 23], "priority": "High", "dueDate": "2024-12-25", "notes": "Full mouth rehabilitation, occlusal vertical dimension to be confirmed." },
+  { "id": "so-3", "orderId": "ord-1", "service": "Final Restoration", "icon": "sparkles", "status": "pending", "formsComplete": 0, "formsTotal": 2, "scansComplete": 0, "scansTotal": 2, "teeth": [16, 17, 26, 27], "priority": "Normal", "dueDate": "2025-01-10", "notes": "Posterior zirconia crowns — shade A2 with characterization." },
+  { "id": "so-4", "orderId": "ord-1", "service": "Treatment Plan", "icon": "clipboard", "status": "pending", "formsComplete": 1, "formsTotal": 2, "scansComplete": 0, "scansTotal": 1, "teeth": [], "priority": "Normal", "dueDate": "2024-12-18", "notes": "Comprehensive treatment plan review with the clinic team." }
+]

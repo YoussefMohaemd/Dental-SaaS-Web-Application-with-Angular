@@ -1,0 +1,236 @@
+// Design Tokens - Exact values from React application
+// These tokens must match the React implementation precisely
+
+:root {
+  // Color System - Light Theme
+  --color-primary: #2563EB;
+  --color-primary-hover: #1D4ED8;
+  --color-primary-light: #DBEAFE;
+  --color-primary-foreground: #FFFFFF;
+
+  --color-secondary: #64748B;
+  --color-secondary-hover: #475569;
+  --color-secondary-foreground: #FFFFFF;
+
+  --color-accent: #06B6D4;
+  --color-accent-hover: #0891B2;
+  --color-accent-light: #CFFAFE;
+
+  --color-success: #10B981;
+  --color-success-hover: #059669;
+  --color-success-light: #D1FAE5;
+  --color-success-foreground: #FFFFFF;
+
+  --color-warning: #F59E0B;
+  --color-warning-hover: #D97706;
+  --color-warning-light: #FEF3C7;
+  --color-warning-foreground: #FFFFFF;
+
+  --color-danger: #EF4444;
+  --color-danger-hover: #DC2626;
+  --color-danger-light: #FEE2E2;
+  --color-danger-foreground: #FFFFFF;
+
+  // Surface Colors - Light Theme
+  --color-background: #F8FAFC;
+  --color-surface: #FFFFFF;
+  --color-surface-elevated: #FFFFFF;
+  --color-card: #FFFFFF;
+  --color-card-hover: #F8FAFC;
+
+  // Sidebar Colors
+  --color-sidebar: #1E293B;
+  --color-sidebar-foreground: #F1F5F9;
+  --color-sidebar-muted: #94A3B8;
+  --color-sidebar-border: rgba(255, 255, 255, 0.1);
+  --color-sidebar-hover: rgba(255, 255, 255, 0.05);
+  --color-sidebar-active: rgba(255, 255, 255, 0.1);
+
+  // Text Colors - Light Theme
+  --color-foreground: #0F172A;
+  --color-foreground-muted: #64748B;
+  --color-foreground-subtle: #94A3B8;
+
+  // Border Colors - Light Theme
+  --color-border: #E2E8F0;
+  --color-border-strong: #CBD5E1;
+  --color-border-focus: #2563EB;
+
+  // Input Colors - Light Theme
+  --color-input-bg: #FFFFFF;
+  --color-input-border: #E2E8F0;
+  --color-input-border-focus: #2563EB;
+  --color-input-placeholder: #94A3B8;
+
+  // Muted Colors - Light Theme
+  --color-muted: #F1F5F9;
+  --color-muted-foreground: #64748B;
+
+  // Status Colors
+  --color-status-new: #94A3B8;
+  --color-status-new-bg: #F1F5F9;
+  --color-status-new-foreground: #475569;
+
+  --color-status-review: #F59E0B;
+  --color-status-review-bg: #FEF3C7;
+  --color-status-review-foreground: #B45309;
+
+  --color-status-design: #06B6D4;
+  --color-status-design-bg: #CFFAFE;
+  --color-status-design-foreground: #164E63;
+
+  --color-status-production: #2563EB;
+  --color-status-production-bg: #DBEAFE;
+  --color-status-production-foreground: #1E3A5F;
+
+  --color-status-quality-check: #8B5CF6;
+  --color-status-quality-check-bg: #F5F0FF;
+  --color-status-quality-check-foreground: #4C1D95;
+
+  --color-status-ready: #10B981;
+  --color-status-ready-bg: #D1FAE5;
+  --color-status-ready-foreground: #064E3B;
+
+  --color-status-completed: #10B981;
+  --color-status-completed-bg: #D1FAE5;
+  --color-status-completed-foreground: #064E3B;
+
+  --color-status-cancelled: #EF4444;
+  --color-status-cancelled-bg: #FEE2E2;
+  --color-status-cancelled-foreground: #991B1B;
+
+  // Priority Colors
+  --color-priority-low: #94A3B8;
+  --color-priority-normal: #2563EB;
+  --color-priority-high: #F59E0B;
+  --color-priority-urgent: #EF4444;
+
+  // Shadow System
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+
+  // Border Radius
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+
+  // Spacing Scale
+  --space-0: 0;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  // Typography
+  --font-family-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-family-display: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-family-mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+
+  --font-size-xs: 0.625rem;
+  --font-size-sm: 0.75rem;
+  --font-size-base: 0.875rem;
+  --font-size-lg: 1rem;
+  --font-size-xl: 1.125rem;
+  --font-size-2xl: 1.25rem;
+  --font-size-3xl: 1.5rem;
+  --font-size-4xl: 1.875rem;
+
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  --line-height-tight: 1.25;
+  --line-height-snug: 1.375;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.625;
+
+  // Transitions
+  --transition-fast: 150ms ease;
+  --transition-normal: 200ms ease;
+  --transition-slow: 300ms ease;
+
+  // Z-Index
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-fixed: 300;
+  --z-modal-backdrop: 400;
+  --z-modal: 500;
+  --z-popover: 600;
+  --z-tooltip: 700;
+  --z-toast: 800;
+
+  // Breakpoints
+  --bp-sm: 640px;
+  --bp-md: 768px;
+  --bp-lg: 1024px;
+  --bp-xl: 1280px;
+  --bp-2xl: 1536px;
+
+  // Layout
+  --sidebar-width: 14rem;
+  --sidebar-width-collapsed: 3.5rem;
+  --header-height: 3.5rem;
+}
+
+// Dark Theme
+[data-theme="dark"] {
+  --color-background: #0F172A;
+  --color-surface: #1E293B;
+  --color-surface-elevated: #334155;
+  --color-card: #1E293B;
+  --color-card-hover: #334155;
+
+  --color-sidebar: #0F172A;
+  --color-sidebar-foreground: #F1F5F9;
+  --color-sidebar-muted: #94A3B8;
+  --color-sidebar-border: rgba(255, 255, 255, 0.1);
+  --color-sidebar-hover: rgba(255, 255, 255, 0.05);
+  --color-sidebar-active: rgba(255, 255, 255, 0.1);
+
+  --color-foreground: #F1F5F9;
+  --color-foreground-muted: #94A3B8;
+  --color-foreground-subtle: #64748B;
+
+  --color-border: #334155;
+  --color-border-strong: #475569;
+  --color-border-focus: #3B82F6;
+
+  --color-input-bg: #1E293B;
+  --color-input-border: #334155;
+  --color-input-border-focus: #3B82F6;
+  --color-input-placeholder: #64748B;
+
+  --color-muted: #334155;
+  --color-muted-foreground: #94A3B8;
+
+  // Status colors remain the same in dark mode
+  --color-status-new-bg: #334155;
+  --color-status-new-foreground: #94A3B8;
+  --color-status-review-bg: #453000;
+  --color-status-review-foreground: #FDE68A;
+  --color-status-design-bg: #0E363E;
+  --color-status-design-foreground: #67E8F9;
+  --color-status-production-bg: #1E3A5F;
+  --color-status-production-foreground: #93C5FD;
+  --color-status-quality-check-bg: #2E1A47;
+  --color-status-quality-check-foreground: #C4B5FD;
+  --color-status-ready-bg: #064E3B;
+  --color-status-ready-foreground: #6EE7B7;
+  --color-status-completed-bg: #064E3B;
+  --color-status-completed-foreground: #6EE7B7;
+  --color-status-cancelled-bg: #450A0A;
+  --color-status-cancelled-foreground: #FCA5A5;
+}

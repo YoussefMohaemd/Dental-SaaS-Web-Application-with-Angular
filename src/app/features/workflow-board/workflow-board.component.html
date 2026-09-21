@@ -1,0 +1,81 @@
+<div class="flex flex-col h-full">
+  <!-- Page header -->
+  <div class="px-6 py-4 border-b border-border bg-card shrink-0">
+    <h1 class="font-display font-bold text-lg text-foreground">Workflow Board</h1>
+    <p class="text-xs text-muted-foreground">{{ boardOrders().length }} active orders &middot; Drag cards to change status</p>
+  </div>
+
+  <!-- Board -->
+  <div class="flex-1 overflow-x-auto overflow-y-hidden p-5">
+    <div class="flex gap-4 h-full" style="min-width: 1540px;">
+      @for (col of columns; track col.id) {
+        <div
+          class="flex flex-col w-52 shrink-0"
+          [cdkDropList]="col.id"
+          [cdkDropListData]="getColumnOrders(col.id)"
+          (cdkDropListDropped)="drop($event)"
+          cdkDropListOrientation="vertical"
+        >
+          <!-- Column header -->
+          <div class="flex items-center gap-2 mb-3">
+            <span class="w-2 h-2 rounded-full shrink-0 {{ col.dotColor }}"></span>
+            <span class="font-semibold text-sm text-foreground">{{ col.label }}</span>
+            <span class="ml-auto px-2 py-0.5 rounded-full text-[10px] font-bold {{ col.badgeColor }}">
+              {{ getColumnOrders(col.id).length }}
+            </span>
+          </div>
+
+          <!-- Column body -->
+          <div
+            class="flex-1 rounded-xl p-2 overflow-y-auto min-h-32 border-2 border-dashed transition-colors"
+            [class.border-primary]="dragId() && getColumnOrders(col.id).some(o => o.id === dragId())"
+            [class.border-transparent]="!dragId() || !getColumnOrders(col.id).some(o => o.id === dragId())"
+          >
+            @if (getColumnOrders(col.id).length === 0) {
+              <div class="flex items-center justify-center h-16 text-xs text-muted-foreground">
+                Drop here
+              </div>
+            } @else {
+              @for (order of getColumnOrders(col.id); track order.id) {
+                <div
+                  cdkDrag
+                  [cdkDragData]="order"
+                  (cdkDragStarted)="onDragStart(order.id)"
+                  (cdkDragEnded)="onDragEnd()"
+                  (click)="navigateToOrder(order.id)"
+                  class="bg-card border border-border rounded-xl p-3 cursor-pointer hover:border-primary/40 hover:shadow-sm transition-all mb-2.5 select-none group kanban-card"
+                >
+                  <div class="flex items-start justify-between mb-2">
+                    <span class="font-mono text-[10px] text-primary font-semibold">{{ order.orderNumber }}</span>
+                    <div class="flex items-center gap-1">
+                      @if (order.isLocked) {
+                        <span [innerHTML]="getIconSvg('lock')" class="text-amber-500" style="width: 10px; height: 10px;"></span>
+                      }
+                      @if (order.priority === 'Urgent') {
+                        <span [innerHTML]="getIconSvg('alert-triangle')" class="text-red-500" style="width: 10px; height: 10px;"></span>
+                      }
+                      @if (order.changeRequest) {
+                        <span [innerHTML]="getIconSvg('refresh-ccw')" class="text-violet-500" style="width: 10px; height: 10px;"></span>
+                      }
+                    </div>
+                  </div>
+                  <p class="text-xs font-semibold text-foreground line-clamp-1 mb-1">{{ order.patientName }}</p>
+                  <p class="text-[10px] text-muted-foreground">{{ order.restoration }} &middot; {{ order.arch }}</p>
+                  @if (order.doctorName) {
+                    <p class="text-[10px] text-muted-foreground mt-1 truncate">{{ order.doctorName }}</p>
+                  }
+                  <div class="flex items-center justify-between mt-2 pt-2 border-t border-border">
+                    <app-priority-badge [priority]="order.priority" size="xs" />
+                    @if (order.technicianName) {
+                      <span class="text-[10px] text-muted-foreground">{{ order.technicianName }}</span>
+                    }
+                  </div>
+                </div>
+              }
+            }
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</div>

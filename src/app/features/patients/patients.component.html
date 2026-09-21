@@ -1,0 +1,129 @@
+<div class="flex flex-col h-full">
+  <!-- Page header -->
+  <div class="px-6 py-4 border-b border-border bg-card shrink-0">
+    <div class="flex items-center gap-3">
+      <div>
+        <h1 class="font-display font-bold text-lg text-foreground">Patients</h1>
+        <p class="text-xs text-muted-foreground">{{ filtered().length }} registered patients</p>
+      </div>
+      <div class="ml-auto flex items-center gap-3">
+        <div class="relative">
+          <span [innerHTML]="getIconSvg('search')" class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"></span>
+          <input
+            class="pl-8 pr-4 py-1.5 text-xs bg-muted rounded-lg border border-border placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 w-56"
+            placeholder="Search patients..."
+            [value]="search()"
+            (input)="onSearchChange($event)"
+          />
+        </div>
+        <select
+          class="px-2 py-1.5 text-xs border border-border rounded-lg bg-card text-foreground focus:outline-none cursor-pointer"
+          [value]="statusFilter()"
+          (change)="onStatusFilterChange($event)"
+        >
+          <option value="">All Status</option>
+          <option value="Active">Active</option>
+          <option value="Inactive">Inactive</option>
+        </select>
+        <app-button variant="primary" size="sm" (onClick)="navigateToAddPatient()" class="flex items-center gap-2">
+          <span [innerHTML]="getIconSvg('plus')"></span>
+          Add Patient
+        </app-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="flex-1 overflow-auto">
+    @if (filtered().length === 0) {
+      <div class="flex flex-col items-center justify-center h-48 text-center">
+        <span [innerHTML]="getIconSvg('users')" class="text-muted-foreground mb-3" style="width: 32px; height: 32px;"></span>
+        <p class="font-semibold text-foreground">No patients found</p>
+      </div>
+    } @else {
+      <table class="w-full text-sm">
+        <thead class="sticky top-0 bg-muted/80 backdrop-blur-sm border-b border-border">
+          <tr>
+            <th class="px-4 py-2.5 text-left text-xs font-semibold text-muted-foreground cursor-pointer hover:text-foreground select-none" (click)="toggleSort('name')">
+              Name <span [innerHTML]="getIconSvg('arrow-up-down')" class="inline" [class.text-primary]="sortCol() === 'name'" [class.text-muted-foreground/40]="sortCol() !== 'name'" style="width: 10px; height: 10px;"></span>
+            </th>
+            <th class="px-4 py-2.5 text-left text-xs font-semibold text-muted-foreground cursor-pointer hover:text-foreground select-none" (click)="toggleSort('dob')">
+              Date of Birth <span [innerHTML]="getIconSvg('arrow-up-down')" class="inline" [class.text-primary]="sortCol() === 'dob'" [class.text-muted-foreground/40]="sortCol() !== 'dob'" style="width: 10px; height: 10px;"></span>
+            </th>
+            <th class="px-4 py-2.5 text-left text-xs font-semibold text-muted-foreground">Gender</th>
+            <th class="px-4 py-2.5 text-left text-xs font-semibold text-muted-foreground">Phone</th>
+            <th class="px-4 py-2.5 text-left text-xs font-semibold text-muted-foreground">Email</th>
+            <th class="px-4 py-2.5 text-left text-xs font-semibold text-muted-foreground cursor-pointer hover:text-foreground select-none" (click)="toggleSort('clinicName')">
+              Clinic <span [innerHTML]="getIconSvg('arrow-up-down')" class="inline" [class.text-primary]="sortCol() === 'clinicName'" [class.text-muted-foreground/40]="sortCol() !== 'clinicName'" style="width: 10px; height: 10px;"></span>
+            </th>
+            <th class="px-4 py-2.5 text-left text-xs font-semibold text-muted-foreground">Doctor</th>
+            <th class="px-4 py-2.5 text-left text-xs font-semibold text-muted-foreground cursor-pointer hover:text-foreground select-none" (click)="toggleSort('ordersCount')">
+              Orders <span [innerHTML]="getIconSvg('arrow-up-down')" class="inline" [class.text-primary]="sortCol() === 'ordersCount'" [class.text-muted-foreground/40]="sortCol() !== 'ordersCount'" style="width: 10px; height: 10px;"></span>
+            </th>
+            <th class="px-4 py-2.5 text-left text-xs font-semibold text-muted-foreground">Status</th>
+            <th class="px-4 py-2.5 text-left text-xs font-semibold text-muted-foreground cursor-pointer hover:text-foreground select-none" (click)="toggleSort('lastVisit')">
+              Last Visit <span [innerHTML]="getIconSvg('arrow-up-down')" class="inline" [class.text-primary]="sortCol() === 'lastVisit'" [class.text-muted-foreground/40]="sortCol() !== 'lastVisit'" style="width: 10px; height: 10px;"></span>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (p of pageData(); track p.id) {
+            <tr class="border-b border-border hover:bg-muted/20 cursor-pointer" (click)="navigationService.navigate('patientDetails', { patientId: p.id })">
+              <td class="px-4 py-3">
+                <div class="flex items-center gap-2.5">
+                  <app-avatar [name]="p.name" [size]="'sm'" [variant]="'primary'" />
+                  <span class="text-sm font-medium text-foreground">{{ p.name }}</span>
+                </div>
+              </td>
+              <td class="px-4 py-3 text-xs text-muted-foreground font-mono">{{ p.dob }}</td>
+              <td class="px-4 py-3 text-xs text-muted-foreground">{{ getGenderLabel(p.gender) }}</td>
+              <td class="px-4 py-3 text-xs text-muted-foreground font-mono">{{ p.phone }}</td>
+              <td class="px-4 py-3 text-xs text-muted-foreground">{{ p.email }}</td>
+              <td class="px-4 py-3 text-xs text-muted-foreground truncate max-w-[140px]">{{ p.clinicName }}</td>
+              <td class="px-4 py-3 text-xs text-muted-foreground">{{ p.doctorName.replace('Dr. ', '') }}</td>
+              <td class="px-4 py-3 text-xs font-mono font-semibold text-center">{{ p.ordersCount }}</td>
+              <td class="px-4 py-3">
+                <span class="px-2 py-0.5 rounded text-[10px] font-semibold" [class]="getStatusClass(p.status)">
+                  {{ p.status }}
+                </span>
+              </td>
+              <td class="px-4 py-3 text-xs font-mono text-muted-foreground">{{ p.lastVisit }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+
+  <!-- Pagination -->
+  @if (filtered().length > 0) {
+    <div class="px-6 py-3 border-t border-border bg-card flex items-center justify-between shrink-0">
+      <span class="text-xs text-muted-foreground">{{ ((page() - 1) * pageSize) + 1 }}&ndash;{{ min(page() * pageSize, filtered().length) }} of {{ filtered().length }}</span>
+      <div class="flex items-center gap-1">
+        <button
+          (click)="prevPage()"
+          [disabled]="page() === 1"
+          class="p-1.5 rounded border border-border hover:bg-muted disabled:opacity-40 text-muted-foreground"
+        >
+          <span [innerHTML]="getIconSvg('chevron-left')" style="width: 14px; height: 14px;"></span>
+        </button>
+        @for (pg of getPageNumbers(); track pg) {
+          <button
+            (click)="goToPage(pg)"
+            [class]="page() === pg ? 'bg-primary text-primary-foreground' : 'hover:bg-muted text-muted-foreground'"
+            class="w-7 h-7 rounded text-xs font-medium"
+          >
+            {{ pg }}
+          </button>
+        }
+        <button
+          (click)="nextPage()"
+          [disabled]="page() === totalPages()"
+          class="p-1.5 rounded border border-border hover:bg-muted disabled:opacity-40 text-muted-foreground"
+        >
+          <span [innerHTML]="getIconSvg('chevron-right')" style="width: 14px; height: 14px;"></span>
+        </button>
+      </div>
+    </div>
+  }
+</div>

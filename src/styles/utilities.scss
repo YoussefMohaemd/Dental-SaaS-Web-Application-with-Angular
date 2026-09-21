@@ -1,0 +1,457 @@
+// Utility Classes - Custom utilities not covered by Tailwind
+// These complement Tailwind's utility classes
+
+@use 'tokens' as *;
+
+// ============================================================================
+// LAYOUT UTILITIES
+// ============================================================================
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.flex-col-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.grid-auto-fit {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: $space-4;
+}
+
+.grid-auto-fill {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: $space-4;
+}
+
+// ============================================================================
+// TEXT UTILITIES
+// ============================================================================
+.text-balance {
+  text-wrap: balance;
+}
+
+.text-pretty {
+  text-wrap: pretty;
+}
+
+.truncate-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.truncate-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.truncate-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+// ============================================================================
+// SPACING UTILITIES
+// ============================================================================
+.space-y-reverse > * + * {
+  margin-top: 0;
+  margin-bottom: $space-4;
+}
+
+.space-x-reverse > * + * {
+  margin-left: 0;
+  margin-right: $space-4;
+}
+
+// ============================================================================
+// BORDER UTILITIES
+// ============================================================================
+.border-gradient {
+  border-image: linear-gradient(to right, var(--primary), var(--accent)) 1;
+}
+
+// ============================================================================
+// SHADOW UTILITIES
+// ============================================================================
+.shadow-inner-light {
+  box-shadow: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
+}
+
+.shadow-glow {
+  box-shadow: 0 0 20px color-mix(in srgb, var(--primary) 30%, transparent);
+}
+
+.shadow-glow-success {
+  box-shadow: 0 0 20px color-mix(in srgb, var(--success) 30%, transparent);
+}
+
+.shadow-glow-danger {
+  box-shadow: 0 0 20px color-mix(in srgb, var(--danger) 30%, transparent);
+}
+
+// ============================================================================
+// INTERACTION UTILITIES
+// ============================================================================
+.hover-lift {
+  transition: transform $transition-fast, box-shadow $transition-fast;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: $shadow-lg;
+}
+
+.hover-scale {
+  transition: transform $transition-fast;
+}
+
+.hover-scale:hover {
+  transform: scale(1.02);
+}
+
+.press-scale:active {
+  transform: scale(0.98);
+}
+
+// ============================================================================
+// FORM UTILITIES
+// ============================================================================
+.input-base {
+  @apply w-full px-3 py-2 text-sm rounded-lg border border-border bg-card text-foreground
+    placeholder:text-muted-foreground
+    focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary
+    disabled:opacity-50 disabled:cursor-not-allowed
+    transition-colors duration-150;
+}
+
+.select-base {
+  @apply input-base cursor-pointer appearance-none bg-no-repeat bg-right pr-8;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-position: right 0.75rem center;
+}
+
+.textarea-base {
+  @apply input-base resize-y min-h-20;
+}
+
+.label-base {
+  @apply block text-xs font-semibold text-foreground mb-1.5;
+}
+
+.field-hint {
+  @apply text-xs text-muted-foreground mt-1;
+}
+
+.field-error {
+  @apply text-xs text-danger mt-1;
+}
+
+// ============================================================================
+// BUTTON UTILITIES
+// ============================================================================
+.btn-base {
+  @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold
+    focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2
+    disabled:opacity-50 disabled:cursor-not-allowed
+    transition-all duration-150;
+}
+
+.btn-primary {
+  @apply btn-base bg-primary text-primary-foreground hover:bg-primary/90 active:bg-primary;
+}
+
+.btn-secondary {
+  @apply btn-base bg-secondary text-secondary-foreground hover:bg-secondary/80 active:bg-secondary;
+}
+
+.btn-outline {
+  @apply btn-base border border-border bg-transparent hover:bg-muted active:bg-muted;
+}
+
+.btn-ghost {
+  @apply btn-base bg-transparent hover:bg-muted active:bg-muted;
+}
+
+.btn-danger {
+  @apply btn-base bg-danger text-danger-foreground hover:bg-danger/90 active:bg-danger;
+}
+
+.btn-success {
+  @apply btn-base bg-success text-success-foreground hover:bg-success/90 active:bg-success;
+}
+
+.btn-sm {
+  @apply px-3 py-1.5 text-xs;
+}
+
+.btn-lg {
+  @apply px-6 py-3 text-base;
+}
+
+.btn-icon {
+  @apply p-2;
+}
+
+.btn-icon-sm {
+  @apply p-1.5;
+}
+
+// ============================================================================
+// CARD UTILITIES
+// ============================================================================
+.card-base {
+  @apply bg-card border border-border rounded-xl;
+}
+
+.card-header {
+  @apply px-5 py-3.5 border-b border-border bg-muted/30;
+}
+
+.card-body {
+  @apply p-5;
+}
+
+.card-footer {
+  @apply px-5 py-3.5 border-t border-border bg-muted/30;
+}
+
+// ============================================================================
+// TABLE UTILITIES
+// ============================================================================
+.table-base {
+  @apply w-full text-sm border-collapse;
+}
+
+.table-header {
+  @apply sticky top-0 z-10 bg-muted/80 backdrop-blur-sm border-b border-border;
+}
+
+.table-header-cell {
+  @apply px-3 py-2.5 text-left text-xs font-semibold text-muted-foreground select-none;
+}
+
+.table-cell {
+  @apply px-3 py-2.5 border-b border-border;
+}
+
+.table-row {
+  @apply border-b border-border hover:bg-muted/30 transition-colors;
+}
+
+.table-row-striped:nth-child(even) {
+  @apply bg-muted/10;
+}
+
+.table-row-selected {
+  @apply bg-primary/5;
+}
+
+// ============================================================================
+// BADGE UTILITIES
+// ============================================================================
+.badge-base {
+  @apply inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold;
+}
+
+.badge-dot {
+  @apply w-1.5 h-1.5 rounded-full;
+}
+
+// ============================================================================
+// AVATAR UTILITIES
+// ============================================================================
+.avatar-base {
+  @apply inline-flex items-center justify-center rounded-full bg-primary/10 text-primary font-bold shrink-0;
+}
+
+.avatar-xs {
+  @apply avatar-base w-6 h-6 text-xs;
+}
+
+.avatar-sm {
+  @apply avatar-base w-7 h-7 text-xs;
+}
+
+.avatar-md {
+  @apply avatar-base w-8 h-8 text-sm;
+}
+
+.avatar-lg {
+  @apply avatar-base w-10 h-10 text-base;
+}
+
+.avatar-xl {
+  @apply avatar-base w-12 h-12 text-lg;
+}
+
+// ============================================================================
+// TOOLTIP UTILITIES
+// ============================================================================
+.tooltip-trigger {
+  @apply relative;
+}
+
+.tooltip-trigger::before {
+  @apply absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-xs bg-muted text-muted-foreground rounded opacity-0 invisible transition-all;
+  content: attr(data-tooltip);
+  white-space: nowrap;
+}
+
+.tooltip-trigger:hover::before {
+  @apply opacity-100 visible;
+}
+
+// ============================================================================
+// DROPDOWN UTILITIES
+// ============================================================================
+.dropdown-menu {
+  @apply absolute right-0 top-full mt-2 min-w-[160px] bg-card border border-border rounded-xl shadow-xl z-50 py-1;
+}
+
+.dropdown-item {
+  @apply w-full flex items-center gap-2.5 px-4 py-2.5 text-sm hover:bg-muted transition-colors;
+}
+
+.dropdown-divider {
+  @apply border-t border-border my-1;
+}
+
+// ============================================================================
+// MODAL/DIALOG UTILITIES
+// ============================================================================
+.modal-overlay {
+  @apply fixed inset-0 bg-black/50 backdrop-blur-sm z-40;
+}
+
+.modal-content {
+  @apply fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-card border border-border rounded-xl shadow-xl z-50 max-h-[90vh] overflow-hidden;
+}
+
+// ============================================================================
+// EMPTY STATE UTILITIES
+// ============================================================================
+.empty-state {
+  @apply flex flex-col items-center justify-center text-center py-12;
+}
+
+.empty-state-icon {
+  @apply w-16 h-16 bg-muted rounded-2xl flex items-center justify-center mb-4;
+}
+
+.empty-state-title {
+  @apply font-display font-semibold text-foreground mb-1;
+}
+
+.empty-state-description {
+  @apply text-sm text-muted-foreground mb-4;
+}
+
+// ============================================================================
+// LOADING STATE UTILITIES
+// ============================================================================
+.loading-spinner {
+  @apply inline-block animate-spin;
+}
+
+.loading-bar {
+  @apply h-2 bg-muted rounded-full overflow-hidden;
+}
+
+.loading-bar::after {
+  @apply block h-full bg-primary animate-pulse;
+  content: '';
+  animation: loading-bar 1.5s infinite ease-in-out;
+}
+
+@keyframes loading-bar {
+  0% { width: 0%; margin-left: 0%; }
+  50% { width: 60%; margin-left: 0%; }
+  100% { width: 0%; margin-left: 100%; }
+}
+
+// ============================================================================
+// RESPONSIVE UTILITIES
+// ============================================================================
+@media (max-width: #{$breakpoint-sm}) {
+  .mobile-hidden {
+    display: none !important;
+  }
+
+  .mobile-full {
+    width: 100% !important;
+  }
+
+  .mobile-stack {
+    flex-direction: column !important;
+  }
+}
+
+@media (min-width: #{$breakpoint-md}) {
+  .md-flex-row {
+    flex-direction: row !important;
+  }
+}
+
+@media (min-width: #{$breakpoint-lg}) {
+  .lg-hidden {
+    display: none !important;
+  }
+
+  .lg-inline-flex {
+    display: inline-flex !important;
+  }
+}
+
+@media (min-width: #{$breakpoint-xl}) {
+  .xl-col-span-2 {
+    grid-column: span 2 / span 2;
+  }
+
+  .xl-col-span-3 {
+    grid-column: span 3 / span 3;
+  }
+}
+
+// ============================================================================
+// PRINT UTILITIES
+// ============================================================================
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  .print-break-before {
+    page-break-before: always;
+  }
+
+  .print-break-after {
+    page-break-after: always;
+  }
+
+  .print-break-inside-avoid {
+    page-break-inside: avoid;
+  }
+}

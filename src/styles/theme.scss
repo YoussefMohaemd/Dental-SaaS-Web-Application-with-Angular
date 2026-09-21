@@ -1,0 +1,347 @@
+// Theme System - CSS Custom Properties for Light/Dark Mode
+// This mirrors the React application's index.css exactly
+
+@use 'tokens' as *;
+
+// ============================================================================
+// MIXINS (must be defined before use)
+// ============================================================================
+@mixin badge-style($bg, $fg) {
+  @include inline-flex;
+  @include px(1.5);
+  @include py(0.5);
+  @include rounded;
+  @include text-xs;
+  @include font-semibold;
+  background-color: $bg;
+  color: $fg;
+}
+
+@mixin inline-flex {
+  display: inline-flex;
+  align-items: center;
+}
+
+@mixin px($value) {
+  padding-left: $value * 0.25rem;
+  padding-right: $value * 0.25rem;
+}
+
+@mixin py($value) {
+  padding-top: $value * 0.25rem;
+  padding-bottom: $value * 0.25rem;
+}
+
+@mixin rounded($radius: $radius-md) {
+  border-radius: $radius;
+}
+
+@mixin text-xs {
+  font-size: $font-size-xs;
+  line-height: $line-height-normal;
+}
+
+@mixin font-semibold {
+  font-weight: $font-weight-semibold;
+}
+
+// ============================================================================
+// LIGHT THEME (Default)
+// ============================================================================
+:root {
+  // Base colors
+  --background: #{$color-background-light};
+  --foreground: #{$color-foreground-light};
+
+  // Card colors
+  --card: #{$color-card-light};
+  --card-foreground: #{$color-card-foreground-light};
+
+  // Sidebar colors
+  --sidebar: #{$color-sidebar-light};
+  --sidebar-foreground: #{$color-sidebar-foreground-light};
+  --sidebar-active: #{$color-sidebar-active-light};
+  --sidebar-muted: #{$color-sidebar-muted-light};
+
+  // Primary brand colors
+  --primary: #{$color-primary-light};
+  --primary-foreground: #{$color-primary-foreground-light};
+
+  // Secondary colors
+  --secondary: #{$color-secondary-light};
+  --secondary-foreground: #{$color-secondary-foreground-light};
+
+  // Muted colors
+  --muted: #{$color-muted-light};
+  --muted-foreground: #{$color-muted-foreground-light};
+
+  // Accent colors
+  --accent: #{$color-accent-light};
+  --accent-foreground: #{$color-accent-foreground-light};
+
+  // Status colors
+  --success: #{$color-success-light};
+  --warning: #{$color-warning-light};
+  --danger: #{$color-danger-light};
+
+  // Border & Input
+  --border: #{$color-border-light};
+  --input: #{$color-input-light};
+  --ring: #{$color-ring-light};
+
+  // Radius
+  --radius: #{$radius-lg};
+}
+
+// ============================================================================
+// DARK THEME
+// ============================================================================
+[data-theme="dark"] {
+  --background: #{$color-background-dark};
+  --foreground: #{$color-foreground-dark};
+
+  --card: #{$color-card-dark};
+  --card-foreground: #{$color-card-foreground-dark};
+
+  --sidebar: #{$color-sidebar-dark};
+  --sidebar-foreground: #{$color-sidebar-foreground-dark};
+  --sidebar-active: #{$color-sidebar-active-dark};
+  --sidebar-muted: #{$color-sidebar-muted-dark};
+
+  --primary: #{$color-primary-dark};
+  --primary-foreground: #{$color-primary-foreground-dark};
+
+  --secondary: #{$color-secondary-dark};
+  --secondary-foreground: #{$color-secondary-foreground-dark};
+
+  --muted: #{$color-muted-dark};
+  --muted-foreground: #{$color-muted-foreground-dark};
+
+  --accent: #{$color-accent-dark};
+  --accent-foreground: #{$color-accent-foreground-dark};
+
+  --success: #{$color-success-dark};
+  --warning: #{$color-warning-dark};
+  --danger: #{$color-danger-dark};
+
+  --border: #{$color-border-dark};
+  --input: #{$color-input-dark};
+  --ring: #{$color-ring-dark};
+}
+
+// ============================================================================
+// TAILWIND CSS V4 THEME INTEGRATION
+// ============================================================================
+@theme inline {
+  // Colors mapped to Tailwind utilities
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-border: var(--border);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-muted: var(--sidebar-muted);
+  --color-sidebar-active: var(--sidebar-active);
+
+  // Radius
+  --radius-default: var(--radius);
+
+  // Fonts
+  --font-sans: #{$font-family-sans};
+  --font-display: #{$font-family-display};
+  --font-mono: #{$font-family-mono};
+}
+
+// ============================================================================
+// STATUS & PRIORITY UTILITY CLASSES
+// ============================================================================
+@each $status, $colors in $status-colors {
+  .badge-#{$status} {
+    @include badge-style(map-get($colors, bg), map-get($colors, fg));
+  }
+
+  .bg-status-#{$status} {
+    background-color: map-get($colors, bg);
+  }
+
+  .text-status-#{$status} {
+    color: map-get($colors, fg);
+  }
+
+  .border-status-#{$status} {
+    border-color: map-get($colors, bg);
+  }
+}
+
+@each $priority, $color in $priority-colors {
+  .priority-#{$priority} {
+    color: #{$color};
+  }
+
+  .priority-dot-#{$priority} {
+    background-color: #{$color};
+  }
+
+  .bg-priority-#{$priority} {
+    background-color: #{$color};
+  }
+}
+
+// ============================================================================
+// FONT UTILITY CLASSES
+// ============================================================================
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+// ============================================================================
+// SCROLLBAR STYLING
+// ============================================================================
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
+}
+
+.sidebar-scrollbar::-webkit-scrollbar {
+  width: 3px;
+}
+
+.sidebar-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--sidebar-muted);
+  border-radius: 2px;
+}
+
+// ============================================================================
+// SKELETON LOADING ANIMATION
+// ============================================================================
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--border) 25%,
+    var(--muted) 50%,
+    var(--border) 75%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 1.5s infinite linear;
+  border-radius: var(--radius);
+}
+
+// ============================================================================
+// DRAG AND DROP STATES
+// ============================================================================
+.drag-over {
+  border-color: var(--primary) !important;
+  background-color: color-mix(in srgb, var(--primary) 5%, transparent) !important;
+}
+
+.kanban-card-dragging {
+  opacity: 0.5;
+  transform: rotate(1deg);
+}
+
+// ============================================================================
+// PAGE TRANSITIONS
+// ============================================================================
+.page-transition {
+  animation: fadeIn 0.15s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// ============================================================================
+// FOCUS STYLES
+// ============================================================================
+:focus-visible {
+  outline: none;
+  ring: 2px solid var(--ring);
+  ring-offset: 2px;
+}
+
+// ============================================================================
+// SELECTION STYLES
+// ============================================================================
+::selection {
+  background-color: color-mix(in srgb, var(--primary) 30%, transparent);
+  color: var(--foreground);
+}
+
+// ============================================================================
+// REDUCED MOTION
+// ============================================================================
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+// ============================================================================
+// HIGH CONTRAST MODE SUPPORT
+// ============================================================================
+@media (prefers-contrast: high) {
+  :root {
+    --border: var(--foreground);
+    --ring: var(--foreground);
+  }
+
+  [data-theme="dark"] {
+    --border: var(--foreground);
+    --ring: var(--foreground);
+  }
+}

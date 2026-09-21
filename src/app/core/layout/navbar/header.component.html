@@ -1,0 +1,127 @@
+<header class="h-14 bg-card border-b border-border flex items-center gap-4 px-4 shrink-0 z-20">
+  <!-- Menu button -->
+  <button
+    (click)="toggleSidebar()"
+    class="p-1.5 rounded-md hover:bg-muted text-muted-foreground"
+    aria-label="Toggle sidebar"
+  >
+    <span [innerHTML]="getIconSvg('menu')"></span>
+  </button>
+
+  <!-- Breadcrumbs -->
+  <nav class="flex items-center gap-1 text-sm min-w-0">
+    @for (crumb of breadcrumbs(); track $index) {
+      <span class="flex items-center gap-1">
+        @if ($index > 0) {
+          <span [innerHTML]="getIconSvg('chevron-right')" class="text-muted-foreground shrink-0"></span>
+        }
+        @if (crumb.page) {
+          <button
+            (click)="navigationService.navigate(crumb.page!)"
+            class="text-muted-foreground hover:text-foreground truncate"
+          >
+            {{ crumb.label }}
+          </button>
+        } @else {
+          <span class="font-semibold text-foreground truncate">{{ crumb.label }}</span>
+        }
+      </span>
+    }
+  </nav>
+
+  <div class="flex-1"></div>
+
+  <!-- Search -->
+  <div class="relative hidden md:block">
+    <span [innerHTML]="getIconSvg('search')" class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"></span>
+    <app-search-input
+      placeholder="Search orders, patients..."
+      [showShortcut]="true"
+    />
+    <kbd class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hidden lg:block">⌘K</kbd>
+  </div>
+
+  <!-- Theme toggle -->
+  <button
+    (click)="toggleTheme()"
+    class="p-1.5 rounded-md hover:bg-muted text-muted-foreground"
+    aria-label="Toggle theme"
+  >
+    @if (isDark()) {
+      <span [innerHTML]="getIconSvg('sun')"></span>
+    } @else {
+      <span [innerHTML]="getIconSvg('moon')"></span>
+    }
+  </button>
+
+  <!-- Notifications -->
+  <div class="relative">
+    <button
+      (click)="toggleNotifications()"
+      class="p-1.5 rounded-md hover:bg-muted text-muted-foreground relative"
+      aria-label="Notifications"
+    >
+      <span [innerHTML]="getIconSvg('bell')"></span>
+      @if (unreadCount() > 0) {
+        <span class="absolute top-0.5 right-0.5 w-4 h-4 bg-danger text-white text-xs rounded-full flex items-center justify-center font-mono">
+          {{ unreadCount() }}
+        </span>
+      }
+    </button>
+    @if (notificationsOpen()) {
+      <div class="absolute right-0 top-full mt-2 w-80 bg-card border border-border rounded-xl shadow-xl z-50">
+        <div class="px-4 py-3 border-b border-border flex items-center justify-between">
+          <span class="font-semibold text-sm">Notifications</span>
+          <button (click)="navigateToNotifications()" class="text-xs text-primary hover:underline">View all</button>
+        </div>
+        <div class="max-h-72 overflow-y-auto">
+          @for (notification of notifications(); track notification.id) {
+            <div class="px-4 py-3 border-b border-border last:border-0 flex gap-3" [class.bg-primary/5]="!notification.read">
+              <span [innerHTML]="getNotificationIconSvg(notification.type)" [class]="notification.read ? 'text-muted-foreground' : 'text-primary'"></span>
+              <div class="min-w-0">
+                <p class="text-xs font-semibold truncate">{{ notification.title }}</p>
+                <p class="text-xs text-muted-foreground line-clamp-2 mt-0.5">{{ notification.message }}</p>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Profile -->
+  <div class="relative">
+    <button
+      (click)="toggleProfile()"
+      class="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-lg hover:bg-muted"
+      aria-label="Profile menu"
+    >
+      <app-avatar
+        [name]="'Jessica Ruiz'"
+        [size]="'sm'"
+        [variant]="'primary'"
+      />
+      <span class="text-sm font-medium hidden sm:block">Jessica R.</span>
+      <span [innerHTML]="getIconSvg('chevron-down')" class="text-muted-foreground"></span>
+    </button>
+    @if (profileOpen()) {
+      <div class="absolute right-0 top-full mt-2 w-48 bg-card border border-border rounded-xl shadow-xl z-50 py-1">
+        <button (click)="navigateToSettings()" class="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm hover:bg-muted">
+          <span [innerHTML]="getIconSvg('user')"></span> Profile
+        </button>
+        <button (click)="navigateToSettings()" class="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm hover:bg-muted">
+          <span [innerHTML]="getIconSvg('settings')"></span> Settings
+        </button>
+        <div class="border-t border-border my-1"></div>
+        <button (click)="logout()" class="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm hover:bg-muted text-danger">
+          <span [innerHTML]="getIconSvg('log-out')"></span> Sign Out
+        </button>
+      </div>
+    }
+  </div>
+</header>
+
+<!-- Overlay for dropdowns -->
+@if (notificationsOpen() || profileOpen()) {
+  <div class="fixed inset-0 z-40" (click)="closeDropdowns()"></div>
+}

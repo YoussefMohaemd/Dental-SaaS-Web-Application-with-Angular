@@ -1,0 +1,164 @@
+<div class="flex flex-col h-full">
+  @if (case()) {
+    <div class="px-6 py-4 border-b border-border bg-card shrink-0">
+      <div class="flex items-center gap-3">
+        <button (click)="goBack()" class="p-1.5 hover:bg-muted rounded-lg text-muted-foreground">
+          <span [innerHTML]="getIconSvg('arrow-left')"></span>
+        </button>
+        <div class="flex-1">
+          <div class="flex items-center gap-3">
+            <h1 class="font-display font-bold text-lg text-foreground font-mono">{{ case()!.caseNumber }}</h1>
+            <app-status-badge [status]="case()!.status" size="sm" />
+          </div>
+          <p class="text-sm text-muted-foreground mt-0.5">{{ case()!.title }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="border-b border-border bg-card px-6 shrink-0">
+      <div class="flex gap-6">
+        @for (tab of tabs; track tab) {
+          <button
+            (click)="setActiveTab(tab)"
+            class="py-3 text-sm font-medium border-b-2 transition-colors"
+            [class.border-primary.text-primary]="activeTab() === tab"
+            [class.border-transparent.text-muted-foreground.hover:text-foreground]="activeTab() !== tab"
+          >
+            {{ tab }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <div class="flex-1 overflow-y-auto p-6">
+      <!-- Overview Tab -->
+      @if (activeTab() === 'Overview') {
+        <div class="max-w-4xl grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-2 space-y-5">
+            <div class="grid grid-cols-3 gap-4">
+              <button (click)="navigateToPatient(case()!.patientId)" class="bg-card border border-border rounded-xl p-4 text-left hover:border-primary/40 group">
+                <p class="text-xs text-muted-foreground">Patient</p>
+                <p class="text-sm font-semibold text-foreground mt-1 line-clamp-2">{{ case()!.patientName }}</p>
+                <div class="flex items-center gap-1 text-xs text-primary mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  View <span [innerHTML]="getIconSvg('external-link')"></span>
+                </div>
+              </button>
+              <button (click)="navigateToDoctor(case()!.doctorId)" class="bg-card border border-border rounded-xl p-4 text-left hover:border-primary/40 group">
+                <p class="text-xs text-muted-foreground">Doctor</p>
+                <p class="text-sm font-semibold text-foreground mt-1 line-clamp-2">{{ case()!.doctorName }}</p>
+                <div class="flex items-center gap-1 text-xs text-primary mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  View <span [innerHTML]="getIconSvg('external-link')"></span>
+                </div>
+              </button>
+              <button (click)="navigateToClinic(case()!.clinicId)" class="bg-card border border-border rounded-xl p-4 text-left hover:border-primary/40 group">
+                <p class="text-xs text-muted-foreground">Clinic</p>
+                <p class="text-sm font-semibold text-foreground mt-1 line-clamp-2">{{ case()!.clinicName }}</p>
+                <div class="flex items-center gap-1 text-xs text-primary mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  View <span [innerHTML]="getIconSvg('external-link')"></span>
+                </div>
+              </button>
+            </div>
+
+            <div class="bg-card border border-border rounded-xl overflow-hidden">
+              <div class="px-5 py-3.5 border-b border-border bg-muted/30">
+                <h2 class="font-display font-semibold text-sm">Related Orders ({{ caseOrders().length }})</h2>
+              </div>
+              <div class="divide-y divide-border">
+                @for (o of caseOrders(); track o.id) {
+                  <div class="px-5 py-3 flex items-center gap-4 hover:bg-muted/20 cursor-pointer" (click)="navigateToOrder(o.id)">
+                    <span class="font-mono text-xs text-primary font-semibold">{{ o.orderNumber }}</span>
+                    <span class="text-xs text-foreground flex-1">{{ o.restoration }}</span>
+                    <app-status-badge [status]="o.status" size="xs" />
+                    <span class="text-xs text-muted-foreground">{{ formatUtils.timeAgo(o.updatedAt) }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <div class="bg-card border border-border rounded-xl p-5">
+              <h2 class="font-display font-semibold text-sm mb-3">Case Notes</h2>
+              <p class="text-sm text-muted-foreground">{{ case()!.notes }}</p>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <div class="bg-card border border-border rounded-xl p-5">
+              <h2 class="font-display font-semibold text-sm mb-3">Case Summary</h2>
+              <div class="space-y-2.5">
+                @for (item of [
+                  { label: 'Priority', value: case()!.priority },
+                  { label: 'Orders', value: case()!.ordersCount },
+                  { label: 'Files', value: case()!.filesCount },
+                  { label: 'Created', value: formatUtils.formatDate(case()!.createdAt) },
+                  { label: 'Updated', value: formatUtils.timeAgo(case()!.updatedAt) }
+                ]; track item.label) {
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs text-muted-foreground">{{ item.label }}</span>
+                    <span class="text-xs font-medium text-foreground">{{ item.value }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Files Tab -->
+      @if (activeTab() === 'Files') {
+        <div class="max-w-2xl">
+          <div class="bg-card border border-border rounded-xl overflow-hidden">
+            <div class="px-5 py-3.5 border-b border-border bg-muted/30">
+              <h2 class="font-display font-semibold text-sm">Case Files ({{ dummyFiles.length }})</h2>
+            </div>
+            <div class="divide-y divide-border">
+              @for (f of dummyFiles; track f.name) {
+                <div class="px-5 py-3 flex items-center gap-4">
+                  <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+                    <span [innerHTML]="getIconSvg('file-text')" class="text-blue-500" style="width: 14px; height: 14px;"></span>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-foreground truncate">{{ f.name }}</p>
+                    <p class="text-xs text-muted-foreground">{{ f.size }} &middot; {{ f.date }}</p>
+                  </div>
+                  <span class="font-mono text-xs bg-muted px-2 py-0.5 rounded text-muted-foreground">{{ f.type }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Notes Tab -->
+      @if (activeTab() === 'Notes') {
+        <div class="max-w-2xl">
+          <div class="bg-card border border-border rounded-xl p-5 mb-4">
+            <h2 class="font-display font-semibold text-sm mb-3">Add Note</h2>
+            <textarea class="w-full px-3 py-2 text-sm rounded-lg border border-border bg-muted/30 focus:outline-none focus:ring-2 focus:ring-primary/30 min-h-24 resize-y" placeholder="Write a note..."></textarea>
+            <app-button variant="primary" size="sm" class="mt-2">Add Note</app-button>
+          </div>
+          <div class="bg-card border border-border rounded-xl p-5">
+            <p class="text-sm text-muted-foreground">{{ case()!.notes }}</p>
+            <p class="text-xs text-muted-foreground mt-3">&mdash; Jessica R., {{ formatUtils.formatDate(case()!.updatedAt) }}</p>
+          </div>
+        </div>
+      }
+
+      <!-- Activity Tab -->
+      @if (activeTab() === 'Activity') {
+        <div class="max-w-2xl">
+          <div class="bg-card border border-border rounded-xl p-5">
+            <div class="relative pl-5 border-l-2 border-border space-y-5">
+              @for (a of activityItems(); track $index) {
+                <div class="relative ml-2">
+                  <div class="absolute -left-[22px] w-3 h-3 rounded-full bg-card border-2 border-primary"></div>
+                  <p class="text-sm text-foreground"><span class="font-semibold">{{ a.user }}</span> {{ a.action }}</p>
+                  <p class="text-xs text-muted-foreground mt-0.5">{{ formatUtils.timeAgo(a.time) }}</p>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

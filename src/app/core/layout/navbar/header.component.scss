@@ -1,0 +1,19 @@
+:host {
+  display: block;
+}
+
+.header-search-input {
+  width: 14rem;
+}
+
+@media (min-width: 1024px) {
+  .header-search-input {
+    width: 14rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .header-search-input {
+    width: 14rem;
+  }
+}

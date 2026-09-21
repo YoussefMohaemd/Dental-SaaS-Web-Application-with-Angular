@@ -1,0 +1,7 @@
+[
+  { "id": "sc1", "name": "SC-LA Central", "location": "Los Angeles, CA", "operator": "Marcus Lee", "devices": 3, "activeOrders": 12, "completedToday": 8, "status": "Operational" },
+  { "id": "sc2", "name": "SC-SD Harbor", "location": "San Diego, CA", "operator": "Sofia Reyes", "devices": 2, "activeOrders": 7, "completedToday": 5, "status": "Operational" },
+  { "id": "sc3", "name": "SC-SF Bay", "location": "San Francisco, CA", "operator": "Daniel Park", "devices": 4, "activeOrders": 15, "completedToday": 11, "status": "Operational" },
+  { "id": "sc4", "name": "SC-SAC Valley", "location": "Sacramento, CA", "operator": "Nadia Morin", "devices": 2, "activeOrders": 4, "completedToday": 3, "status": "Maintenance" },
+  { "id": "sc5", "name": "SC-SB Coast", "location": "Santa Barbara, CA", "operator": "Tom Bradley", "devices": 1, "activeOrders": 2, "completedToday": 2, "status": "Operational" }
+]

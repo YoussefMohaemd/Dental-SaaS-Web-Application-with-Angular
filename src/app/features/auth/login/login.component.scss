@@ -1,0 +1,80 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+.login-form {
+  @apply space-y-4;
+}
+
+.form-field {
+  @apply relative;
+}
+
+.form-field label {
+  @apply block text-sm font-medium text-foreground mb-1.5;
+}
+
+.form-field input {
+  @apply input-base;
+}
+
+.form-field .prefix-icon {
+  @apply absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground;
+}
+
+.form-field .toggle-password {
+  @apply absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground;
+}
+
+.checkbox-group {
+  @apply flex items-center gap-2;
+}
+
+.checkbox-group input {
+  @apply rounded border-border;
+}
+
+.checkbox-group label {
+  @apply text-sm text-muted-foreground;
+}
+
+.stats-grid {
+  @apply grid grid-cols-3 gap-3;
+}
+
+.stat-card {
+  @apply bg-white/10 backdrop-blur-sm rounded-xl p-3 border border-white/15;
+}
+
+.stat-value {
+  @apply text-white font-display font-bold text-xl;
+}
+
+.stat-label {
+  @apply text-white/50 text-xs mt-0.5;
+}
+
+.testimonial {
+  @apply border-l-2 border-primary/60 pl-4 mb-6;
+}
+
+.testimonial-text {
+  @apply text-white/80 text-sm italic leading-relaxed mb-2;
+}
+
+.testimonial-author {
+  @apply flex items-center gap-2.5;
+}
+
+.author-avatar {
+  @apply w-7 h-7 rounded-full bg-primary/30 flex items-center justify-center text-white text-xs font-semibold;
+}
+
+.author-name {
+  @apply text-white text-xs font-semibold;
+}
+
+.author-title {
+  @apply text-white/50 text-xs;
+}

@@ -1,0 +1,21 @@
+<button
+  *ngIf="!isLink()"
+  [type]="type()"
+  [disabled]="disabled()"
+  [class]="buttonClasses()"
+  (click)="onClick.emit($event)"
+>
+  <span *ngIf="loading()" class="loading-spinner w-4 h-4 mr-1.5" aria-hidden="true"></span>
+  <ng-content />
+</button>
+<a
+  *ngIf="isLink()"
+  [routerLink]="routerLink()"
+  [class]="buttonClasses()"
+  [class.pointer-events-none]="disabled()"
+  [class.opacity-50]="disabled()"
+  (click)="onClick.emit($event)"
+>
+  <span *ngIf="loading()" class="loading-spinner w-4 h-4 mr-1.5" aria-hidden="true"></span>
+  <ng-content />
+</a>

@@ -1,0 +1,23 @@
+<div class="relative">
+  <label *ngIf="label()" [for]="id()" class="label-base">{{ label() }}</label>
+  <div class="relative">
+    <ng-content select="[slot=prefix]" />
+    <input
+      [id]="id()"
+      [type]="type()"
+      [placeholder]="placeholder()"
+      [disabled]="disabled()"
+      [required]="required()"
+      [value]="value()"
+      (input)="onInput($event)"
+      (blur)="onBlur.emit($event)"
+      (focus)="onFocus.emit($event)"
+      [class]="inputClasses()"
+      [attr.aria-describedby]="error() ? errorId() : hint() ? hintId() : null"
+      [attr.aria-invalid]="!!error()"
+    />
+    <ng-content select="[slot=suffix]" />
+  </div>
+  <p *ngIf="hint() && !error()" [id]="hintId()" class="field-hint">{{ hint() }}</p>
+  <p *ngIf="error()" [id]="errorId()" class="field-error">{{ error() }}</p>
+</div>

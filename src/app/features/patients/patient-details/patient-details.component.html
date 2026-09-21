@@ -1,0 +1,151 @@
+@if (patient()) {
+  <div class="flex flex-col h-full">
+    <div class="px-6 py-4 border-b border-border bg-card shrink-0">
+      <div class="flex items-center gap-3">
+        <button (click)="goBack()" class="p-1.5 hover:bg-muted rounded-lg text-muted-foreground">
+          <span [innerHTML]="getIconSvg('arrow-left')"></span>
+        </button>
+        <div class="flex items-center gap-4 flex-1">
+          <app-avatar [name]="patient()!.name" [size]="'lg'" [variant]="'primary'" />
+          <div>
+            <h1 class="font-display font-bold text-xl text-foreground">{{ patient()!.name }}</h1>
+            <p class="text-sm text-muted-foreground">
+              {{ getGenderLabel(patient()!.gender) }} &middot; DOB: {{ patient()!.dob }} &middot; {{ patientOrders().length }} orders
+            </p>
+          </div>
+          <span class="px-2.5 py-1 rounded-full text-xs font-semibold ml-2" [class]="getStatusClass(patient()!.status)">
+            {{ patient()!.status }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="border-b border-border bg-card px-6 shrink-0">
+      <div class="flex gap-6">
+        @for (tab of tabs; track tab) {
+          <button
+            (click)="setActiveTab(tab)"
+            class="py-3 text-sm font-medium border-b-2 transition-colors"
+            [class.border-primary.text-primary]="activeTab() === tab"
+            [class.border-transparent.text-muted-foreground.hover:text-foreground]="activeTab() !== tab"
+          >
+            {{ tab }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <div class="flex-1 overflow-y-auto p-6">
+      <!-- Overview Tab -->
+      @if (activeTab() === 'Overview') {
+        <div class="max-w-4xl grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-2 space-y-5">
+            <div class="bg-card border border-border rounded-xl overflow-hidden">
+              <div class="px-5 py-3.5 border-b border-border bg-muted/30">
+                <h2 class="font-display font-semibold text-sm">Contact Information</h2>
+              </div>
+              <div class="p-5 space-y-3">
+                @for (item of contactItems(); track item.label) {
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                      <span [innerHTML]="getIconSvg(item.icon)" class="text-muted-foreground" style="width: 14px; height: 14px;"></span>
+                    </div>
+                    <div>
+                      <p class="text-xs text-muted-foreground">{{ item.label }}</p>
+                      <p class="text-sm font-medium text-foreground">{{ item.value }}</p>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <div class="bg-card border border-border rounded-xl overflow-hidden">
+              <div class="px-5 py-3.5 border-b border-border bg-muted/30 flex items-center justify-between">
+                <h2 class="font-display font-semibold text-sm">Recent Orders</h2>
+                <button (click)="setActiveTab('Orders')" class="text-xs text-primary hover:underline">View all</button>
+              </div>
+              <div class="divide-y divide-border">
+                @for (o of patientOrders().slice(0, 5); track o.id) {
+                  <div class="px-5 py-3 flex items-center gap-4 hover:bg-muted/20 cursor-pointer" (click)="navigationService.navigate('viewOrder', { orderId: o.id })">
+                    <span class="font-mono text-xs text-primary font-semibold">{{ o.orderNumber }}</span>
+                    <span class="text-xs text-foreground flex-1">{{ o.restoration }}</span>
+                    <span class="text-xs text-muted-foreground">{{ formatUtils.timeAgo(o.updatedAt) }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <div class="bg-card border border-border rounded-xl p-5">
+              <h2 class="font-display font-semibold text-sm mb-4">Patient Stats</h2>
+              <div class="space-y-3">
+                @for (item of [
+                  { label: 'Total Orders', value: patient()!.ordersCount },
+                  { label: 'Last Visit', value: patient()!.lastVisit },
+                  { label: 'Status', value: patient()!.status }
+                ]; track item.label) {
+                  <div class="flex items-center justify-between py-2 border-b border-border last:border-0">
+                    <span class="text-xs text-muted-foreground">{{ item.label }}</span>
+                    <span class="text-xs font-semibold text-foreground">{{ item.value }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+            <div class="bg-card border border-border rounded-xl p-5">
+              <h2 class="font-display font-semibold text-sm mb-3">Quick Actions</h2>
+              <div class="space-y-2">
+                <app-button variant="outline" size="sm" class="w-full flex items-center gap-2 justify-start" (onClick)="navigationService.navigate('createOrder')">
+                  <span [innerHTML]="getIconSvg('clipboard-list')" class="text-muted-foreground" style="width: 14px; height: 14px;"></span>
+                  New Order
+                </app-button>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Orders Tab -->
+      @if (activeTab() === 'Orders') {
+        <div class="max-w-3xl bg-card border border-border rounded-xl overflow-hidden">
+          <div class="px-5 py-3.5 border-b border-border bg-muted/30">
+            <h2 class="font-display font-semibold text-sm">All Orders ({{ patientOrders().length }})</h2>
+          </div>
+          <table class="w-full text-sm">
+            <thead class="bg-muted/40 border-b border-border">
+              <tr>
+                @for (header of ['Order #', 'Restoration', 'Status', 'Amount', 'Updated']; track header) {
+                  <th class="px-4 py-2.5 text-left text-xs font-semibold text-muted-foreground">{{ header }}</th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (o of patientOrders(); track o.id) {
+                <tr class="border-b border-border last:border-0 hover:bg-muted/20 cursor-pointer" (click)="navigationService.navigate('viewOrder', { orderId: o.id })">
+                  <td class="px-4 py-3 font-mono text-xs text-primary font-semibold">{{ o.orderNumber }}</td>
+                  <td class="px-4 py-3 text-xs">{{ o.restoration }}</td>
+                  <td class="px-4 py-3">
+                    <app-status-badge [status]="o.status" size="xs" />
+                  </td>
+                  <td class="px-4 py-3 text-xs font-mono font-semibold">{{ formatUtils.formatCurrency(o.amount) }}</td>
+                  <td class="px-4 py-3 text-xs text-muted-foreground">{{ formatUtils.timeAgo(o.updatedAt) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+
+      <!-- Empty tabs -->
+      @if (activeTab() === 'Cases' || activeTab() === 'Documents' || activeTab() === 'Activity') {
+        <div class="max-w-2xl flex flex-col items-center justify-center py-16 text-center">
+          <div class="w-14 h-14 bg-muted rounded-2xl flex items-center justify-center mb-4">
+            <span [innerHTML]="getIconSvg('clipboard-list')" class="text-muted-foreground" style="width: 24px; height: 24px;"></span>
+          </div>
+          <p class="font-semibold text-foreground">No {{ activeTab().toLowerCase() }} yet</p>
+          <p class="text-sm text-muted-foreground">Patient {{ activeTab().toLowerCase() }} will appear here</p>
+        </div>
+      }
+    </div>
+  </div>
+}
