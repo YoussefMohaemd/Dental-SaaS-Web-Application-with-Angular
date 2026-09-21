@@ -11,7 +11,8 @@
       @for (col of columns; track col.id) {
         <div
           class="flex flex-col w-52 shrink-0"
-          [cdkDropList]="col.id"
+          cdkDropList
+          [id]="col.id"
           [cdkDropListData]="getColumnOrders(col.id)"
           (cdkDropListDropped)="drop($event)"
           cdkDropListOrientation="vertical"
@@ -28,8 +29,8 @@
           <!-- Column body -->
           <div
             class="flex-1 rounded-xl p-2 overflow-y-auto min-h-32 border-2 border-dashed transition-colors"
-            [class.border-primary]="dragId() && getColumnOrders(col.id).some(o => o.id === dragId())"
-            [class.border-transparent]="!dragId() || !getColumnOrders(col.id).some(o => o.id === dragId())"
+            [class.border-primary]="isDraggedInColumn(col.id)"
+            [class.border-transparent]="!isDraggedInColumn(col.id)"
           >
             @if (getColumnOrders(col.id).length === 0) {
               <div class="flex items-center justify-center h-16 text-xs text-muted-foreground">

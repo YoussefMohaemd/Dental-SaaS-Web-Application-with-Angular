@@ -1,12 +1,11 @@
 // Main Styles Entry Point
-// Order matters: tokens -> theme -> utilities -> tailwind -> component styles
+// Order matters: tokens -> theme -> utilities -> component styles
+// Tailwind utilities are generated separately by the Tailwind v4 CLI
+// (see src/tailwind.input.css) and bundled via angular.json styles.
 
 @use 'styles/tokens' as *;
 @use 'styles/theme';
 @use 'styles/utilities';
-
-// Tailwind CSS v4 import
-@import 'tailwindcss';
 
 // Global base styles
 @layer base {

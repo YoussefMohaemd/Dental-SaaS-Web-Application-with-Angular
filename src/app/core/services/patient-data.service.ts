@@ -6,7 +6,7 @@ import { Patient, PatientFilters } from '../models';
 @Injectable({ providedIn: 'root' })
 export class PatientDataService {
   private readonly http = inject(HttpClient);
-  private readonly API_URL = '/assets/data/patients.json';
+  private readonly API_URL = '/data/patients.json';
 
   private readonly _patients = signal<Patient[]>([]);
   private readonly _loading = signal<boolean>(false);

@@ -1,3 +1,5 @@
+export type DoctorStatus = 'Active' | 'Inactive';
+
 export interface Doctor {
   id: string;
   name: string;
@@ -6,7 +8,7 @@ export interface Doctor {
   clinicName: string;
   email: string;
   phone: string;
-  status: 'Active' | 'Inactive';
+  status: DoctorStatus;
   ordersCount: number;
   joinedDate: string;
   avatar: string;
@@ -14,7 +16,7 @@ export interface Doctor {
 
 export interface DoctorFilters {
   search?: string;
-  statusFilter?: 'Active' | 'Inactive';
+  statusFilter?: DoctorStatus;
   clinicId?: string;
   sortColumn?: keyof Doctor;
   sortDirection?: 'asc' | 'desc';

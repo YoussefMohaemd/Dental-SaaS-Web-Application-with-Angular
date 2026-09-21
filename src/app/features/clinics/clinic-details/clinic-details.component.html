@@ -1,0 +1,147 @@
+<div class="flex h-full flex-col">
+  @if (clinic(); as current) {
+    <div class="shrink-0 border-b border-border bg-card px-6 py-4">
+      <div class="flex items-start gap-3">
+        <button type="button" (click)="goBack()" class="rounded-lg p-1.5 text-muted-foreground hover:bg-muted" aria-label="Back to clinics">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </button>
+        <div>
+          <div class="flex flex-wrap items-center gap-2">
+            <h1 class="font-display text-lg font-bold text-foreground">{{ current.name }}</h1>
+            <span class="rounded-full px-2 py-0.5 text-[11px] font-semibold" [class]="statusClasses(current.status)">{{ current.status }}</span>
+          </div>
+          <p class="text-xs text-muted-foreground">{{ current.address }}, {{ current.city }}</p>
+        </div>
+      </div>
+      <div class="mt-3 flex gap-1" role="tablist" aria-label="Clinic sections">
+        @for (tab of tabs; track tab.id) {
+          <button
+            type="button"
+            role="tab"
+            [attr.aria-selected]="activeTab() === tab.id"
+            (click)="setTab(tab.id)"
+            class="rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors"
+            [class]="activeTab() === tab.id ? 'bg-primary text-white' : 'text-muted-foreground hover:bg-muted'"
+          >
+            {{ tab.label }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <div class="flex-1 overflow-auto p-6">
+      @switch (activeTab()) {
+        @case ('overview') {
+          <div class="mx-auto grid max-w-4xl grid-cols-1 gap-4 lg:grid-cols-3">
+            <section class="rounded-xl border border-border bg-card p-5" aria-label="Clinic information">
+              <h2 class="mb-3 text-sm font-semibold text-foreground">Clinic Information</h2>
+              <dl class="space-y-2 text-sm">
+                <div><dt class="text-[11px] uppercase tracking-wide text-muted-foreground">Phone</dt><dd class="font-mono text-foreground">{{ current.phone }}</dd></div>
+                <div><dt class="text-[11px] uppercase tracking-wide text-muted-foreground">Email</dt><dd class="text-foreground">{{ current.email }}</dd></div>
+                <div><dt class="text-[11px] uppercase tracking-wide text-muted-foreground">Account Manager</dt><dd class="text-foreground">{{ current.accountManager }}</dd></div>
+              </dl>
+            </section>
+            <section class="rounded-xl border border-border bg-card p-5" aria-label="Doctors preview">
+              <div class="mb-3 flex items-center justify-between">
+                <h2 class="text-sm font-semibold text-foreground">Doctors ({{ clinicDoctors().length }})</h2>
+                <button type="button" (click)="setTab('doctors')" class="text-xs font-semibold text-primary hover:underline">View all</button>
+              </div>
+              <ul class="space-y-2">
+                @for (doctor of clinicDoctors().slice(0, 4); track doctor.id) {
+                  <li>
+                    <button type="button" (click)="openDoctor(doctor.id)" class="flex w-full items-center gap-2.5 rounded-lg p-1.5 text-left hover:bg-muted/50">
+                      <app-avatar [name]="doctor.name" size="sm" variant="success" />
+                      <span class="min-w-0">
+                        <span class="block truncate text-sm font-medium text-foreground">{{ doctor.name }}</span>
+                        <span class="block truncate text-xs text-muted-foreground">{{ doctor.specialty }}</span>
+                      </span>
+                    </button>
+                  </li>
+                } @empty {
+                  <li class="text-xs text-muted-foreground">No doctors linked to this clinic.</li>
+                }
+              </ul>
+            </section>
+            <aside class="rounded-xl border border-border bg-card p-5" aria-label="Clinic stats">
+              <h2 class="mb-3 text-sm font-semibold text-foreground">Clinic Stats</h2>
+              <dl class="space-y-2.5 text-sm">
+                <div class="flex justify-between"><dt class="text-muted-foreground">Doctors</dt><dd class="font-mono font-bold text-foreground">{{ current.doctorsCount }}</dd></div>
+                <div class="flex justify-between"><dt class="text-muted-foreground">Patients</dt><dd class="font-mono font-bold text-foreground">{{ current.patientsCount }}</dd></div>
+                <div class="flex justify-between"><dt class="text-muted-foreground">Orders</dt><dd class="font-mono font-bold text-foreground">{{ current.ordersCount }}</dd></div>
+              </dl>
+            </aside>
+          </div>
+        }
+        @case ('doctors') {
+          <section class="mx-auto max-w-4xl rounded-xl border border-border bg-card p-5" aria-label="Doctors at clinic">
+            <h2 class="mb-3 text-sm font-semibold text-foreground">Doctors at {{ current.name }}</h2>
+            <ul class="divide-y divide-border">
+              @for (doctor of clinicDoctors(); track doctor.id) {
+                <li>
+                  <button type="button" (click)="openDoctor(doctor.id)" class="flex w-full items-center gap-3 py-2.5 text-left hover:bg-muted/30">
+                    <app-avatar [name]="doctor.name" size="md" variant="success" />
+                    <span class="min-w-0 flex-1">
+                      <span class="block truncate text-sm font-semibold text-foreground">{{ doctor.name }}</span>
+                      <span class="block text-xs text-muted-foreground">{{ doctor.specialty }} · {{ doctor.ordersCount }} orders</span>
+                    </span>
+                  </button>
+                </li>
+              } @empty {
+                <li class="py-6 text-center text-xs text-muted-foreground">No doctors linked to this clinic.</li>
+              }
+            </ul>
+          </section>
+        }
+        @case ('orders') {
+          <section class="mx-auto max-w-4xl rounded-xl border border-border bg-card p-5" aria-label="Recent orders">
+            <h2 class="mb-3 text-sm font-semibold text-foreground">Recent Orders</h2>
+            @if (clinicOrders().length === 0) {
+              <p class="py-6 text-center text-xs text-muted-foreground">No orders for this clinic.</p>
+            } @else {
+              <table class="w-full text-sm">
+                <thead class="border-b border-border">
+                  <tr class="text-left text-xs text-muted-foreground">
+                    <th class="py-2 pr-2 font-semibold">Order #</th>
+                    <th class="py-2 pr-2 font-semibold">Patient</th>
+                    <th class="py-2 pr-2 font-semibold">Restoration</th>
+                    <th class="py-2 pr-2 font-semibold">Status</th>
+                    <th class="py-2 font-semibold">Updated</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (order of clinicOrders(); track order.id) {
+                    <tr class="cursor-pointer border-b border-border hover:bg-muted/20" (click)="openOrder(order.id)">
+                      <td class="py-2.5 pr-2 font-mono text-xs font-semibold text-primary">{{ order.orderNumber }}</td>
+                      <td class="py-2.5 pr-2 text-xs text-foreground">{{ order.patientName }}</td>
+                      <td class="py-2.5 pr-2 text-xs text-muted-foreground">{{ order.restoration }}</td>
+                      <td class="py-2.5 pr-2 text-xs text-muted-foreground">{{ order.status }}</td>
+                      <td class="py-2.5 font-mono text-xs text-muted-foreground">{{ formatUtils.formatDate(order.updatedAt) }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            }
+          </section>
+        }
+        @default {
+          <section class="mx-auto max-w-4xl rounded-xl border border-border bg-card p-5" aria-label="Clinic activity">
+            <h2 class="mb-3 text-sm font-semibold text-foreground">Activity</h2>
+            <ul class="space-y-2.5">
+              @for (order of recentActivity(); track order.id) {
+                <li class="flex items-center gap-2.5 text-sm">
+                  <span class="h-2 w-2 shrink-0 rounded-full bg-primary" aria-hidden="true"></span>
+                  <button type="button" (click)="openOrder(order.id)" class="font-mono text-xs font-semibold text-primary hover:underline">{{ order.orderNumber }}</button>
+                  <span class="truncate text-xs text-muted-foreground">{{ order.patientName }} · {{ order.status }} · {{ formatUtils.timeAgo(order.updatedAt) }}</span>
+                </li>
+              } @empty {
+                <li class="py-6 text-center text-xs text-muted-foreground">No recent activity.</li>
+              }
+            </ul>
+          </section>
+        }
+      }
+    </div>
+  } @else {
+    <p class="m-6 rounded-xl border border-border bg-card p-6 text-center text-sm text-muted-foreground">No clinic found.</p>
+  }
+</div>

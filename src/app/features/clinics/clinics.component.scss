@@ -1,0 +1,58 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+.clinics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1rem;
+}
+
+.clinic-card {
+  @apply bg-card border border-border rounded-xl p-5 text-left hover:border-primary/40 hover:shadow-sm transition-all group;
+}
+
+.clinic-card-header {
+  @apply flex items-start justify-between mb-3;
+}
+
+.clinic-icon {
+  @apply w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center;
+}
+
+.clinic-status {
+  @apply px-2 py-0.5 rounded-full text-[10px] font-semibold;
+}
+
+.clinic-name {
+  @apply font-display font-semibold text-foreground mb-1;
+}
+
+.clinic-address {
+  @apply text-xs text-muted-foreground mb-3;
+}
+
+.clinic-stats {
+  @apply grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-border;
+}
+
+.clinic-stat {
+  @apply text-center;
+}
+
+.clinic-stat-value {
+  @apply font-display font-bold text-foreground text-lg;
+}
+
+.clinic-stat-label {
+  @apply text-[10px] text-muted-foreground;
+}
+
+.clinic-manager {
+  @apply mt-3 pt-3 border-t border-border;
+}
+
+.clinic-manager-text {
+  @apply text-xs text-muted-foreground;
+}

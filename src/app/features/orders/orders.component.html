@@ -1,411 +1,270 @@
-<div class="flex flex-col h-full">
-  <!-- Page header -->
-  <div class="px-6 py-4 border-b border-border bg-card flex items-center gap-3 shrink-0">
-    <div class="flex-1 min-w-0">
-      <h1 class="font-display font-bold text-lg text-foreground">Orders</h1>
+<div class="flex h-full flex-col">
+  <div class="flex shrink-0 items-center gap-3 border-b border-border bg-card px-6 py-4">
+    <div class="min-w-0 flex-1">
+      <h1 class="font-display text-lg font-bold text-foreground">Orders</h1>
       <p class="text-xs text-muted-foreground">{{ filtered().length }} orders total</p>
     </div>
-    <button
-      (click)="navigateToCreateOrder()"
-      class="flex items-center gap-2 px-3.5 py-2 bg-primary text-primary-foreground rounded-lg text-xs font-semibold hover:bg-primary/90 transition-colors"
-    >
-      <span [innerHTML]="getIconSvg('plus')"></span>
-      New Order
-    </button>
-    <button class="p-2 border border-border rounded-lg hover:bg-muted text-muted-foreground" (click)="refresh()">
-      <span [innerHTML]="getIconSvg('refresh-cw')"></span>
-    </button>
-    <div class="flex border border-border rounded-lg overflow-hidden">
-      <button
-        *ngFor="let s of tableStates"
-        (click)="tableState.set(s)"
-        [class]="tableState() === s ? 'bg-primary text-white' : 'hover:bg-muted text-muted-foreground'"
-        class="px-2 py-1.5 text-[10px] font-medium"
-      >
-        {{ s }}
-      </button>
+    <app-button variant="primary" size="sm" (onClick)="createOrder()">+ New Order</app-button>
+    <button type="button" class="rounded-lg border border-border p-2 text-muted-foreground hover:bg-muted" aria-label="Export orders">⤓</button>
+    <button type="button" (click)="simulateRefresh()" class="rounded-lg border border-border p-2 text-muted-foreground hover:bg-muted" aria-label="Refresh orders">⟳</button>
+    <div class="flex overflow-hidden rounded-lg border border-border" role="group" aria-label="Preview table states">
+      @for (state of ['normal', 'loading', 'empty', 'error']; track state) {
+        <button
+          type="button"
+          (click)="setViewState($any(state))"
+          class="px-2 py-1.5 text-[10px] font-medium"
+          [class]="viewState() === state ? 'bg-primary text-white' : 'text-muted-foreground hover:bg-muted'"
+          [attr.aria-pressed]="viewState() === state"
+        >
+          {{ state }}
+        </button>
+      }
     </div>
   </div>
 
-  <!-- Toolbar -->
-  <div class="px-6 py-3 border-b border-border bg-card shrink-0 space-y-2">
-    <div class="flex items-center gap-2 flex-wrap">
-      <!-- Search -->
-      <div class="relative flex-1 min-w-48 max-w-72">
-        <span [innerHTML]="getIconSvg('search')" class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"></span>
+  <div class="shrink-0 space-y-2 border-b border-border bg-card px-6 py-3">
+    <div class="flex flex-wrap items-center gap-2">
+      <div class="relative min-w-48 max-w-72 flex-1">
         <input
-          class="w-full pl-8 pr-4 py-1.5 text-xs bg-muted rounded-lg border border-border placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+          class="w-full rounded-lg border border-border bg-muted py-1.5 pl-3 pr-8 text-xs placeholder:text-muted-foreground focus:outline-none"
           placeholder="Search order, patient, doctor..."
           [value]="search()"
           (input)="onSearchChange($event)"
+          aria-label="Search orders"
         />
         @if (search()) {
-          <button (click)="search.set('')" class="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground">
-            <span [innerHTML]="getIconSvg('x')"></span>
-          </button>
+          <button type="button" (click)="clearSearch()" class="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground" aria-label="Clear search">✕</button>
         }
       </div>
-
-      <!-- Status filter -->
-      <div class="relative">
-        <select
-          class="pl-2 pr-6 py-1.5 text-xs border border-border rounded-lg bg-card appearance-none focus:outline-none focus:ring-2 focus:ring-primary/30 text-foreground cursor-pointer"
-          [value]="''"
-          (change)="onStatusFilterChange($event)"
-        >
-          <option value="">Status</option>
-          @for (status of STATUS_OPTIONS; track status) {
-            <option [value]="status">{{ status }}</option>
-          }
-        </select>
-        <span [innerHTML]="getIconSvg('chevron-down')" class="absolute right-1.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"></span>
-      </div>
-
-      <!-- Priority filter -->
-      <div class="relative">
-        <select
-          class="pl-2 pr-6 py-1.5 text-xs border border-border rounded-lg bg-card appearance-none focus:outline-none focus:ring-2 focus:ring-primary/30 text-foreground cursor-pointer"
-          [value]="priorityFilter()"
-          (change)="onPriorityFilterChange($event)"
-        >
-          <option value="">Priority</option>
-          @for (p of PRIORITY_OPTIONS; track p) {
-            <option [value]="p">{{ p }}</option>
-          }
-        </select>
-        <span [innerHTML]="getIconSvg('chevron-down')" class="absolute right-1.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"></span>
-      </div>
-
-      <button
-        (click)="onShowFiltersToggle()"
-        [class]="showFilters() ? 'border-primary bg-primary/5 text-primary' : 'border-border hover:bg-muted text-muted-foreground'"
-        class="flex items-center gap-1.5 px-2.5 py-1.5 text-xs border rounded-lg transition-colors"
+      <select
+        class="cursor-pointer rounded-lg border border-border bg-card px-2 py-1.5 text-xs text-foreground"
+        (change)="addStatusFilter($any($event.target).value); $any($event.target).value = ''"
+        aria-label="Add status filter"
       >
-        <span [innerHTML]="getIconSvg('sliders-horizontal')"></span>
-        Advanced
+        <option value="">Status</option>
+        @for (status of statusOptions; track status) {
+          <option [value]="status">{{ status }}</option>
+        }
+      </select>
+      <select
+        class="cursor-pointer rounded-lg border border-border bg-card px-2 py-1.5 text-xs text-foreground"
+        [value]="priorityFilter()"
+        (change)="onPriorityChange($event)"
+        aria-label="Filter by priority"
+      >
+        <option value="">Priority</option>
+        @for (priority of priorityOptions; track priority) {
+          <option [value]="priority">{{ priority }}</option>
+        }
+      </select>
+      <button
+        type="button"
+        (click)="toggleAdvancedFilters()"
+        class="flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs transition-colors"
+        [class]="advancedFilters() ? 'border-primary bg-primary/5 text-primary' : 'border-border text-muted-foreground hover:bg-muted'"
+        [attr.aria-expanded]="advancedFilters()"
+      >
+        ☰ Advanced
       </button>
-
       @if (activeFilters().length > 0) {
-        <button
-          (click)="clearFilters()"
-          class="text-xs text-muted-foreground hover:text-danger flex items-center gap-1"
-        >
-          <span [innerHTML]="getIconSvg('x')"></span> Clear filters
+        <button type="button" (click)="clearAllFilters()" class="flex items-center gap-1 text-xs text-muted-foreground hover:text-danger">
+          ✕ Clear filters
         </button>
       }
-
       <div class="flex-1"></div>
-
-      <!-- Bulk actions -->
-      @if (selected().size > 0) {
-        <div class="flex items-center gap-2 px-3 py-1.5 bg-primary/10 border border-primary/20 rounded-lg">
-          <span class="text-xs font-semibold text-primary">{{ selected().size }} selected</span>
-          <button class="text-xs text-muted-foreground hover:text-foreground">Archive</button>
-          <button class="text-xs text-danger hover:text-danger/80">Delete</button>
+      @if (selectedIds().size > 0) {
+        <div class="flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/10 px-3 py-1.5">
+          <span class="text-xs font-semibold text-primary">{{ selectedIds().size }} selected</span>
+          <button type="button" class="text-xs text-muted-foreground hover:text-foreground">Archive</button>
+          <button type="button" class="text-xs text-danger hover:text-danger/80">Delete</button>
         </div>
       }
-
-      <!-- Page size -->
-      <div class="relative">
-        <select
-          class="pl-2 pr-6 py-1.5 text-xs border border-border rounded-lg bg-card appearance-none text-foreground cursor-pointer focus:outline-none"
-          [value]="pageSize()"
-          (change)="onPageSizeChange($event)"
-        >
-          @for (n of PAGE_SIZES; track n) {
-            <option [value]="n">{{ n }} / page</option>
-          }
-        </select>
-        <span [innerHTML]="getIconSvg('chevron-down')" class="absolute right-1.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"></span>
-      </div>
+      <select
+        class="cursor-pointer rounded-lg border border-border bg-card px-2 py-1.5 text-xs text-foreground"
+        [value]="pageSize()"
+        (change)="onPageSizeChange($event)"
+        aria-label="Rows per page"
+      >
+        @for (size of pageSizes; track size) {
+          <option [value]="size">{{ size }} / page</option>
+        }
+      </select>
     </div>
-
-    <!-- Active filter chips -->
     @if (activeFilters().length > 0) {
-      <div class="flex items-center gap-2 flex-wrap">
+      <div class="flex flex-wrap items-center gap-2">
         <span class="text-xs text-muted-foreground">Active filters:</span>
-        @for (f of activeFilters(); track f.type + '-' + f.label) {
-          <span class="flex items-center gap-1 px-2 py-0.5 bg-primary/10 text-primary rounded-full text-xs font-medium">
-            {{ f.label }}
-            <button (click)="removeFilter(f.type, f.label)" class="hover:text-danger">
-              <span [innerHTML]="getIconSvg('x')"></span>
-            </button>
+        @for (filter of activeFilters(); track filter.type + '-' + filter.label) {
+          <span class="flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+            {{ filter.label }}
+            <button type="button" (click)="removeFilter(filter.type, filter.label)" class="hover:text-danger" [attr.aria-label]="'Remove ' + filter.label + ' filter'">✕</button>
           </span>
         }
       </div>
     }
+    @if (advancedFilters()) {
+      <p class="text-xs text-muted-foreground" role="status">Advanced filters: combine status chips with priority and search. Sorting is available on every sortable column header.</p>
+    }
   </div>
 
-  <!-- Table -->
   <div class="flex-1 overflow-auto">
-    @if (tableState() === 'loading') {
-      <div class="p-6 space-y-2">
-        @for (i of [].constructor(10); track $index) {
-          <div class="skeleton h-10 rounded-lg"></div>
-        }
-      </div>
-    }
-
-    @if (tableState() === 'empty') {
-      <div class="flex flex-col items-center justify-center h-64 text-center">
-        <div class="w-16 h-16 bg-muted rounded-2xl flex items-center justify-center mb-4">
-          <span [innerHTML]="getIconSvg('file-text')" class="text-muted-foreground" style="width: 28px; height: 28px;"></span>
-        </div>
-        <h3 class="font-display font-semibold text-foreground mb-1">No orders yet</h3>
-        <p class="text-sm text-muted-foreground mb-4">Start by creating your first dental order.</p>
-        <button (click)="navigateToCreateOrder()" class="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-semibold">
-          <span [innerHTML]="getIconSvg('plus')"></span> Create Order
-        </button>
-      </div>
-    }
-
-    @if (tableState() === 'error') {
-      <div class="flex flex-col items-center justify-center h-64 text-center">
-        <div class="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mb-4">
-          <span [innerHTML]="getIconSvg('refresh-cw')" class="text-danger" style="width: 28px; height: 28px;"></span>
-        </div>
-        <h3 class="font-display font-semibold text-foreground mb-1">Failed to load orders</h3>
-        <p class="text-sm text-muted-foreground mb-4">An error occurred while loading the order list.</p>
-        <button (click)="tableState.set('normal')" class="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-semibold">
-          Try Again
-        </button>
-      </div>
-    }
-
-    @if (tableState() === 'normal' && filtered().length === 0) {
-      <div class="flex flex-col items-center justify-center h-64 text-center">
-        <div class="w-16 h-16 bg-muted rounded-2xl flex items-center justify-center mb-4">
-          <span [innerHTML]="getIconSvg('search')" class="text-muted-foreground" style="width: 28px; height: 28px;"></span>
-        </div>
-        <h3 class="font-display font-semibold text-foreground mb-1">No matching orders</h3>
-        <p class="text-sm text-muted-foreground mb-4">Try adjusting your search or filters.</p>
-        <button (click)="clearAllFilters()" class="text-sm text-primary hover:underline">Clear all filters</button>
-      </div>
-    }
-
-    @if (tableState() === 'normal' && filtered().length > 0) {
-      <table class="w-full text-xs border-collapse min-w-[1600px]">
-        <thead class="sticky top-0 z-10 bg-muted/80 backdrop-blur-sm border-b border-border">
-          <tr>
-            <th class="px-3 py-2.5 w-9">
-              <button (click)="toggleAll()" class="text-muted-foreground hover:text-foreground">
-                @if (selected().size === pageData().length && pageData().length > 0) {
-                  <span [innerHTML]="getIconSvg('checkSquare')" class="text-primary" style="width: 14px; height: 14px;"></span>
-                } @else {
-                  <span [innerHTML]="getIconSvg('square')" style="width: 14px; height: 14px;"></span>
-                }
-              </button>
-            </th>
-            <th class="px-2 py-2.5 text-left text-[10px] font-semibold text-muted-foreground whitespace-nowrap select-none cursor-pointer hover:text-foreground w-24" (click)="toggleSort('orderNumber')">
-              Order # <span [innerHTML]="getSortIcon('orderNumber')"></span>
-            </th>
-            <th class="px-2 py-2.5 text-left text-[10px] font-semibold text-muted-foreground whitespace-nowrap select-none cursor-pointer hover:text-foreground w-28" (click)="toggleSort('patientName')">
-              Patient <span [innerHTML]="getSortIcon('patientName')"></span>
-            </th>
-            <th class="px-2 py-2.5 text-left text-[10px] font-semibold text-muted-foreground whitespace-nowrap select-none cursor-pointer hover:text-foreground w-28" (click)="toggleSort('doctorName')">
-              Doctor <span [innerHTML]="getSortIcon('doctorName')"></span>
-            </th>
-            <th class="px-2 py-2.5 text-left text-[10px] font-semibold text-muted-foreground whitespace-nowrap select-none cursor-pointer hover:text-foreground w-24" (click)="toggleSort('scanCenterName')">
-              Scan Center <span [innerHTML]="getSortIcon('scanCenterName')"></span>
-            </th>
-            <th class="px-2 py-2.5 text-left text-[10px] font-semibold text-muted-foreground whitespace-nowrap select-none cursor-pointer hover:text-foreground w-28" (click)="toggleSort('billTo')">
-              Bill To <span [innerHTML]="getSortIcon('billTo')"></span>
-            </th>
-            <th class="px-2 py-2.5 text-left text-[10px] font-semibold text-muted-foreground whitespace-nowrap select-none cursor-pointer hover:text-foreground w-16" (click)="toggleSort('arch')">
-              Max/Mand <span [innerHTML]="getSortIcon('arch')"></span>
-            </th>
-            <th class="px-2 py-2.5 text-left text-[10px] font-semibold text-muted-foreground whitespace-nowrap select-none cursor-pointer hover:text-foreground w-24" (click)="toggleSort('restoration')">
-              Format / Rest. <span [innerHTML]="getSortIcon('restoration')"></span>
-            </th>
-            <th class="px-2 py-2.5 text-left text-[10px] font-semibold text-muted-foreground whitespace-nowrap select-none cursor-pointer hover:text-foreground w-20 text-right" (click)="toggleSort('amount')">
-              Amount <span [innerHTML]="getSortIcon('amount')"></span>
-            </th>
-            <th class="px-2 py-2.5 text-left text-[10px] font-semibold text-muted-foreground whitespace-nowrap w-16 text-center">Billed</th>
-            <th class="px-2 py-2.5 text-left text-[10px] font-semibold text-muted-foreground whitespace-nowrap w-14 text-center">Vouchers</th>
-            <th class="px-2 py-2.5 text-left text-[10px] font-semibold text-muted-foreground whitespace-nowrap select-none cursor-pointer hover:text-foreground w-24" (click)="toggleSort('status')">
-              Status <span [innerHTML]="getSortIcon('status')"></span>
-            </th>
-            <th class="px-2 py-2.5 text-left text-[10px] font-semibold text-muted-foreground whitespace-nowrap w-12 text-center">Lock</th>
-            <th class="px-2 py-2.5 text-left text-[10px] font-semibold text-muted-foreground whitespace-nowrap w-12 text-center">Notes</th>
-            <th class="px-2 py-2.5 text-left text-[10px] font-semibold text-muted-foreground whitespace-nowrap select-none cursor-pointer hover:text-foreground w-20" (click)="toggleSort('archiveDate')">
-              Archive <span [innerHTML]="getSortIcon('archiveDate')"></span>
-            </th>
-            <th class="px-2 py-2.5 text-left text-[10px] font-semibold text-muted-foreground whitespace-nowrap select-none cursor-pointer hover:text-foreground w-20" (click)="toggleSort('receivedAt')">
-              Received <span [innerHTML]="getSortIcon('receivedAt')"></span>
-            </th>
-            <th class="px-2 py-2.5 text-left text-[10px] font-semibold text-muted-foreground whitespace-nowrap select-none cursor-pointer hover:text-foreground w-20" (click)="toggleSort('sentAt')">
-              Sent <span [innerHTML]="getSortIcon('sentAt')"></span>
-            </th>
-            <th class="px-2 py-2.5 text-left text-[10px] font-semibold text-muted-foreground whitespace-nowrap select-none cursor-pointer hover:text-foreground w-20" (click)="toggleSort('updatedAt')">
-              Updated <span [innerHTML]="getSortIcon('updatedAt')"></span>
-            </th>
-            <th class="px-2 py-2.5 text-left text-[10px] font-semibold text-muted-foreground whitespace-nowrap select-none cursor-pointer hover:text-foreground w-20" (click)="toggleSort('chargedAt')">
-              Charged <span [innerHTML]="getSortIcon('chargedAt')"></span>
-            </th>
-            <th class="px-2 py-2.5 text-left text-[10px] font-semibold text-muted-foreground whitespace-nowrap w-24">Change Req.</th>
-            <th class="px-2 py-2.5 text-left text-[10px] font-semibold text-muted-foreground whitespace-nowrap w-20">CS Task</th>
-            <th class="px-2 py-2.5 text-left text-[10px] font-semibold text-muted-foreground whitespace-nowrap w-24 text-center sticky right-0 bg-muted/80">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (order of pageData(); track order.id; let idx = $index) {
-            <tr
-              [class]="'border-b border-border hover:bg-muted/30 transition-colors ' + (selected().has(order.id) ? 'bg-primary/5' : idx % 2 === 0 ? '' : 'bg-muted/10')"
-            >
-              <td class="px-3 py-2.5">
-                <button (click)="onSelectClick($event, order.id)" class="text-muted-foreground hover:text-primary">
-                  @if (selected().has(order.id)) {
-                    <span [innerHTML]="getIconSvg('checkSquare')" class="text-primary" style="width: 13px; height: 13px;"></span>
-                  } @else {
-                    <span [innerHTML]="getIconSvg('square')" style="width: 13px; height: 13px;"></span>
-                  }
-                </button>
-              </td>
-              <td class="px-2 py-2.5">
-                <button (click)="navigateToOrder(order.id)" class="font-mono text-primary hover:underline font-semibold text-[10px]">
-                  {{ order.orderNumber }}
-                </button>
-              </td>
-              <td class="px-2 py-2.5">
-                <button (click)="navigationService.navigate('patientDetails', { patientId: order.patientId })" class="text-foreground hover:text-primary font-medium truncate max-w-[100px] block">
-                  {{ order.patientName }}
-                </button>
-              </td>
-              <td class="px-2 py-2.5">
-                <button (click)="navigationService.navigate('doctorDetails', { doctorId: order.doctorId })" class="text-muted-foreground hover:text-foreground truncate max-w-[100px] block">
-                  {{ order.doctorName.replace('Dr. ', '') }}
-                </button>
-              </td>
-              <td class="px-2 py-2.5 text-muted-foreground truncate max-w-[88px]">
-                {{ order.scanCenterName.replace('SC-', '') }}
-              </td>
-              <td class="px-2 py-2.5 text-muted-foreground truncate max-w-[100px]">
-                {{ order.billTo.length > 14 ? order.billTo.slice(0, 14) + '…' : order.billTo }}
-              </td>
-              <td class="px-2 py-2.5">
-                <app-arch-badge [arch]="order.arch" />
-              </td>
-              <td class="px-2 py-2.5">
-                <div>
-                  <span class="font-mono text-[9px] bg-muted px-1 py-0.5 rounded text-muted-foreground">{{ order.format }}</span>
-                  <span class="text-muted-foreground ml-1">{{ order.restoration.length > 10 ? order.restoration.slice(0, 10) + '…' : order.restoration }}</span>
-                </div>
-              </td>
-              <td class="px-2 py-2.5 text-right">
-                <span class="font-mono font-semibold text-foreground">{{ formatUtils.formatCurrency(order.amount) }}</span>
-              </td>
-              <td class="px-2 py-2.5 text-center">
-                @if (order.billed) {
-                  <span class="px-1 py-0.5 bg-emerald-50 text-emerald-700 rounded text-[9px] font-semibold">BILLED</span>
-                } @else {
-                  <span class="px-1 py-0.5 bg-muted text-muted-foreground rounded text-[9px]">–</span>
-                }
-              </td>
-              <td class="px-2 py-2.5 text-center font-mono font-semibold text-muted-foreground">
-                {{ order.vouchers > 0 ? order.vouchers : '–' }}
-              </td>
-              <td class="px-2 py-2.5">
-                <app-status-badge [status]="order.status" />
-              </td>
-              <td class="px-2 py-2.5 text-center">
-                @if (order.isLocked) {
-                  <span [innerHTML]="getIconSvg('lock')" class="text-amber-500 inline" style="width: 12px; height: 12px;"></span>
-                } @else {
-                  <span [innerHTML]="getIconSvg('unlock')" class="text-muted-foreground/40 inline" style="width: 12px; height: 12px;"></span>
-                }
-              </td>
-              <td class="px-2 py-2.5 text-center">
-                @if (order.hasNotes) {
-                  <span [innerHTML]="getIconSvg('file-text')" class="text-primary inline" style="width: 12px; height: 12px;"></span>
-                } @else {
-                  <span class="text-muted-foreground/30">–</span>
-                }
-              </td>
-              <td class="px-2 py-2.5 text-muted-foreground">
-                {{ order.archiveDate ? formatUtils.formatDate(order.archiveDate) : '–' }}
-              </td>
-              <td class="px-2 py-2.5 font-mono text-muted-foreground text-[10px]">
-                {{ formatUtils.formatDate(order.receivedAt) }}
-              </td>
-              <td class="px-2 py-2.5 font-mono text-muted-foreground text-[10px]">
-                {{ order.sentAt ? formatUtils.formatDate(order.sentAt) : '–' }}
-              </td>
-              <td class="px-2 py-2.5 font-mono text-muted-foreground text-[10px]">
-                {{ formatUtils.formatDate(order.updatedAt) }}
-              </td>
-              <td class="px-2 py-2.5 font-mono text-muted-foreground text-[10px]">
-                {{ order.chargedAt ? formatUtils.formatDate(order.chargedAt) : '–' }}
-              </td>
-              <td class="px-2 py-2.5">
-                @if (order.changeRequest) {
-                  <span class="px-1.5 py-0.5 rounded text-[9px] font-semibold"
-                    [class]="order.changeRequest === 'Pending Review' ? 'bg-amber-50 text-amber-700' : order.changeRequest === 'In Progress' ? 'bg-blue-50 text-blue-700' : 'bg-emerald-50 text-emerald-700'">
-                    {{ order.changeRequest }}
-                  </span>
-                } @else {
-                  <span class="text-muted-foreground/30">–</span>
-                }
-              </td>
-              <td class="px-2 py-2.5">
-                @if (order.csTask) {
-                  <span class="px-1.5 py-0.5 bg-violet-50 text-violet-700 rounded text-[9px] font-semibold">{{ order.csTask }}</span>
-                } @else {
-                  <span class="text-muted-foreground/30">–</span>
-                }
-              </td>
-              <td class="px-2 py-2.5 sticky right-0 bg-card border-l border-border">
-                <div class="flex items-center gap-1">
-                  <button (click)="navigateToOrder(order.id)" class="p-1 rounded hover:bg-muted text-muted-foreground hover:text-primary" title="View">
-                    <span [innerHTML]="getIconSvg('eye')" style="width: 12px; height: 12px;"></span>
-                  </button>
-                  <button (click)="navigateToEditOrder(order.id)" class="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground" title="Edit">
-                    <span [innerHTML]="getIconSvg('edit-2')" style="width: 12px; height: 12px;"></span>
-                  </button>
-                  <button class="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground" title="More">
-                    <span [innerHTML]="getIconSvg('more-horizontal')" style="width: 12px; height: 12px;"></span>
-                  </button>
-                </div>
-              </td>
-            </tr>
+    @switch (viewState()) {
+      @case ('loading') {
+        <div class="space-y-2 p-6" aria-label="Loading orders" role="status">
+          @for (row of [1,2,3,4,5,6,7,8,9,10]; track row) {
+            <div class="h-10 animate-pulse rounded-lg bg-muted"></div>
           }
-        </tbody>
-      </table>
+        </div>
+      }
+      @case ('empty') {
+        <div class="flex h-64 flex-col items-center justify-center text-center">
+          <div class="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-muted text-2xl" aria-hidden="true">📄</div>
+          <h3 class="font-display font-semibold text-foreground">No orders yet</h3>
+          <p class="mb-4 text-sm text-muted-foreground">Start by creating your first dental order.</p>
+          <app-button variant="primary" size="sm" (onClick)="createOrder()">+ Create Order</app-button>
+        </div>
+      }
+      @case ('error') {
+        <div class="flex h-64 flex-col items-center justify-center text-center">
+          <div class="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-red-50 text-2xl" aria-hidden="true">⟳</div>
+          <h3 class="font-display font-semibold text-foreground">Failed to load orders</h3>
+          <p class="mb-4 text-sm text-muted-foreground">An error occurred while loading the order list.</p>
+          <app-button variant="primary" size="sm" (onClick)="retryLoad()">Try Again</app-button>
+        </div>
+      }
+      @default {
+        @if (filtered().length === 0) {
+          <div class="flex h-64 flex-col items-center justify-center text-center">
+            <div class="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-muted text-2xl" aria-hidden="true">🔍</div>
+            <h3 class="font-display font-semibold text-foreground">No matching orders</h3>
+            <p class="mb-4 text-sm text-muted-foreground">Try adjusting your search or filters.</p>
+            <button type="button" (click)="clearAllFilters()" class="text-sm text-primary hover:underline">Clear all filters</button>
+          </div>
+        } @else {
+          <p-table [value]="pageData()" [tableStyle]="{ 'min-width': '100rem' }" styleClass="p-datatable-sm">
+            <ng-template pTemplate="header">
+              <tr>
+                <th style="width: 2.25rem">
+                  <button type="button" (click)="toggleSelectAll()" class="text-muted-foreground hover:text-foreground" aria-label="Select all orders on page">
+                    {{ allPageSelected() ? '☑' : '☐' }}
+                  </button>
+                </th>
+                <th><button type="button" (click)="toggleSort('orderNumber')">Order # {{ sortIcon('orderNumber') }}</button></th>
+                <th><button type="button" (click)="toggleSort('patientName')">Patient {{ sortIcon('patientName') }}</button></th>
+                <th><button type="button" (click)="toggleSort('doctorName')">Doctor {{ sortIcon('doctorName') }}</button></th>
+                <th><button type="button" (click)="toggleSort('scanCenterName')">Scan Center {{ sortIcon('scanCenterName') }}</button></th>
+                <th><button type="button" (click)="toggleSort('billTo')">Bill To {{ sortIcon('billTo') }}</button></th>
+                <th><button type="button" (click)="toggleSort('arch')">Max/Mand {{ sortIcon('arch') }}</button></th>
+                <th><button type="button" (click)="toggleSort('restoration')">Format / Rest. {{ sortIcon('restoration') }}</button></th>
+                <th class="text-right"><button type="button" (click)="toggleSort('amount')">Amount {{ sortIcon('amount') }}</button></th>
+                <th>Billed</th>
+                <th class="text-center">Vouchers</th>
+                <th><button type="button" (click)="toggleSort('status')">Status {{ sortIcon('status') }}</button></th>
+                <th class="text-center">Lock</th>
+                <th class="text-center">Notes</th>
+                <th><button type="button" (click)="toggleSort('archiveDate')">Archive {{ sortIcon('archiveDate') }}</button></th>
+                <th><button type="button" (click)="toggleSort('receivedAt')">Received {{ sortIcon('receivedAt') }}</button></th>
+                <th><button type="button" (click)="toggleSort('sentAt')">Sent {{ sortIcon('sentAt') }}</button></th>
+                <th><button type="button" (click)="toggleSort('updatedAt')">Updated {{ sortIcon('updatedAt') }}</button></th>
+                <th><button type="button" (click)="toggleSort('chargedAt')">Charged {{ sortIcon('chargedAt') }}</button></th>
+                <th>Change Req.</th>
+                <th>CS Task</th>
+                <th class="text-center">Actions</th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-order>
+              <tr [class]="isSelected(order.id) ? 'bg-primary/5' : ''">
+                <td>
+                  <button type="button" (click)="toggleSelect(order.id)" class="text-muted-foreground hover:text-primary" [attr.aria-label]="'Select order ' + order.orderNumber" [attr.aria-pressed]="isSelected(order.id)">
+                    {{ isSelected(order.id) ? '☑' : '☐' }}
+                  </button>
+                </td>
+                <td><button type="button" (click)="openOrder(order.id)" class="font-mono text-[10px] font-semibold text-primary hover:underline">{{ order.orderNumber }}</button></td>
+                <td><button type="button" (click)="openPatient(order.patientId)" class="block max-w-[100px] truncate font-medium hover:text-primary">{{ order.patientName }}</button></td>
+                <td><button type="button" (click)="openDoctor(order.doctorId)" class="block max-w-[100px] truncate text-muted-foreground hover:text-foreground">{{ order.doctorName.replace('Dr. ', '') }}</button></td>
+                <td class="max-w-[88px] truncate text-muted-foreground">{{ order.scanCenterName.replace('SC-', '') }}</td>
+                <td class="max-w-[100px] truncate text-muted-foreground">{{ shorten(order.billTo, 14) }}</td>
+                <td><app-arch-badge [arch]="order.arch" /></td>
+                <td>
+                  <span class="rounded bg-muted px-1 py-0.5 font-mono text-[9px] text-muted-foreground">{{ order.format }}</span>
+                  <span class="ml-1 text-muted-foreground">{{ shorten(order.restoration, 10) }}</span>
+                </td>
+                <td class="text-right"><span class="font-mono font-semibold">{{ formatUtils.formatCurrency(order.amount) }}</span></td>
+                <td class="text-center">
+                  @if (order.billed) {
+                    <span class="rounded bg-emerald-50 px-1 py-0.5 text-[9px] font-semibold text-emerald-700">BILLED</span>
+                  } @else {
+                    <span class="rounded bg-muted px-1 py-0.5 text-[9px] text-muted-foreground">–</span>
+                  }
+                </td>
+                <td class="text-center font-mono font-semibold text-muted-foreground">{{ order.vouchers > 0 ? order.vouchers : '–' }}</td>
+                <td><app-status-badge [status]="order.status" size="xs" /></td>
+                <td class="text-center">
+                  @if (order.isLocked) {
+                    <span class="text-amber-500" title="Locked" aria-label="Locked">🔒</span>
+                  } @else {
+                    <span class="text-muted-foreground/40" title="Unlocked" aria-label="Unlocked">🔓</span>
+                  }
+                </td>
+                <td class="text-center">
+                  @if (order.hasNotes) {
+                    <span class="text-primary" title="Has notes" aria-label="Has notes">📝</span>
+                  } @else {
+                    <span class="text-muted-foreground/30">–</span>
+                  }
+                </td>
+                <td class="font-mono text-muted-foreground">{{ order.archiveDate ? formatUtils.formatDate(order.archiveDate) : '–' }}</td>
+                <td class="font-mono text-[10px] text-muted-foreground">{{ formatUtils.formatDate(order.receivedAt) }}</td>
+                <td class="font-mono text-[10px] text-muted-foreground">{{ order.sentAt ? formatUtils.formatDate(order.sentAt) : '–' }}</td>
+                <td class="font-mono text-[10px] text-muted-foreground">{{ formatUtils.formatDate(order.updatedAt) }}</td>
+                <td class="font-mono text-[10px] text-muted-foreground">{{ order.chargedAt ? formatUtils.formatDate(order.chargedAt) : '–' }}</td>
+                <td>
+                  @if (order.changeRequest) {
+                    <span class="rounded px-1.5 py-0.5 text-[9px] font-semibold" [class]="changeRequestClasses(order.changeRequest)">{{ order.changeRequest }}</span>
+                  } @else {
+                    <span class="text-muted-foreground/30">–</span>
+                  }
+                </td>
+                <td>
+                  @if (order.csTask) {
+                    <span class="rounded bg-violet-50 px-1.5 py-0.5 text-[9px] font-semibold text-violet-700">{{ order.csTask }}</span>
+                  } @else {
+                    <span class="text-muted-foreground/30">–</span>
+                  }
+                </td>
+                <td>
+                  <span class="flex items-center justify-center gap-1">
+                    <button type="button" (click)="openOrder(order.id)" class="rounded p-1 text-muted-foreground hover:bg-muted hover:text-primary" [attr.aria-label]="'View ' + order.orderNumber" title="View">👁</button>
+                    <button type="button" (click)="editOrder(order.id)" class="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground" [attr.aria-label]="'Edit ' + order.orderNumber" title="Edit">✎</button>
+                    <button type="button" class="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground" [attr.aria-label]="'More actions for ' + order.orderNumber" title="More">⋯</button>
+                  </span>
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        }
+      }
     }
   </div>
 
-  <!-- Pagination -->
-  @if (tableState() === 'normal' && filtered().length > 0) {
-    <div class="px-6 py-3 border-t border-border bg-card flex items-center justify-between shrink-0">
-      <span class="text-xs text-muted-foreground">
-        Showing {{ ((page() - 1) * pageSize()) + 1 }}–{{ min(page() * pageSize(), filtered().length) }} of {{ filtered().length }} orders
-      </span>
+  @if (viewState() === 'normal' && filtered().length > 0) {
+    <div class="flex shrink-0 items-center justify-between border-t border-border bg-card px-6 py-3">
+      <span class="text-xs text-muted-foreground">Showing {{ rangeStart() }}–{{ rangeEnd() }} of {{ filtered().length }} orders</span>
       <div class="flex items-center gap-1">
-        <button
-          (click)="prevPage()"
-          [disabled]="page() === 1"
-          class="p-1.5 rounded border border-border hover:bg-muted disabled:opacity-40 text-muted-foreground"
-        >
-          <span [innerHTML]="getIconSvg('chevron-left')" style="width: 14px; height: 14px;"></span>
-        </button>
-        @for (pg of getPageNumbers(); track pg) {
+        <button type="button" (click)="prevPage()" [disabled]="page() === 1" class="rounded border border-border p-1.5 text-muted-foreground hover:bg-muted disabled:opacity-40" aria-label="Previous page">‹</button>
+        @for (pg of visiblePageNumbers(); track pg) {
           <button
+            type="button"
             (click)="goToPage(pg)"
-            [class]="page() === pg ? 'bg-primary text-primary-foreground' : 'hover:bg-muted text-muted-foreground'"
-            class="w-7 h-7 rounded text-xs font-medium"
+            class="h-7 w-7 rounded text-xs font-medium"
+            [class]="page() === pg ? 'bg-primary text-white' : 'text-muted-foreground hover:bg-muted'"
           >
             {{ pg }}
           </button>
         }
         @if (totalPages() > 7) {
-          <span class="text-muted-foreground px-1">…</span>
+          <span class="px-1 text-muted-foreground">…</span>
         }
-        <button
-          (click)="nextPage()"
-          [disabled]="page() === totalPages()"
-          class="p-1.5 rounded border border-border hover:bg-muted disabled:opacity-40 text-muted-foreground"
-        >
-          <span [innerHTML]="getIconSvg('chevron-right')" style="width: 14px; height: 14px;"></span>
-        </button>
+        <button type="button" (click)="nextPage()" [disabled]="page() === totalPages()" class="rounded border border-border p-1.5 text-muted-foreground hover:bg-muted disabled:opacity-40" aria-label="Next page">›</button>
       </div>
     </div>
   }

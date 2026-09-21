@@ -3,24 +3,13 @@
   height: 100%;
 }
 
-.kanban-card {
-  transition: transform 150ms ease, box-shadow 150ms ease;
+.kanban-card:active {
+  cursor: grabbing;
 }
 
-.kanban-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.kanban-card.cdk-drag-preview {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-  transform: rotate(1deg);
-}
-
-.kanban-card.cdk-drag-animating {
-  transition: transform 250ms ease;
-}
-
-.cdk-drop-list-dragging .kanban-card:not(.cdk-drag-preview) {
-  transition: transform 250ms ease;
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }

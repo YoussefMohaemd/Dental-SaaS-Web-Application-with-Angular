@@ -1,0 +1,147 @@
+<div class="flex h-full flex-col">
+  <div class="shrink-0 border-b border-border bg-card px-6 py-4">
+    <h1 class="font-display text-lg font-bold text-foreground">Settings</h1>
+    <p class="text-xs text-muted-foreground">Manage your account and application preferences</p>
+  </div>
+
+  <div class="flex flex-1 gap-6 overflow-auto p-6">
+    <nav class="w-52 shrink-0 space-y-1" aria-label="Settings sections">
+      @for (item of sections; track item.id) {
+        <button
+          type="button"
+          (click)="setSection(item.id)"
+          class="w-full rounded-lg px-3 py-2 text-left text-sm transition-colors"
+          [class]="section() === item.id ? 'bg-primary/10 font-semibold text-primary' : 'text-muted-foreground hover:bg-muted'"
+          [attr.aria-current]="section() === item.id ? 'page' : null"
+        >
+          {{ item.label }}
+        </button>
+      }
+    </nav>
+
+    <div class="w-full max-w-xl">
+      @switch (section()) {
+        @case ('profile') {
+          <form [formGroup]="profileForm" (ngSubmit)="saveChanges()" class="rounded-xl border border-border bg-card p-5" aria-label="Profile settings">
+            <div class="mb-4 flex items-center gap-3">
+              <span class="flex h-12 w-12 items-center justify-center rounded-full bg-primary/15 text-sm font-bold text-primary" aria-hidden="true">JR</span>
+              <div>
+                <p class="text-sm font-bold text-foreground">Jessica Ruiz</p>
+                <p class="text-xs text-muted-foreground">Lab Manager · <button type="button" class="text-primary hover:underline">Change avatar</button></p>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <label class="block"><span class="mb-1 block text-xs font-semibold">First Name</span><input formControlName="firstName" class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm" /></label>
+              <label class="block"><span class="mb-1 block text-xs font-semibold">Last Name</span><input formControlName="lastName" class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm" /></label>
+              <label class="block sm:col-span-2"><span class="mb-1 block text-xs font-semibold">Email</span><input type="email" formControlName="email" class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm" /></label>
+              <label class="block"><span class="mb-1 block text-xs font-semibold">Role</span><input formControlName="role" readonly class="w-full cursor-not-allowed rounded-lg border border-border bg-muted px-3 py-2 text-sm" /></label>
+              <label class="block"><span class="mb-1 block text-xs font-semibold">Phone</span><input formControlName="phone" class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm" /></label>
+            </div>
+            <div class="mt-4"><app-button variant="primary" size="sm" (onClick)="saveChanges()">{{ saved() ? 'Saved!' : 'Save Changes' }}</app-button></div>
+          </form>
+        }
+        @case ('notifications') {
+          <section class="rounded-xl border border-border bg-card p-5" aria-label="Notification preferences">
+            <h2 class="mb-4 text-sm font-semibold text-foreground">Notification Preferences</h2>
+            <ul class="space-y-3">
+              @for (entry of preferenceEntries(); track entry.key) {
+                <li class="flex items-center gap-3">
+                  <button
+                    type="button"
+                    role="switch"
+                    [attr.aria-checked]="entry.value"
+                    [attr.aria-label]="entry.label"
+                    (click)="togglePreference(entry.key)"
+                    class="relative h-6 w-11 shrink-0 rounded-full transition-colors"
+                    [class]="entry.value ? 'bg-primary' : 'bg-muted'"
+                  >
+                    <span class="absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all" [class]="entry.value ? 'left-[22px]' : 'left-0.5'"></span>
+                  </button>
+                  <span class="text-sm text-foreground">{{ entry.label }}</span>
+                </li>
+              }
+            </ul>
+          </section>
+        }
+        @case ('appearance') {
+          <section class="rounded-xl border border-border bg-card p-5" aria-label="Appearance settings">
+            <h2 class="mb-3 text-sm font-semibold text-foreground">Theme</h2>
+            <div class="grid grid-cols-2 gap-3">
+              <button type="button" (click)="setAppearance('light')" class="rounded-xl border p-3 text-left" [class]="themeService.theme() === 'light' ? 'border-primary ring-2 ring-primary/20' : 'border-border'" [attr.aria-pressed]="themeService.theme() === 'light'">
+                <span class="block h-12 rounded-lg bg-slate-100" aria-hidden="true"></span>
+                <span class="mt-2 block text-sm font-semibold">Light</span>
+              </button>
+              <button type="button" (click)="setAppearance('dark')" class="rounded-xl border p-3 text-left" [class]="themeService.theme() === 'dark' ? 'border-primary ring-2 ring-primary/20' : 'border-border'" [attr.aria-pressed]="themeService.theme() === 'dark'">
+                <span class="block h-12 rounded-lg bg-slate-900" aria-hidden="true"></span>
+                <span class="mt-2 block text-sm font-semibold">Dark</span>
+              </button>
+            </div>
+            <h2 class="mb-2 mt-5 text-sm font-semibold text-foreground">Density</h2>
+            <div class="flex gap-2" role="group" aria-label="Interface density">
+              @for (option of ['Compact', 'Default', 'Comfortable']; track option) {
+                <button
+                  type="button"
+                  (click)="setDensity($any(option))"
+                  class="rounded-lg border px-3 py-1.5 text-xs font-semibold"
+                  [class]="density() === option ? 'border-primary bg-primary text-white' : 'border-border text-muted-foreground'"
+                  [attr.aria-pressed]="density() === option"
+                >
+                  {{ option }}
+                </button>
+              }
+            </div>
+            <div class="mt-4"><app-button variant="primary" size="sm" (onClick)="saveChanges()">{{ saved() ? 'Saved!' : 'Save Changes' }}</app-button></div>
+          </section>
+        }
+        @case ('language') {
+          <form [formGroup]="languageForm" (ngSubmit)="saveChanges()" class="rounded-xl border border-border bg-card p-5" aria-label="Language and region">
+            <div class="grid grid-cols-1 gap-4">
+              <label class="block"><span class="mb-1 block text-xs font-semibold">Interface Language</span>
+                <select formControlName="language" class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm">
+                  <option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option>
+                </select>
+              </label>
+              <label class="block"><span class="mb-1 block text-xs font-semibold">Time Zone</span>
+                <select formControlName="timeZone" class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm">
+                  <option value="PST">PST</option><option value="MST">MST</option><option value="CST">CST</option><option value="EST">EST</option>
+                </select>
+              </label>
+              <label class="block"><span class="mb-1 block text-xs font-semibold">Date Format</span>
+                <select formControlName="dateFormat" class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm">
+                  <option value="MM/DD/YYYY">MM/DD/YYYY</option><option value="DD/MM/YYYY">DD/MM/YYYY</option><option value="YYYY-MM-DD">YYYY-MM-DD</option>
+                </select>
+              </label>
+            </div>
+            <div class="mt-4"><app-button variant="primary" size="sm" (onClick)="saveChanges()">{{ saved() ? 'Saved!' : 'Save Changes' }}</app-button></div>
+          </form>
+        }
+        @case ('security') {
+          <form [formGroup]="securityForm" (ngSubmit)="saveChanges()" class="rounded-xl border border-border bg-card p-5" aria-label="Security settings">
+            <div class="grid grid-cols-1 gap-4">
+              <label class="block"><span class="mb-1 block text-xs font-semibold">Current Password</span><input type="password" formControlName="currentPassword" autocomplete="current-password" class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm" /></label>
+              <label class="block"><span class="mb-1 block text-xs font-semibold">New Password</span><input type="password" formControlName="newPassword" autocomplete="new-password" class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm" /></label>
+              <label class="block"><span class="mb-1 block text-xs font-semibold">Confirm Password</span><input type="password" formControlName="confirmPassword" autocomplete="new-password" class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm" /></label>
+            </div>
+            <div class="mt-4 flex items-center gap-3">
+              <button type="button" role="switch" [attr.aria-checked]="twoFactor()" (click)="toggleTwoFactor()" class="relative h-6 w-11 rounded-full" [class]="twoFactor() ? 'bg-primary' : 'bg-muted'" aria-label="Two-factor authentication">
+                <span class="absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all" [class]="twoFactor() ? 'left-[22px]' : 'left-0.5'"></span>
+              </button>
+              <span class="text-sm">Two-Factor Authentication — {{ twoFactor() ? 'on' : 'off' }}</span>
+            </div>
+            <div class="mt-4"><app-button variant="primary" size="sm" (onClick)="saveChanges()">{{ saved() ? 'Saved!' : 'Save Changes' }}</app-button></div>
+          </form>
+        }
+        @default {
+          <form [formGroup]="organizationForm" (ngSubmit)="saveChanges()" class="rounded-xl border border-border bg-card p-5" aria-label="Organization settings">
+            <div class="grid grid-cols-1 gap-4">
+              <label class="block"><span class="mb-1 block text-xs font-semibold">Laboratory Name</span><input formControlName="labName" class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm" /></label>
+              <label class="block"><span class="mb-1 block text-xs font-semibold">Address</span><input formControlName="address" class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm" /></label>
+              <label class="block"><span class="mb-1 block text-xs font-semibold">License</span><input formControlName="license" class="w-full rounded-lg border border-border bg-card px-3 py-2 font-mono text-sm" /></label>
+            </div>
+            <div class="mt-4"><app-button variant="primary" size="sm" (onClick)="saveChanges()">{{ saved() ? 'Saved!' : 'Save Changes' }}</app-button></div>
+          </form>
+        }
+      }
+    </div>
+  </div>
+</div>

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormatUtils } from '../../../core/services/format-utils.service';
 
 export type AvatarSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
-export type AvatarVariant = 'primary' | 'success' | 'warning' | 'accent';
+export type AvatarVariant = 'primary' | 'success' | 'warning' | 'accent' | 'violet';
 
 @Component({
   selector: 'app-avatar',
@@ -28,7 +28,8 @@ export class AvatarComponent {
       primary: 'bg-primary/10 text-primary',
       success: 'bg-success/10 text-success',
       warning: 'bg-warning/10 text-warning',
-      accent: 'bg-accent/10 text-accent'
+      accent: 'bg-accent/10 text-accent',
+      violet: 'bg-violet/10 text-violet'
     };
     const sizes: Record<AvatarSize, string> = {
       xs: 'w-6 h-6 text-xs',

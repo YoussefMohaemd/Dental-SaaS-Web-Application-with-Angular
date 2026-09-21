@@ -1,0 +1,292 @@
+<div class="mx-auto max-w-4xl p-6">
+  <div class="mb-5">
+    <h1 class="font-display text-xl font-bold text-foreground">Create New Order</h1>
+    <p class="mt-0.5 text-sm text-muted-foreground">Complete each step to create a new lab order.</p>
+  </div>
+
+  <ol class="mb-6 flex items-center gap-1" aria-label="Order creation steps">
+    @for (s of steps; track s.id) {
+      <li class="flex flex-1 items-center gap-1">
+        <button
+          type="button"
+          (click)="step.set(s.id)"
+          class="flex flex-1 items-center gap-2 rounded-lg border px-2.5 py-2 text-left transition-colors"
+          [class]="s.id === step() ? 'border-primary bg-primary/5' : s.id < step() ? 'border-success/40 bg-success/5' : 'border-border bg-card'"
+          [attr.aria-current]="s.id === step() ? 'step' : null"
+        >
+          <span
+            class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-bold"
+            [class]="s.id < step() ? 'bg-success text-white' : s.id === step() ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'"
+          >
+            @if (s.id < step()) {
+              <span [innerHTML]="getIconSvg('check')"></span>
+            } @else {
+              {{ s.id }}
+            }
+          </span>
+          <span class="hidden text-xs font-semibold sm:block" [class]="s.id === step() ? 'text-primary' : 'text-foreground'">
+            {{ s.short }}
+          </span>
+        </button>
+        @if (s.id !== steps.length) {
+          <span class="hidden h-px w-2 bg-border sm:block"></span>
+        }
+      </li>
+    }
+  </ol>
+
+  <section class="rounded-xl border border-border bg-card p-5" [attr.aria-label]="'Step ' + step() + ' of ' + steps.length">
+    @switch (step()) {
+      @case (1) {
+        <h2 class="mb-1 text-sm font-semibold text-foreground">Patient &amp; Clinic</h2>
+        <p class="mb-4 text-xs text-muted-foreground">Select the patient, clinic and referring doctor.</p>
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <label class="block">
+            <span class="mb-1 block text-xs font-semibold text-foreground">Patient *</span>
+            <select
+              class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground"
+              [value]="form().patientId"
+              (change)="setField('patientId', $any($event.target).value)"
+            >
+              <option value="">Select patient</option>
+              @for (p of patients(); track p.id) {
+                <option [value]="p.id">{{ p.name }} · {{ p.clinicName }}</option>
+              }
+            </select>
+          </label>
+          <label class="block">
+            <span class="mb-1 block text-xs font-semibold text-foreground">Clinic *</span>
+            <select
+              class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground"
+              [value]="form().clinicId"
+              (change)="setClinicAndResetDoctor($any($event.target).value)"
+            >
+              <option value="">Select clinic</option>
+              @for (c of clinics(); track c.id) {
+                <option [value]="c.id">{{ c.name }}</option>
+              }
+            </select>
+          </label>
+          <label class="block">
+            <span class="mb-1 block text-xs font-semibold text-foreground">Doctor *</span>
+            <select
+              class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground"
+              [value]="form().doctorId"
+              (change)="setField('doctorId', $any($event.target).value)"
+            >
+              <option value="">Select doctor</option>
+              @for (d of doctorsForClinic(); track d.id) {
+                <option [value]="d.id">{{ d.name }} · {{ d.specialty }}</option>
+              }
+            </select>
+          </label>
+          <div class="grid grid-cols-2 gap-4">
+            <label class="block">
+              <span class="mb-1 block text-xs font-semibold text-foreground">Priority</span>
+              <select
+                class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground"
+                [value]="form().priority"
+                (change)="setField('priority', $any($event.target).value)"
+              >
+                <option value="Low">Low</option>
+                <option value="Normal">Normal</option>
+                <option value="High">High</option>
+                <option value="Urgent">Urgent</option>
+              </select>
+            </label>
+            <label class="block">
+              <span class="mb-1 block text-xs font-semibold text-foreground">Due date</span>
+              <input
+                type="date"
+                class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground"
+                [value]="form().dueDate"
+                (input)="setField('dueDate', $any($event.target).value)"
+              />
+            </label>
+          </div>
+        </div>
+        @if (selectedPatient(); as sp) {
+          <div class="mt-4 flex items-center gap-2.5 rounded-lg bg-muted/40 px-3 py-2.5">
+            <span class="flex h-8 w-8 items-center justify-center rounded-full bg-primary/15 text-xs font-bold text-primary">
+              {{ getInitials(sp.name) }}
+            </span>
+            <div class="min-w-0">
+              <p class="truncate text-sm font-semibold text-foreground">{{ sp.name }}</p>
+              <p class="truncate text-xs text-muted-foreground">{{ sp.phone }} · {{ sp.email }}</p>
+            </div>
+          </div>
+        }
+      }
+      @case (2) {
+        <h2 class="mb-1 text-sm font-semibold text-foreground">Services</h2>
+        <p class="mb-4 text-xs text-muted-foreground">Select at least one lab service.</p>
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          @for (svc of services; track svc.id) {
+            <button
+              type="button"
+              (click)="toggleService(svc.id)"
+              class="rounded-xl border p-3.5 text-left transition-all"
+              [class]="selectedServices().includes(svc.id) ? 'border-primary bg-primary/5 shadow-sm' : 'border-border bg-card hover:border-primary/40'"
+              [attr.aria-pressed]="selectedServices().includes(svc.id)"
+            >
+              <div class="mb-1 flex items-center gap-2">
+                <span class="text-lg" aria-hidden="true">{{ svc.icon }}</span>
+                <span class="text-sm font-semibold text-foreground">{{ svc.name }}</span>
+                @if (selectedServices().includes(svc.id)) {
+                  <span class="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-primary text-white">
+                    <span [innerHTML]="getIconSvg('check')"></span>
+                  </span>
+                }
+              </div>
+              <p class="text-xs text-muted-foreground">{{ svc.description }}</p>
+              <p class="mt-2 font-mono text-[10px] text-muted-foreground">{{ svc.scanRequirements.join(' · ') }}</p>
+            </button>
+          }
+        </div>
+      }
+      @case (3) {
+        <h2 class="mb-1 text-sm font-semibold text-foreground">Teeth Selection</h2>
+        <p class="mb-4 text-xs text-muted-foreground">Click a tooth number to toggle it for the active service context.</p>
+        <div class="mb-3 flex flex-wrap gap-2">
+          <button
+            type="button"
+            (click)="activeServiceForTeeth.set(null)"
+            class="rounded-full border px-3 py-1 text-xs font-semibold"
+            [class]="activeServiceForTeeth() === null ? 'border-primary bg-primary text-white' : 'border-border text-muted-foreground'"
+          >
+            General ({{ selectedTeeth().length }})
+          </button>
+          @for (svc of selectedServiceObjects(); track svc.id) {
+            <button
+              type="button"
+              (click)="activeServiceForTeeth.set(svc.id)"
+              class="rounded-full border px-3 py-1 text-xs font-semibold"
+              [class]="activeServiceForTeeth() === svc.id ? 'border-primary bg-primary text-white' : 'border-border text-muted-foreground'"
+            >
+              {{ svc.name }} ({{ (serviceTeeth()[svc.id] || []).length }})
+            </button>
+          }
+        </div>
+        <div class="grid grid-cols-8 gap-1.5" role="group" aria-label="Tooth chart">
+          @for (tooth of [11,12,13,14,15,16,17,18,21,22,23,24,25,26,27,28,31,32,33,34,35,36,37,38,41,42,43,44,45,46,47,48]; track tooth) {
+            <button
+              type="button"
+              (click)="toggleTooth(tooth)"
+              class="flex h-9 items-center justify-center rounded-md border font-mono text-[11px] transition-colors"
+              [class]="allSelectedTeeth().includes(tooth) ? 'border-primary bg-primary text-white' : 'border-border text-muted-foreground hover:border-primary/50'"
+              [attr.aria-pressed]="allSelectedTeeth().includes(tooth)"
+            >
+              {{ tooth }}
+            </button>
+          }
+        </div>
+        <p class="mt-3 text-xs text-muted-foreground">
+          Selected: <span class="font-mono font-semibold text-foreground">{{ allSelectedTeeth().join(', ') || '—' }}</span>
+        </p>
+      }
+      @case (4) {
+        <h2 class="mb-1 text-sm font-semibold text-foreground">Service Details</h2>
+        <p class="mb-4 text-xs text-muted-foreground">Shade, arch and fabrication preferences.</p>
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <label class="block">
+            <span class="mb-1 block text-xs font-semibold text-foreground">Shade</span>
+            <select class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm" [value]="form().shade" (change)="setField('shade', $any($event.target).value)">
+              @for (sh of ['A1','A2','A3','A3.5','B1','B2','C2','D3','BL1','BL2']; track sh) {
+                <option [value]="sh">{{ sh }}</option>
+              }
+            </select>
+          </label>
+          <label class="block">
+            <span class="mb-1 block text-xs font-semibold text-foreground">File format</span>
+            <select class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm" [value]="form().format" (change)="setField('format', $any($event.target).value)">
+              @for (f of ['STL','PLY','OBJ','DICOM','STL+OBJ']; track f) {
+                <option [value]="f">{{ f }}</option>
+              }
+            </select>
+          </label>
+          <label class="block">
+            <span class="mb-1 block text-xs font-semibold text-foreground">Service notes</span>
+            <input class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm" placeholder="Optional notes" [value]="form().notes" (input)="setField('notes', $any($event.target).value)" />
+          </label>
+        </div>
+      }
+      @case (5) {
+        <h2 class="mb-1 text-sm font-semibold text-foreground">Forms</h2>
+        <p class="mb-4 text-xs text-muted-foreground">Clinical forms are attached per service after creation. No action required here.</p>
+        <div class="rounded-lg border border-dashed border-border p-4 text-xs text-muted-foreground">
+          {{ selectedServiceObjects().length }} service(s) selected — forms checklists will be generated for:
+          <span class="font-semibold text-foreground">{{ selectedServiceNames() }}</span>
+        </div>
+      }
+      @case (6) {
+        <h2 class="mb-1 text-sm font-semibold text-foreground">Scans &amp; Files</h2>
+        <p class="mb-4 text-xs text-muted-foreground">Required scan files per selected service.</p>
+        <div class="space-y-2.5">
+          @for (svc of selectedServiceObjects(); track svc.id) {
+            <div class="rounded-lg border border-border p-3">
+              <p class="text-sm font-semibold text-foreground">{{ svc.name }}</p>
+              <p class="font-mono text-[11px] text-muted-foreground">{{ svc.scanRequirements.join(' · ') }}</p>
+            </div>
+          } @empty {
+            <p class="text-xs text-muted-foreground">Select services first to see required scans.</p>
+          }
+          <div class="flex items-center gap-2 rounded-lg border border-dashed border-border p-4 text-xs text-muted-foreground">
+            <span [innerHTML]="getIconSvg('file-up')"></span>
+            Drop files here or use the Files step after creation.
+          </div>
+        </div>
+      }
+      @default {
+        <h2 class="mb-1 text-sm font-semibold text-foreground">Review</h2>
+        <p class="mb-4 text-xs text-muted-foreground">Confirm the order summary before creating.</p>
+        <dl class="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
+          <div class="rounded-lg bg-muted/40 p-3"><dt class="text-[11px] uppercase tracking-wide text-muted-foreground">Patient</dt><dd class="font-semibold text-foreground">{{ selectedPatient()?.name || '—' }}</dd></div>
+          <div class="rounded-lg bg-muted/40 p-3"><dt class="text-[11px] uppercase tracking-wide text-muted-foreground">Doctor</dt><dd class="font-semibold text-foreground">{{ selectedDoctor()?.name || '—' }}</dd></div>
+          <div class="rounded-lg bg-muted/40 p-3"><dt class="text-[11px] uppercase tracking-wide text-muted-foreground">Clinic</dt><dd class="font-semibold text-foreground">{{ selectedClinic()?.name || '—' }}</dd></div>
+          <div class="rounded-lg bg-muted/40 p-3"><dt class="text-[11px] uppercase tracking-wide text-muted-foreground">Priority</dt><dd class="font-semibold text-foreground">{{ form().priority }} · {{ form().dueDate || 'no due date' }}</dd></div>
+        </dl>
+        <div class="mt-3 rounded-lg border border-border p-3">
+          <p class="mb-1 text-xs font-semibold text-foreground">Services &amp; sub-orders</p>
+          @for (svc of selectedServiceObjects(); track svc.id) {
+            <p class="text-xs text-muted-foreground">{{ svc.name }} — teeth: <span class="font-mono">{{ (serviceTeeth()[svc.id] || []).join(', ') || selectedTeeth().join(', ') || '—' }}</span></p>
+          } @empty {
+            <p class="text-xs text-muted-foreground">No services selected.</p>
+          }
+        </div>
+      }
+    }
+  </section>
+
+  <div class="mt-4 flex items-center gap-2">
+    <span class="text-xs text-muted-foreground">Step {{ step() }} of {{ steps.length }}</span>
+    <div class="ml-auto flex items-center gap-2">
+      <app-button variant="outline" size="sm" (onClick)="prevStep()">
+        <span class="flex items-center gap-1.5">
+          <span [innerHTML]="getIconSvg('chevron-left')"></span>
+          {{ step() === 1 ? 'Cancel' : 'Back' }}
+        </span>
+      </app-button>
+      @if (step() < steps.length) {
+        <app-button variant="primary" size="sm" [disabled]="!canProceed()" (onClick)="nextStep()">
+          <span class="flex items-center gap-1.5">
+            Continue
+            <span [innerHTML]="getIconSvg('chevron-right')"></span>
+          </span>
+        </app-button>
+      } @else {
+        <app-button variant="primary" size="sm" (onClick)="submitOrder()">
+          <span class="flex items-center gap-1.5">
+            <span [innerHTML]="getIconSvg('plus')"></span>
+            Create Order
+          </span>
+        </app-button>
+      }
+    </div>
+  </div>
+  @if (!canProceed() && (step() === 1 || step() === 2)) {
+    <p class="mt-2 text-right text-xs text-muted-foreground" role="status">
+      @if (step() === 1) { Select a patient, doctor and clinic to continue. }
+      @else { Select at least one service to continue. }
+    </p>
+  }
+</div>

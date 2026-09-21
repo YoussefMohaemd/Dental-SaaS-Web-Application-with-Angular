@@ -6,7 +6,7 @@ import { Order, OrderFilters, OrderStatus, Priority } from '../models';
 @Injectable({ providedIn: 'root' })
 export class OrderDataService {
   private readonly http = inject(HttpClient);
-  private readonly API_URL = '/assets/data/orders.json';
+  private readonly API_URL = '/data/orders.json';
 
   private readonly _orders = signal<Order[]>([]);
   private readonly _loading = signal<boolean>(false);

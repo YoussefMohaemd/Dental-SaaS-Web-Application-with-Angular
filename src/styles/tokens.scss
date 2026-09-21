@@ -1,222 +1,275 @@
 // Design Tokens - Exact values from React application
 // These tokens must match the React implementation precisely
 
+// ============================================================================
+// SASS VARIABLES (for use in SCSS files)
+// ============================================================================
+// Light Theme Colors — exact values from react/src/index.css :root
+$color-background: #F1F5F9;
+$color-foreground: #0F172A;
+$color-card: #FFFFFF;
+$color-card-foreground: #0F172A;
+$color-sidebar: #1E293B;
+$color-sidebar-foreground: #F1F5F9;
+$color-sidebar-active: #2563EB;
+$color-sidebar-muted: #94A3B8;
+$color-primary: #2563EB;
+$color-primary-foreground: #FFFFFF;
+$color-secondary: #F8FAFC;
+$color-secondary-foreground: #475569;
+$color-muted: #F1F5F9;
+$color-muted-foreground: #64748B;
+$color-accent: #06B6D4;
+$color-accent-foreground: #FFFFFF;
+$color-success: #10B981;
+$color-success-foreground: #FFFFFF;
+$color-warning: #F59E0B;
+$color-warning-foreground: #FFFFFF;
+$color-danger: #EF4444;
+$color-danger-foreground: #FFFFFF;
+$color-border: #E2E8F0;
+$color-input: #E2E8F0;
+$color-ring: #2563EB;
+
+// Dark Theme Colors — exact values from react/src/index.css [data-theme="dark"]
+$color-background-dark: #0F172A;
+$color-foreground-dark: #F1F5F9;
+$color-card-dark: #1E293B;
+$color-card-foreground-dark: #F1F5F9;
+$color-sidebar-dark: #020617;
+$color-sidebar-foreground-dark: #CBD5E1;
+$color-sidebar-active-dark: #3B82F6;
+$color-sidebar-muted-dark: #475569;
+$color-primary-dark: #3B82F6;
+$color-primary-foreground-dark: #FFFFFF;
+$color-secondary-dark: #1E293B;
+$color-secondary-foreground-dark: #CBD5E1;
+$color-muted-dark: #1E293B;
+$color-muted-foreground-dark: #94A3B8;
+$color-accent-dark: #22D3EE;
+$color-accent-foreground-dark: #0F172A;
+$color-success-dark: #34D399;
+$color-warning-dark: #FBBF24;
+$color-danger-dark: #F87171;
+$color-border-dark: #334155;
+$color-input-dark: #334155;
+$color-ring-dark: #3B82F6;
+
+// Status Colors - Light Theme
+$status-colors: (
+  'new': (bg: #F1F5F9, fg: #475569),
+  'review': (bg: #FEF3C7, fg: #B45309),
+  'design': (bg: #CFFAFE, fg: #164E63),
+  'production': (bg: #DBEAFE, fg: #1E3A5F),
+  'quality-check': (bg: #F5F0FF, fg: #4C1D95),
+  'ready': (bg: #D1FAE5, fg: #064E3B),
+  'completed': (bg: #D1FAE5, fg: #064E3B),
+  'cancelled': (bg: #FEE2E2, fg: #991B1B),
+  'open': (bg: #DBEAFE, fg: #1E3A5F),
+  'in-progress': (bg: #FEF3C7, fg: #B45309),
+  'closed': (bg: #F1F5F9, fg: #64748B),
+  'pending': (bg: #F1F5F9, fg: #64748B),
+  'invoiced': (bg: #DBEAFE, fg: #1E3A5F),
+  'paid': (bg: #D1FAE5, fg: #064E3B),
+  'overdue': (bg: #FEE2E2, fg: #991B1B)
+);
+
+// Priority Colors
+$priority-colors: (
+  'low': #94A3B8,
+  'normal': #2563EB,
+  'high': #F59E0B,
+  'urgent': #EF4444
+);
+
+// Shadow System
+$shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+$shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+$shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+$shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+$shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+
+// Border Radius
+$radius-xs: 2px;
+$radius-sm: 4px;
+$radius-md: 8px;
+$radius-lg: 12px;
+$radius-xl: 16px;
+$radius-full: 9999px;
+
+// Spacing Scale
+$space-0: 0;
+$space-1: 0.25rem;
+$space-2: 0.5rem;
+$space-3: 0.75rem;
+$space-4: 1rem;
+$space-5: 1.25rem;
+$space-6: 1.5rem;
+$space-8: 2rem;
+$space-10: 2.5rem;
+$space-12: 3rem;
+$space-16: 4rem;
+
+// Typography
+$font-family-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+$font-family-display: 'Outfit', system-ui, sans-serif;
+$font-family-mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+
+$font-size-xs: 0.625rem;
+$font-size-sm: 0.75rem;
+$font-size-base: 0.875rem;
+$font-size-lg: 1rem;
+$font-size-xl: 1.125rem;
+$font-size-2xl: 1.25rem;
+$font-size-3xl: 1.5rem;
+$font-size-4xl: 1.875rem;
+
+$font-weight-normal: 400;
+$font-weight-medium: 500;
+$font-weight-semibold: 600;
+$font-weight-bold: 700;
+
+$line-height-tight: 1.25;
+$line-height-snug: 1.375;
+$line-height-normal: 1.5;
+$line-height-relaxed: 1.625;
+
+// Transitions
+$transition-fast: 150ms ease;
+$transition-normal: 200ms ease;
+$transition-slow: 300ms ease;
+
+// Z-Index
+$z-dropdown: 100;
+$z-sticky: 200;
+$z-fixed: 300;
+$z-modal-backdrop: 400;
+$z-modal: 500;
+$z-popover: 600;
+$z-tooltip: 700;
+$z-toast: 800;
+
+// Breakpoints
+$breakpoint-sm: 640px;
+$breakpoint-md: 768px;
+$breakpoint-lg: 1024px;
+$breakpoint-xl: 1280px;
+$breakpoint-2xl: 1536px;
+
+// Layout
+$sidebar-width: 14rem;
+$sidebar-width-collapsed: 3.5rem;
+$header-height: 3.5rem;
+
+// ============================================================================
+// CSS CUSTOM PROPERTIES (for browser use)
+// ============================================================================
 :root {
-  // Color System - Light Theme
-  --color-primary: #2563EB;
+  // Light Theme - maps to CSS custom properties for Tailwind
+  --color-primary: #{$color-primary};
   --color-primary-hover: #1D4ED8;
   --color-primary-light: #DBEAFE;
-  --color-primary-foreground: #FFFFFF;
+  --color-primary-foreground: #{$color-primary-foreground};
 
-  --color-secondary: #64748B;
+  --color-secondary: #{$color-secondary};
   --color-secondary-hover: #475569;
-  --color-secondary-foreground: #FFFFFF;
+  --color-secondary-foreground: #{$color-secondary-foreground};
 
-  --color-accent: #06B6D4;
+  --color-accent: #{$color-accent};
   --color-accent-hover: #0891B2;
   --color-accent-light: #CFFAFE;
 
-  --color-success: #10B981;
+  --color-success: #{$color-success};
   --color-success-hover: #059669;
   --color-success-light: #D1FAE5;
-  --color-success-foreground: #FFFFFF;
+  --color-success-foreground: #{$color-success-foreground};
 
-  --color-warning: #F59E0B;
+  --color-warning: #{$color-warning};
   --color-warning-hover: #D97706;
   --color-warning-light: #FEF3C7;
-  --color-warning-foreground: #FFFFFF;
+  --color-warning-foreground: #{$color-warning-foreground};
 
-  --color-danger: #EF4444;
+  --color-danger: #{$color-danger};
   --color-danger-hover: #DC2626;
   --color-danger-light: #FEE2E2;
-  --color-danger-foreground: #FFFFFF;
+  --color-danger-foreground: #{$color-danger-foreground};
 
-  // Surface Colors - Light Theme
-  --color-background: #F8FAFC;
+  // Surface Colors
+  --color-background: #{$color-background};
   --color-surface: #FFFFFF;
   --color-surface-elevated: #FFFFFF;
-  --color-card: #FFFFFF;
+  --color-card: #{$color-card};
   --color-card-hover: #F8FAFC;
 
   // Sidebar Colors
-  --color-sidebar: #1E293B;
-  --color-sidebar-foreground: #F1F5F9;
-  --color-sidebar-muted: #94A3B8;
+  --color-sidebar: #{$color-sidebar};
+  --color-sidebar-foreground: #{$color-sidebar-foreground};
+  --color-sidebar-muted: #{$color-sidebar-muted};
   --color-sidebar-border: rgba(255, 255, 255, 0.1);
   --color-sidebar-hover: rgba(255, 255, 255, 0.05);
-  --color-sidebar-active: rgba(255, 255, 255, 0.1);
+  --color-sidebar-active: #{$color-sidebar-active};
 
-  // Text Colors - Light Theme
-  --color-foreground: #0F172A;
+  // Text Colors
+  --color-foreground: #{$color-foreground};
   --color-foreground-muted: #64748B;
   --color-foreground-subtle: #94A3B8;
 
-  // Border Colors - Light Theme
-  --color-border: #E2E8F0;
+  // Border Colors
+  --color-border: #{$color-border};
   --color-border-strong: #CBD5E1;
-  --color-border-focus: #2563EB;
+  --color-border-focus: #{$color-ring};
 
-  // Input Colors - Light Theme
+  // Input Colors
   --color-input-bg: #FFFFFF;
-  --color-input-border: #E2E8F0;
-  --color-input-border-focus: #2563EB;
+  --color-input-border: #{$color-border};
+  --color-input-border-focus: #{$color-ring};
   --color-input-placeholder: #94A3B8;
 
-  // Muted Colors - Light Theme
-  --color-muted: #F1F5F9;
-  --color-muted-foreground: #64748B;
+  // Muted Colors
+  --color-muted: #{$color-muted};
+  --color-muted-foreground: #{$color-muted-foreground};
 
-  // Status Colors
-  --color-status-new: #94A3B8;
-  --color-status-new-bg: #F1F5F9;
-  --color-status-new-foreground: #475569;
+  // Radius
+  --radius: #{$radius-md};
 
-  --color-status-review: #F59E0B;
-  --color-status-review-bg: #FEF3C7;
-  --color-status-review-foreground: #B45309;
-
-  --color-status-design: #06B6D4;
-  --color-status-design-bg: #CFFAFE;
-  --color-status-design-foreground: #164E63;
-
-  --color-status-production: #2563EB;
-  --color-status-production-bg: #DBEAFE;
-  --color-status-production-foreground: #1E3A5F;
-
-  --color-status-quality-check: #8B5CF6;
-  --color-status-quality-check-bg: #F5F0FF;
-  --color-status-quality-check-foreground: #4C1D95;
-
-  --color-status-ready: #10B981;
-  --color-status-ready-bg: #D1FAE5;
-  --color-status-ready-foreground: #064E3B;
-
-  --color-status-completed: #10B981;
-  --color-status-completed-bg: #D1FAE5;
-  --color-status-completed-foreground: #064E3B;
-
-  --color-status-cancelled: #EF4444;
-  --color-status-cancelled-bg: #FEE2E2;
-  --color-status-cancelled-foreground: #991B1B;
-
-  // Priority Colors
-  --color-priority-low: #94A3B8;
-  --color-priority-normal: #2563EB;
-  --color-priority-high: #F59E0B;
-  --color-priority-urgent: #EF4444;
-
-  // Shadow System
-  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-
-  // Border Radius
-  --radius-xs: 2px;
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
-  --radius-full: 9999px;
-
-  // Spacing Scale
-  --space-0: 0;
-  --space-1: 0.25rem;
-  --space-2: 0.5rem;
-  --space-3: 0.75rem;
-  --space-4: 1rem;
-  --space-5: 1.25rem;
-  --space-6: 1.5rem;
-  --space-8: 2rem;
-  --space-10: 2.5rem;
-  --space-12: 3rem;
-  --space-16: 4rem;
-
-  // Typography
-  --font-family-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-family-display: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-family-mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
-
-  --font-size-xs: 0.625rem;
-  --font-size-sm: 0.75rem;
-  --font-size-base: 0.875rem;
-  --font-size-lg: 1rem;
-  --font-size-xl: 1.125rem;
-  --font-size-2xl: 1.25rem;
-  --font-size-3xl: 1.5rem;
-  --font-size-4xl: 1.875rem;
-
-  --font-weight-normal: 400;
-  --font-weight-medium: 500;
-  --font-weight-semibold: 600;
-  --font-weight-bold: 700;
-
-  --line-height-tight: 1.25;
-  --line-height-snug: 1.375;
-  --line-height-normal: 1.5;
-  --line-height-relaxed: 1.625;
-
-  // Transitions
-  --transition-fast: 150ms ease;
-  --transition-normal: 200ms ease;
-  --transition-slow: 300ms ease;
-
-  // Z-Index
-  --z-dropdown: 100;
-  --z-sticky: 200;
-  --z-fixed: 300;
-  --z-modal-backdrop: 400;
-  --z-modal: 500;
-  --z-popover: 600;
-  --z-tooltip: 700;
-  --z-toast: 800;
-
-  // Breakpoints
-  --bp-sm: 640px;
-  --bp-md: 768px;
-  --bp-lg: 1024px;
-  --bp-xl: 1280px;
-  --bp-2xl: 1536px;
-
-  // Layout
-  --sidebar-width: 14rem;
-  --sidebar-width-collapsed: 3.5rem;
-  --header-height: 3.5rem;
+  // Fonts
+  --font-sans: #{$font-family-sans};
+  --font-display: #{$font-family-display};
+  --font-mono: #{$font-family-mono};
 }
 
 // Dark Theme
 [data-theme="dark"] {
-  --color-background: #0F172A;
-  --color-surface: #1E293B;
+  --color-background: #{$color-background-dark};
+  --color-surface: #{$color-card-dark};
   --color-surface-elevated: #334155;
-  --color-card: #1E293B;
+  --color-card: #{$color-card-dark};
   --color-card-hover: #334155;
 
-  --color-sidebar: #0F172A;
-  --color-sidebar-foreground: #F1F5F9;
-  --color-sidebar-muted: #94A3B8;
+  --color-sidebar: #{$color-sidebar-dark};
+  --color-sidebar-foreground: #{$color-sidebar-foreground-dark};
+  --color-sidebar-muted: #{$color-sidebar-muted-dark};
   --color-sidebar-border: rgba(255, 255, 255, 0.1);
   --color-sidebar-hover: rgba(255, 255, 255, 0.05);
-  --color-sidebar-active: rgba(255, 255, 255, 0.1);
+  --color-sidebar-active: #{$color-sidebar-active-dark};
 
-  --color-foreground: #F1F5F9;
-  --color-foreground-muted: #94A3B8;
+  --color-foreground: #{$color-foreground-dark};
+  --color-foreground-muted: #{$color-muted-foreground-dark};
   --color-foreground-subtle: #64748B;
 
-  --color-border: #334155;
+  --color-border: #{$color-border-dark};
   --color-border-strong: #475569;
-  --color-border-focus: #3B82F6;
+  --color-border-focus: #{$color-ring-dark};
 
-  --color-input-bg: #1E293B;
-  --color-input-border: #334155;
-  --color-input-border-focus: #3B82F6;
+  --color-input-bg: #{$color-card-dark};
+  --color-input-border: #{$color-border-dark};
+  --color-input-border-focus: #{$color-ring-dark};
   --color-input-placeholder: #64748B;
 
-  --color-muted: #334155;
-  --color-muted-foreground: #94A3B8;
+  --color-muted: #{$color-muted-dark};
+  --color-muted-foreground: #{$color-muted-foreground-dark};
 
-  // Status colors remain the same in dark mode
+  // Status colors in dark mode
   --color-status-new-bg: #334155;
   --color-status-new-foreground: #94A3B8;
   --color-status-review-bg: #453000;

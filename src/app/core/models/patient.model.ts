@@ -1,3 +1,5 @@
+export type PatientStatus = 'Active' | 'Inactive';
+
 export interface Patient {
   id: string;
   name: string;
@@ -9,14 +11,14 @@ export interface Patient {
   clinicName: string;
   doctorId: string;
   doctorName: string;
-  status: 'Active' | 'Inactive';
+  status: PatientStatus;
   ordersCount: number;
   lastVisit: string;
 }
 
 export interface PatientFilters {
   search?: string;
-  statusFilter?: 'Active' | 'Inactive';
+  statusFilter?: PatientStatus;
   sortColumn?: keyof Patient;
   sortDirection?: 'asc' | 'desc';
   page?: number;

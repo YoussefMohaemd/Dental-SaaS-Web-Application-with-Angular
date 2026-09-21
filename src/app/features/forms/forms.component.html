@@ -1,0 +1,75 @@
+<div class="flex h-full flex-col">
+  <div class="shrink-0 border-b border-border bg-card px-6 py-4">
+    <div class="flex flex-wrap items-center gap-3">
+      <div>
+        <h1 class="font-display text-lg font-bold text-foreground">Forms</h1>
+        <p class="text-xs text-muted-foreground">{{ filtered().length }} forms · {{ completeCount() }} complete · {{ inProgressCount() }} in progress</p>
+      </div>
+      <div class="ml-auto flex items-center gap-2">
+        <input
+          class="w-56 rounded-lg border border-border bg-muted px-3 py-1.5 text-xs placeholder:text-muted-foreground focus:outline-none"
+          placeholder="Search forms..."
+          [value]="search()"
+          (input)="onSearchChange($event)"
+          aria-label="Search forms"
+        />
+        <app-button variant="primary" size="sm">New Form</app-button>
+      </div>
+    </div>
+    <div class="mt-3 flex flex-wrap gap-2" role="group" aria-label="Form category filter">
+      @for (cat of categories; track cat) {
+        <button
+          type="button"
+          (click)="setCategory(cat)"
+          class="rounded-full border px-3 py-1 text-xs font-semibold"
+          [class]="category() === cat ? 'border-primary bg-primary text-white' : 'border-border text-muted-foreground hover:border-primary/50'"
+          [attr.aria-pressed]="category() === cat"
+        >
+          {{ cat }}
+        </button>
+      }
+    </div>
+  </div>
+
+  <div class="flex-1 overflow-auto p-6">
+    @if (filtered().length === 0) {
+      <div class="flex h-40 flex-col items-center justify-center rounded-xl border border-border bg-card text-center">
+        <p class="text-3xl" aria-hidden="true">📋</p>
+        <p class="mt-2 font-semibold text-foreground">No forms found</p>
+        <p class="text-xs text-muted-foreground">Adjust search or category filters.</p>
+      </div>
+    } @else {
+      <div class="overflow-hidden rounded-xl border border-border bg-card">
+        <p-table [value]="filtered()" [tableStyle]="{ 'min-width': '60rem' }" styleClass="p-datatable-sm">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Form</th>
+              <th>Category</th>
+              <th>Service</th>
+              <th style="min-width: 10rem">Completion</th>
+              <th>Status</th>
+              <th>Updated</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-form>
+            <tr>
+              <td class="font-medium">{{ form.name }}</td>
+              <td class="text-xs text-muted-foreground">{{ form.category }}</td>
+              <td class="text-xs text-muted-foreground">{{ form.service }}</td>
+              <td>
+                <span class="flex items-center gap-2">
+                  <span class="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
+                    <span class="block h-full rounded-full bg-primary" [style.width.%]="formProgress(form)"></span>
+                  </span>
+                  <span class="font-mono text-[11px] text-muted-foreground">{{ form.fieldsComplete }}/{{ form.fieldsTotal }}</span>
+                </span>
+              </td>
+              <td><span class="rounded px-2 py-0.5 text-[10px] font-semibold" [class]="statusClasses(form.status)">{{ form.status }}</span></td>
+              <td class="font-mono text-xs text-muted-foreground">{{ form.updatedAt }}</td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+    }
+  </div>
+</div>

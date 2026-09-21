@@ -1,3 +1,5 @@
+export type ClinicStatus = 'Active' | 'Inactive';
+
 export interface Clinic {
   id: string;
   name: string;
@@ -8,13 +10,13 @@ export interface Clinic {
   doctorsCount: number;
   patientsCount: number;
   ordersCount: number;
-  status: 'Active' | 'Inactive';
+  status: ClinicStatus;
   accountManager: string;
 }
 
 export interface ClinicFilters {
   search?: string;
-  statusFilter?: 'Active' | 'Inactive';
+  statusFilter?: ClinicStatus;
   sortColumn?: keyof Clinic;
   sortDirection?: 'asc' | 'desc';
   page?: number;

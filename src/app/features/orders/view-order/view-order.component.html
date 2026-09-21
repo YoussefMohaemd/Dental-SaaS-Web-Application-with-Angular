@@ -1,0 +1,221 @@
+<div class="p-6 max-w-5xl mx-auto">
+  <!-- Header -->
+  <div class="flex items-start justify-between mb-6 gap-4 flex-wrap">
+    <div class="flex items-center gap-3">
+      <button (click)="navigationService.navigate('orders')" class="p-1.5 hover:bg-muted rounded-lg text-muted-foreground" aria-label="Back to orders">
+        <span [innerHTML]="getStageSvg('chevron-left')"></span>
+      </button>
+      <div>
+        <div class="flex items-center gap-2.5 flex-wrap">
+          <h1 class="font-display font-bold text-xl text-foreground">{{ order().orderNumber }}</h1>
+          <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold"
+            [class]="order().status === 'Completed' ? 'bg-success/10 text-success' :
+              order().status === 'Production' || order().status === 'Design' ? 'bg-primary/10 text-primary' :
+              'bg-muted text-muted-foreground'">
+            {{ order().status }}
+          </span>
+          <span class="px-2 py-0.5 rounded-full text-xs font-medium border"
+            [class]="order().priority === 'Urgent' ? 'border-danger/40 text-danger bg-danger/5' :
+              order().priority === 'High' ? 'border-warning/40 text-warning bg-warning/5' :
+              'border-border text-muted-foreground'">
+            {{ order().priority }}
+          </span>
+        </div>
+        <p class="text-sm text-muted-foreground mt-0.5">Received {{ formatUtils.formatDate(order().receivedAt) }} &middot; Due {{ formatUtils.formatDate(order().dueDate) }}</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <app-button variant="outline" size="sm" (onClick)="navigateToEditOrder()" class="flex items-center gap-1.5">
+        <span [innerHTML]="getStageSvg('edit')"></span> Edit
+      </app-button>
+      <app-button variant="outline" size="sm" class="flex items-center gap-1.5">
+        <span [innerHTML]="getStageSvg('download')"></span> Export
+      </app-button>
+      <button class="p-1.5 border border-border rounded-lg hover:bg-muted text-muted-foreground" aria-label="More actions">
+        <span [innerHTML]="getStageSvg('more-horizontal')"></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Overall progress banner -->
+  <div class="bg-card border border-border rounded-xl p-5 mb-5">
+    <div class="flex items-center gap-6 flex-wrap">
+      <div class="flex items-center gap-3">
+        <div [innerHTML]="getProgressRingSvg(overallProgress(), 52)"></div>
+        <div>
+          <p class="font-display font-bold text-2xl text-foreground">{{ completedServices() }} of {{ totalServices }}</p>
+          <p class="text-xs text-muted-foreground">Services Completed</p>
+        </div>
+      </div>
+      <div class="flex-1 min-w-56">
+        <div class="flex items-end gap-0">
+          @for (stage of stages; track stage; let i = $index) {
+            <div class="flex items-center flex-1">
+              <div class="flex flex-col items-center gap-1 shrink-0">
+                <div class="w-6 h-6 rounded-full flex items-center justify-center text-xs"
+                  [class]="i < currentStage ? 'bg-success' : i === currentStage ? 'bg-primary ring-4 ring-primary/20' : 'bg-muted'">
+                  @if (i < currentStage) {
+                    <span [innerHTML]="getStatusIconSvg('check-circle-2')" class="text-white"></span>
+                  } @else if (i === currentStage) {
+                    <span class="font-bold text-white text-[9px]">{{ i + 1 }}</span>
+                  } @else {
+                    <span class="font-bold text-[9px] text-muted-foreground">{{ i + 1 }}</span>
+                  }
+                </div>
+                <span class="text-[9px] whitespace-nowrap"
+                  [class]="i === currentStage ? 'text-primary font-semibold' : i < currentStage ? 'text-success' : 'text-muted-foreground'">
+                  {{ stage }}
+                </span>
+              </div>
+              @if (i !== stages.length - 1) {
+                <div class="flex-1 h-px mx-0.5 mb-4" [class]="i < currentStage ? 'bg-success' : 'bg-border'"></div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+    <!-- Left: Sub-orders list -->
+    <div class="lg:col-span-2 space-y-3">
+      <div class="flex items-center gap-2 mb-1">
+        <h2 class="font-display font-semibold text-sm text-foreground">Sub-orders</h2>
+        <span class="px-2 py-0.5 bg-primary/10 text-primary rounded-full text-xs font-bold">{{ totalServices }}</span>
+        <p class="text-xs text-muted-foreground ml-1">Click a sub-order to view details</p>
+      </div>
+
+      @for (sub of subOrders; track sub.id; let idx = $index) {
+        <button
+          (click)="navigateToSubOrder(sub.id)"
+          class="w-full text-left bg-card border border-border rounded-xl p-4 hover:border-primary/40 hover:shadow-sm transition-all group"
+        >
+          <div class="flex items-start gap-3">
+            <div class="text-xl shrink-0 mt-0.5" aria-hidden="true">{{ sub.icon }}</div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 mb-1 flex-wrap">
+                <span class="font-semibold text-sm text-foreground">{{ sub.service }}</span>
+                <span class="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold"
+                  [class]="getStatusConfig(sub.status).bg + ' ' + getStatusConfig(sub.status).color">
+                  <span [innerHTML]="getStatusIconSvg(getStatusConfig(sub.status).icon)"></span>
+                  {{ getStatusConfig(sub.status).label }}
+                </span>
+                <span class="text-[10px] text-muted-foreground font-mono ml-auto">{{ formatSubOrderId(idx) }}</span>
+              </div>
+
+              @if (sub.notes) {
+                <p class="text-xs text-muted-foreground mb-2 line-clamp-1">{{ sub.notes }}</p>
+              }
+
+              <div class="flex items-center gap-4 flex-wrap">
+                <div class="flex items-center gap-1 text-xs text-muted-foreground">
+                  <span [innerHTML]="getStageSvg('file-text')" style="width: 11px; height: 11px;"></span>
+                  <span>Forms: <span [class]="sub.formsComplete === sub.formsTotal ? 'text-success font-semibold' : 'text-foreground font-semibold'">{{ sub.formsComplete }}/{{ sub.formsTotal }}</span></span>
+                </div>
+                <div class="flex items-center gap-1 text-xs text-muted-foreground">
+                  <span [innerHTML]="getStageSvg('scan-line')" style="width: 11px; height: 11px;"></span>
+                  <span>Scans: <span [class]="sub.scansComplete === sub.scansTotal ? 'text-success font-semibold' : 'text-foreground font-semibold'">{{ sub.scansComplete }}/{{ sub.scansTotal }}</span></span>
+                </div>
+                @if (sub.teeth.length > 0) {
+                  <div class="flex items-center gap-1 text-xs text-muted-foreground">
+                    <span [innerHTML]="getStageSvg('layers')" style="width: 11px; height: 11px;"></span>
+                    <span class="font-mono text-[10px]">{{ sub.teeth.join(', ') }}</span>
+                  </div>
+                }
+              </div>
+
+              <div class="mt-2.5 flex items-center gap-2">
+                <div class="flex-1 h-1.5 bg-muted rounded-full overflow-hidden" role="progressbar" [attr.aria-valuenow]="subOrderProgress(sub)" aria-valuemin="0" aria-valuemax="100" [attr.aria-label]="sub.service + ' readiness'">
+                  <div
+                    class="h-full rounded-full transition-all"
+                    [class]="sub.formsComplete === sub.formsTotal && sub.scansComplete === sub.scansTotal ? 'bg-success' : 'bg-primary'"
+                    [style.width.%]="subOrderProgress(sub)">
+                  </div>
+                </div>
+                <span class="text-[10px] text-muted-foreground font-mono shrink-0">
+                  {{ subOrderProgress(sub) }}%
+                </span>
+              </div>
+            </div>
+            <span [innerHTML]="getStageSvg('chevron-right')" class="text-muted-foreground group-hover:text-primary transition-colors shrink-0 mt-2" style="width: 14px; height: 14px;"></span>
+          </div>
+        </button>
+      }
+    </div>
+
+    <!-- Right: Info panels -->
+    <div class="space-y-4">
+      <div class="bg-card border border-border rounded-xl p-4">
+        <p class="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Patient</p>
+        @if (patient(); as p) {
+          <button (click)="navigateToPatient()" class="w-full text-left group">
+            <div class="flex items-center gap-2.5 mb-2">
+              <app-avatar [name]="p.name" [size]="'md'" [variant]="'primary'" />
+              <div class="min-w-0">
+                <p class="text-sm font-semibold text-foreground group-hover:text-primary truncate">{{ p.name }}</p>
+                <p class="text-xs text-muted-foreground">{{ p.dob }}</p>
+              </div>
+              <span [innerHTML]="getStageSvg('chevron-right')" class="text-muted-foreground ml-auto group-hover:text-primary shrink-0" style="width: 12px; height: 12px;"></span>
+            </div>
+            <div class="space-y-0.5 text-xs text-muted-foreground">
+              <div class="truncate">{{ p.phone }}</div>
+              <div class="truncate">{{ p.email }}</div>
+            </div>
+          </button>
+        } @else {
+          <p class="text-sm text-muted-foreground">&mdash;</p>
+        }
+      </div>
+
+      <div class="bg-card border border-border rounded-xl p-4">
+        <p class="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Referring Doctor</p>
+        @if (doctor(); as d) {
+          <button (click)="navigateToDoctor()" class="w-full text-left group">
+            <div class="flex items-center gap-2.5">
+              <app-avatar [name]="d.name" [size]="'md'" [variant]="'success'" />
+              <div class="min-w-0">
+                <p class="text-sm font-semibold text-foreground group-hover:text-primary truncate">{{ d.name }}</p>
+                <p class="text-xs text-muted-foreground">{{ d.specialty }}</p>
+              </div>
+              <span [innerHTML]="getStageSvg('chevron-right')" class="text-muted-foreground ml-auto group-hover:text-primary shrink-0" style="width: 12px; height: 12px;"></span>
+            </div>
+          </button>
+        } @else {
+          <p class="text-sm text-muted-foreground">&mdash;</p>
+        }
+      </div>
+
+      <div class="bg-card border border-border rounded-xl p-4">
+        <p class="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Clinic</p>
+        @if (clinic(); as c) {
+          <button (click)="navigateToClinic()" class="w-full text-left group">
+            <div class="flex items-center gap-2.5">
+              <app-avatar [name]="c.name" [size]="'md'" [variant]="'warning'" />
+              <div class="min-w-0">
+                <p class="text-sm font-semibold text-foreground group-hover:text-primary truncate">{{ c.name }}</p>
+                <p class="text-xs text-muted-foreground">{{ c.city }}</p>
+              </div>
+              <span [innerHTML]="getStageSvg('chevron-right')" class="text-muted-foreground ml-auto group-hover:text-primary shrink-0" style="width: 12px; height: 12px;"></span>
+            </div>
+          </button>
+        } @else {
+          <p class="text-sm text-muted-foreground">&mdash;</p>
+        }
+      </div>
+
+      <div class="bg-card border border-border rounded-xl p-4 space-y-2">
+        <p class="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Quick Actions</p>
+        <app-button variant="ghost" size="sm" class="w-full flex items-center gap-2 justify-start" (onClick)="navigateToWorkflow()">
+          <span [innerHTML]="getStageSvg('layers')" style="width: 13px; height: 13px;"></span> View Workflow
+        </app-button>
+        <app-button variant="ghost" size="sm" class="w-full flex items-center gap-2 justify-start" (onClick)="navigateToFiles()">
+          <span [innerHTML]="getStageSvg('scan-line')" style="width: 13px; height: 13px;"></span> All Files & Scans
+        </app-button>
+        <app-button variant="ghost" size="sm" class="w-full flex items-center gap-2 justify-start">
+          <span [innerHTML]="getStageSvg('message-square')" style="width: 13px; height: 13px;"></span> Add Note
+        </app-button>
+      </div>
+    </div>
+  </div>
+</div>

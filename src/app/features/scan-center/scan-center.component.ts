@@ -18,9 +18,6 @@ interface ScanOrderRow extends Order {
   standalone: true,
   imports: [
     CommonModule,
-    StatusBadgeComponent,
-    ButtonComponent,
-    AvatarComponent
   ],
   templateUrl: './scan-center.component.html',
   styleUrl: './scan-center.component.scss'

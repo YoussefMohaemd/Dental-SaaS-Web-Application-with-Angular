@@ -13,6 +13,7 @@ export class ScanCenterDataService {
   private readonly _error = signal<string | null>(null);
 
   readonly centers = this._centers.asReadonly();
+  readonly scanCenters = this._centers.asReadonly();
   readonly loading = this._loading.asReadonly();
   readonly error = this._error.asReadonly();
 

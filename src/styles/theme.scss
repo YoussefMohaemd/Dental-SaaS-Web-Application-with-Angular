@@ -50,47 +50,47 @@
 // ============================================================================
 :root {
   // Base colors
-  --background: #{$color-background-light};
-  --foreground: #{$color-foreground-light};
+  --background: #{$color-background};
+  --foreground: #{$color-foreground};
 
   // Card colors
-  --card: #{$color-card-light};
-  --card-foreground: #{$color-card-foreground-light};
+  --card: #{$color-card};
+  --card-foreground: #{$color-card-foreground};
 
   // Sidebar colors
-  --sidebar: #{$color-sidebar-light};
-  --sidebar-foreground: #{$color-sidebar-foreground-light};
-  --sidebar-active: #{$color-sidebar-active-light};
-  --sidebar-muted: #{$color-sidebar-muted-light};
+  --sidebar: #{$color-sidebar};
+  --sidebar-foreground: #{$color-sidebar-foreground};
+  --sidebar-active: #{$color-sidebar-active};
+  --sidebar-muted: #{$color-sidebar-muted};
 
   // Primary brand colors
-  --primary: #{$color-primary-light};
-  --primary-foreground: #{$color-primary-foreground-light};
+  --primary: #{$color-primary};
+  --primary-foreground: #{$color-primary-foreground};
 
   // Secondary colors
-  --secondary: #{$color-secondary-light};
-  --secondary-foreground: #{$color-secondary-foreground-light};
+  --secondary: #{$color-secondary};
+  --secondary-foreground: #{$color-secondary-foreground};
 
   // Muted colors
-  --muted: #{$color-muted-light};
-  --muted-foreground: #{$color-muted-foreground-light};
+  --muted: #{$color-muted};
+  --muted-foreground: #{$color-muted-foreground};
 
   // Accent colors
-  --accent: #{$color-accent-light};
-  --accent-foreground: #{$color-accent-foreground-light};
+  --accent: #{$color-accent};
+  --accent-foreground: #{$color-accent-foreground};
 
   // Status colors
-  --success: #{$color-success-light};
-  --warning: #{$color-warning-light};
-  --danger: #{$color-danger-light};
+  --success: #{$color-success};
+  --warning: #{$color-warning};
+  --danger: #{$color-danger};
 
   // Border & Input
-  --border: #{$color-border-light};
-  --input: #{$color-input-light};
-  --ring: #{$color-ring-light};
+  --border: #{$color-border};
+  --input: #{$color-input};
+  --ring: #{$color-ring};
 
   // Radius
-  --radius: #{$radius-lg};
+  --radius: #{$radius-md};
 }
 
 // ============================================================================

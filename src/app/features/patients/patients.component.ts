@@ -13,7 +13,6 @@ import { AvatarComponent } from '@shared/components/avatar/avatar.component';
   standalone: true,
   imports: [
     CommonModule,
-    StatusBadgeComponent,
     ButtonComponent,
     AvatarComponent
   ],

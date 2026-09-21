@@ -1,12 +1,12 @@
 import { Component, computed, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CdkDragDrop, DragDropModule, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
+import { DragDropModule, CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 import { OrderDataService } from '@core/services/order-data.service';
 import { NavigationService } from '@core/services/navigation.service';
 import { FormatUtils } from '@core/services/format-utils.service';
 import { Order, OrderStatus } from '@core/models';
-import { StatusBadgeComponent } from '@shared/components/status-badge/status-badge.component';
 import { PriorityBadgeComponent } from '@shared/components/priority-badge/priority-badge.component';
+import { StatusBadgeComponent } from '@shared/components/status-badge/status-badge.component';
 import { AvatarComponent } from '@shared/components/avatar/avatar.component';
 
 interface ColumnConfig {
@@ -22,9 +22,7 @@ interface ColumnConfig {
   imports: [
     CommonModule,
     DragDropModule,
-    StatusBadgeComponent,
     PriorityBadgeComponent,
-    AvatarComponent
   ],
   templateUrl: './workflow-board.component.html',
   styleUrl: './workflow-board.component.scss'
@@ -98,6 +96,12 @@ export class WorkflowBoardComponent implements OnInit {
   private getStatusFromContainer(containerId: string): OrderStatus | null {
     const col = this.columns.find(c => c.id === containerId);
     return col?.id || null;
+  }
+
+  isDraggedInColumn(colId: string): boolean {
+    const id = this.dragId();
+    if (!id) return false;
+    return this.getColumnOrders(colId).some(o => o.id === id);
   }
 
   trackByOrderId(index: number, order: Order): string {
