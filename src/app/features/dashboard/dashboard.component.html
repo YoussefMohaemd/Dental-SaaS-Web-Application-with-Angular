@@ -7,56 +7,65 @@
         {{ today | date:'EEEE, MMMM d, y' }} · Week {{ today | date:'w' }}
       </p>
     </div>
-    <app-button variant="primary" (onClick)="navigateTo('createOrder')" class="flex items-center gap-2">
+    <button
+      type="button"
+      (click)="navigateTo('createOrder')"
+      class="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+    >
       <span [innerHTML]="getIconSvg('plus')"></span>
       New Order
-    </app-button>
+    </button>
   </div>
 
   <!-- Alert -->
   @if (urgentOrdersCount() > 0) {
     <div class="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex items-center gap-3">
-      <span [innerHTML]="getIconSvg('alert-triangle')" class="text-amber-600 shrink-0"></span>
+      <span [innerHTML]="getIconSvg('alert-triangle-sm')" class="text-amber-600 shrink-0 flex"></span>
       <p class="text-sm text-amber-800">
         <strong>{{ urgentOrdersCount() }} urgent orders</strong> require immediate attention today.
       </p>
-      <app-button variant="ghost" size="sm" (onClick)="navigateTo('orders')" class="ml-auto flex items-center gap-1">
-        View <span [innerHTML]="getIconSvg('chevron-right')"></span>
-      </app-button>
+      <button
+        type="button"
+        (click)="navigateTo('orders')"
+        class="ml-auto text-xs text-amber-700 font-semibold hover:underline flex items-center gap-1 shrink-0"
+      >
+        View <span [innerHTML]="getIconSvg('arrow-right')" class="flex"></span>
+      </button>
     </div>
   }
 
   <!-- Stats -->
   <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
     @for (card of statCards; track card.label) {
-      <app-button
-        variant="outline"
-        class="flex items-start gap-4 hover:border-primary/40 transition-all text-left w-full group"
-        (onClick)="navigateTo(card.route)"
+      <button
+        type="button"
+        (click)="navigateTo(card.route)"
+        class="bg-card border border-border rounded-xl p-5 flex items-start gap-4 hover:border-primary/40 transition-all text-left w-full group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
       >
         <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 {{ card.color }}">
-          <span [innerHTML]="getIconSvg(card.icon)" class="text-white"></span>
+          <span [innerHTML]="getIconSvg(card.icon)" class="text-white flex"></span>
         </div>
         <div class="min-w-0">
           <p class="text-xs text-muted-foreground font-medium">{{ card.label }}</p>
           <p class="text-2xl font-display font-bold text-foreground mt-0.5">{{ card.value }}</p>
           <p class="text-xs text-muted-foreground mt-1">{{ card.sub }}</p>
         </div>
-        <span [innerHTML]="getIconSvg('chevron-right')" class="text-muted-foreground ml-auto mt-1 opacity-0 group-hover:opacity-100 transition-opacity"></span>
-      </app-button>
+        <span [innerHTML]="getIconSvg('chevron-right-lg')" class="text-muted-foreground ml-auto mt-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"></span>
+      </button>
     }
   </div>
 
   <!-- Main content -->
   <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-    <!-- Weekly chart -->
+    <!-- Order Volume chart (recharts BarChart parity: grouped Received/Completed bars,
+         dashed gridlines, Y axis, tooltip, legend) -->
     <div class="xl:col-span-2 bg-card border border-border rounded-xl p-5">
       <div class="flex items-center justify-between mb-5">
         <div>
           <h2 class="font-display font-semibold text-foreground">Order Volume</h2>
           <p class="text-xs text-muted-foreground mt-0.5">Orders received vs completed this week</p>
         </div>
-        <div class="flex items-center gap-4 text-xs">
+        <div class="flex items-center gap-4 text-xs text-foreground">
           <span class="flex items-center gap-1.5">
             <span class="w-2.5 h-2.5 rounded-sm bg-primary inline-block"></span>
             Received
@@ -67,17 +76,71 @@
           </span>
         </div>
       </div>
-      <div class="h-56 flex items-end justify-between gap-2">
-        @for (point of weeklyData; track point.day) {
-          <div class="flex-1 flex flex-col items-center gap-1 min-w-0">
-            <div class="flex gap-1 h-full items-end">
-              <div class="flex-1 bg-primary rounded-t transition-all" [style.height.%]="(point.orders / 21) * 100" title="{{ point.orders }} received"></div>
-              <div class="flex-1 bg-success rounded-t transition-all" [style.height.%]="(point.completed / 18) * 100" title="{{ point.completed }} completed"></div>
+      @if (volumeLoading()) {
+        <app-loading-state type="skeleton" [skeletonClass]="'skeleton h-[200px] rounded-lg'" />
+      } @else {
+        <div class="h-[200px] flex gap-2" role="img" aria-label="Bar chart of orders received versus completed per weekday">
+          <!-- Y axis -->
+          <div class="flex flex-col w-7 shrink-0" aria-hidden="true">
+            <div class="flex-1 flex flex-col justify-between text-right">
+              @for (tick of volumeTicks(); track tick) {
+                <span class="text-[11px] leading-none text-muted-foreground">{{ tick }}</span>
+              }
             </div>
-            <span class="text-xs text-muted-foreground">{{ point.day }}</span>
+            <div class="h-5 shrink-0"></div>
           </div>
-        }
-      </div>
+          <!-- Plot area -->
+          <div class="flex-1 flex flex-col min-w-0">
+            <div class="flex-1 relative min-h-0">
+              <div class="absolute inset-0 flex flex-col justify-between" aria-hidden="true">
+                @for (tick of volumeTicks(); track tick) {
+                  <div class="border-t border-dashed border-border"></div>
+                }
+              </div>
+              <div class="relative h-full flex items-stretch justify-between gap-1">
+                @for (point of weeklyData(); track point.day) {
+                  <div
+                    class="flex-1 flex flex-col min-w-0 relative rounded cursor-default"
+                    (mouseenter)="setHoveredDay(point.day)"
+                    (mouseleave)="clearHoveredDay()"
+                    (focusin)="setHoveredDay(point.day)"
+                    (focusout)="clearHoveredDay()"
+                    tabindex="0"
+                    [attr.aria-label]="point.day + ': ' + point.orders + ' received, ' + point.completed + ' completed'"
+                  >
+                    @if (hoveredDay() === point.day) {
+                      <div class="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 z-10 whitespace-nowrap rounded-lg border border-border bg-card px-2.5 py-1.5 text-xs shadow-xl pointer-events-none">
+                        <p class="font-semibold text-foreground mb-1">{{ point.day }}</p>
+                        <p class="flex items-center gap-1.5 text-muted-foreground">
+                          <span class="w-2 h-2 rounded-sm bg-primary inline-block"></span>
+                          Received: <span class="font-semibold text-foreground">{{ point.orders }}</span>
+                        </p>
+                        <p class="flex items-center gap-1.5 text-muted-foreground mt-0.5">
+                          <span class="w-2 h-2 rounded-sm bg-success inline-block"></span>
+                          Completed: <span class="font-semibold text-foreground">{{ point.completed }}</span>
+                        </p>
+                      </div>
+                    }
+                    <div class="flex-1 flex gap-1 items-end justify-center min-h-0">
+                      <div
+                        class="w-5 max-w-[42%] min-h-1 bg-primary rounded-t-[4px] transition-all"
+                        [style.height.%]="orderBarHeight(point)"
+                        [title]="point.day + ' received: ' + point.orders"
+                      ></div>
+                      <div
+                        class="w-5 max-w-[42%] min-h-1 bg-success rounded-t-[4px] transition-all"
+                        [style.height.%]="completedBarHeight(point)"
+                        [title]="point.day + ' completed: ' + point.completed"
+                      ></div>
+                    </div>
+                    <span class="h-5 shrink-0 flex items-center justify-center text-[11px] text-muted-foreground">{{ point.day }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      }
     </div>
 
     <!-- Workflow distribution -->
@@ -85,7 +148,7 @@
       <h2 class="font-display font-semibold text-foreground mb-1">Workflow Status</h2>
       <p class="text-xs text-muted-foreground mb-5">Current orders by stage</p>
       <div class="space-y-3">
-        @for (w of workflowData; track w.name) {
+        @for (w of workflowData(); track w.name) {
           <div class="flex items-center gap-3">
             <span class="text-xs text-muted-foreground w-20 shrink-0">{{ w.name }}</span>
             <div class="flex-1 bg-muted rounded-full h-2">
@@ -99,14 +162,13 @@
           </div>
         }
       </div>
-      <app-button
-        variant="outline"
-        size="sm"
-        class="mt-5 w-full flex items-center justify-center gap-2"
-        (onClick)="navigateTo('workflowBoard')"
+      <button
+        type="button"
+        (click)="navigateTo('workflowBoard')"
+        class="mt-5 w-full flex items-center justify-center gap-2 py-2 text-xs text-primary border border-primary/30 rounded-lg hover:bg-primary/5 transition-colors font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
       >
-        View Board <span [innerHTML]="getIconSvg('chevron-right')"></span>
-      </app-button>
+        View Board <span [innerHTML]="getIconSvg('arrow-right')" class="flex"></span>
+      </button>
     </div>
   </div>
 
@@ -119,9 +181,13 @@
           <h2 class="font-display font-semibold text-foreground">Recent Orders</h2>
           <p class="text-xs text-muted-foreground mt-0.5">Last updated activity</p>
         </div>
-        <app-button variant="ghost" size="sm" (onClick)="navigateTo('orders')" class="flex items-center gap-1">
-          View all <span [innerHTML]="getIconSvg('chevron-right')"></span>
-        </app-button>
+        <button
+          type="button"
+          (click)="navigateTo('orders')"
+          class="text-xs text-primary font-medium hover:underline flex items-center gap-1"
+        >
+          View all <span [innerHTML]="getIconSvg('chevron-right')" class="flex"></span>
+        </button>
       </div>
       <div class="overflow-x-auto">
         @if (loading()) {
@@ -181,33 +247,43 @@
           <h2 class="font-display font-semibold text-foreground">Activity</h2>
           <p class="text-xs text-muted-foreground mt-0.5">Recent events</p>
         </div>
-        <span [innerHTML]="getIconSvg('activity')" class="text-muted-foreground"></span>
+        <span [innerHTML]="getIconSvg('activity')" class="text-muted-foreground flex"></span>
       </div>
-      <div class="p-4 space-y-4 max-h-96 overflow-y-auto">
-        @for (notification of notifications; track notification.id) {
-          <div class="flex gap-3">
-            <div class="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0" [class.bg-primary]="!notification.read" [class.bg-muted-foreground]="notification.read"></div>
-            <div class="min-w-0">
-              <p class="text-xs font-semibold text-foreground">{{ notification.title }}</p>
-              <p class="text-xs text-muted-foreground mt-0.5 line-clamp-2">{{ notification.message }}</p>
-              <p class="text-xs text-muted-foreground/70 mt-1">{{ formatUtils.timeAgo(notification.createdAt) }}</p>
+      @if (activityLoading()) {
+        <app-loading-state type="skeleton" [skeletonClass]="'skeleton h-10'" />
+      } @else {
+        <div class="p-4 space-y-4 max-h-96 overflow-y-auto">
+          @for (notification of activity(); track notification.id) {
+            <div class="flex gap-3">
+              <div class="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0" [class.bg-primary]="!notification.read" [class.bg-muted-foreground]="notification.read"></div>
+              <div class="min-w-0">
+                <p class="text-xs font-semibold text-foreground">{{ notification.title }}</p>
+                <p class="text-xs text-muted-foreground mt-0.5 line-clamp-2">{{ notification.message }}</p>
+                <p class="text-xs text-muted-foreground/70 mt-1">{{ formatUtils.timeAgo(notification.createdAt) }}</p>
+              </div>
             </div>
-          </div>
-        }
-      </div>
+          } @empty {
+            <p class="text-xs text-muted-foreground text-center py-6">No recent activity.</p>
+          }
+        </div>
+      }
       <div class="px-5 pb-4">
-        <app-button variant="ghost" size="sm" class="w-full flex items-center justify-center gap-1" (onClick)="navigateTo('notifications')">
-          All activity <span [innerHTML]="getIconSvg('chevron-right')"></span>
-        </app-button>
+        <button
+          type="button"
+          (click)="navigateTo('notifications')"
+          class="w-full text-xs text-primary font-medium hover:underline flex items-center justify-center gap-1"
+        >
+          All activity <span [innerHTML]="getIconSvg('chevron-right')" class="flex"></span>
+        </button>
       </div>
     </div>
   </div>
 
   <!-- Quick operational highlights -->
   <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-    @for (card of quickStats; track card.label) {
+    @for (card of quickStats(); track card.label) {
       <div class="bg-card border border-border rounded-xl p-4 flex items-center gap-4">
-        <span [innerHTML]="getIconSvg(card.icon)" [class]="card.color"></span>
+        <span [innerHTML]="getIconSvg(card.icon)" [class]="card.color + ' flex shrink-0'"></span>
         <div>
           <p class="text-xs text-muted-foreground">{{ card.label }}</p>
           <p class="font-display font-bold text-foreground">{{ card.value }}</p>

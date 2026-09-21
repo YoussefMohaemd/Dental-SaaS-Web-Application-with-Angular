@@ -34,9 +34,9 @@ describe('SelectComponent', () => {
 
   it('should render options', () => {
     const options = fixture.debugElement.queryAll(By.css('option'));
-    expect(options.length).toBe(3); // placeholder + 2 options
-    expect(options[1].nativeElement.textContent.trim()).toBe('Option 1');
-    expect(options[2].nativeElement.textContent.trim()).toBe('Option 2');
+    expect(options.length).toBe(2);
+    expect(options[0].nativeElement.textContent.trim()).toBe('Option 1');
+    expect(options[1].nativeElement.textContent.trim()).toBe('Option 2');
   });
 
   it('should bind value to select', () => {

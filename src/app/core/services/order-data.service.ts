@@ -3,6 +3,18 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, of, delay, map, catchError } from 'rxjs';
 import { Order, OrderFilters, OrderStatus, Priority } from '../models';
 
+/** Shared type-aware comparator (numbers, ISO dates, then locale string). */
+export function compareValues(a: unknown, b: unknown): number {
+  if (a == null && b == null) return 0;
+  if (a == null) return -1;
+  if (b == null) return 1;
+  if (typeof a === 'number' && typeof b === 'number') return a - b;
+  const aTime = Date.parse(String(a));
+  const bTime = Date.parse(String(b));
+  if (!Number.isNaN(aTime) && !Number.isNaN(bTime)) return aTime - bTime;
+  return String(a).localeCompare(String(b));
+}
+
 @Injectable({ providedIn: 'root' })
 export class OrderDataService {
   private readonly http = inject(HttpClient);
@@ -96,11 +108,11 @@ export class OrderDataService {
     }
 
     if (filters.sortColumn) {
+      const direction = filters.sortDirection === 'asc' ? 1 : -1;
       result.sort((a, b) => {
-        const av = (a as any)[filters.sortColumn!] ?? '';
-        const bv = (b as any)[filters.sortColumn!] ?? '';
-        const cmp = String(av).localeCompare(String(bv));
-        return filters.sortDirection === 'asc' ? cmp : -cmp;
+        const av = (a as unknown as Record<string, unknown>)[filters.sortColumn!];
+        const bv = (b as unknown as Record<string, unknown>)[filters.sortColumn!];
+        return compareValues(av, bv) * direction;
       });
     }
 

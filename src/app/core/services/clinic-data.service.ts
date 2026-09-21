@@ -47,4 +47,8 @@ export class ClinicDataService {
   getClinicById(id: string): Clinic | undefined {
     return this._clinics().find(c => c.id === id);
   }
+
+  addClinic(clinic: Clinic): void {
+    this._clinics.update(current => [clinic, ...current]);
+  }
 }

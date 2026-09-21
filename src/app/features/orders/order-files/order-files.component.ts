@@ -130,10 +130,26 @@ export class OrderFilesComponent {
   }
 
   fileIcon(fileType: string): string {
-    if (['JPG', 'PNG'].includes(fileType)) return '🖼️';
-    if (fileType === 'PDF') return '📄';
-    if (['STL', 'PLY', 'OBJ', 'DCM'].includes(fileType)) return '🦷';
-    return '📁';
+    const type = (fileType ?? '').toUpperCase();
+    if (type === 'JPG' || type === 'PNG') {
+      return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>';
+    }
+    if (type === 'PDF') {
+      return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>';
+    }
+    return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
+  }
+
+  fileIconLarge(fileType: string): string {
+    return this.fileIcon(fileType).replace('width="20" height="20"', 'width="48" height="48"');
+  }
+
+  fileIconLabel(fileType: string): string {
+    const type = (fileType ?? '').toUpperCase();
+    if (['JPG', 'PNG'].includes(type)) return 'image file';
+    if (type === 'PDF') return 'PDF document';
+    if (['STL', 'PLY', 'OBJ', 'DCM'].includes(type)) return '3D scan file';
+    return 'attachment';
   }
 
   private simulateUpload(fileId: string): void {

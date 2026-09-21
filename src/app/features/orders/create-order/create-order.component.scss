@@ -2,9 +2,23 @@
   display: block;
 }
 
+// React parity: inputs use primary-tinted focus ring; fall back gracefully if
+// the legacy --color-primary token is unavailable.
 select:focus,
-input:focus {
+input:focus,
+textarea:focus {
   outline: none;
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 20%, transparent);
+  border-color: var(--primary, var(--color-primary));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary, var(--color-primary)) 20%, transparent);
+}
+
+// Stepper buttons: completed steps stay interactive, future steps are inert.
+button[disabled] {
+  cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+  :host ::ng-deep .grid {
+    gap: 0.75rem;
+  }
 }

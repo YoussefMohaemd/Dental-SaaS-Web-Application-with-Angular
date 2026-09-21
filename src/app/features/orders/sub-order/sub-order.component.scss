@@ -1,3 +1,6 @@
+// Sub-order detail is Tailwind-first (React parity: SubOrderPage uses only
+// utility classes). Keep the host block-level; theme tokens come from the
+// centralized theme (styles/theme.scss) so light/dark follow automatically.
 :host {
   display: block;
 }

@@ -5,10 +5,8 @@ import { PatientDataService } from '@core/services/patient-data.service';
 import { DoctorDataService } from '@core/services/doctor-data.service';
 import { ClinicDataService } from '@core/services/clinic-data.service';
 import { NavigationService } from '@core/services/navigation.service';
-import { Patient, Doctor, Clinic } from '@core/models';
 import { ButtonComponent } from '@shared/components/button/button.component';
-import { InputComponent } from '@shared/components/input/input.component';
-import { SelectComponent } from '@shared/components/select/select.component';
+import { TeethChartComponent } from '@shared/components/teeth-chart/teeth-chart.component';
 
 interface Service {
   id: string;
@@ -16,6 +14,23 @@ interface Service {
   description: string;
   icon: string;
   scanRequirements: string[];
+}
+
+export interface ServiceDetail {
+  shade: string;
+  arch: string;
+  occlusalConcept: string;
+  implantSystem: string;
+  fileFormat: string;
+  serviceNotes: string;
+}
+
+export interface ServiceClinicalForm {
+  clinicalNotes: string;
+  occlusalContact: string;
+  marginType: string;
+  material: string;
+  specialInstructions: string;
 }
 
 const SERVICES: Service[] = [
@@ -39,10 +54,39 @@ const STEPS = [
   { id: 7, label: 'Review', short: 'Review' },
 ];
 
+const SHADES = ['A1', 'A2', 'A3', 'A3.5', 'B1', 'B2', 'C2', 'D3', 'BL1', 'BL2'];
+const FILE_FORMATS = ['STL', 'PLY', 'OBJ', 'DICOM', 'STL+OBJ'];
+const OCCLUSAL_CONCEPTS = ['Mutually Protected', 'Group Function', 'Full Balanced'];
+const IMPLANT_SYSTEMS = ['Straumann', 'Nobel Biocare', 'Zimmer Biomet', 'Neodent', 'Other'];
+const OCCLUSAL_CONTACTS = ['Light contact', 'Full contact', 'No contact'];
+const MARGIN_TYPES = ['Chamfer', 'Shoulder', 'Feather edge', 'Knife edge'];
+const MATERIALS = ['Zirconia (Multilayer)', 'PFM', 'E-max', 'PMMA', 'Titanium'];
+
+function defaultDetail(): ServiceDetail {
+  return {
+    shade: 'A2',
+    arch: 'Both',
+    occlusalConcept: 'Mutually Protected',
+    implantSystem: 'Straumann',
+    fileFormat: 'STL',
+    serviceNotes: '',
+  };
+}
+
+function defaultClinicalForm(): ServiceClinicalForm {
+  return {
+    clinicalNotes: '',
+    occlusalContact: 'Light contact',
+    marginType: 'Chamfer',
+    material: 'Zirconia (Multilayer)',
+    specialInstructions: '',
+  };
+}
+
 @Component({
   selector: 'app-create-order',
   standalone: true,
-  imports: [CommonModule, FormsModule, ButtonComponent, InputComponent, SelectComponent],
+  imports: [CommonModule, FormsModule, ButtonComponent, TeethChartComponent],
   templateUrl: './create-order.component.html',
   styleUrl: './create-order.component.scss'
 })
@@ -73,17 +117,57 @@ export class CreateOrderComponent {
     format: 'STL',
   });
 
+  /** Per-service fabrication details (Step 4, React parity). */
+  readonly serviceDetails = signal<Record<string, ServiceDetail>>({});
+  /** Per-service clinical forms (Step 5, React parity). */
+  readonly serviceForms = signal<Record<string, ServiceClinicalForm>>({});
+
   readonly selectedPatient = computed(() => this.patients().find(p => p.id === this.form().patientId));
   readonly selectedDoctor = computed(() => this.doctors().find(d => d.id === this.form().doctorId));
   readonly selectedClinic = computed(() => this.clinics().find(c => c.id === this.form().clinicId));
   readonly selectedServiceObjects = computed(() => SERVICES.filter(s => this.selectedServices().includes(s.id)));
+  /** Service names for the tooth chart legend (React parity). */
+  readonly serviceNames = computed(() => this.selectedServiceObjects().map(s => s.name));
+  /** serviceTeeth keyed by service NAME for the chart (React maps id -> name). */
+  readonly serviceTeethByName = computed(() => {
+    const byId = this.serviceTeeth();
+    const out: Record<string, number[]> = {};
+    for (const [id, teeth] of Object.entries(byId)) {
+      out[SERVICES.find(s => s.id === id)?.name ?? id] = teeth;
+    }
+    return out;
+  });
   readonly steps = STEPS;
   readonly services: Service[] = SERVICES;
+  readonly shades = SHADES;
+  readonly fileFormats = FILE_FORMATS;
+  readonly occlusalConcepts = OCCLUSAL_CONCEPTS;
+  readonly implantSystems = IMPLANT_SYSTEMS;
+  readonly occlusalContacts = OCCLUSAL_CONTACTS;
+  readonly marginTypes = MARGIN_TYPES;
+  readonly materials = MATERIALS;
+
+  /** React parity: only Active clinics are offered in Step 1. */
+  readonly activeClinics = computed(() => this.clinics().filter(c => c.status === 'Active'));
+
   readonly doctorsForClinic = computed(() => {
     const clinicId = this.form().clinicId;
     if (!clinicId) return this.doctors();
     return this.doctors().filter(d => d.clinicId === clinicId);
   });
+
+  /** All teeth across general + per-service assignment (Review summary). */
+  readonly allTeethCombined = computed(() => {
+    const set = new Set<number>(this.selectedTeeth());
+    for (const teeth of Object.values(this.serviceTeeth())) {
+      for (const t of teeth) set.add(t);
+    }
+    return [...set].sort((a, b) => a - b);
+  });
+
+  readonly hasAnyTeeth = computed(
+    () => this.selectedTeeth().length > 0 || Object.values(this.serviceTeeth()).some(v => v.length > 0)
+  );
 
   setField(key: string, value: string): void {
     this.form.update(f => ({ ...f, [key]: value }));
@@ -98,6 +182,41 @@ export class CreateOrderComponent {
     this.selectedServices.update(prev =>
       prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]
     );
+    // Lazily seed per-service detail + clinical form records (React parity:
+    // each selected service gets dedicated Details/Forms/Files sections).
+    if (!this.serviceDetails()[id]) {
+      this.serviceDetails.update(prev => ({ ...prev, [id]: defaultDetail() }));
+    }
+    if (!this.serviceForms()[id]) {
+      this.serviceForms.update(prev => ({ ...prev, [id]: defaultClinicalForm() }));
+    }
+  }
+
+  setServiceDetail(serviceId: string, key: keyof ServiceDetail, value: string): void {
+    this.serviceDetails.update(prev => ({
+      ...prev,
+      [serviceId]: { ...(prev[serviceId] ?? defaultDetail()), [key]: value },
+    }));
+  }
+
+  getServiceDetail(serviceId: string): ServiceDetail {
+    return this.serviceDetails()[serviceId] ?? defaultDetail();
+  }
+
+  setServiceForm(serviceId: string, key: keyof ServiceClinicalForm, value: string): void {
+    this.serviceForms.update(prev => ({
+      ...prev,
+      [serviceId]: { ...(prev[serviceId] ?? defaultClinicalForm()), [key]: value },
+    }));
+  }
+
+  getServiceForm(serviceId: string): ServiceClinicalForm {
+    return this.serviceForms()[serviceId] ?? defaultClinicalForm();
+  }
+
+  /** Whether a restoration service shows Shade/Arch fields (React parity). */
+  needsShadeArch(serviceId: string): boolean {
+    return serviceId === 'fmb' || serviceId === 'final-restoration' || serviceId === 'temp-restoration';
   }
 
   toggleTooth(num: number): void {
@@ -113,8 +232,26 @@ export class CreateOrderComponent {
   }
 
   allSelectedTeeth(): number[] {
+    return this.visibleSelectedTeeth();
+  }
+
+  /**
+   * Teeth visible in the step-3 chart (root cause fix: this was a plain method
+   * reading signals during template evaluation, so change detection could not
+   * track the dependency and the chart sometimes rendered a stale selection.
+   * As a computed, the chart input updates reliably on every toggle).
+   */
+  readonly visibleSelectedTeeth = computed(() => {
     const active = this.activeServiceForTeeth();
-    return active ? (this.serviceTeeth()[active] || []) : this.selectedTeeth();
+    return active ? [...(this.serviceTeeth()[active] || [])] : [...this.selectedTeeth()];
+  });
+
+  teethForService(serviceId: string): number[] {
+    return this.serviceTeeth()[serviceId] || [];
+  }
+
+  serviceName(serviceId: string): string {
+    return SERVICES.find(s => s.id === serviceId)?.name ?? serviceId;
   }
 
   canProceed(): boolean {
@@ -122,6 +259,38 @@ export class CreateOrderComponent {
     if (step === 1) return !!this.form().patientId && !!this.form().doctorId && !!this.form().clinicId;
     if (step === 2) return this.selectedServices().length > 0;
     return true;
+  }
+
+  validationMessage(): string {
+    if (this.step() === 1) return 'Select a patient, doctor and clinic to continue.';
+    if (this.step() === 2) return 'Select at least one service to continue.';
+    return '';
+  }
+
+  /**
+   * Guarded step navigation (root cause fix: the stepper previously allowed
+   * jumping to any step via step.set(), bypassing validation).
+   * - Completed steps are always clickable (React-style sequential + back-nav).
+   * - The immediate next step requires the current step to be valid.
+   * - Future steps beyond next are blocked until prerequisites are met.
+   */
+  goToStep(target: number): void {
+    const current = this.step();
+    if (target === current) return;
+    if (target < current) {
+      this.step.set(target);
+      return;
+    }
+    if (target === current + 1 && this.canProceed()) {
+      this.step.set(target);
+    }
+  }
+
+  canGoToStep(target: number): boolean {
+    const current = this.step();
+    if (target <= current) return true;
+    if (target === current + 1) return this.canProceed();
+    return false;
   }
 
   nextStep(): void {
@@ -139,7 +308,8 @@ export class CreateOrderComponent {
   }
 
   submitOrder(): void {
-    this.navigationService.navigate('orders');
+    // React parity: final "Create Order" navigates to the created order view.
+    this.navigationService.navigate('viewOrder', { orderId: 'ord-1' });
   }
 
   getStepConfig(stepId: number) {
@@ -156,11 +326,13 @@ export class CreateOrderComponent {
 
   getIconSvg(name: string): string {
     const icons: Record<string, string> = {
-      check: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"></polyline></svg>',
-      'chevron-right': '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>',
-      'chevron-left': '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>',
-      plus: '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>',
-      'file-up': '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line></svg>'
+      check: '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+      'check-lg': '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+      'chevron-right': '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>',
+      'chevron-left': '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>',
+      plus: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>',
+      'file-up': '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 12 15 15"/></svg>',
+      'file-up-lg': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 12 15 15"/></svg>'
     };
     return icons[name] || '';
   }

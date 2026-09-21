@@ -34,4 +34,33 @@ describe('ViewOrderComponent', () => {
     expect(progress).toBeGreaterThanOrEqual(0);
     expect(progress).toBeLessThanOrEqual(100);
   });
+
+  it('should toggle the more-actions menu', () => {
+    expect(component.moreMenuOpen()).toBeFalse();
+    component.openMoreMenu();
+    expect(component.moreMenuOpen()).toBeTrue();
+    component.closeMoreMenu();
+    expect(component.moreMenuOpen()).toBeFalse();
+  });
+
+  it('should open and close the note dialog', () => {
+    component.openNoteDialog();
+    expect(component.noteDialogVisible()).toBeTrue();
+    component.closeNoteDialog();
+    expect(component.noteDialogVisible()).toBeFalse();
+  });
+
+  it('should not save empty notes', () => {
+    component.noteText.set('   ');
+    component.saveNote();
+    expect(component.notes().length).toBe(0);
+    expect(component.noteSaving()).toBeFalse();
+  });
+
+  it('should ask for delete confirmation', () => {
+    component.askDelete();
+    expect(component.confirmDeleteVisible()).toBeTrue();
+    component.cancelDelete();
+    expect(component.confirmDeleteVisible()).toBeFalse();
+  });
 });

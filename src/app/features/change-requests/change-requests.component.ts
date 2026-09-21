@@ -78,6 +78,25 @@ export class ChangeRequestsComponent {
     this.navigationService.navigate('viewOrder', { orderId });
   }
 
+  approve(requestId: string): void {
+    this.changeRequestService.updateStatus(requestId, 'Approved');
+  }
+
+  reject(requestId: string): void {
+    this.changeRequestService.updateStatus(requestId, 'Rejected');
+  }
+
+  getIconSvg(name: string): string {
+    const icons: Record<string, string> = {
+      search: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>',
+      refresh: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.23 4.27A9 9 0 0 1 3.51 15"/></svg>',
+      'refresh-lg': '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.23 4.27A9 9 0 0 1 3.51 15"/></svg>',
+      'chevron-left': '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>',
+      'chevron-right': '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>',
+    };
+    return icons[name] || '';
+  }
+
   isActionable(status: ChangeRequest['status']): boolean {
     return status === 'Pending' || status === 'In Review';
   }

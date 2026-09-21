@@ -1,8 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { signal } from '@angular/core';
+import { provideRouter } from '@angular/router';
 import { SidebarComponent } from './sidebar.component';
-import { NavigationService } from '../../../core/services/navigation.service';
-import { ThemeService } from '../../../core/services/theme.service';
+import { NavigationService } from '@core/services/navigation.service';
+import { ThemeService } from '@core/services/theme.service';
 
 describe('SidebarComponent', () => {
   let component: SidebarComponent;
@@ -11,18 +13,19 @@ describe('SidebarComponent', () => {
   let themeService: jasmine.SpyObj<ThemeService>;
 
   beforeEach(async () => {
-    const navSpy = jasmine.createSpyObj('NavigationService', ['navigate'], {
-      sidebarOpen: { asReadonly: () => ({ set: () => {}, update: () => {} }) },
-      currentPage: { asReadonly: () => 'dashboard' },
-      activeGroup: { asReadonly: () => 'dashboard' }
+    const navSpy = jasmine.createSpyObj('NavigationService', ['navigate', 'toggleSidebar'], {
+      sidebarOpen: signal(true),
+      currentPage: signal('dashboard'),
+      activeGroup: signal('dashboard'),
     });
     const themeSpy = jasmine.createSpyObj('ThemeService', [], {
-      isDark: { asReadonly: () => false }
+      isDark: signal(false),
     });
 
     await TestBed.configureTestingModule({
       imports: [SidebarComponent],
       providers: [
+        provideRouter([]),
         { provide: NavigationService, useValue: navSpy },
         { provide: ThemeService, useValue: themeSpy }
       ]
@@ -40,8 +43,9 @@ describe('SidebarComponent', () => {
   });
 
   it('should display logo', () => {
-    const logo = fixture.debugElement.query(By.css('.font-display'));
-    expect(logo.nativeElement.textContent.trim()).toContain('DentaLab');
+    const candidates = fixture.debugElement.queryAll(By.css('.font-display'));
+    const logo = candidates.find(el => (el.nativeElement.textContent ?? '').includes('DentaLab'));
+    expect(logo).toBeTruthy();
   });
 
   it('should display navigation items', () => {
@@ -50,7 +54,12 @@ describe('SidebarComponent', () => {
   });
 
   it('should display user info', () => {
-    const userName = fixture.debugElement.query(By.css('.font-semibold'));
-    expect(userName.nativeElement.textContent.trim()).toBe('Jessica Ruiz');
+    const candidates = fixture.debugElement.queryAll(By.css('.font-semibold'));
+    const userName = candidates.find(el => (el.nativeElement.textContent ?? '').trim() === 'Jessica Ruiz');
+    expect(userName).toBeTruthy();
+  });
+
+  it('should collapse when the sidebar signal is closed', () => {
+    expect(component.sidebarClasses()).toContain('w-56');
   });
 });

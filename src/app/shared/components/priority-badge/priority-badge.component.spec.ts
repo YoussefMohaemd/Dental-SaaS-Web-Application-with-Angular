@@ -13,6 +13,7 @@ describe('PriorityBadgeComponent', () => {
 
     fixture = TestBed.createComponent(PriorityBadgeComponent);
     component = fixture.componentInstance;
+    fixture.componentRef.setInput('priority', 'Normal');
     fixture.detectChanges();
   });
 

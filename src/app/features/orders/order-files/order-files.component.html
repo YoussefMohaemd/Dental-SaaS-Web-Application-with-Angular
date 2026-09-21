@@ -36,7 +36,7 @@
       <ul class="space-y-2.5">
         @for (file of uploadingFiles(); track file.id) {
           <li class="flex items-center gap-3">
-            <span class="text-xl" aria-hidden="true">{{ fileIcon(file.type) }}</span>
+            <span aria-hidden="true" [innerHTML]="fileIcon(file.type)"></span>
             <div class="min-w-0 flex-1">
               <p class="truncate text-sm font-medium text-foreground">{{ file.name }}</p>
               <div class="mt-1 h-1.5 overflow-hidden rounded-full bg-muted">
@@ -54,7 +54,7 @@
     <h2 class="mb-3 text-sm font-semibold text-foreground">Uploaded Files ({{ uploadedFiles().length }})</h2>
     @if (uploadedFiles().length === 0) {
       <div class="flex flex-col items-center py-8 text-center">
-        <p class="text-3xl" aria-hidden="true">📂</p>
+        <span aria-hidden="true" class="text-muted-foreground"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg></span>
         <p class="mt-2 text-sm font-semibold text-foreground">No files uploaded</p>
         <p class="text-xs text-muted-foreground">Use the drop zone above to add scan files.</p>
       </div>
@@ -62,7 +62,7 @@
       <ul class="divide-y divide-border">
         @for (file of uploadedFiles(); track file.id) {
           <li class="group flex items-center gap-3 py-2.5">
-            <span class="text-xl" aria-hidden="true">{{ fileIcon(file.type) }}</span>
+            <span aria-hidden="true" [innerHTML]="fileIcon(file.type)"></span>
             <div class="min-w-0 flex-1">
               <p class="truncate text-sm font-medium text-foreground">{{ file.name }}</p>
               <p class="mt-0.5 text-[11px] text-muted-foreground">{{ file.size }} · {{ file.uploadedBy }} · {{ file.uploadedAt }}</p>
@@ -94,7 +94,7 @@
       <ul class="space-y-2">
         @for (file of failedFiles(); track file.id) {
           <li class="flex items-center gap-3">
-            <span class="text-xl" aria-hidden="true">{{ fileIcon(file.type) }}</span>
+            <span aria-hidden="true" [innerHTML]="fileIcon(file.type)"></span>
             <p class="flex-1 truncate text-sm text-foreground">{{ file.name }}</p>
             <button type="button" (click)="retryUpload(file.id)" class="rounded-lg border border-border px-2.5 py-1 text-xs font-semibold text-foreground hover:bg-muted">
               Retry
@@ -115,7 +115,7 @@
   >
     @if (previewFile(); as selected) {
       <div class="flex flex-col items-center gap-2 py-4 text-center">
-        <span class="text-5xl" aria-hidden="true">{{ fileIcon(selected.type) }}</span>
+        <span aria-hidden="true" [innerHTML]="fileIconLarge(selected.type)"></span>
         <p class="text-sm font-semibold text-foreground">{{ selected.name }}</p>
         <p class="font-mono text-xs text-muted-foreground">{{ selected.type }} · {{ selected.size }}</p>
         <p class="text-xs text-muted-foreground">Uploaded by {{ selected.uploadedBy }} on {{ selected.uploadedAt }}</p>

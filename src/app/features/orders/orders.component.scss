@@ -3,33 +3,82 @@
   height: 100%;
 }
 
-::ng-deep .p-datatable-sm .p-datatable-thead > tr > th {
+// PrimeNG data-table layer: sticky header + zebra + sticky actions (React parity).
+// Visual tokens come from CSS vars so light/dark stay in sync with React.
+::ng-deep .orders-table.p-datatable-sm .p-datatable-thead > tr > th {
   font-size: 10px;
   font-weight: 600;
-  background: color-mix(in srgb, var(--color-muted) 80%, transparent);
+  background: color-mix(in srgb, var(--color-muted) 88%, transparent);
   color: var(--color-muted-foreground);
   padding: 0.625rem 0.5rem;
   white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 2;
   backdrop-filter: blur(4px);
 }
 
-::ng-deep .p-datatable-sm .p-datatable-thead > tr > th button {
+::ng-deep .orders-table.p-datatable-sm .p-datatable-thead > tr > th button {
   font-size: 10px;
   font-weight: 600;
   color: inherit;
   white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
 }
 
-::ng-deep .p-datatable-sm .p-datatable-thead > tr > th button:hover {
+::ng-deep .orders-table.p-datatable-sm .p-datatable-thead > tr > th button:hover {
   color: var(--color-foreground);
 }
 
-::ng-deep .p-datatable-sm .p-datatable-tbody > tr > td {
+::ng-deep .orders-table.p-datatable-sm .p-datatable-thead > tr > th button:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+// Sort indicator icon: fixed size, vertically centered with the label.
+::ng-deep .orders-table.p-datatable-sm .p-datatable-thead > tr > th button .sort-icon {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  line-height: 0;
+}
+
+::ng-deep .orders-table.p-datatable-sm .p-datatable-thead > tr > th button .sort-icon svg {
+  display: block;
+}
+
+::ng-deep .orders-table.p-datatable-sm .p-datatable-tbody > tr > td {
   font-size: 12px;
   padding: 0.625rem 0.5rem;
   border-bottom: 1px solid var(--color-border);
+  background: var(--color-card);
 }
 
-::ng-deep .p-datatable-sm .p-datatable-tbody > tr:hover > td {
-  background: color-mix(in srgb, var(--color-muted) 30%, transparent);
+::ng-deep .orders-table.p-datatable-sm .p-datatable-tbody > tr:nth-child(even) > td {
+  background: color-mix(in srgb, var(--color-muted) 35%, var(--color-card));
+}
+
+::ng-deep .orders-table.p-datatable-sm .p-datatable-tbody > tr:hover > td {
+  background: color-mix(in srgb, var(--color-muted) 55%, transparent);
+}
+
+// Sticky right actions column (React: sticky right-0).
+::ng-deep .orders-table.p-datatable-sm .p-datatable-thead > tr > th:last-child,
+::ng-deep .orders-table.p-datatable-sm .p-datatable-tbody > tr > td:last-child {
+  position: sticky;
+  right: 0;
+  z-index: 1;
+  background: var(--color-card);
+  box-shadow: -8px 0 12px -8px rgb(0 0 0 / 0.12);
+}
+
+@media (max-width: 768px) {
+  ::ng-deep .orders-table.p-datatable-sm .p-datatable-thead > tr > th:last-child,
+  ::ng-deep .orders-table.p-datatable-sm .p-datatable-tbody > tr > td:last-child {
+    position: static;
+    box-shadow: none;
+  }
 }

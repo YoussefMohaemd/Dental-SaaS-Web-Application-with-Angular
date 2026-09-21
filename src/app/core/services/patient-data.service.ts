@@ -56,6 +56,10 @@ export class PatientDataService {
     return this._patients().filter(p => p.clinicId === clinicId);
   }
 
+  addPatient(patient: Patient): void {
+    this._patients.update(current => [patient, ...current]);
+  }
+
   applyFilters(filters: PatientFilters): Patient[] {
     let result = [...this._patients()];
 

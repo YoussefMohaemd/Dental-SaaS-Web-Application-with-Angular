@@ -15,5 +15,14 @@ export class PriorityBadgeComponent {
   private readonly formatUtils = inject(FormatUtils);
 
   readonly dotClass = computed(() => this.formatUtils.getPriorityDotClass(this.priority()));
-  readonly colorClass = computed(() => 'text-' + this.priority().toLowerCase() + '-500');
+  // React parity (OrdersPage PriorityBadge): Low slate / Normal blue / High amber / Urgent red.
+  readonly colorClass = computed(() => {
+    const colors: Record<string, string> = {
+      Low: 'text-slate-400',
+      Normal: 'text-blue-500',
+      High: 'text-amber-500',
+      Urgent: 'text-red-500',
+    };
+    return colors[this.priority()] ?? 'text-slate-400';
+  });
 }

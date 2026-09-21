@@ -1,9 +1,19 @@
 <div class="p-6 max-w-5xl mx-auto">
+  @if (!order()) {
+    <div class="flex h-64 flex-col items-center justify-center rounded-xl border border-border bg-card text-center">
+      <div class="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-muted text-muted-foreground" aria-hidden="true">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      </div>
+      <h2 class="mt-2 font-display font-semibold text-foreground">Order not found</h2>
+      <p class="mb-4 text-sm text-muted-foreground">This order may have been deleted or the link is invalid.</p>
+      <app-button variant="primary" size="sm" (onClick)="navigationService.navigate('orders')">Back to Orders</app-button>
+    </div>
+  } @else {
   <!-- Header -->
   <div class="flex items-start justify-between mb-6 gap-4 flex-wrap">
     <div class="flex items-center gap-3">
       <button (click)="navigationService.navigate('orders')" class="p-1.5 hover:bg-muted rounded-lg text-muted-foreground" aria-label="Back to orders">
-        <span [innerHTML]="getStageSvg('chevron-left')"></span>
+        <span [innerHTML]="getStageSvg('arrow-left')"></span>
       </button>
       <div>
         <div class="flex items-center gap-2.5 flex-wrap">
@@ -24,18 +34,34 @@
         <p class="text-sm text-muted-foreground mt-0.5">Received {{ formatUtils.formatDate(order().receivedAt) }} &middot; Due {{ formatUtils.formatDate(order().dueDate) }}</p>
       </div>
     </div>
-    <div class="flex items-center gap-2">
+    <div class="relative flex items-center gap-2">
       <app-button variant="outline" size="sm" (onClick)="navigateToEditOrder()" class="flex items-center gap-1.5">
         <span [innerHTML]="getStageSvg('edit')"></span> Edit
       </app-button>
-      <app-button variant="outline" size="sm" class="flex items-center gap-1.5">
+      <app-button variant="outline" size="sm" (onClick)="exportOrder()" class="flex items-center gap-1.5">
         <span [innerHTML]="getStageSvg('download')"></span> Export
       </app-button>
-      <button class="p-1.5 border border-border rounded-lg hover:bg-muted text-muted-foreground" aria-label="More actions">
+      <button (click)="openMoreMenu()" class="p-1.5 border border-border rounded-lg hover:bg-muted text-muted-foreground" aria-label="More actions" [attr.aria-expanded]="moreMenuOpen()">
         <span [innerHTML]="getStageSvg('more-horizontal')"></span>
       </button>
+      @if (moreMenuOpen()) {
+        <div class="absolute right-0 top-10 z-20 w-52 rounded-xl border border-border bg-card p-1.5 shadow-lg" role="menu" aria-label="Order actions">
+          <button type="button" (click)="navigateToWorkflow()" class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-medium text-foreground hover:bg-muted" role="menuitem">View Workflow</button>
+          <button type="button" (click)="navigateToFiles()" class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-medium text-foreground hover:bg-muted" role="menuitem">All Files &amp; Scans</button>
+          <button type="button" (click)="openNoteDialog()" class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-medium text-foreground hover:bg-muted" role="menuitem">Add Note</button>
+          <button type="button" (click)="exportOrder()" class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-medium text-foreground hover:bg-muted" role="menuitem">Export JSON</button>
+          <div class="my-1 border-t border-border"></div>
+          <button type="button" (click)="askDelete()" class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold text-danger hover:bg-danger/10" role="menuitem">Delete Order</button>
+        </div>
+      }
     </div>
   </div>
+
+  @if (actionMessage()) {
+    <div class="mb-4 rounded-xl border border-success/30 bg-success/10 px-4 py-2.5 text-sm text-success" role="status">
+      {{ actionMessage() }}
+    </div>
+  }
 
   <!-- Overall progress banner -->
   <div class="bg-card border border-border rounded-xl p-5 mb-5">
@@ -98,7 +124,7 @@
                 <span class="font-semibold text-sm text-foreground">{{ sub.service }}</span>
                 <span class="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold"
                   [class]="getStatusConfig(sub.status).bg + ' ' + getStatusConfig(sub.status).color">
-                  <span [innerHTML]="getStatusIconSvg(getStatusConfig(sub.status).icon)"></span>
+                  <span [innerHTML]="getStatusIconSvg(getStatusConfig(sub.status).icon, 9)"></span>
                   {{ getStatusConfig(sub.status).label }}
                 </span>
                 <span class="text-[10px] text-muted-foreground font-mono ml-auto">{{ formatSubOrderId(idx) }}</span>
@@ -110,16 +136,16 @@
 
               <div class="flex items-center gap-4 flex-wrap">
                 <div class="flex items-center gap-1 text-xs text-muted-foreground">
-                  <span [innerHTML]="getStageSvg('file-text')" style="width: 11px; height: 11px;"></span>
+                  <span [innerHTML]="getStageSvg('file-text', 11)"></span>
                   <span>Forms: <span [class]="sub.formsComplete === sub.formsTotal ? 'text-success font-semibold' : 'text-foreground font-semibold'">{{ sub.formsComplete }}/{{ sub.formsTotal }}</span></span>
                 </div>
                 <div class="flex items-center gap-1 text-xs text-muted-foreground">
-                  <span [innerHTML]="getStageSvg('scan-line')" style="width: 11px; height: 11px;"></span>
+                  <span [innerHTML]="getStageSvg('scan-line', 11)"></span>
                   <span>Scans: <span [class]="sub.scansComplete === sub.scansTotal ? 'text-success font-semibold' : 'text-foreground font-semibold'">{{ sub.scansComplete }}/{{ sub.scansTotal }}</span></span>
                 </div>
                 @if (sub.teeth.length > 0) {
                   <div class="flex items-center gap-1 text-xs text-muted-foreground">
-                    <span [innerHTML]="getStageSvg('layers')" style="width: 11px; height: 11px;"></span>
+                    <span [innerHTML]="getStageSvg('layers', 11)"></span>
                     <span class="font-mono text-[10px]">{{ sub.teeth.join(', ') }}</span>
                   </div>
                 }
@@ -212,10 +238,61 @@
         <app-button variant="ghost" size="sm" class="w-full flex items-center gap-2 justify-start" (onClick)="navigateToFiles()">
           <span [innerHTML]="getStageSvg('scan-line')" style="width: 13px; height: 13px;"></span> All Files & Scans
         </app-button>
-        <app-button variant="ghost" size="sm" class="w-full flex items-center gap-2 justify-start">
+        <app-button variant="ghost" size="sm" class="w-full flex items-center gap-2 justify-start" (onClick)="openNoteDialog()">
           <span [innerHTML]="getStageSvg('message-square')" style="width: 13px; height: 13px;"></span> Add Note
         </app-button>
       </div>
+
+      <div class="bg-card border border-border rounded-xl p-4">
+        <p class="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Order Summary</p>
+        <dl class="space-y-2 text-xs">
+          <div class="flex justify-between gap-2"><dt class="text-muted-foreground">Restoration</dt><dd class="font-semibold text-foreground">{{ order().restoration }}</dd></div>
+          <div class="flex justify-between gap-2"><dt class="text-muted-foreground">Arch</dt><dd class="font-semibold text-foreground">{{ order().arch }}</dd></div>
+          <div class="flex justify-between gap-2"><dt class="text-muted-foreground">Shade</dt><dd class="font-mono text-foreground">{{ order().shade }}</dd></div>
+          <div class="flex justify-between gap-2"><dt class="text-muted-foreground">Units</dt><dd class="font-mono text-foreground">{{ order().units }}</dd></div>
+          <div class="flex justify-between gap-2"><dt class="text-muted-foreground">Amount</dt><dd class="font-mono font-semibold text-foreground">{{ formatUtils.formatCurrency(order().amount) }}</dd></div>
+          <div class="flex justify-between gap-2"><dt class="text-muted-foreground">Bill to</dt><dd class="max-w-32 truncate font-medium text-foreground">{{ order().billTo }}</dd></div>
+          <div class="flex justify-between gap-2"><dt class="text-muted-foreground">Scan center</dt><dd class="max-w-32 truncate text-foreground">{{ order().scanCenterName }}</dd></div>
+        </dl>
+        @if (order().hasNotes || notes().length > 0) {
+          <div class="mt-3 border-t border-border pt-3">
+            <p class="mb-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Notes</p>
+            @if (order().notes) {
+              <p class="text-xs text-muted-foreground">{{ order().notes }}</p>
+            }
+            <ul class="mt-1 space-y-1">
+              @for (note of notes(); track note.at + note.text) {
+                <li class="rounded-lg bg-muted/50 px-2.5 py-1.5 text-xs text-foreground">{{ note.text }}</li>
+              }
+            </ul>
+          </div>
+        }
+      </div>
     </div>
   </div>
+
+  <p-dialog [visible]="noteDialogVisible()" (onHide)="closeNoteDialog()" [modal]="true" [dismissableMask]="true" [style]="{ width: '26rem' }" header="Add note">
+    <label class="mb-1 block text-xs font-semibold text-foreground" for="order-note">Internal note</label>
+    <textarea id="order-note" rows="4" placeholder="Type a note visible to the lab team…"
+      class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+      [ngModel]="noteText()" (ngModelChange)="onNoteTextChange($event)"></textarea>
+    @if (noteSaved()) {
+      <p class="mt-2 text-xs font-semibold text-success" role="status">Note saved ✓</p>
+    }
+    <div class="mt-4 flex justify-end gap-2">
+      <app-button variant="ghost" size="sm" (onClick)="closeNoteDialog()">Cancel</app-button>
+      <app-button variant="primary" size="sm" [loading]="noteSaving()" [disabled]="!noteText().trim() || noteSaving()" (onClick)="saveNote()">
+        {{ noteSaving() ? 'Saving…' : 'Save Note' }}
+      </app-button>
+    </div>
+  </p-dialog>
+
+  <p-dialog [visible]="confirmDeleteVisible()" (onHide)="cancelDelete()" [modal]="true" [dismissableMask]="true" [style]="{ width: '24rem' }" header="Delete order?">
+    <p class="text-sm text-muted-foreground">This will permanently delete {{ order().orderNumber }}. This action cannot be undone.</p>
+    <div class="mt-4 flex justify-end gap-2">
+      <app-button variant="ghost" size="sm" (onClick)="cancelDelete()">Cancel</app-button>
+      <app-button variant="danger" size="sm" (onClick)="confirmDelete()">Delete</app-button>
+    </div>
+  </p-dialog>
+  }
 </div>

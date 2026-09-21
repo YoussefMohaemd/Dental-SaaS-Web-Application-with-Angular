@@ -78,31 +78,76 @@ export class NavigationService {
     };
 
     const firstSegment = segments[0];
+
+    // Root cause fix: '/login' previously fell through to 'dashboard', so the
+    // breadcrumb/header state was wrong on the login page and logout appeared
+    // broken. Map it explicitly (React parity: login is a no-layout page).
+    if (firstSegment === 'login') {
+      this.currentPage.set('login');
+      this.currentParams.set({});
+      return;
+    }
+
+    // React parity: /orders/create maps to the createOrder page, and nested
+    // order routes map to their view/edit/workflow/files/subOrder pages so
+    // breadcrumbs and sidebar highlighting stay correct.
+    if (firstSegment === 'orders') {
+      if (segments[1] === 'create') {
+        this.currentPage.set('createOrder');
+        this.currentParams.set({});
+        return;
+      }
+      if (segments[1]) {
+        const params: NavParams = { orderId: segments[1] };
+        if (segments[2] === 'sub-orders' && segments[3]) {
+          this.currentPage.set('subOrder');
+          params.subOrderId = segments[3];
+          this.currentParams.set(params);
+          return;
+        }
+        const nestedMap: Record<string, PageId> = {
+          edit: 'editOrder',
+          workflow: 'orderWorkflow',
+          files: 'orderFiles',
+        };
+        const nested = segments[2] ? nestedMap[segments[2]] : undefined;
+        this.currentPage.set(nested ?? 'viewOrder');
+        this.currentParams.set(params);
+        return;
+      }
+      this.currentPage.set('orders');
+      this.currentParams.set({});
+      return;
+    }
+
     const pageId = pageMap[firstSegment] || 'dashboard';
     this.currentPage.set(pageId);
 
     const params: NavParams = {};
     if (segments[1]) {
-      if (segments[0] === 'orders' && segments[1] !== 'create') {
-        params.orderId = segments[1];
-      } else if (segments[0] === 'patients') {
+      if (firstSegment === 'patients') {
         params.patientId = segments[1];
-      } else if (segments[0] === 'doctors') {
+      } else if (firstSegment === 'doctors') {
         params.doctorId = segments[1];
-      } else if (segments[0] === 'clinics') {
+      } else if (firstSegment === 'clinics') {
         params.clinicId = segments[1];
-      } else if (segments[0] === 'cases') {
+      } else if (firstSegment === 'cases') {
         params.caseId = segments[1];
       }
     }
-    if (segments[3] && segments[2] === 'sub-orders') {
-      params.subOrderId = segments[3];
-    }
-
     this.currentParams.set(params);
   }
 
   navigate(page: PageId, params?: NavParams): void {
+    // Root cause fix: 'login' was missing from routeMap, so HeaderComponent
+    // logout() was a silent no-op. Login lives outside the Layout shell, so
+    // it navigates via the Router directly (React parity: login is the
+    // no-layout entry page).
+    if (page === 'login') {
+      this.router.navigate(['/login']);
+      this.closeDropdowns();
+      return;
+    }
     const routeMap: Partial<Record<PageId, (params: NavParams) => string>> = {
       dashboard: () => '/dashboard',
       orders: () => '/orders',
@@ -128,7 +173,8 @@ export class NavigationService {
       notifications: () => '/notifications',
       settings: () => '/settings',
       forms: () => '/forms',
-      subOrder: (p) => `/orders/${p.orderId}/sub-orders/${p.subOrderId}`
+      // React parity: NavParams.subOrderTab selects the initial sub-order tab.
+      subOrder: (p) => `/orders/${p.orderId}/sub-orders/${p.subOrderId}${p.subOrderTab ? `?tab=${p.subOrderTab}` : ''}`
     };
 
     const routeBuilder = routeMap[page];

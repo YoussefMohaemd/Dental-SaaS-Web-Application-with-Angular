@@ -13,6 +13,7 @@ describe('ArchBadgeComponent', () => {
 
     fixture = TestBed.createComponent(ArchBadgeComponent);
     component = fixture.componentInstance;
+    fixture.componentRef.setInput('arch', 'Maxilla');
     fixture.detectChanges();
   });
 

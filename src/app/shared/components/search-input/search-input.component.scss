@@ -2,3 +2,24 @@
   display: block;
   width: 100%;
 }
+
+.search-input-wrap {
+  // React parity: header search is w-56 (224px), toolbar is flex-1 min-w-48 max-w-72.
+  // Height matches React py-1.5 + text-sm/xs line-height (~32px).
+  input {
+    height: 2rem;
+    line-height: 1.25rem;
+
+    &::-webkit-search-cancel-button {
+      display: none;
+    }
+
+    &:hover {
+      border-color: color-mix(in srgb, var(--border) 70%, var(--foreground) 30%);
+    }
+  }
+
+  kbd {
+    font-family: inherit;
+  }
+}

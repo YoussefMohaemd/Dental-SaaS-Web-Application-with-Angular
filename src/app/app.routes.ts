@@ -169,5 +169,5 @@ export const appRoutes: Routes = [
       }
     ]
   },
-  { path: '**', redirectTo: 'dashboard' }
+  { path: '**', redirectTo: 'login' }
 ];

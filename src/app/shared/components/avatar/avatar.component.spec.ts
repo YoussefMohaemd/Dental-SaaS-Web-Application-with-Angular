@@ -13,6 +13,7 @@ describe('AvatarComponent', () => {
 
     fixture = TestBed.createComponent(AvatarComponent);
     component = fixture.componentInstance;
+    fixture.componentRef.setInput('name', 'Test User');
     fixture.detectChanges();
   });
 
@@ -44,12 +45,15 @@ describe('AvatarComponent', () => {
   });
 
   it('should display image when provided', () => {
+    // Data URI on purpose: a relative file name would make the test browser
+    // request /avatar.jpg from the karma server and log a 404.
+    const dataUri = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
     fixture.componentRef.setInput('name', 'John Doe');
-    fixture.componentRef.setInput('image', 'avatar.jpg');
+    fixture.componentRef.setInput('image', dataUri);
     fixture.detectChanges();
     const img = fixture.debugElement.query(By.css('img'));
     expect(img).toBeTruthy();
-    expect(img.nativeElement.src).toContain('avatar.jpg');
+    expect(img.nativeElement.src).toContain('data:image/gif');
   });
 
   it('should truncate initials to 2 characters', () => {

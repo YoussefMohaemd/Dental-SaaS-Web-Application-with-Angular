@@ -22,9 +22,11 @@ export class ThemeService {
   init(): void {
     if (!isPlatformBrowser(this.platformId)) return;
 
+    // React parity: the React app always starts in light mode (isDark=false).
+    // Respect an explicit stored preference, otherwise default to light so
+    // initial startup matches React instead of following the OS setting.
     const stored = localStorage.getItem(this.STORAGE_KEY) as 'light' | 'dark' | null;
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const initialTheme = stored ?? (prefersDark ? 'dark' : 'light');
+    const initialTheme = stored ?? 'light';
 
     this.isDark.set(initialTheme === 'dark');
     this.theme.set(initialTheme);

@@ -1,9 +1,40 @@
-import { Component, input, output, computed, HostBinding } from '@angular/core';
+import { Component, input, output, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success';
 export type ButtonSize = 'sm' | 'md' | 'lg' | 'icon' | 'icon-sm';
+
+const VARIANT_CLASSES: Record<ButtonVariant, string> = {
+  // React parity: primary = px-3.5 py-2 bg-primary text-white rounded-lg text-xs semibold hover bg-primary/90
+  primary:
+    'bg-primary text-primary-foreground hover:bg-primary/90 active:bg-[#1D4ED8] dark:active:bg-[#2563EB] ' +
+    'disabled:bg-primary/60 disabled:text-primary-foreground/80 shadow-xs',
+  secondary:
+    'bg-secondary text-secondary-foreground hover:bg-muted active:bg-muted ' +
+    'border border-border',
+  // React outline: border border-border rounded-lg hover:bg-muted text-foreground
+  outline:
+    'border border-border bg-card dark:bg-card text-foreground hover:bg-muted dark:hover:bg-muted ' +
+    'active:bg-muted disabled:bg-muted/50 disabled:text-muted-foreground',
+  // React ghost / quick-action: transparent -> muted on hover
+  ghost:
+    'bg-transparent text-foreground hover:bg-muted dark:hover:bg-muted active:bg-muted ' +
+    'disabled:text-muted-foreground',
+  danger:
+    'bg-danger text-danger-foreground hover:bg-danger/90 active:bg-[#DC2626] disabled:bg-danger/60',
+  success:
+    'bg-success text-success-foreground hover:bg-success/90 active:bg-[#059669] disabled:bg-success/60',
+};
+
+const SIZE_CLASSES: Record<ButtonSize, string> = {
+  // React: primary sm header button uses px-3 py-1.5 text-xs; view-order outline uses px-3 py-1.5 text-sm
+  sm: 'px-3 py-1.5 text-xs min-h-8',
+  md: 'px-3.5 py-2 text-xs min-h-9',
+  lg: 'px-4 py-2.5 text-sm min-h-10',
+  icon: 'p-2 min-h-9 min-w-9',
+  'icon-sm': 'p-1.5 min-h-7 min-w-7',
+};
 
 @Component({
   selector: 'app-button',
@@ -23,27 +54,30 @@ export class ButtonComponent {
   readonly onClick = output<MouseEvent>();
 
   readonly buttonClasses = computed(() => {
-    const base = 'inline-flex items-center justify-center gap-2 font-semibold transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
-    
-    const variants: Record<ButtonVariant, string> = {
-      primary: 'bg-primary text-primary-foreground hover:bg-primary/90 active:bg-primary',
-      secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80 active:bg-secondary',
-      outline: 'border border-border bg-transparent hover:bg-muted active:bg-muted',
-      ghost: 'bg-transparent hover:bg-muted active:bg-muted',
-      danger: 'bg-danger text-danger-foreground hover:bg-danger/90 active:bg-danger',
-      success: 'bg-success text-success-foreground hover:bg-success/90 active:bg-success'
-    };
+    const base =
+      'inline-flex items-center justify-center gap-1.5 font-semibold rounded-lg transition-colors duration-150 ' +
+      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-1 ' +
+      'focus-visible:ring-offset-card disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none ' +
+      '[&_svg]:size-3.5 [&_svg]:shrink-0';
 
-    const sizes: Record<ButtonSize, string> = {
-      sm: 'px-3 py-1.5 text-xs',
-      md: 'px-4 py-2 text-sm',
-      lg: 'px-6 py-3 text-base',
-      icon: 'p-2',
-      'icon-sm': 'p-1.5'
-    };
-
-    return `${base} ${variants[this.variant()]} ${sizes[this.size()]}`;
+    return `${base} ${VARIANT_CLASSES[this.variant()]} ${SIZE_CLASSES[this.size()]}`;
   });
 
   readonly isLink = computed(() => !!this.routerLink());
+  readonly isDisabled = computed(() => this.disabled() || this.loading());
+
+  /**
+   * Guarded click emitter (root cause fix: the anchor variant has no native
+   * `disabled` attribute, so clicks/keyboard activation previously emitted
+   * onClick even when disabled or loading — unlike the native <button>
+   * variant which the browser blocks automatically).
+   */
+  handleClick(event: MouseEvent): void {
+    if (this.isDisabled()) {
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
+    this.onClick.emit(event);
+  }
 }

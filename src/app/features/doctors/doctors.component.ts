@@ -1,5 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { DoctorDataService } from '@core/services/doctor-data.service';
 import { NavigationService } from '@core/services/navigation.service';
 import { FormatUtils } from '@core/services/format-utils.service';
@@ -18,6 +19,7 @@ interface SortConfig {
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     StatusBadgeComponent,
     ButtonComponent,
     AvatarComponent
@@ -39,6 +41,12 @@ export class DoctorsComponent {
   readonly statusFilter = signal<DoctorStatus | ''>('');
   readonly sortCol = signal<keyof Doctor>('name');
   readonly sortDir = signal<'asc' | 'desc'>('asc');
+  readonly showAddDialog = signal(false);
+  readonly newName = signal('');
+  readonly newSpecialty = signal('General Dentistry');
+  readonly newClinic = signal('Bright Smile Dental');
+  readonly newEmail = signal('');
+  readonly newPhone = signal('');
 
   readonly filtered = computed(() => {
     let result = [...this.doctors()];
@@ -91,6 +99,38 @@ export class DoctorsComponent {
 
   getStatusClass(status: string): string {
     return status === 'Active' ? 'bg-emerald-50 text-emerald-700' : 'bg-muted text-muted-foreground';
+  }
+
+  openAddDialog(): void {
+    this.newName.set('');
+    this.newSpecialty.set('General Dentistry');
+    this.newClinic.set('Bright Smile Dental');
+    this.newEmail.set('');
+    this.newPhone.set('');
+    this.showAddDialog.set(true);
+  }
+
+  closeAddDialog(): void {
+    this.showAddDialog.set(false);
+  }
+
+  saveDoctor(): void {
+    const name = this.newName().trim() || 'New Doctor';
+    const initials = name.replace(/^Dr\.\s*/, '').split(' ').map(p => p[0] ?? '').join('').slice(0, 2).toUpperCase() || 'ND';
+    this.doctorService.addDoctor({
+      id: `dr-${Date.now()}`,
+      name: name.startsWith('Dr.') ? name : `Dr. ${name}`,
+      specialty: this.newSpecialty(),
+      clinicId: 'cl1',
+      clinicName: this.newClinic(),
+      email: this.newEmail().trim() || 'doctor@clinic.com',
+      phone: this.newPhone().trim() || '+1 (555) 000-0000',
+      status: 'Active',
+      ordersCount: 0,
+      joinedDate: new Date().toISOString().slice(0, 10),
+      avatar: initials
+    });
+    this.showAddDialog.set(false);
   }
 
   getIconSvg(name: string): string {

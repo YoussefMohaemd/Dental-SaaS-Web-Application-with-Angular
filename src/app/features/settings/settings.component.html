@@ -10,10 +10,11 @@
         <button
           type="button"
           (click)="setSection(item.id)"
-          class="w-full rounded-lg px-3 py-2 text-left text-sm transition-colors"
+          class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm transition-colors"
           [class]="section() === item.id ? 'bg-primary/10 font-semibold text-primary' : 'text-muted-foreground hover:bg-muted'"
           [attr.aria-current]="section() === item.id ? 'page' : null"
         >
+          <span [innerHTML]="getIconSvg(item.icon)" aria-hidden="true"></span>
           {{ item.label }}
         </button>
       }
@@ -66,31 +67,33 @@
         @case ('appearance') {
           <section class="rounded-xl border border-border bg-card p-5" aria-label="Appearance settings">
             <h2 class="mb-3 text-sm font-semibold text-foreground">Theme</h2>
-            <div class="grid grid-cols-2 gap-3">
-              <button type="button" (click)="setAppearance('light')" class="rounded-xl border p-3 text-left" [class]="themeService.theme() === 'light' ? 'border-primary ring-2 ring-primary/20' : 'border-border'" [attr.aria-pressed]="themeService.theme() === 'light'">
-                <span class="block h-12 rounded-lg bg-slate-100" aria-hidden="true"></span>
-                <span class="mt-2 block text-sm font-semibold">Light</span>
+            <div class="grid grid-cols-2 gap-4">
+              <button type="button" (click)="setAppearance('light')" class="rounded-xl border-2 p-4 text-left transition-all" [class]="themeService.theme() === 'light' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/40'" [attr.aria-pressed]="themeService.theme() === 'light'">
+                <span class="mb-3 flex h-20 items-end gap-1 rounded-lg border border-slate-200 bg-slate-100 p-2" aria-hidden="true"><span class="h-3 flex-1 rounded bg-white"></span><span class="h-3 w-8 rounded bg-blue-500"></span></span>
+                <span class="block text-sm font-semibold text-foreground">Light</span>
+                <span class="block text-xs text-muted-foreground">Clean and bright</span>
               </button>
-              <button type="button" (click)="setAppearance('dark')" class="rounded-xl border p-3 text-left" [class]="themeService.theme() === 'dark' ? 'border-primary ring-2 ring-primary/20' : 'border-border'" [attr.aria-pressed]="themeService.theme() === 'dark'">
-                <span class="block h-12 rounded-lg bg-slate-900" aria-hidden="true"></span>
-                <span class="mt-2 block text-sm font-semibold">Dark</span>
+              <button type="button" (click)="setAppearance('dark')" class="rounded-xl border-2 p-4 text-left transition-all" [class]="themeService.theme() === 'dark' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/40'" [attr.aria-pressed]="themeService.theme() === 'dark'">
+                <span class="mb-3 flex h-20 items-end gap-1 rounded-lg border border-slate-700 bg-slate-900 p-2" aria-hidden="true"><span class="h-3 flex-1 rounded bg-slate-700"></span><span class="h-3 w-8 rounded bg-blue-400"></span></span>
+                <span class="block text-sm font-semibold text-foreground">Dark</span>
+                <span class="block text-xs text-muted-foreground">Easier on the eyes</span>
               </button>
             </div>
             <h2 class="mb-2 mt-5 text-sm font-semibold text-foreground">Density</h2>
-            <div class="flex gap-2" role="group" aria-label="Interface density">
+            <div class="flex gap-3" role="group" aria-label="Interface density">
               @for (option of ['Compact', 'Default', 'Comfortable']; track option) {
                 <button
                   type="button"
                   (click)="setDensity($any(option))"
-                  class="rounded-lg border px-3 py-1.5 text-xs font-semibold"
-                  [class]="density() === option ? 'border-primary bg-primary text-white' : 'border-border text-muted-foreground'"
+                  class="rounded-lg border px-4 py-2 text-sm font-medium"
+                  [class]="density() === option ? 'border-primary bg-primary/5 text-primary' : 'border-border text-muted-foreground hover:bg-muted'"
                   [attr.aria-pressed]="density() === option"
                 >
                   {{ option }}
                 </button>
               }
             </div>
-            <div class="mt-4"><app-button variant="primary" size="sm" (onClick)="saveChanges()">{{ saved() ? 'Saved!' : 'Save Changes' }}</app-button></div>
+            <div class="mt-4"><app-button variant="primary" size="sm" (onClick)="saveChanges()"><span class="flex items-center gap-2"><span [innerHTML]="getIconSvg('save')"></span>{{ saved() ? 'Saved!' : 'Save Changes' }}</span></app-button></div>
           </section>
         }
         @case ('language') {

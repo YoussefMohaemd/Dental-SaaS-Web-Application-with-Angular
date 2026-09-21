@@ -1,62 +1,263 @@
-<div class="mx-auto max-w-3xl p-6">
-  <div class="mb-5 flex items-start gap-3">
-    <button type="button" (click)="goBack()" class="rounded-lg p-1.5 text-muted-foreground hover:bg-muted" aria-label="Back to order">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+<div class="p-6 max-w-4xl mx-auto">
+  <!-- Header -->
+  <div class="flex items-start gap-3 mb-6">
+    <button
+      type="button"
+      (click)="goBack()"
+      class="p-1.5 hover:bg-muted rounded-lg text-muted-foreground shrink-0"
+      aria-label="Back to order"
+    >
+      <span [innerHTML]="getIconSvg('arrow-left')"></span>
     </button>
-    <div class="flex items-center gap-3">
-      <span class="text-3xl" aria-hidden="true">{{ subOrder().icon }}</span>
-      <div>
-        <div class="flex flex-wrap items-center gap-2">
-          <h1 class="font-display text-xl font-bold text-foreground">{{ subOrder().service }}</h1>
-          <span class="rounded-full px-2.5 py-0.5 text-xs font-semibold" [class]="statusClasses(subOrder().status)">
-            {{ subOrder().statusLabel }}
-          </span>
+    <div class="flex-1 min-w-0">
+      <div class="flex items-center gap-2.5 flex-wrap mb-0.5">
+        <span class="text-xl" aria-hidden="true">{{ subOrder()?.icon }}</span>
+        <h1 class="font-display font-bold text-xl text-foreground">{{ subOrder()?.service }}</h1>
+        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold" [class]="statusBadgeClasses()">
+          <span [innerHTML]="getStatusIconSvg()"></span> {{ statusLabel() }}
+        </span>
+        <span class="px-2 py-0.5 rounded-full text-xs font-medium border" [class]="priorityPillClasses()">{{ subOrder()?.priority }}</span>
+      </div>
+      <p class="text-sm text-muted-foreground">
+        Sub-order of order
+        <button type="button" (click)="goToParentOrder()" class="text-primary hover:underline font-medium">
+          {{ orderTag() }}
+        </button>
+      </p>
+    </div>
+  </div>
+
+  <!-- Progress card -->
+  <div class="bg-card border border-border rounded-xl p-4 mb-5 flex items-center gap-6 flex-wrap">
+    <div>
+      <div class="flex items-center gap-2 mb-1">
+        <div class="flex-1 w-48 h-2 bg-muted rounded-full overflow-hidden" role="progressbar" [attr.aria-valuenow]="progress()" aria-valuemin="0" aria-valuemax="100" aria-label="Overall sub-order completion">
+          <div class="h-full rounded-full" [class]="progress() === 100 ? 'bg-success' : 'bg-primary'" [style.width.%]="progress()"></div>
         </div>
-        <p class="text-xs text-muted-foreground">{{ order()?.orderNumber }} · {{ subOrder().id }} · Due {{ formatUtils.formatDate(subOrder().dueDate) }}</p>
+        <span class="text-sm font-bold font-mono text-foreground">{{ progress() }}%</span>
       </div>
+      <p class="text-xs text-muted-foreground">Overall sub-order completion</p>
+    </div>
+    <div class="flex items-center gap-6">
+      <div class="text-center">
+        <p class="text-lg font-bold font-display text-foreground">{{ formsComplete() }}<span class="text-sm text-muted-foreground">/{{ detail().forms.length }}</span></p>
+        <p class="text-[10px] text-muted-foreground uppercase tracking-wide">Forms</p>
+      </div>
+      <div class="text-center">
+        <p class="text-lg font-bold font-display text-foreground">{{ scansUploaded() }}<span class="text-sm text-muted-foreground">/{{ detail().scans.length }}</span></p>
+        <p class="text-[10px] text-muted-foreground uppercase tracking-wide">Scans</p>
+      </div>
+      @if ((subOrder()?.teeth?.length ?? 0) > 0) {
+        <div class="text-center">
+          <p class="text-lg font-bold font-display text-foreground">{{ subOrder()?.teeth?.length }}</p>
+          <p class="text-[10px] text-muted-foreground uppercase tracking-wide">Teeth</p>
+        </div>
+      }
     </div>
   </div>
 
-  <div class="mb-4 rounded-xl border border-border bg-card p-5">
-    <div class="flex items-center justify-between">
-      <p class="text-sm font-semibold text-foreground">Overall readiness</p>
-      <p class="font-mono text-sm font-bold text-foreground">{{ progress() }}%</p>
-    </div>
-    <div class="mt-2 h-2 overflow-hidden rounded-full bg-muted" role="progressbar" [attr.aria-valuenow]="progress()" aria-valuemin="0" aria-valuemax="100" aria-label="Sub-order readiness">
-      <div class="h-full rounded-full bg-primary" [style.width.%]="progress()"></div>
-    </div>
-    <div class="mt-3 grid grid-cols-2 gap-3 text-sm">
-      <div class="rounded-lg bg-muted/40 p-3">
-        <p class="text-[11px] uppercase tracking-wide text-muted-foreground">Forms</p>
-        <p class="font-semibold text-foreground">{{ subOrder().formsComplete }}/{{ subOrder().formsTotal }} complete</p>
-      </div>
-      <div class="rounded-lg bg-muted/40 p-3">
-        <p class="text-[11px] uppercase tracking-wide text-muted-foreground">Scans</p>
-        <p class="font-semibold text-foreground">{{ subOrder().scansComplete }}/{{ subOrder().scansTotal }} complete</p>
-      </div>
-    </div>
+  <!-- Tabs -->
+  <div class="flex gap-1 border-b border-border mb-5" role="tablist" aria-label="Sub-order sections">
+    @for (t of tabs; track t) {
+      <button
+        type="button"
+        role="tab"
+        [attr.aria-selected]="tab() === t"
+        (click)="setTab(t)"
+        class="px-4 py-2.5 text-sm font-medium capitalize border-b-2 transition-colors"
+        [class]="tab() === t ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'"
+      >
+        {{ t }}
+        @if (t === 'forms') {
+          <span class="ml-1.5 px-1.5 py-0.5 bg-muted rounded-full text-[10px] font-mono">{{ formsComplete() }}/{{ detail().forms.length }}</span>
+        }
+        @if (t === 'scans') {
+          <span class="ml-1.5 px-1.5 py-0.5 bg-muted rounded-full text-[10px] font-mono">{{ scansUploaded() }}/{{ detail().scans.length }}</span>
+        }
+      </button>
+    }
   </div>
 
-  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-    <section class="rounded-xl border border-border bg-card p-5" aria-label="Sub-order details">
-      <h2 class="mb-3 text-sm font-semibold text-foreground">Details</h2>
-      <dl class="space-y-2 text-sm">
-        <div class="flex justify-between gap-2"><dt class="text-muted-foreground">Priority</dt><dd class="font-semibold text-foreground">{{ subOrder().priority }}</dd></div>
-        <div class="flex justify-between gap-2"><dt class="text-muted-foreground">Due date</dt><dd class="font-mono text-foreground">{{ formatUtils.formatDate(subOrder().dueDate) }}</dd></div>
-        <div class="flex justify-between gap-2"><dt class="text-muted-foreground">Teeth</dt><dd class="font-mono text-foreground">{{ subOrder().teeth.join(', ') || '—' }}</dd></div>
-      </dl>
-      <p class="mt-3 border-t border-border pt-3 text-xs text-muted-foreground">{{ subOrder().notes }}</p>
-    </section>
-
-    <section class="rounded-xl border border-border bg-card p-5" aria-label="Parent order">
-      <h2 class="mb-3 text-sm font-semibold text-foreground">Parent Order</h2>
-      <p class="font-mono text-sm font-semibold text-foreground">{{ order()?.orderNumber }}</p>
-      <p class="text-xs text-muted-foreground">{{ order()?.patientName }} · {{ order()?.restoration }}</p>
-      <div class="mt-4 space-y-2">
-        <app-button variant="outline" size="sm" class="w-full" (onClick)="goToWorkflow()">View Workflow</app-button>
-        <app-button variant="outline" size="sm" class="w-full" (onClick)="goToFiles()">All Files &amp; Scans</app-button>
-        <app-button variant="ghost" size="sm" class="w-full" (onClick)="goBack()">Back to Order</app-button>
+  <!-- Overview -->
+  @if (tab() === 'overview') {
+    <div class="space-y-5" role="tabpanel">
+      <div class="bg-card border border-border rounded-xl p-4">
+        <p class="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Clinical Notes</p>
+        <p class="text-sm text-foreground leading-relaxed">{{ subOrder()?.notes }}</p>
       </div>
-    </section>
-  </div>
+
+      @if ((subOrder()?.teeth?.length ?? 0) > 0) {
+        <div>
+          <p class="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Involved Teeth</p>
+          <app-teeth-chart [selected]="subOrder()?.teeth ?? []" [readOnly]="true" />
+        </div>
+      } @else {
+        <div class="bg-card border border-border rounded-xl p-4 text-sm text-muted-foreground">
+          No specific teeth assigned to this service.
+        </div>
+      }
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="bg-card border border-border rounded-xl p-4">
+          <div class="flex items-center gap-2 mb-3">
+            <span [innerHTML]="getIconSvg('file-text')" class="text-muted-foreground"></span>
+            <p class="text-xs font-semibold text-foreground">Forms</p>
+          </div>
+          <div class="space-y-2">
+            @for (f of detail().forms; track f.id) {
+              <div class="flex items-center gap-2">
+                @if (f.status === 'complete') {
+                  <span [innerHTML]="getIconSvg('check-circle')" class="text-success shrink-0"></span>
+                } @else {
+                  <span [innerHTML]="getIconSvg('alert-circle')" class="text-warning shrink-0"></span>
+                }
+                <span class="text-xs" [class]="f.status === 'complete' ? 'text-foreground' : 'text-muted-foreground'">{{ f.label }}</span>
+                @if (f.required && f.status !== 'complete') {
+                  <span class="text-[9px] text-danger ml-auto">Required</span>
+                }
+              </div>
+            }
+          </div>
+          <button type="button" (click)="setTab('forms')" class="mt-3 text-xs text-primary hover:underline">Manage forms →</button>
+        </div>
+
+        <div class="bg-card border border-border rounded-xl p-4">
+          <div class="flex items-center gap-2 mb-3">
+            <span [innerHTML]="getIconSvg('scan-line')" class="text-muted-foreground"></span>
+            <p class="text-xs font-semibold text-foreground">Scans &amp; Files</p>
+          </div>
+          <div class="space-y-2">
+            @for (s of detail().scans; track s.id) {
+              <div class="flex items-center gap-2">
+                @if (s.status === 'uploaded') {
+                  <span [innerHTML]="getIconSvg('check-circle')" class="text-success shrink-0"></span>
+                } @else {
+                  <span [innerHTML]="getIconSvg('circle')" class="text-muted-foreground shrink-0"></span>
+                }
+                <span class="text-xs" [class]="s.status === 'uploaded' ? 'text-foreground' : 'text-muted-foreground'">{{ s.label }}</span>
+                <span class="text-[9px] font-mono text-muted-foreground ml-auto">{{ s.format }}</span>
+              </div>
+            }
+          </div>
+          <button type="button" (click)="setTab('scans')" class="mt-3 text-xs text-primary hover:underline">Upload scans →</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Forms -->
+  @if (tab() === 'forms') {
+    <div class="space-y-3" role="tabpanel">
+      @for (f of detail().forms; track f.id) {
+        <div class="bg-card border border-border rounded-xl p-4">
+          <div class="flex items-start gap-3">
+            <div class="w-7 h-7 rounded-full flex items-center justify-center shrink-0" [class]="f.status === 'complete' ? 'bg-success/10' : 'bg-muted'">
+              @if (f.status === 'complete') {
+                <span [innerHTML]="getIconSvg('check')" class="text-success"></span>
+              } @else {
+                <span [innerHTML]="getIconSvg('file-text-sm')" class="text-muted-foreground"></span>
+              }
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 mb-1">
+                <p class="text-sm font-semibold text-foreground">{{ f.label }}</p>
+                @if (f.required) {
+                  <span class="text-[9px] text-danger font-semibold">Required</span>
+                }
+              </div>
+              <p class="text-xs text-muted-foreground">
+                {{ f.status === 'complete' ? 'Completed and reviewed' : 'Not yet filled in' }}
+              </p>
+            </div>
+            <button
+              type="button"
+              class="px-3 py-1.5 rounded-lg text-xs font-medium shrink-0"
+              [class]="f.status === 'complete' ? 'bg-muted text-muted-foreground hover:bg-muted/80' : 'bg-primary text-primary-foreground hover:bg-primary/90'"
+            >
+              {{ f.status === 'complete' ? 'Review' : 'Fill In' }}
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Scans -->
+  @if (tab() === 'scans') {
+    <div class="space-y-3" role="tabpanel">
+      @for (s of detail().scans; track s.id) {
+        <div class="bg-card border border-border rounded-xl p-4">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" [class]="s.status === 'uploaded' ? 'bg-success/10' : 'bg-muted'">
+              @if (s.status === 'uploaded') {
+                <span [innerHTML]="getIconSvg('check-circle-lg')" class="text-success"></span>
+              } @else {
+                <span [innerHTML]="getIconSvg('upload')" class="text-muted-foreground"></span>
+              }
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-semibold text-foreground">{{ s.label }}</p>
+              <p class="text-xs text-muted-foreground">{{ s.format }} · {{ s.status === 'uploaded' ? 'Uploaded' : 'Not yet uploaded' }}</p>
+            </div>
+            <button
+              type="button"
+              class="px-3 py-1.5 rounded-lg text-xs font-medium shrink-0"
+              [class]="s.status === 'uploaded' ? 'bg-muted text-muted-foreground hover:bg-muted/80' : 'bg-primary text-primary-foreground hover:bg-primary/90'"
+            >
+              {{ s.status === 'uploaded' ? 'View / Replace' : 'Upload' }}
+            </button>
+          </div>
+        </div>
+      }
+
+      <div class="border-2 border-dashed border-border rounded-xl p-6 text-center hover:border-primary/50 hover:bg-muted/20 transition-all cursor-pointer mt-4">
+        <div class="mb-2 flex justify-center text-muted-foreground">
+          <span [innerHTML]="getIconSvg('upload-lg')"></span>
+        </div>
+        <p class="text-sm font-medium text-foreground">Drop additional files here</p>
+        <p class="text-xs text-muted-foreground">STL, PLY, OBJ, DICOM, JPG, PDF</p>
+      </div>
+    </div>
+  }
+
+  <!-- Activity -->
+  @if (tab() === 'activity') {
+    <div role="tabpanel">
+      <div class="space-y-3 mb-5">
+        @for (a of detail().activity; track a.time + a.user + a.text) {
+          <div class="flex gap-3">
+            <div class="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary shrink-0">
+              {{ getInitials(a.user) }}
+            </div>
+            <div class="flex-1 bg-card border border-border rounded-xl px-3 py-2.5 min-w-0">
+              <div class="flex items-center gap-2 mb-0.5">
+                <span class="text-xs font-semibold text-foreground">{{ a.user }}</span>
+                <span class="text-xs text-muted-foreground">{{ a.time }}</span>
+              </div>
+              <p class="text-sm text-foreground">{{ a.text }}</p>
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="bg-card border border-border rounded-xl p-3">
+        <textarea
+          [ngModel]="note()"
+          (ngModelChange)="onNoteChange($event)"
+          class="w-full text-sm bg-transparent resize-none focus:outline-none text-foreground placeholder:text-muted-foreground min-h-20"
+          placeholder="Add a note or update..."
+          aria-label="Add a note or update"
+        ></textarea>
+        <div class="flex justify-end">
+          <button
+            type="button"
+            [disabled]="!note().trim()"
+            class="px-4 py-1.5 bg-primary text-primary-foreground rounded-lg text-xs font-semibold disabled:opacity-40"
+          >
+            Post
+          </button>
+        </div>
+      </div>
+    </div>
+  }
 </div>

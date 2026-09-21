@@ -1,0 +1,496 @@
+{
+  "weeks": [
+    {
+      "weekStart": "2024-09-30",
+      "weekLabel": "W40",
+      "days": [
+        {
+          "day": "Mon",
+          "orders": 22,
+          "completed": 20
+        },
+        {
+          "day": "Tue",
+          "orders": 20,
+          "completed": 17
+        },
+        {
+          "day": "Wed",
+          "orders": 19,
+          "completed": 16
+        },
+        {
+          "day": "Thu",
+          "orders": 22,
+          "completed": 20
+        },
+        {
+          "day": "Fri",
+          "orders": 22,
+          "completed": 21
+        },
+        {
+          "day": "Sat",
+          "orders": 8,
+          "completed": 6
+        },
+        {
+          "day": "Sun",
+          "orders": 10,
+          "completed": 6
+        }
+      ]
+    },
+    {
+      "weekStart": "2024-10-07",
+      "weekLabel": "W41",
+      "days": [
+        {
+          "day": "Mon",
+          "orders": 16,
+          "completed": 14
+        },
+        {
+          "day": "Tue",
+          "orders": 11,
+          "completed": 9
+        },
+        {
+          "day": "Wed",
+          "orders": 16,
+          "completed": 15
+        },
+        {
+          "day": "Thu",
+          "orders": 15,
+          "completed": 14
+        },
+        {
+          "day": "Fri",
+          "orders": 15,
+          "completed": 12
+        },
+        {
+          "day": "Sat",
+          "orders": 10,
+          "completed": 9
+        },
+        {
+          "day": "Sun",
+          "orders": 6,
+          "completed": 5
+        }
+      ]
+    },
+    {
+      "weekStart": "2024-10-14",
+      "weekLabel": "W42",
+      "days": [
+        {
+          "day": "Mon",
+          "orders": 21,
+          "completed": 19
+        },
+        {
+          "day": "Tue",
+          "orders": 12,
+          "completed": 11
+        },
+        {
+          "day": "Wed",
+          "orders": 16,
+          "completed": 13
+        },
+        {
+          "day": "Thu",
+          "orders": 21,
+          "completed": 18
+        },
+        {
+          "day": "Fri",
+          "orders": 14,
+          "completed": 11
+        },
+        {
+          "day": "Sat",
+          "orders": 8,
+          "completed": 4
+        },
+        {
+          "day": "Sun",
+          "orders": 6,
+          "completed": 3
+        }
+      ]
+    },
+    {
+      "weekStart": "2024-10-21",
+      "weekLabel": "W43",
+      "days": [
+        {
+          "day": "Mon",
+          "orders": 12,
+          "completed": 8
+        },
+        {
+          "day": "Tue",
+          "orders": 17,
+          "completed": 16
+        },
+        {
+          "day": "Wed",
+          "orders": 21,
+          "completed": 18
+        },
+        {
+          "day": "Thu",
+          "orders": 21,
+          "completed": 20
+        },
+        {
+          "day": "Fri",
+          "orders": 19,
+          "completed": 17
+        },
+        {
+          "day": "Sat",
+          "orders": 5,
+          "completed": 4
+        },
+        {
+          "day": "Sun",
+          "orders": 4,
+          "completed": 3
+        }
+      ]
+    },
+    {
+      "weekStart": "2024-10-28",
+      "weekLabel": "W44",
+      "days": [
+        {
+          "day": "Mon",
+          "orders": 17,
+          "completed": 13
+        },
+        {
+          "day": "Tue",
+          "orders": 17,
+          "completed": 13
+        },
+        {
+          "day": "Wed",
+          "orders": 21,
+          "completed": 18
+        },
+        {
+          "day": "Thu",
+          "orders": 15,
+          "completed": 13
+        },
+        {
+          "day": "Fri",
+          "orders": 19,
+          "completed": 18
+        },
+        {
+          "day": "Sat",
+          "orders": 5,
+          "completed": 3
+        },
+        {
+          "day": "Sun",
+          "orders": 9,
+          "completed": 8
+        }
+      ]
+    },
+    {
+      "weekStart": "2024-11-04",
+      "weekLabel": "W45",
+      "days": [
+        {
+          "day": "Mon",
+          "orders": 15,
+          "completed": 13
+        },
+        {
+          "day": "Tue",
+          "orders": 11,
+          "completed": 9
+        },
+        {
+          "day": "Wed",
+          "orders": 16,
+          "completed": 15
+        },
+        {
+          "day": "Thu",
+          "orders": 18,
+          "completed": 14
+        },
+        {
+          "day": "Fri",
+          "orders": 19,
+          "completed": 15
+        },
+        {
+          "day": "Sat",
+          "orders": 7,
+          "completed": 4
+        },
+        {
+          "day": "Sun",
+          "orders": 9,
+          "completed": 7
+        }
+      ]
+    },
+    {
+      "weekStart": "2024-11-11",
+      "weekLabel": "W46",
+      "days": [
+        {
+          "day": "Mon",
+          "orders": 15,
+          "completed": 11
+        },
+        {
+          "day": "Tue",
+          "orders": 17,
+          "completed": 14
+        },
+        {
+          "day": "Wed",
+          "orders": 15,
+          "completed": 13
+        },
+        {
+          "day": "Thu",
+          "orders": 11,
+          "completed": 9
+        },
+        {
+          "day": "Fri",
+          "orders": 22,
+          "completed": 21
+        },
+        {
+          "day": "Sat",
+          "orders": 7,
+          "completed": 3
+        },
+        {
+          "day": "Sun",
+          "orders": 5,
+          "completed": 3
+        }
+      ]
+    },
+    {
+      "weekStart": "2024-11-18",
+      "weekLabel": "W47",
+      "days": [
+        {
+          "day": "Mon",
+          "orders": 11,
+          "completed": 8
+        },
+        {
+          "day": "Tue",
+          "orders": 16,
+          "completed": 13
+        },
+        {
+          "day": "Wed",
+          "orders": 12,
+          "completed": 9
+        },
+        {
+          "day": "Thu",
+          "orders": 12,
+          "completed": 8
+        },
+        {
+          "day": "Fri",
+          "orders": 22,
+          "completed": 20
+        },
+        {
+          "day": "Sat",
+          "orders": 10,
+          "completed": 8
+        },
+        {
+          "day": "Sun",
+          "orders": 10,
+          "completed": 6
+        }
+      ]
+    },
+    {
+      "weekStart": "2024-11-25",
+      "weekLabel": "W48",
+      "days": [
+        {
+          "day": "Mon",
+          "orders": 21,
+          "completed": 18
+        },
+        {
+          "day": "Tue",
+          "orders": 20,
+          "completed": 17
+        },
+        {
+          "day": "Wed",
+          "orders": 14,
+          "completed": 12
+        },
+        {
+          "day": "Thu",
+          "orders": 19,
+          "completed": 18
+        },
+        {
+          "day": "Fri",
+          "orders": 22,
+          "completed": 20
+        },
+        {
+          "day": "Sat",
+          "orders": 7,
+          "completed": 5
+        },
+        {
+          "day": "Sun",
+          "orders": 8,
+          "completed": 7
+        }
+      ]
+    },
+    {
+      "weekStart": "2024-12-02",
+      "weekLabel": "W49",
+      "days": [
+        {
+          "day": "Mon",
+          "orders": 18,
+          "completed": 17
+        },
+        {
+          "day": "Tue",
+          "orders": 20,
+          "completed": 17
+        },
+        {
+          "day": "Wed",
+          "orders": 22,
+          "completed": 21
+        },
+        {
+          "day": "Thu",
+          "orders": 17,
+          "completed": 15
+        },
+        {
+          "day": "Fri",
+          "orders": 13,
+          "completed": 9
+        },
+        {
+          "day": "Sat",
+          "orders": 4,
+          "completed": 3
+        },
+        {
+          "day": "Sun",
+          "orders": 9,
+          "completed": 8
+        }
+      ]
+    },
+    {
+      "weekStart": "2024-12-09",
+      "weekLabel": "W50",
+      "days": [
+        {
+          "day": "Mon",
+          "orders": 15,
+          "completed": 14
+        },
+        {
+          "day": "Tue",
+          "orders": 15,
+          "completed": 11
+        },
+        {
+          "day": "Wed",
+          "orders": 16,
+          "completed": 13
+        },
+        {
+          "day": "Thu",
+          "orders": 19,
+          "completed": 15
+        },
+        {
+          "day": "Fri",
+          "orders": 19,
+          "completed": 16
+        },
+        {
+          "day": "Sat",
+          "orders": 5,
+          "completed": 3
+        },
+        {
+          "day": "Sun",
+          "orders": 10,
+          "completed": 7
+        }
+      ]
+    },
+    {
+      "weekStart": "2024-12-16",
+      "weekLabel": "W51",
+      "days": [
+        {
+          "day": "Mon",
+          "orders": 14,
+          "completed": 11
+        },
+        {
+          "day": "Tue",
+          "orders": 18,
+          "completed": 15
+        },
+        {
+          "day": "Wed",
+          "orders": 12,
+          "completed": 10
+        },
+        {
+          "day": "Thu",
+          "orders": 21,
+          "completed": 18
+        },
+        {
+          "day": "Fri",
+          "orders": 16,
+          "completed": 13
+        },
+        {
+          "day": "Sat",
+          "orders": 8,
+          "completed": 7
+        },
+        {
+          "day": "Sun",
+          "orders": 5,
+          "completed": 5
+        }
+      ]
+    }
+  ]
+}

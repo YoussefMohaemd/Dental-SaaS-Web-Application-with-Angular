@@ -1,5 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { PatientDataService } from '@core/services/patient-data.service';
 import { NavigationService } from '@core/services/navigation.service';
 import { FormatUtils } from '@core/services/format-utils.service';
@@ -13,6 +14,7 @@ import { AvatarComponent } from '@shared/components/avatar/avatar.component';
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     ButtonComponent,
     AvatarComponent
   ],
@@ -35,6 +37,11 @@ export class PatientsComponent {
   readonly sortCol = signal<keyof Patient>('name');
   readonly sortDir = signal<'asc' | 'desc'>('asc');
   readonly pageSize = 10;
+  readonly showAddDialog = signal(false);
+  readonly newName = signal('');
+  readonly newEmail = signal('');
+  readonly newPhone = signal('');
+  readonly newClinic = signal('Bright Smile Dental');
 
   readonly filtered = computed(() => {
     let result = [...this.patients()];
@@ -116,8 +123,35 @@ export class PatientsComponent {
   }
 
   navigateToAddPatient(): void {
-    // Navigate to create order or patient creation
-    this.navigationService.navigate('createOrder');
+    this.newName.set('');
+    this.newEmail.set('');
+    this.newPhone.set('');
+    this.newClinic.set('Bright Smile Dental');
+    this.showAddDialog.set(true);
+  }
+
+  closeAddDialog(): void {
+    this.showAddDialog.set(false);
+  }
+
+  savePatient(): void {
+    const name = this.newName().trim() || 'New Patient';
+    this.patientService.addPatient({
+      id: `pt-${Date.now()}`,
+      name,
+      dob: '1990-01-01',
+      gender: 'F',
+      phone: this.newPhone().trim() || '+1 (555) 000-0000',
+      email: this.newEmail().trim() || 'patient@email.com',
+      clinicId: 'cl1',
+      clinicName: this.newClinic(),
+      doctorId: 'dr1',
+      doctorName: 'Dr. Allison Park',
+      status: 'Active',
+      ordersCount: 0,
+      lastVisit: new Date().toISOString().slice(0, 10)
+    });
+    this.showAddDialog.set(false);
   }
 
   getIconSvg(name: string): string {

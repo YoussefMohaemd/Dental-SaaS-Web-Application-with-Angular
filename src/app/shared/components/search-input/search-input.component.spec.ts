@@ -85,4 +85,23 @@ describe('SearchInputComponent', () => {
     clearBtn.triggerEventHandler('click', new MouseEvent('click'));
     expect(component.onSearch.emit).toHaveBeenCalledWith('');
   });
+
+  it('should apply xs size classes for toolbar usage', () => {
+    fixture.componentRef.setInput('size', 'xs');
+    fixture.detectChanges();
+    const input = fixture.debugElement.query(By.css('input'));
+    expect(input.nativeElement.className).toContain('text-xs');
+  });
+
+  it('should emit debounced search via RxJS after quiet period', async () => {
+    // Zoneless setup: real timers with the default 250ms debounce window.
+    const emitted: string[] = [];
+    component.debouncedSearch.subscribe(v => emitted.push(v));
+    const input = fixture.debugElement.query(By.css('input'));
+    input.nativeElement.value = 'ord';
+    input.triggerEventHandler('input', { target: input.nativeElement });
+    expect(emitted).toEqual([]);
+    await new Promise(resolve => setTimeout(resolve, 400));
+    expect(emitted).toEqual(['ord']);
+  });
 });

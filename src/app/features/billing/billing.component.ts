@@ -67,8 +67,31 @@ export class BillingComponent {
   }
 
   sortIcon(column: BillingSortColumn): string {
-    if (this.sortColumn() !== column) return '↕';
-    return this.sortDirection() === 'asc' ? '↑' : '↓';
+    const active = this.sortColumn() === column;
+    const dir = this.sortDirection();
+    const common = 'width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"';
+    if (!active) {
+      return `<svg ${common}><path d="m21 16-4 4-4-4"/><path d="M17 20V4"/><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/></svg>`;
+    }
+    if (dir === 'asc') {
+      return `<svg ${common}><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg>`;
+    }
+    return `<svg ${common}><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>`;
+  }
+
+  sortIconActive(column: BillingSortColumn): boolean {
+    return this.sortColumn() === column;
+  }
+
+  getIconSvg(name: string): string {
+    const icons: Record<string, string> = {
+      search: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>',
+      download: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
+      'chevron-left': '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>',
+      'chevron-right': '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>',
+      receipt: '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M8 7h8"/><path d="M8 11h8"/><path d="M8 15h5"/></svg>',
+    };
+    return icons[name] || '';
   }
 
   onSearchChange(event: Event): void {
@@ -114,7 +137,27 @@ export class BillingComponent {
   }
 
   exportRecords(): void {
-    // Static prototype: export affordance only.
+    const rows = this.filtered();
+    const header = ['Order #', 'Patient', 'Doctor', 'Clinic', 'Invoice #', 'Amount', 'Status', 'Due Date'];
+    const escape = (value: unknown): string => {
+      const text = String(value ?? '');
+      return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+    };
+    const lines = [
+      header.join(','),
+      ...rows.map(r => [
+        escape(r.orderNumber), escape(r.patientName), escape(r.doctorName),
+        escape(r.clinicName), escape(r.invoiceNumber), escape(r.amount),
+        escape(r.status), escape(r.dueDate)
+      ].join(','))
+    ];
+    const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = 'billing.csv';
+    anchor.click();
+    URL.revokeObjectURL(url);
   }
 
   statusClasses(status: BillingRecord['status']): string {

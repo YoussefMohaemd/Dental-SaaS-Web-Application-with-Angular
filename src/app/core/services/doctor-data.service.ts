@@ -51,4 +51,8 @@ export class DoctorDataService {
   getDoctorsByClinic(clinicId: string): Doctor[] {
     return this._doctors().filter(d => d.clinicId === clinicId);
   }
+
+  addDoctor(doctor: Doctor): void {
+    this._doctors.update(current => [doctor, ...current]);
+  }
 }

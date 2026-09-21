@@ -67,6 +67,12 @@ export class HeaderComponent {
   }
 
   logout(): void {
+    try {
+      localStorage.removeItem('dentalab-auth');
+      localStorage.removeItem('dentalab-auth-token');
+    } catch {
+      // storage unavailable (SSR) — navigation still returns to login
+    }
     this.navigationService.navigate('login');
     this.closeDropdowns();
   }

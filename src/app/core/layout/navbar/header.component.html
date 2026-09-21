@@ -31,14 +31,13 @@
 
   <div class="flex-1"></div>
 
-  <!-- Search -->
-  <div class="relative hidden md:block">
-    <span [innerHTML]="getIconSvg('search')" class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"></span>
+  <!-- Search (React parity: w-56, icon 14px at left-3, ⌘K hint, bg-muted) -->
+  <div class="hidden md:block w-56 shrink-0">
     <app-search-input
       placeholder="Search orders, patients..."
       [showShortcut]="true"
+      size="sm"
     />
-    <kbd class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hidden lg:block">⌘K</kbd>
   </div>
 
   <!-- Theme toggle -->

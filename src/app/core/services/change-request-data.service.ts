@@ -52,4 +52,10 @@ export class ChangeRequestDataService {
   getChangeRequestsByOrder(orderId: string): ChangeRequest[] {
     return this._changeRequests().filter(c => c.orderId === orderId);
   }
+
+  updateStatus(requestId: string, status: ChangeRequest['status']): void {
+    this._changeRequests.update(current =>
+      current.map(r => (r.id === requestId ? { ...r, status } : r))
+    );
+  }
 }

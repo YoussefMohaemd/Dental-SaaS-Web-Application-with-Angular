@@ -1,12 +1,140 @@
 [
-  { "id": "n1", "type": "order", "title": "New Order Received", "message": "Order DL-024023 from Dr. Sophia Lin has been received and is awaiting review.", "read": false, "createdAt": "2024-12-16T10:00:00Z", "relatedId": "ord-3", "relatedType": "order" },
-  { "id": "n2", "type": "workflow", "title": "Order Ready for Pickup", "message": "Order DL-024017 for Alice Johnson is now Ready and awaiting clinic collection.", "read": false, "createdAt": "2024-12-16T14:30:00Z", "relatedId": "ord-7", "relatedType": "order" },
-  { "id": "n3", "type": "file", "title": "Files Uploaded", "message": "3 new scan files were uploaded for Order DL-024011.", "read": false, "createdAt": "2024-12-15T09:00:00Z" },
-  { "id": "n4", "type": "request", "title": "Change Request Submitted", "message": "CR-03005 submitted by Dr. Marcus Webb — shade modification requested.", "read": false, "createdAt": "2024-12-15T16:00:00Z" },
-  { "id": "n5", "type": "billing", "title": "Invoice Overdue", "message": "Invoice INV-010008 for Pacific Dental Group is 5 days overdue.", "read": true, "createdAt": "2024-12-14T11:00:00Z" },
-  { "id": "n6", "type": "order", "title": "Order Completed", "message": "Order DL-024009 — Crown for Benjamin Clarke — has been completed.", "read": true, "createdAt": "2024-12-14T15:00:00Z" },
-  { "id": "n7", "type": "workflow", "title": "Production Delayed", "message": "Order DL-024031 has been flagged for review — minor occlusal adjustment required.", "read": true, "createdAt": "2024-12-13T10:00:00Z" },
-  { "id": "n8", "type": "system", "title": "Maintenance Window", "message": "Scheduled maintenance on Dec 20 from 02:00–04:00 AM PST. No downtime expected.", "read": true, "createdAt": "2024-12-12T08:00:00Z" },
-  { "id": "n9", "type": "order", "title": "Rush Order Created", "message": "Urgent order DL-024045 has been flagged for priority production.", "read": true, "createdAt": "2024-12-12T14:00:00Z" },
-  { "id": "n10", "type": "file", "title": "Scan Approval Required", "message": "Scan files for Order DL-024038 require technician approval before production.", "read": true, "createdAt": "2024-12-11T16:00:00Z" }
+  {
+    "id": "n1",
+    "type": "order",
+    "title": "New Order Received",
+    "message": "Order DL-024023 from Dr. Sophia Lin has been received and is awaiting review.",
+    "read": false,
+    "createdAt": "2024-12-16T10:00:00Z",
+    "relatedId": "ord-3",
+    "relatedType": "order"
+  },
+  {
+    "id": "n2",
+    "type": "workflow",
+    "title": "Order Ready for Pickup",
+    "message": "Order DL-024017 for Alice Johnson is now Ready and awaiting clinic collection.",
+    "read": false,
+    "createdAt": "2024-12-16T14:30:00Z",
+    "relatedId": "ord-7",
+    "relatedType": "order"
+  },
+  {
+    "id": "n3",
+    "type": "file",
+    "title": "Files Uploaded",
+    "message": "3 new scan files were uploaded for Order DL-024011.",
+    "read": false,
+    "createdAt": "2024-12-15T09:00:00Z"
+  },
+  {
+    "id": "n4",
+    "type": "request",
+    "title": "Change Request Submitted",
+    "message": "CR-03005 submitted by Dr. Marcus Webb — shade modification requested.",
+    "read": false,
+    "createdAt": "2024-12-15T16:00:00Z"
+  },
+  {
+    "id": "n5",
+    "type": "billing",
+    "title": "Invoice Overdue",
+    "message": "Invoice INV-010008 for Pacific Dental Group is 5 days overdue.",
+    "read": true,
+    "createdAt": "2024-12-14T11:00:00Z"
+  },
+  {
+    "id": "n6",
+    "type": "order",
+    "title": "Order Completed",
+    "message": "Order DL-024009 — Crown for Benjamin Clarke — has been completed.",
+    "read": true,
+    "createdAt": "2024-12-14T15:00:00Z"
+  },
+  {
+    "id": "n7",
+    "type": "workflow",
+    "title": "Production Delayed",
+    "message": "Order DL-024031 has been flagged for review — minor occlusal adjustment required.",
+    "read": true,
+    "createdAt": "2024-12-13T10:00:00Z"
+  },
+  {
+    "id": "n8",
+    "type": "system",
+    "title": "Maintenance Window",
+    "message": "Scheduled maintenance on Dec 20 from 02:00–04:00 AM PST. No downtime expected.",
+    "read": true,
+    "createdAt": "2024-12-12T08:00:00Z"
+  },
+  {
+    "id": "n9",
+    "type": "order",
+    "title": "Rush Order Created",
+    "message": "Urgent order DL-024045 has been flagged for priority production.",
+    "read": true,
+    "createdAt": "2024-12-12T14:00:00Z"
+  },
+  {
+    "id": "n10",
+    "type": "file",
+    "title": "Scan Approval Required",
+    "message": "Scan files for Order DL-024038 require technician approval before production.",
+    "read": true,
+    "createdAt": "2024-12-11T16:00:00Z"
+  },
+  {
+    "id": "n11",
+    "type": "order",
+    "title": "Shade Match Approved",
+    "message": "Shade verification for Order DL-024051 (Olivia Bennett) was approved by Dr. Laura Simmons.",
+    "read": false,
+    "createdAt": "2024-12-11T09:20:00Z",
+    "relatedId": "ord-51",
+    "relatedType": "order"
+  },
+  {
+    "id": "n12",
+    "type": "workflow",
+    "title": "QC Passed",
+    "message": "Order DL-024012 — Veneer Set for Victoria Hale — passed quality control.",
+    "read": true,
+    "createdAt": "2024-12-11T13:45:00Z",
+    "relatedId": "ord-12",
+    "relatedType": "order"
+  },
+  {
+    "id": "n13",
+    "type": "billing",
+    "title": "Payment Received",
+    "message": "Invoice INV-010002 ($2,400) from Pacific Dental Group has been paid in full.",
+    "read": true,
+    "createdAt": "2024-12-10T15:10:00Z"
+  },
+  {
+    "id": "n14",
+    "type": "system",
+    "title": "New Scanner Online",
+    "message": "A new intraoral scanner is now online at SC-SF Bay. Throughput increased by 20%.",
+    "read": true,
+    "createdAt": "2024-12-09T08:00:00Z"
+  },
+  {
+    "id": "n15",
+    "type": "file",
+    "title": "Intraoral Scan Received",
+    "message": "Full-arch scan files for Order DL-024033 were received from Harbor View Dental.",
+    "read": true,
+    "createdAt": "2024-12-08T11:30:00Z",
+    "relatedId": "ord-33",
+    "relatedType": "order"
+  },
+  {
+    "id": "n16",
+    "type": "request",
+    "title": "Change Request Approved",
+    "message": "CR-03009 (incisal edge extension) was approved and sent to production.",
+    "read": true,
+    "createdAt": "2024-12-08T16:05:00Z"
+  }
 ]

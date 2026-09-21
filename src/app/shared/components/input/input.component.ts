@@ -19,6 +19,15 @@ export class InputComponent {
   readonly value = model<string>('');
   readonly hint = input<string>('');
   readonly error = input<string>('');
+  /**
+   * React parity: login inputs render a 15px leading icon at `left-3` and (for
+   * password) a trailing visibility toggle at `right-3`. When set, the input
+   * reserves horizontal space (`pl-9` / `pr-10`) so the icon never overlaps
+   * the text, placeholder, or value.
+   */
+  readonly iconStart = input<boolean>(false);
+  readonly iconEnd = input<boolean>(false);
+  readonly autocomplete = input<string>('');
 
   readonly onBlur = output<FocusEvent>();
   readonly onFocus = output<FocusEvent>();
@@ -26,10 +35,19 @@ export class InputComponent {
   readonly hintId = computed(() => `${this.id()}-hint`);
   readonly errorId = computed(() => `${this.id()}-error`);
 
-  readonly inputClasses = computed(() => `
-    input-base
+  readonly inputClasses = computed(() => {
+    const horizontalPadding = this.iconStart() && this.iconEnd()
+      ? 'pl-9 pr-10'
+      : this.iconStart()
+        ? 'pl-9 pr-4'
+        : this.iconEnd()
+          ? 'pl-3 pr-10'
+          : 'px-3';
+    return `
+    input-base ${horizontalPadding} py-2.5
     ${this.disabled() ? 'opacity-50 cursor-not-allowed' : ''}
-  `);
+  `;
+  });
 
   onInput(event: Event): void {
     const target = event.target as HTMLInputElement;

@@ -1,21 +1,30 @@
-<button
-  *ngIf="!isLink()"
-  [type]="type()"
-  [disabled]="disabled()"
-  [class]="buttonClasses()"
-  (click)="onClick.emit($event)"
->
-  <span *ngIf="loading()" class="loading-spinner w-4 h-4 mr-1.5" aria-hidden="true"></span>
-  <ng-content />
-</button>
-<a
-  *ngIf="isLink()"
-  [routerLink]="routerLink()"
-  [class]="buttonClasses()"
-  [class.pointer-events-none]="disabled()"
-  [class.opacity-50]="disabled()"
-  (click)="onClick.emit($event)"
->
-  <span *ngIf="loading()" class="loading-spinner w-4 h-4 mr-1.5" aria-hidden="true"></span>
-  <ng-content />
-</a>
+@if (!isLink()) {
+  <button
+    [type]="type()"
+    [disabled]="isDisabled()"
+    [class]="buttonClasses()"
+    [attr.aria-busy]="loading() ? 'true' : null"
+    [attr.aria-disabled]="isDisabled() ? 'true' : null"
+    (click)="handleClick($event)"
+  >
+    @if (loading()) {
+      <span class="loading-spinner" aria-hidden="true"></span>
+    }
+    <ng-content />
+  </button>
+} @else {
+  <a
+    [routerLink]="routerLink()"
+    [class]="buttonClasses()"
+    [class.pointer-events-none]="isDisabled()"
+    [class.opacity-50]="isDisabled()"
+    [attr.aria-disabled]="isDisabled() ? 'true' : null"
+    [attr.aria-busy]="loading() ? 'true' : null"
+    (click)="handleClick($event)"
+  >
+    @if (loading()) {
+      <span class="loading-spinner" aria-hidden="true"></span>
+    }
+    <ng-content />
+  </a>
+}

@@ -25,7 +25,7 @@
           <option value="Active">Active</option>
           <option value="Inactive">Inactive</option>
         </select>
-        <app-button variant="primary" size="sm" class="flex items-center gap-2">
+        <app-button variant="primary" size="sm" (onClick)="openAddDialog()" class="flex items-center gap-2">
           <span [innerHTML]="getIconSvg('plus')"></span>
           Add Doctor
         </app-button>
@@ -87,4 +87,30 @@
       </table>
     }
   </div>
+
+  @if (showAddDialog()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4" (click)="closeAddDialog()">
+      <div class="w-full max-w-md rounded-xl border border-border bg-card p-5 shadow-xl" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-label="Add doctor">
+        <h2 class="font-display text-sm font-semibold text-foreground">Add Doctor</h2>
+        <p class="mt-0.5 text-xs text-muted-foreground">Register a new referring dentist.</p>
+        <div class="mt-4 space-y-3">
+          <label class="block"><span class="mb-1 block text-xs font-semibold">Full Name</span><input class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm" placeholder="Dr. First Last" [ngModel]="newName()" (ngModelChange)="newName.set($event)" /></label>
+          <label class="block"><span class="mb-1 block text-xs font-semibold">Specialty</span>
+            <select class="w-full cursor-pointer rounded-lg border border-border bg-card px-3 py-2 text-sm" [ngModel]="newSpecialty()" (ngModelChange)="newSpecialty.set($event)">
+              <option>General Dentistry</option><option>Prosthodontics</option><option>Oral Surgery</option><option>Orthodontics</option><option>Periodontics</option>
+            </select>
+          </label>
+          <label class="block"><span class="mb-1 block text-xs font-semibold">Clinic</span><input class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm" [ngModel]="newClinic()" (ngModelChange)="newClinic.set($event)" /></label>
+          <div class="grid grid-cols-2 gap-3">
+            <label class="block"><span class="mb-1 block text-xs font-semibold">Email</span><input type="email" class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm" placeholder="doctor@clinic.com" [ngModel]="newEmail()" (ngModelChange)="newEmail.set($event)" /></label>
+            <label class="block"><span class="mb-1 block text-xs font-semibold">Phone</span><input class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm" placeholder="+1 (555) 000-0000" [ngModel]="newPhone()" (ngModelChange)="newPhone.set($event)" /></label>
+          </div>
+        </div>
+        <div class="mt-5 flex justify-end gap-2">
+          <app-button variant="outline" size="sm" (onClick)="closeAddDialog()">Cancel</app-button>
+          <app-button variant="primary" size="sm" (onClick)="saveDoctor()">Save Doctor</app-button>
+        </div>
+      </div>
+    </div>
+  }
 </div>

@@ -1,5 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ClinicDataService } from '@core/services/clinic-data.service';
 import { NavigationService } from '@core/services/navigation.service';
 import { FormatUtils } from '@core/services/format-utils.service';
@@ -18,6 +19,7 @@ interface StatItem {
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     StatusBadgeComponent,
     ButtonComponent,
     AvatarComponent
@@ -34,6 +36,10 @@ export class ClinicsComponent {
   readonly loading = this.clinicService.loading;
 
   readonly search = signal('');
+  readonly showAddDialog = signal(false);
+  readonly newName = signal('');
+  readonly newCity = signal('');
+  readonly newManager = signal('');
 
   readonly filtered = computed(() => {
     const search = this.search();
@@ -54,6 +60,35 @@ export class ClinicsComponent {
   onSearchChange(event: Event): void {
     const target = event.target as HTMLInputElement;
     this.search.set(target.value);
+  }
+
+  openAddDialog(): void {
+    this.newName.set('');
+    this.newCity.set('');
+    this.newManager.set('');
+    this.showAddDialog.set(true);
+  }
+
+  closeAddDialog(): void {
+    this.showAddDialog.set(false);
+  }
+
+  saveClinic(): void {
+    const name = this.newName().trim() || 'New Clinic';
+    this.clinicService.addClinic({
+      id: `cl-${Date.now()}`,
+      name,
+      address: '1200 Innovation Drive',
+      city: this.newCity().trim() || 'Los Angeles',
+      phone: '+1 (555) 000-0000',
+      email: 'info@clinic.com',
+      doctorsCount: 0,
+      patientsCount: 0,
+      ordersCount: 0,
+      status: 'Active',
+      accountManager: this.newManager().trim() || 'Lab Manager'
+    });
+    this.showAddDialog.set(false);
   }
 
   getStatusClass(status: string): string {

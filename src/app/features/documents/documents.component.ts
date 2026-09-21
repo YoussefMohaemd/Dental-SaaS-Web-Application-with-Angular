@@ -17,16 +17,16 @@ export interface LabDocument {
 }
 
 const SEED_DOCUMENTS: LabDocument[] = [
-  { id: 'd1', name: 'rx_crown_14.pdf', category: 'Prescriptions', type: 'PDF', size: '380 KB', date: '2024-03-03', doctor: 'Dr. Smith' },
-  { id: 'd2', name: 'upper_arch_scan.stl', category: 'Scan Files', type: 'STL', size: '4.2 MB', date: '2024-03-01', doctor: 'Dr. Smith' },
-  { id: 'd3', name: 'lower_arch_scan.stl', category: 'Scan Files', type: 'STL', size: '3.8 MB', date: '2024-03-01', doctor: 'Dr. Lee' },
-  { id: 'd4', name: 'bite_registration.ply', category: 'Scan Files', type: 'PLY', size: '1.2 MB', date: '2024-03-02', doctor: 'Dr. Lee' },
-  { id: 'd5', name: 'patient_photo_front.jpg', category: 'Patient Photos', type: 'JPG', size: '2.8 MB', date: '2024-03-02', doctor: 'Dr. Patel' },
-  { id: 'd6', name: 'patient_photo_smile.jpg', category: 'Patient Photos', type: 'JPG', size: '2.4 MB', date: '2024-03-02', doctor: 'Dr. Patel' },
-  { id: 'd7', name: 'invoice_DL-240101.pdf', category: 'Invoices', type: 'PDF', size: '120 KB', date: '2024-03-05', doctor: 'Dr. Smith' },
-  { id: 'd8', name: 'full_arch_backup.zip', category: 'Scan Files', type: 'ZIP', size: '18.6 MB', date: '2024-03-04', doctor: 'Dr. Garcia' },
-  { id: 'd9', name: 'monthly_lab_report.pdf', category: 'Reports', type: 'PDF', size: '640 KB', date: '2024-03-06', doctor: 'Lab Admin' },
-  { id: 'd10', name: 'shade_reference.jpg', category: 'Patient Photos', type: 'JPG', size: '1.6 MB', date: '2024-03-03', doctor: 'Dr. Garcia' }
+  { id: 'd1', name: 'rx_alice_johnson_dec2024.pdf', category: 'Prescriptions', type: 'PDF', size: '380 KB', date: '2024-12-15', doctor: 'Dr. Allison Park' },
+  { id: 'd2', name: 'upper_arch_scan_bc.stl', category: 'Scan Files', type: 'STL', size: '4.2 MB', date: '2024-12-14', doctor: 'Dr. Marcus Webb' },
+  { id: 'd3', name: 'patient_photos_cr_dec.zip', category: 'Patient Photos', type: 'ZIP', size: '14.2 MB', date: '2024-12-13', doctor: 'Dr. Sophia Lin' },
+  { id: 'd4', name: 'invoice_INV-010012.pdf', category: 'Invoices', type: 'PDF', size: '142 KB', date: '2024-12-12', doctor: '–' },
+  { id: 'd5', name: 'monthly_report_nov2024.pdf', category: 'Reports', type: 'PDF', size: '1.1 MB', date: '2024-12-01', doctor: 'Lab Manager' },
+  { id: 'd6', name: 'bite_registration_eng.stl', category: 'Scan Files', type: 'STL', size: '1.3 MB', date: '2024-12-10', doctor: 'Dr. Robert Chen' },
+  { id: 'd7', name: 'shade_guide_ref_final.jpg', category: 'Patient Photos', type: 'JPG', size: '2.4 MB', date: '2024-12-09', doctor: 'Dr. Jennifer Walsh' },
+  { id: 'd8', name: 'rx_david_nguyen.pdf', category: 'Prescriptions', type: 'PDF', size: '290 KB', date: '2024-12-08', doctor: 'Dr. Robert Chen' },
+  { id: 'd9', name: 'case_summary_cs8102.pdf', category: 'Reports', type: 'PDF', size: '890 KB', date: '2024-12-05', doctor: 'Lab Manager' },
+  { id: 'd10', name: 'full_arch_scan_ef.ply', category: 'Scan Files', type: 'PLY', size: '8.6 MB', date: '2024-12-04', doctor: 'Dr. Jennifer Walsh' }
 ];
 
 const CATEGORIES: ('All' | DocumentCategory)[] = ['All', 'Prescriptions', 'Scan Files', 'Patient Photos', 'Invoices', 'Reports'];
@@ -93,6 +93,17 @@ export class DocumentsComponent {
     this.documents.update(current => current.filter(d => d.id !== documentId));
   }
 
+  downloadDocument(doc: LabDocument): void {
+    const content = `Document: ${doc.name}\nCategory: ${doc.category}\nType: ${doc.type}\nSize: ${doc.size}\nDoctor: ${doc.doctor}\nDate: ${doc.date}\n`;
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = doc.name + '.txt';
+    anchor.click();
+    URL.revokeObjectURL(url);
+  }
+
   openPreview(document: LabDocument): void {
     this.preview.set(document);
     this.previewVisible.set(true);
@@ -103,11 +114,37 @@ export class DocumentsComponent {
     this.preview.set(null);
   }
 
+  typeIconSvg(documentType: string): string {
+    if (['JPG', 'PNG'].includes(documentType)) {
+      return '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>';
+    }
+    if (documentType === 'PDF') {
+      return '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>';
+    }
+    if (['STL', 'PLY', 'OBJ'].includes(documentType)) {
+      return '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
+    }
+    return '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
+  }
+
+  typeIconLargeSvg(documentType: string): string {
+    return this.typeIconSvg(documentType).replace('width="18" height="18"', 'width="48" height="48"');
+  }
+
+  emptyIconSvg(): string {
+    return '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
+  }
+
+  uploadIconSvg(): string {
+    return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>';
+  }
+
+  searchIconSvg(): string {
+    return '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>';
+  }
+
   typeIcon(documentType: string): string {
-    if (['JPG', 'PNG'].includes(documentType)) return '🖼️';
-    if (documentType === 'PDF') return '📄';
-    if (documentType === 'ZIP') return '🗜️';
-    return '🦷';
+    return this.typeIconSvg(documentType);
   }
 
   private addFiles(fileList: FileList): void {

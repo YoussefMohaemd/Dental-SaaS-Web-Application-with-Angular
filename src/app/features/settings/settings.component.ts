@@ -29,13 +29,13 @@ export class SettingsComponent {
     weeklySummary: true
   });
 
-  readonly sections: { id: SettingsSection; label: string }[] = [
-    { id: 'profile', label: 'Profile' },
-    { id: 'notifications', label: 'Notifications' },
-    { id: 'appearance', label: 'Appearance' },
-    { id: 'language', label: 'Language & Region' },
-    { id: 'security', label: 'Security' },
-    { id: 'organization', label: 'Organization' }
+  readonly sections: { id: SettingsSection; label: string; icon: string }[] = [
+    { id: 'profile', label: 'Profile', icon: 'user' },
+    { id: 'notifications', label: 'Notifications', icon: 'bell' },
+    { id: 'appearance', label: 'Appearance', icon: 'palette' },
+    { id: 'language', label: 'Language & Region', icon: 'globe' },
+    { id: 'security', label: 'Security', icon: 'shield' },
+    { id: 'organization', label: 'Organization', icon: 'building' }
   ];
 
   readonly profileForm = this.fb.nonNullable.group({
@@ -99,5 +99,18 @@ export class SettingsComponent {
       { key: 'systemAlerts', label: 'System Alerts', value: prefs.systemAlerts },
       { key: 'weeklySummary', label: 'Weekly Summary', value: prefs.weeklySummary }
     ];
+  }
+
+  getIconSvg(name: string): string {
+    const icons: Record<string, string> = {
+      user: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+      bell: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>',
+      palette: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.93 0 1.68-.75 1.68-1.68 0-.44-.16-.84-.44-1.15-.27-.31-.44-.71-.44-1.15 0-.93.75-1.68 1.68-1.68h2.74a5.87 5.87 0 0 0 5.87-5.87c0-4.95-4.5-8.47-10.09-8.47z"/></svg>',
+      globe: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>',
+      shield: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
+      building: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><path d="M9 22v-4h6v4"/></svg>',
+      save: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>',
+    };
+    return icons[name] || '';
   }
 }

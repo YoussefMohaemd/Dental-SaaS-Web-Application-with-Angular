@@ -77,4 +77,38 @@ describe('InputComponent', () => {
     input.triggerEventHandler('blur', new FocusEvent('blur'));
     expect(component.onBlur.emit).toHaveBeenCalled();
   });
+
+  it('should reserve left padding when a leading icon is present', () => {
+    fixture.componentRef.setInput('iconStart', true);
+    fixture.detectChanges();
+    const input = fixture.debugElement.query(By.css('input'));
+    const classes = (input.nativeElement.getAttribute('class') ?? '').split(/\s+/);
+    expect(classes).toContain('pl-9');
+    expect(classes).not.toContain('px-3');
+  });
+
+  it('should reserve right padding when a trailing icon is present', () => {
+    fixture.componentRef.setInput('iconStart', true);
+    fixture.componentRef.setInput('iconEnd', true);
+    fixture.detectChanges();
+    const input = fixture.debugElement.query(By.css('input'));
+    const classes = (input.nativeElement.getAttribute('class') ?? '').split(/\s+/);
+    expect(classes).toContain('pl-9');
+    expect(classes).toContain('pr-10');
+  });
+
+  it('should use compact padding without icons', () => {
+    fixture.detectChanges();
+    const input = fixture.debugElement.query(By.css('input'));
+    const classes = (input.nativeElement.getAttribute('class') ?? '').split(/\s+/);
+    expect(classes).toContain('px-3');
+    expect(classes).toContain('py-2.5');
+  });
+
+  it('should forward autocomplete to the native input', () => {
+    fixture.componentRef.setInput('autocomplete', 'email');
+    fixture.detectChanges();
+    const input = fixture.debugElement.query(By.css('input'));
+    expect(input.nativeElement.getAttribute('autocomplete')).toBe('email');
+  });
 });
