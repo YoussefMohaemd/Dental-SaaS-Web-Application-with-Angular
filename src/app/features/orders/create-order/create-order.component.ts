@@ -10,6 +10,7 @@ import { ScanCenterDataService } from '@core/services/scan-center-data.service';
 import { SubOrderDataService } from '@core/services/sub-order-data.service';
 import { AVAILABLE_SERVICES, CreateOrderService, ServiceTeethMapping } from '@core/models/create-order.model';
 import { ArchType, RestoType } from '@core/models';
+import { SubOrderCreationData } from '@core/models/sub-order.model';
 import { ButtonComponent } from '@shared/components/button/button.component';
 import { TeethChartComponent } from '@shared/components/teeth-chart/teeth-chart.component';
 import { SafeHtmlPipe } from '@shared/pipes/safe-html.pipe';
@@ -310,17 +311,32 @@ export class CreateOrderComponent {
     const dueDate = this.form().dueDate || this.defaultDueDate();
     const selectedServices = this.selectedServiceObjects();
     const allTeeth = this.allTeethCombined();
-    const serviceRows = selectedServices.map(service => ({
+    const serviceRows = selectedServices.map(service => {
+      const selectedTeeth = this.serviceTeeth()[service.id]?.length
+        ? [...this.serviceTeeth()[service.id]]
+        : [...allTeeth];
+      const serviceDetails = this.getServiceDetail(service.id);
+      const serviceForm = this.getServiceForm(service.id);
+      const creationData: SubOrderCreationData = {
+        serviceId: service.id,
+        serviceDetails: { ...serviceDetails },
+        serviceForm: { ...serviceForm },
+        selectedTeeth,
+        scanRequirements: [...service.scanRequirements],
+        fileReferences: [],
+      };
+      return {
+      serviceId: service.id,
       service: service.name,
       icon: service.icon,
       priority: this.form().priority as 'Low' | 'Normal' | 'High' | 'Urgent',
       dueDate,
-      notes: this.getServiceDetail(service.id).serviceNotes || this.form().notes || this.fallbackServiceNote(service.name),
-      teeth: this.serviceTeeth()[service.id]?.length
-        ? [...this.serviceTeeth()[service.id]]
-        : [...allTeeth],
-      scanRequirements: service.scanRequirements,
-    }));
+      notes: serviceDetails.serviceNotes || this.form().notes || this.fallbackServiceNote(service.name),
+      teeth: selectedTeeth,
+      scanRequirements: [...service.scanRequirements],
+      creationData,
+      };
+    });
 
     const createdOrder = this.orderService.createOrder({
       patientId: patient.id,
@@ -346,6 +362,7 @@ export class CreateOrderComponent {
       hasNotes: this.form().notes.trim().length > 0,
       notes: this.form().notes,
       dueDate,
+      creationData: { services: serviceRows.map(row => structuredClone(row.creationData)) },
     });
 
     this.subOrderService.createForOrder(createdOrder.id, serviceRows);

@@ -20,6 +20,7 @@ describe('ReportsDataService', () => {
   });
 
   it('should expose fallback chart data before the request resolves', () => {
+    httpMock.expectOne('/data/reports.json').flush(null, { status: 500, statusText: 'Server Error' });
     expect(service.reports().monthlyRevenue.length).toBe(6);
     expect(service.reports().restorationBreakdown.length).toBe(6);
     expect(service.reports().turnaround.length).toBe(7);

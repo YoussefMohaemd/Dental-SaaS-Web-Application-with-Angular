@@ -35,7 +35,7 @@ export class EditOrderComponent {
   readonly order = computed(() => {
     const orderId = this.route.snapshot.paramMap.get('orderId');
     const found = this.orderService.getOrderById(orderId ?? '');
-    return found ?? this.orderService.orders()[0];
+    return found;
   });
 
   readonly editForm = this.fb.nonNullable.group({

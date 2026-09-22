@@ -11,6 +11,7 @@ import {
   SubOrderFormItemValue,
   SubOrderScanLocalFile,
   SubOrderScanItemStatus,
+  SubOrderCreationData,
 } from '../models/sub-order.model';
 
 interface SubOrderJson {
@@ -124,6 +125,7 @@ const DEFAULT_FORM_VALUES: SubOrderFormDraftValue = {
 };
 
 export interface CreateSubOrderInput {
+  serviceId: string;
   service: string;
   icon: string;
   priority: SubOrder['priority'];
@@ -131,6 +133,7 @@ export interface CreateSubOrderInput {
   notes: string;
   teeth: number[];
   scanRequirements: string[];
+  creationData: SubOrderCreationData;
 }
 
 /**
@@ -190,9 +193,8 @@ export class SubOrderDataService {
     return this._subOrders().find(s => s.id === id);
   }
 
-  /** React parity: unknown ids fall back to the default 'so-2' detail set. */
-  getDetailById(id: string): SubOrderDetail {
-    return this._details()[id] ?? this._details()['so-2'];
+  getDetailById(id: string): SubOrderDetail | undefined {
+    return this._details()[id];
   }
 
   createForOrder(orderId: string, rows: CreateSubOrderInput[]): SubOrder[] {
@@ -228,6 +230,7 @@ export class SubOrderDataService {
         priority: row.priority,
         dueDate: row.dueDate,
         notes: row.notes,
+        creationData: structuredClone(row.creationData),
       };
 
       created.push(subOrder);

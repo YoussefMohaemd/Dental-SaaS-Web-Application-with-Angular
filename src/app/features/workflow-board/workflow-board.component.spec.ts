@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter } from '@angular/router';
-import { WorkflowBoardComponent } from './workflow-board.component';
+import { WorkflowBoardComponent, workflowStatusFromDropListId } from './workflow-board.component';
 
 describe('WorkflowBoardComponent', () => {
   let component: WorkflowBoardComponent;
@@ -39,5 +39,10 @@ describe('WorkflowBoardComponent', () => {
 
   it('should use order id as track key', () => {
     expect(component.trackByOrderId(0, { id: 'ord-9' } as never)).toBe('ord-9');
+  });
+
+  it('should resolve workflow statuses from drop list ids', () => {
+    expect(workflowStatusFromDropListId(component.columns, 'workflow-col-ready')).toBe('Ready');
+    expect(workflowStatusFromDropListId(component.columns, 'missing-list')).toBeNull();
   });
 });

@@ -13,6 +13,7 @@ import {
   SubOrderScanItem,
   SubOrderScanLocalFile,
   SubOrderTab,
+  SubOrderDetail,
 } from '@core/models/sub-order.model';
 import { TeethChartComponent } from '@shared/components/teeth-chart/teeth-chart.component';
 import { SafeHtmlPipe } from '@shared/pipes/safe-html.pipe';
@@ -31,17 +32,9 @@ const DEFAULT_FORM_VALUES: SubOrderFormDraftValue = {
 const OCCLUSAL_CONTACT_OPTIONS = ['Light contact', 'Full contact', 'No contact'];
 const MARGIN_TYPE_OPTIONS = ['Chamfer', 'Shoulder', 'Feather edge', 'Knife edge'];
 const MATERIAL_OPTIONS = ['Zirconia (Multilayer)', 'PFM', 'E-max', 'PMMA', 'Titanium'];
+const EMPTY_DETAIL: SubOrderDetail = { id: '', forms: [], scans: [], activity: [] };
 
-/**
- * Sub-order detail page (React parity: SubOrderPage.tsx).
- * Root cause of the previous mismatch: this page rendered a bespoke
- * workflow-tracker + reactive clinical form + CDK upload manager that do not
- * exist in React. React is a read-oriented detail view: header with
- * back-navigation, status + priority, overall progress card, tab bar
- * (Overview / Forms / Scans / Activity), per-tab content, a read-only tooth
- * chart and a note composer. This rewrite restores that structure 1:1.
- * State uses Signals; detail data comes from SubOrderDataService.
- */
+
 @Component({
   selector: 'app-sub-order',
   standalone: true,
@@ -59,17 +52,17 @@ export class SubOrderComponent {
   private readonly queryParamMap = toSignal(this.route.queryParamMap, { initialValue: null });
 
   readonly orderId = computed(() => this.paramMap()?.get('orderId') ?? '');
-  readonly subOrderId = computed(() => this.paramMap()?.get('subOrderId') ?? 'so-2');
+  readonly subOrderId = computed(() => this.paramMap()?.get('subOrderId') ?? '');
 
   readonly order = computed(
-    () => this.orderService.getOrderById(this.orderId()) ?? this.orderService.orders()[0],
+    () => this.orderService.getOrderById(this.orderId()),
   );
   readonly subOrder = computed(
-    () => this.subOrderService.getById(this.subOrderId()) ?? this.subOrderService.subOrders()[0],
+    () => this.subOrderService.getById(this.subOrderId()),
   );
   readonly detail = computed(() => {
     const sub = this.subOrder();
-    return this.subOrderService.getDetailById(sub?.id ?? this.subOrderId());
+    return this.subOrderService.getDetailById(sub?.id ?? '') ?? EMPTY_DETAIL;
   });
 
   /** Initial tab honors ?tab= (React parity: params.subOrderTab). */

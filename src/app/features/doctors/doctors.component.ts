@@ -8,6 +8,7 @@ import { Doctor, DoctorStatus } from '@core/models';
 import { ButtonComponent } from '@shared/components/button/button.component';
 import { AvatarComponent } from '@shared/components/avatar/avatar.component';
 import { SafeHtmlPipe } from '@shared/pipes/safe-html.pipe';
+import { filterTableRows, sortTableRows } from '@shared/utils/table-state';
 
 interface SortConfig {
   label: string;
@@ -49,26 +50,14 @@ export class DoctorsComponent {
   readonly newPhone = signal('');
 
   readonly filtered = computed(() => {
-    let result = [...this.doctors()];
-    const search = this.search();
-    if (search) {
-      const q = search.toLowerCase();
-      result = result.filter(d =>
-        d.name.toLowerCase().includes(q) ||
-        d.specialty.toLowerCase().includes(q) ||
-        d.clinicName.toLowerCase().includes(q)
-      );
-    }
+    let result = filterTableRows(this.doctors(), this.search(), [
+      doctor => doctor.name,
+      doctor => doctor.specialty,
+      doctor => doctor.clinicName,
+    ]);
     if (this.statusFilter()) result = result.filter(d => d.status === this.statusFilter());
 
-    result.sort((a, b) => {
-      const av = (a as any)[this.sortCol()] ?? '';
-      const bv = (b as any)[this.sortCol()] ?? '';
-      return this.sortDir() === 'asc'
-        ? String(av).localeCompare(String(bv))
-        : String(bv).localeCompare(String(av));
-    });
-    return result;
+    return sortTableRows(result, this.sortCol(), this.sortDir());
   });
 
   readonly sortConfigs: SortConfig[] = [

@@ -1,7 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { provideRouter } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
+import { of } from 'rxjs';
 import { ViewOrderComponent } from './view-order.component';
 
 describe('ViewOrderComponent', () => {
@@ -11,7 +12,17 @@ describe('ViewOrderComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ViewOrderComponent],
-      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])]
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([]),
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            paramMap: of(convertToParamMap({ orderId: 'missing-order' })),
+          },
+        },
+      ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(ViewOrderComponent);
@@ -77,5 +88,11 @@ describe('ViewOrderComponent', () => {
     expect(component.confirmDeleteVisible()).toBeTrue();
     component.cancelDelete();
     expect(component.confirmDeleteVisible()).toBeFalse();
+  });
+
+  it('should expose an explicit not-found state for invalid ids', () => {
+    expect(component.order()).toBeUndefined();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Order not found');
   });
 });

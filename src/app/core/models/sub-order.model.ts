@@ -14,6 +14,16 @@ export interface SubOrder {
   priority: 'Low' | 'Normal' | 'High' | 'Urgent';
   dueDate: string;
   notes: string;
+  creationData?: SubOrderCreationData;
+}
+
+export interface SubOrderCreationData {
+  serviceId: string;
+  serviceDetails: Record<string, string>;
+  serviceForm: Record<string, string>;
+  selectedTeeth: number[];
+  scanRequirements: string[];
+  fileReferences: string[];
 }
 
 export interface OrderWorkflowStage {

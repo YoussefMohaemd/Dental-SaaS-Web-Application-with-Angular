@@ -77,11 +77,11 @@ describe('HeaderComponent', () => {
 
   it('should show the moon icon in light mode and the sun icon in dark mode', () => {
     const themeBtn = fixture.debugElement.query(By.css('button[aria-label="Toggle theme"]'));
-    expect(themeBtn.nativeElement.innerHTML).toContain('M21 12.79');
+    expect(themeBtn.nativeElement.innerHTML).toContain('M20.985 12.486');
     (themeService.isDark as unknown as { set(v: boolean): void }).set(true);
     fixture.detectChanges();
     const updatedBtn = fixture.debugElement.query(By.css('button[aria-label="Toggle theme"]'));
-    expect(updatedBtn.nativeElement.innerHTML).toContain('<circle cx="12" cy="12" r="5">');
+    expect(updatedBtn.nativeElement.innerHTML).toContain('<circle cx="12" cy="12" r="4">');
   });
 
   it('should render the header search with React-parity placeholder', () => {

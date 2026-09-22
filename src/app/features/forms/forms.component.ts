@@ -52,6 +52,10 @@ export class FormsComponent {
     this.scanFiles.update(current => current.filter(f => f !== name));
   }
 
+  onAttachmentDropzoneActivate(event?: Event | KeyboardEvent): void {
+    event?.preventDefault();
+  }
+
   severityClasses(level: string): string {
     if (this.severity() !== level) return 'border-border text-muted-foreground hover:bg-muted';
     if (level === 'Critical') return 'border-danger bg-danger/5 text-danger';

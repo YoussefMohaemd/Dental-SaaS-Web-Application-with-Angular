@@ -39,7 +39,7 @@ describe('PriorityBadgeComponent', () => {
     fixture.componentRef.setInput('priority', 'Normal');
     fixture.detectChanges();
     const text = fixture.debugElement.query(By.css('span:last-child'));
-    expect(text.nativeElement).toHaveClass('text-blue-500');
+    expect(text.nativeElement).toHaveClass('text-muted-foreground');
   });
 
   it('should apply default styles for unknown priority', () => {

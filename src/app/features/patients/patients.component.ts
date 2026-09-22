@@ -8,6 +8,8 @@ import { Patient, PatientStatus } from '@core/models';
 import { ButtonComponent } from '@shared/components/button/button.component';
 import { AvatarComponent } from '@shared/components/avatar/avatar.component';
 import { SafeHtmlPipe } from '../../shared/pipes/safe-html.pipe';
+import { filterTableRows } from '@shared/utils/table-state';
+import { paginateTableRows, sortTableRows, tableTotalPages, visibleTablePages } from '@shared/utils/table-state';
 
 @Component({
   selector: 'app-patients',
@@ -45,30 +47,18 @@ export class PatientsComponent {
   readonly newClinic = signal('Bright Smile Dental');
 
   readonly filtered = computed(() => {
-    let result = [...this.patients()];
-    const search = this.search();
-    if (search) {
-      const q = search.toLowerCase();
-      result = result.filter(p =>
-        p.name.toLowerCase().includes(q) ||
-        p.email.toLowerCase().includes(q) ||
-        p.clinicName.toLowerCase().includes(q)
-      );
-    }
+    let result = filterTableRows(this.patients(), this.search(), [
+      patient => patient.name,
+      patient => patient.email,
+      patient => patient.clinicName,
+    ]);
     if (this.statusFilter()) result = result.filter(p => p.status === this.statusFilter());
 
-    result.sort((a, b) => {
-      const av = (a as any)[this.sortCol()] ?? '';
-      const bv = (b as any)[this.sortCol()] ?? '';
-      return this.sortDir() === 'asc'
-        ? String(av).localeCompare(String(bv))
-        : String(bv).localeCompare(String(av));
-    });
-    return result;
+    return sortTableRows(result, this.sortCol(), this.sortDir());
   });
 
-  readonly totalPages = computed(() => Math.ceil(this.filtered().length / this.pageSize));
-  readonly pageData = computed(() => this.filtered().slice((this.page() - 1) * this.pageSize, this.page() * this.pageSize));
+  readonly totalPages = computed(() => tableTotalPages(this.filtered().length, this.pageSize));
+  readonly pageData = computed(() => paginateTableRows(this.filtered(), this.page(), this.pageSize));
 
   toggleSort(col: keyof Patient): void {
     if (this.sortCol() === col) this.sortDir.update(d => d === 'asc' ? 'desc' : 'asc');
@@ -100,15 +90,7 @@ export class PatientsComponent {
   }
 
   getPageNumbers(): number[] {
-    const total = this.totalPages();
-    const current = this.page();
-    const maxPages = 5;
-    let start = Math.max(1, current - Math.floor(maxPages / 2));
-    let end = Math.min(total, start + maxPages - 1);
-    if (end - start + 1 < maxPages) {
-      start = Math.max(1, end - maxPages + 1);
-    }
-    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+    return visibleTablePages(this.totalPages(), this.page());
   }
 
   getInitials(name: string): string {

@@ -31,6 +31,7 @@ const INITIAL_FILES: OrderFileEntry[] = [
 ];
 
 const ACCEPTED_TYPES = ['STL', 'PLY', 'OBJ', 'JPG', 'PNG', 'PDF', 'DCM'];
+const MAX_FILE_BYTES = 100 * 1024 * 1024;
 
 @Component({
   selector: 'app-order-files',
@@ -48,10 +49,11 @@ export class OrderFilesComponent {
   readonly dragOver = signal(false);
   readonly previewFile = signal<OrderFileEntry | null>(null);
   readonly previewVisible = signal(false);
+  readonly uploadMessage = signal<string | null>(null);
 
   readonly order = computed(() => {
     const orderId = this.route.snapshot.paramMap.get('orderId');
-    return this.orderService.getOrderById(orderId ?? '') ?? this.orderService.orders()[0];
+    return this.orderService.getOrderById(orderId ?? '');
   });
 
   readonly uploadedFiles = computed(() => this.files().filter(f => f.status === 'uploaded'));
@@ -88,12 +90,27 @@ export class OrderFilesComponent {
   }
 
   addFiles(fileList: FileList): void {
-    const additions: OrderFileEntry[] = Array.from(fileList).slice(0, 10).map((file, index) => {
+    const existingNames = new Set(this.files().map(file => file.name.toLowerCase()));
+    const rejected: string[] = [];
+    const additions: OrderFileEntry[] = Array.from(fileList).slice(0, 10).flatMap((file, index) => {
       const extension = (file.name.split('.').pop() ?? '').toUpperCase();
+      if (!ACCEPTED_TYPES.includes(extension)) {
+        rejected.push(`${file.name}: unsupported file type`);
+        return [];
+      }
+      if (file.size > MAX_FILE_BYTES) {
+        rejected.push(`${file.name}: exceeds the 100 MB limit`);
+        return [];
+      }
+      if (existingNames.has(file.name.toLowerCase())) {
+        rejected.push(`${file.name}: duplicate file`);
+        return [];
+      }
+      existingNames.add(file.name.toLowerCase());
       return {
         id: `upload-${Date.now()}-${index}`,
         name: file.name,
-        type: ACCEPTED_TYPES.includes(extension) ? extension : extension || 'FILE',
+        type: extension,
         size: this.formatBytes(file.size),
         sizeBytes: file.size,
         status: 'uploading' as FileStatus,
@@ -102,6 +119,7 @@ export class OrderFilesComponent {
         uploadedBy: 'You'
       };
     });
+    this.uploadMessage.set(rejected.length > 0 ? rejected.join(' · ') : null);
     if (additions.length === 0) return;
     this.files.update(current => [...additions, ...current]);
     for (const entry of additions) this.simulateUpload(entry.id);

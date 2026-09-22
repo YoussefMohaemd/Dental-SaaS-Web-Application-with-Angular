@@ -46,7 +46,7 @@ export class OrderWorkflowComponent {
 
   readonly order = computed(() => {
     const orderId = this.route.snapshot.paramMap.get('orderId');
-    return this.orderService.getOrderById(orderId ?? '') ?? this.orderService.orders()[0];
+    return this.orderService.getOrderById(orderId ?? '');
   });
 
   readonly currentIndex = computed(() => {

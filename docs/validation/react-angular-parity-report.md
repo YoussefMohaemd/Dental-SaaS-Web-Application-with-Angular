@@ -149,3 +149,18 @@ focus, keyboard, and board drag/drop.
 - `Advanced` filters toggle is informational, matching React.
 - Sass `map-get` deprecation warnings in `styles/theme.scss` pre-date this
   work; build is unaffected.
+
+## Follow-up validation (2026-09-22)
+
+- Shared table-state helpers now cover filter/sort/pagination semantics for
+  Patients, Doctors, and `OrderDataService.applyFilters`.
+- Workflow board status resolution is centralized in a pure helper and covered
+  by a focused unit test.
+- Forms attachment dropzone keyboard activation is explicit and tested.
+- Create Order contract coverage now asserts nested service details, clinical
+  form values, selected teeth, and file-reference boundaries.
+- Invalid order-id route coverage now includes workflow and files pages in
+  addition to the existing View Order empty state.
+- Validation snapshot at the end of this slice: `248` unit tests passing and
+  `npm run build` passing; lint remains unavailable via the configured
+  `@angular/build:tsc` builder, so the documented fallback path still applies.

@@ -1,22 +1,46 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { provideRouter } from '@angular/router';
+import { ActivatedRoute, convertToParamMap } from '@angular/router';
+import { of } from 'rxjs';
 import { By } from '@angular/platform-browser';
 import { SubOrderComponent } from './sub-order.component';
 
 describe('SubOrderComponent', () => {
   let component: SubOrderComponent;
   let fixture: ComponentFixture<SubOrderComponent>;
+  let httpMock: HttpTestingController;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [SubOrderComponent],
-      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([]),
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            paramMap: of(convertToParamMap({ orderId: 'ord-1', subOrderId: 'so-2' })),
+            queryParamMap: of(convertToParamMap({})),
+          },
+        },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(SubOrderComponent);
     component = fixture.componentInstance;
+    httpMock = TestBed.inject(HttpTestingController);
+    httpMock.expectOne('/data/orders.json').flush([{
+      id: 'ord-1', orderNumber: 'DL-024001', patientId: 'pt1', patientName: 'Alice Johnson',
+      doctorId: 'dr1', doctorName: 'Dr. Allison Park', clinicId: 'cl1', clinicName: 'Bright Smile Dental',
+      scanCenterId: 'sc1', scanCenterName: 'SC-LA Central', status: 'New', priority: 'Normal',
+      restoration: 'Crown', arch: 'Maxilla', format: 'STL', shade: 'A2', units: 1, amount: 450,
+      billed: false, billTo: 'Bright Smile Dental', vouchers: 0, isLocked: false, hasNotes: false,
+      notes: '', receivedAt: '2024-12-10T10:00:00Z', updatedAt: '2024-12-10T10:00:00Z', dueDate: '2024-12-24',
+    }]);
     fixture.detectChanges();
   });
 
@@ -24,13 +48,12 @@ describe('SubOrderComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should default to the so-2 sub-order detail (React parity)', () => {
+  it('should resolve the explicit route sub-order', () => {
     expect(component.subOrder()?.id).toBe('so-2');
     expect(component.detail().id).toBe('so-2');
   });
 
   it('should compute progress from required forms and scans', () => {
-    // so-2: 2/3 forms complete + 2/3 scans uploaded over 6 required = 67%.
     expect(component.formsComplete()).toBe(2);
     expect(component.scansUploaded()).toBe(2);
     expect(component.progress()).toBe(67);
@@ -75,14 +98,15 @@ describe('SubOrderComponent', () => {
     expect(postBtn?.nativeElement.disabled).toBeFalse();
   });
 
-  it('should fall back to the orders list when no parent order resolves', () => {
-    // Test bed has no route params and an empty order store, so order() is
-    // undefined and goBack() must take the safe fallback (React parity: the
-    // back button never dead-ends).
+  it('should navigate to the resolved parent order', () => {
     spyOn(component['navigationService'], 'navigate');
-    expect(component.order()).toBeUndefined();
+    expect(component.order()?.id).toBe('ord-1');
     component.goBack();
-    expect(component['navigationService'].navigate).toHaveBeenCalledWith('orders');
+    expect(component['navigationService'].navigate).toHaveBeenCalledWith('viewOrder', { orderId: 'ord-1' });
+  });
+
+  it('should return no detail for an unknown sub-order id', () => {
+    expect(component['subOrderService'].getDetailById('missing-sub-order')).toBeUndefined();
   });
 
   it('should expose empty, loading and error-agnostic rendering (React parity: always detail view)', () => {

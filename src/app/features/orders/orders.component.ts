@@ -13,6 +13,7 @@ import { ButtonComponent } from '@shared/components/button/button.component';
 import { SearchInputComponent } from '@shared/components/search-input/search-input.component';
 import { SafeHtmlPipe } from '../../shared/pipes/safe-html.pipe';
 import { lucideSvg } from '@shared/icons/lucide-icons';
+import { filterTableRows } from '@shared/utils/table-state';
 
 /**
  * TreeTable row payload — single source for the Order → Service hierarchy.
@@ -133,16 +134,12 @@ export class OrdersComponent {
   readonly priorityOptions = PRIORITY_OPTIONS;
 
   readonly filtered = computed(() => {
-    let result = [...this.orders()];
-    const query = this.search().trim().toLowerCase();
-    if (query) {
-      result = result.filter(order =>
-        order.orderNumber.toLowerCase().includes(query) ||
-        order.patientName.toLowerCase().includes(query) ||
-        order.doctorName.toLowerCase().includes(query) ||
-        order.clinicName.toLowerCase().includes(query)
-      );
-    }
+    let result = filterTableRows(this.orders(), this.search().trim(), [
+      order => order.orderNumber,
+      order => order.patientName,
+      order => order.doctorName,
+      order => order.clinicName,
+    ]);
     if (this.statusFilter().length > 0) result = result.filter(order => this.statusFilter().includes(order.status));
     if (this.priorityFilter()) result = result.filter(order => order.priority === this.priorityFilter());
     const column = this.sortColumn();

@@ -3,13 +3,20 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { ButtonComponent } from './button.component';
 
+@Component({
+  standalone: true,
+  imports: [ButtonComponent],
+  template: `<app-button variant="primary">Sign in</app-button>`,
+})
+class ProjectionHostComponent {}
+
 describe('ButtonComponent', () => {
   let component: ButtonComponent;
   let fixture: ComponentFixture<ButtonComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ButtonComponent],
+      imports: [ButtonComponent, ProjectionHostComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ButtonComponent);
@@ -92,14 +99,6 @@ describe('ButtonComponent', () => {
   });
 
   it('should project light-DOM content into the native button (single catch-all outlet)', async () => {
-    @Component({
-      standalone: true,
-      imports: [ButtonComponent],
-      template: `<app-button variant="primary">Sign in</app-button>`,
-    })
-    class ProjectionHostComponent {}
-
-    await TestBed.configureTestingModule({ imports: [ProjectionHostComponent] }).compileComponents();
     const hostFixture = TestBed.createComponent(ProjectionHostComponent);
     hostFixture.detectChanges();
     const button = hostFixture.debugElement.query(By.css('app-button button'));

@@ -1,4 +1,11 @@
 <div class="p-6 max-w-4xl mx-auto">
+  @if (!order() || !subOrder()) {
+    <div class="rounded-xl border border-border bg-card p-6 text-center">
+      <p class="text-sm font-semibold text-foreground">Sub-order not found</p>
+      <p class="mt-1 text-xs text-muted-foreground">The requested sub-order id does not match any available record.</p>
+      <button type="button" (click)="goBack()" class="mt-4 text-sm text-primary hover:underline">Back to order</button>
+    </div>
+  } @else {
   <!-- Header -->
   <div class="flex items-start gap-3 mb-6">
     <button
@@ -458,5 +465,6 @@
         </div>
       </div>
     </div>
+  }
   }
 </div>

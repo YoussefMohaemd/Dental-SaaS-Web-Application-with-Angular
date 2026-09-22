@@ -2,6 +2,7 @@ import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of, delay, map, catchError } from 'rxjs';
 import { Order, OrderFilters, OrderStatus, Priority } from '../models';
+import { filterTableRows } from '@shared/utils/table-state';
 
 /** Shared type-aware comparator (numbers, ISO dates, then locale string). */
 export function compareValues(a: unknown, b: unknown): number {
@@ -87,17 +88,12 @@ export class OrderDataService {
   }
 
   applyFilters(filters: OrderFilters): Order[] {
-    let result = [...this._orders()];
-
-    if (filters.search) {
-      const q = filters.search.toLowerCase();
-      result = result.filter(o =>
-        o.orderNumber.toLowerCase().includes(q) ||
-        o.patientName.toLowerCase().includes(q) ||
-        o.doctorName.toLowerCase().includes(q) ||
-        o.clinicName.toLowerCase().includes(q)
-      );
-    }
+    let result = filterTableRows(this._orders(), filters.search ?? '', [
+      order => order.orderNumber,
+      order => order.patientName,
+      order => order.doctorName,
+      order => order.clinicName,
+    ]);
 
     if (filters.statusFilter && filters.statusFilter.length > 0) {
       result = result.filter(o => filters.statusFilter!.includes(o.status));

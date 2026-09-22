@@ -1,4 +1,4 @@
-@if (patient()) {
+@if (patient(); as patient) {
   <div class="flex flex-col h-full">
     <div class="px-6 py-4 border-b border-border bg-card shrink-0">
       <div class="flex items-center gap-3">
@@ -6,15 +6,15 @@
           <span [innerHTML]="getIconSvg('arrow-left') | safeHtml"></span>
         </button>
         <div class="flex items-center gap-4 flex-1">
-          <app-avatar [name]="patient()!.name" [size]="'lg'" [variant]="'primary'" />
+          <app-avatar [name]="patient.name" [size]="'lg'" [variant]="'primary'" />
           <div>
-            <h1 class="font-display font-bold text-xl text-foreground">{{ patient()!.name }}</h1>
+            <h1 class="font-display font-bold text-xl text-foreground">{{ patient.name }}</h1>
             <p class="text-sm text-muted-foreground">
-              {{ getGenderLabel(patient()!.gender) }} &middot; DOB: {{ patient()!.dob }} &middot; {{ patientOrders().length }} orders
+              {{ getGenderLabel(patient.gender) }} &middot; DOB: {{ patient.dob }} &middot; {{ patientOrders().length }} orders
             </p>
           </div>
-          <span class="px-2.5 py-1 rounded-full text-xs font-semibold ml-2" [class]="getStatusClass(patient()!.status)">
-            {{ patient()!.status }}
+          <span class="px-2.5 py-1 rounded-full text-xs font-semibold ml-2" [class]="getStatusClass(patient.status)">
+            {{ patient.status }}
           </span>
         </div>
       </div>
@@ -81,9 +81,9 @@
               <h2 class="font-display font-semibold text-sm mb-4">Patient Stats</h2>
               <div class="space-y-3">
                 @for (item of [
-                  { label: 'Total Orders', value: patient()!.ordersCount },
-                  { label: 'Last Visit', value: patient()!.lastVisit },
-                  { label: 'Status', value: patient()!.status }
+                  { label: 'Total Orders', value: patient.ordersCount },
+                  { label: 'Last Visit', value: patient.lastVisit },
+                  { label: 'Status', value: patient.status }
                 ]; track item.label) {
                   <div class="flex items-center justify-between py-2 border-b border-border last:border-0">
                     <span class="text-xs text-muted-foreground">{{ item.label }}</span>
@@ -146,6 +146,14 @@
           <p class="text-sm text-muted-foreground">Patient {{ activeTab().toLowerCase() }} will appear here</p>
         </div>
       }
+    </div>
+  </div>
+} @else {
+  <div class="flex h-full items-center justify-center p-6">
+    <div class="max-w-md rounded-xl border border-border bg-card p-6 text-center">
+      <p class="text-sm font-semibold text-foreground">Patient not found</p>
+      <p class="mt-1 text-xs text-muted-foreground">The requested patient id does not match any available record.</p>
+      <button type="button" (click)="goBack()" class="mt-4 text-sm text-primary hover:underline">Back to patients</button>
     </div>
   </div>
 }

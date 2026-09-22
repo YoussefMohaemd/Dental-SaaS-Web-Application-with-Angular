@@ -1,7 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { provideRouter } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
+import { of } from 'rxjs';
 import { OrderFilesComponent } from './order-files.component';
 
 describe('OrderFilesComponent', () => {
@@ -11,7 +12,18 @@ describe('OrderFilesComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [OrderFilesComponent],
-      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])]
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([]),
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            snapshot: { paramMap: convertToParamMap({ orderId: 'missing-order' }) },
+            paramMap: of(convertToParamMap({ orderId: 'missing-order' })),
+          },
+        },
+      ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(OrderFilesComponent);
@@ -39,5 +51,11 @@ describe('OrderFilesComponent', () => {
     expect(component.previewVisible()).toBeTrue();
     component.closePreview();
     expect(component.previewVisible()).toBeFalse();
+  });
+
+  it('should expose an explicit not-found state for invalid ids', () => {
+    expect(component.order()).toBeUndefined();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Order not found');
   });
 });

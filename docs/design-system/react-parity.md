@@ -49,3 +49,11 @@ only defined `--color-*` names, leaving most global styles unresolved.
   `.bg-sidebar`, `.font-display`, …).
 - `npx ng build` → `Application bundle generation complete`, 0 errors.
 - dist CSS contains utilities and `--background: #F1F5F9`.
+
+## Follow-up note (2026-09-22)
+
+- The visual token mapping above remains unchanged.
+- Later work in this branch focused on non-visual helper extraction and
+   validation coverage (table state, workflow status lookup, create-order
+   contract tests, route-safety tests, forms keyboard behavior).
+- No additional token or utility rewiring was required for that follow-up.

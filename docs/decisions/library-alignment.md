@@ -72,6 +72,16 @@ Scope: `Dental SaaS Web Application with Angular` — dependency and provider fi
 - Follow-up: convert feature routes to `loadComponent` lazy loading to
   bring the initial bundle back down (tracked separately).
 
+## 8. UI-preserving helper extraction
+
+- Shared non-visual helpers are now in use for table filtering/sorting/
+  pagination, workflow status lookup, and search normalization.
+- These helpers were introduced without changing rendered geometry,
+  template structure, spacing, or visual token values.
+- The current policy remains: prefer pure helpers and contract tests first,
+  then extract reusable UI wrappers only when DOM/computed-style parity is
+  proven.
+
 ## Validation (2026-09-21)
 
 - `npx ng build` → `Application bundle generation complete`, 0 errors.

@@ -35,4 +35,10 @@ describe('FormsComponent', () => {
     component.severity.set('High');
     expect(component.severityClasses('High')).toContain('border-warning');
   });
+
+  it('should support keyboard activation on the attachment dropzone', () => {
+    const preventDefault = jasmine.createSpy('preventDefault');
+    component.onAttachmentDropzoneActivate({ preventDefault } as Partial<KeyboardEvent> as KeyboardEvent);
+    expect(preventDefault).toHaveBeenCalled();
+  });
 });

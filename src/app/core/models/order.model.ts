@@ -24,6 +24,8 @@ export type RestoType =
 
 export type ArchType = 'Maxilla' | 'Mandible' | 'Both';
 
+import type { SubOrderCreationData } from './sub-order.model';
+
 export interface Order {
   id: string;
   orderNumber: string;
@@ -60,6 +62,9 @@ export interface Order {
   csTask?: string;
   technicianId?: string;
   technicianName?: string;
+  creationData?: {
+    services: SubOrderCreationData[];
+  };
 }
 
 export interface OrderFilters {

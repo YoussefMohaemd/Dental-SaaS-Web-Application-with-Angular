@@ -2,6 +2,7 @@ import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of, catchError } from 'rxjs';
 import { Patient, PatientFilters } from '../models';
+import { filterTableRows, sortTableRows } from '@shared/utils/table-state';
 
 @Injectable({ providedIn: 'root' })
 export class PatientDataService {
@@ -61,28 +62,18 @@ export class PatientDataService {
   }
 
   applyFilters(filters: PatientFilters): Patient[] {
-    let result = [...this._patients()];
-
-    if (filters.search) {
-      const q = filters.search.toLowerCase();
-      result = result.filter(p =>
-        p.name.toLowerCase().includes(q) ||
-        p.email.toLowerCase().includes(q) ||
-        p.clinicName.toLowerCase().includes(q)
-      );
-    }
+    let result = filterTableRows(this._patients(), filters.search ?? '', [
+      patient => patient.name,
+      patient => patient.email,
+      patient => patient.clinicName,
+    ]);
 
     if (filters.statusFilter) {
       result = result.filter(p => p.status === filters.statusFilter);
     }
 
     if (filters.sortColumn) {
-      result.sort((a, b) => {
-        const av = (a as any)[filters.sortColumn!] ?? '';
-        const bv = (b as any)[filters.sortColumn!] ?? '';
-        const cmp = String(av).localeCompare(String(bv));
-        return filters.sortDirection === 'asc' ? cmp : -cmp;
-      });
+      result = sortTableRows(result, filters.sortColumn, filters.sortDirection ?? 'asc');
     }
 
     return result;

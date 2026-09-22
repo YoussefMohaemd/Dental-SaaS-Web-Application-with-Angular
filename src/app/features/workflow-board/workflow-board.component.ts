@@ -16,6 +16,10 @@ interface ColumnConfig {
   dropListId: string;
 }
 
+export function workflowStatusFromDropListId(columns: readonly ColumnConfig[], containerId: string): OrderStatus | null {
+  return columns.find(column => column.dropListId === containerId)?.id ?? null;
+}
+
 @Component({
   selector: 'app-workflow-board',
   standalone: true,
@@ -76,7 +80,7 @@ export class WorkflowBoardComponent {
 
   drop(event: CdkDragDrop<Order[]>): void {
     const movedOrder = event.item.data as Order | undefined;
-    const newStatus = this.getStatusFromContainer(event.container.id);
+    const newStatus = workflowStatusFromDropListId(this.columns, event.container.id);
 
     if (movedOrder && newStatus && movedOrder.status !== newStatus) {
       this.orderService.updateOrder(movedOrder.id, { status: newStatus });
@@ -96,11 +100,6 @@ export class WorkflowBoardComponent {
     if (this.hoverDropListId() === event.container.id) {
       this.hoverDropListId.set(null);
     }
-  }
-
-  private getStatusFromContainer(containerId: string): OrderStatus | null {
-    const col = this.columns.find(c => c.dropListId === containerId);
-    return col?.id || null;
   }
 
   isDropListHovered(dropListId: string): boolean {
