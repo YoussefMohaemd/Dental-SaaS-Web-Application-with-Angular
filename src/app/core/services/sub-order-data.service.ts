@@ -165,9 +165,17 @@ export class SubOrderDataService {
     return SUB_ORDER_DETAILS[id] ?? SUB_ORDER_DETAILS['so-2'];
   }
 
+  /**
+   * Strict data-driven child lookup — the JSON `orderId` field is the single
+   * source of truth for the Order → Sub Order relationship.
+   *
+   * - Returns only sub-orders whose `orderId` exactly matches `orderId`.
+   * - Returns `[]` when the Order has no children (leaf row: no expander,
+   *   no fake children, no fallback to unrelated records).
+   * - Never assumes a service type always/never has children.
+   */
   getByOrderId(orderId: string): SubOrder[] {
-    const all = this._subOrders();
-    const scoped = all.filter(s => !s.orderId || s.orderId === orderId);
-    return scoped.length > 0 ? scoped : all;
+    if (!orderId) return [];
+    return this._subOrders().filter(s => s.orderId === orderId);
   }
 }

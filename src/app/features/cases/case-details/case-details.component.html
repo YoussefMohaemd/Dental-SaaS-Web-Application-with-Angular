@@ -86,7 +86,7 @@
               <h2 class="font-display font-semibold text-sm mb-3">Case Summary</h2>
               <div class="space-y-2.5">
                 @for (item of [
-                  { label: 'Priority', value: case()!.priority },
+                  { label: 'Priority', value: '' },
                   { label: 'Orders', value: case()!.ordersCount },
                   { label: 'Files', value: case()!.filesCount },
                   { label: 'Created', value: formatUtils.formatDate(case()!.createdAt) },
@@ -94,7 +94,13 @@
                 ]; track item.label) {
                   <div class="flex items-center justify-between">
                     <span class="text-xs text-muted-foreground">{{ item.label }}</span>
-                    <span class="text-xs font-medium text-foreground">{{ item.value }}</span>
+                    <span class="text-xs font-medium text-foreground">
+                      @if (item.label === 'Priority') {
+                        <app-priority-badge [priority]="case()!.priority" size="xs" />
+                      } @else {
+                        {{ item.value }}
+                      }
+                    </span>
                   </div>
                 }
               </div>

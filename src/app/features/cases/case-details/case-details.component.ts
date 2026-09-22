@@ -8,6 +8,7 @@ import { FormatUtils } from '@core/services/format-utils.service';
 import { Case, Order } from '@core/models';
 import { StatusBadgeComponent } from '@shared/components/status-badge/status-badge.component';
 import { ButtonComponent } from '@shared/components/button/button.component';
+import { PriorityBadgeComponent } from '@shared/components/priority-badge/priority-badge.component';
 import { SafeHtmlPipe } from '@shared/pipes/safe-html.pipe';
 
 interface FileItem {
@@ -29,6 +30,7 @@ interface ActivityItem {
   imports: [
     CommonModule,
     StatusBadgeComponent,
+    PriorityBadgeComponent,
     ButtonComponent,
     SafeHtmlPipe
   ],

@@ -10,53 +10,23 @@ import { DoctorDataService } from '@core/services/doctor-data.service';
 import { ClinicDataService } from '@core/services/clinic-data.service';
 import { NavigationService } from '@core/services/navigation.service';
 import { FormatUtils } from '@core/services/format-utils.service';
-import { Order, Patient, Doctor, Clinic } from '@core/models';
+import { Order, Patient, Doctor, Clinic, SubOrder } from '@core/models';
 import { AvatarComponent } from '@shared/components/avatar/avatar.component';
 import { ButtonComponent } from '@shared/components/button/button.component';
 import { SafeHtmlPipe } from '@shared/pipes/safe-html.pipe';
 import { lucideSvg } from '@shared/icons/lucide-icons';
+import { SubOrderDataService } from '@core/services/sub-order-data.service';
 
-interface SubOrder {
-  id: string;
-  service: string;
-  icon: string;
-  status: 'completed' | 'in-progress' | 'pending' | 'blocked';
-  formsComplete: number;
-  formsTotal: number;
-  scansComplete: number;
-  scansTotal: number;
-  teeth: number[];
-  priority: 'Low' | 'Normal' | 'High' | 'Urgent';
-  dueDate: string;
-  notes: string;
-}
-
-const SUB_ORDERS: SubOrder[] = [
-  {
-    id: 'so-1', service: 'Surgical Guide', icon: '🦷',
-    status: 'completed', formsComplete: 3, formsTotal: 3, scansComplete: 3, scansTotal: 3,
-    teeth: [14, 15, 24, 25], priority: 'High', dueDate: '2024-03-15',
-    notes: 'Standard surgical guide for dual implant placement.',
-  },
-  {
-    id: 'so-2', service: 'GFMR', icon: '⚙️',
-    status: 'in-progress', formsComplete: 2, formsTotal: 3, scansComplete: 1, scansTotal: 3,
-    teeth: [11, 12, 13, 21, 22, 23], priority: 'High', dueDate: '2024-03-20',
-    notes: 'Full mouth rehabilitation, occlusal vertical dimension to be confirmed.',
-  },
-  {
-    id: 'so-3', service: 'Final Restoration', icon: '✨',
-    status: 'pending', formsComplete: 0, formsTotal: 2, scansComplete: 0, scansTotal: 2,
-    teeth: [16, 17, 26, 27], priority: 'Normal', dueDate: '2024-04-01',
-    notes: 'Posterior zirconia crowns — shade A2 with characterization.',
-  },
-  {
-    id: 'so-4', service: 'Treatment Plan', icon: '📋',
-    status: 'pending', formsComplete: 1, formsTotal: 2, scansComplete: 0, scansTotal: 1,
-    teeth: [], priority: 'Normal', dueDate: '2024-03-10',
-    notes: 'Comprehensive treatment plan review with the clinic team.',
-  },
-];
+/**
+ * Single source of truth for the Order → Sub Order relationship.
+ *
+ * The TreeTable (`OrdersComponent`) and this Order View both read
+ * `SubOrderDataService.getByOrderId(orderId)`, which filters
+ * `public/data/sub-orders.json` by the exact `orderId` field.
+ * No hardcoded service → children assumptions, no fake children.
+ * Orders without matching sub-orders render as childless (no expander
+ * in the table, empty state here).
+ */
 
 const STAGES = ['Received', 'Scanning', 'Design', 'Fabrication', 'QC', 'Dispatch', 'Delivered'];
 
@@ -94,6 +64,7 @@ export class ViewOrderComponent implements OnInit {
   private readonly patientService = inject(PatientDataService);
   private readonly doctorService = inject(DoctorDataService);
   private readonly clinicService = inject(ClinicDataService);
+  private readonly subOrderService = inject(SubOrderDataService);
   protected readonly navigationService = inject(NavigationService);
   protected readonly formatUtils = inject(FormatUtils);
 
@@ -112,30 +83,49 @@ export class ViewOrderComponent implements OnInit {
 
   readonly order = computed(() => {
     const id = this.orderId();
-    return this.orderService.getOrderById(id) || this.orderService.orders()[0];
+    if (!id) return undefined;
+    return this.orderService.getOrderById(id);
   });
 
   readonly patient = computed(() => {
     const order = this.order();
+    if (!order) return undefined;
     return this.patientService.getPatientById(order.patientId);
   });
 
   readonly doctor = computed(() => {
     const order = this.order();
+    if (!order) return undefined;
     return this.doctorService.getDoctorById(order.doctorId);
   });
 
   readonly clinic = computed(() => {
     const order = this.order();
+    if (!order) return undefined;
     return this.clinicService.getClinicById(order.clinicId);
   });
 
-  readonly completedServices = computed(() => SUB_ORDERS.filter(s => s.status === 'completed').length);
-  readonly totalServices = SUB_ORDERS.length;
-  readonly overallProgress = computed(() => Math.round((this.completedServices() / this.totalServices) * 100));
+  /**
+   * Data-driven sub-orders: the SAME source the TreeTable uses
+   * (`SubOrderDataService.getByOrderId` → `sub-orders.json` filtered by
+   * `orderId`). Count, list and progress all derive from this — no
+   * hardcoded children, no fake rows.
+   */
+  readonly subOrders = computed<SubOrder[]>(() => {
+    const order = this.order();
+    if (!order) return [];
+    return this.subOrderService.getByOrderId(order.id);
+  });
+
+  readonly completedServices = computed(() => this.subOrders().filter(s => s.status === 'completed').length);
+  readonly totalServices = computed(() => this.subOrders().length);
+  readonly overallProgress = computed(() => {
+    const total = this.totalServices();
+    if (total === 0) return 0;
+    return Math.round((this.completedServices() / total) * 100);
+  });
   readonly currentStage = 3;
   readonly stages: string[] = STAGES;
-  readonly subOrders: SubOrder[] = SUB_ORDERS;
 
   ngOnInit(): void {}
 
@@ -249,31 +239,45 @@ export class ViewOrderComponent implements OnInit {
   }
 
   navigateToEditOrder(): void {
-    this.navigationService.navigate('editOrder', { orderId: this.order().id });
+    const current = this.order();
+    if (!current) return;
+    this.navigationService.navigate('editOrder', { orderId: current.id });
   }
 
   navigateToWorkflow(): void {
-    this.navigationService.navigate('orderWorkflow', { orderId: this.order().id });
+    const current = this.order();
+    if (!current) return;
+    this.navigationService.navigate('orderWorkflow', { orderId: current.id });
   }
 
   navigateToFiles(): void {
-    this.navigationService.navigate('orderFiles', { orderId: this.order().id });
+    const current = this.order();
+    if (!current) return;
+    this.navigationService.navigate('orderFiles', { orderId: current.id });
   }
 
   navigateToPatient(): void {
-    this.navigationService.navigate('patientDetails', { patientId: this.order().patientId });
+    const current = this.order();
+    if (!current) return;
+    this.navigationService.navigate('patientDetails', { patientId: current.patientId });
   }
 
   navigateToDoctor(): void {
-    this.navigationService.navigate('doctorDetails', { doctorId: this.order().doctorId });
+    const current = this.order();
+    if (!current) return;
+    this.navigationService.navigate('doctorDetails', { doctorId: current.doctorId });
   }
 
   navigateToClinic(): void {
-    this.navigationService.navigate('clinicDetails', { clinicId: this.order().clinicId });
+    const current = this.order();
+    if (!current) return;
+    this.navigationService.navigate('clinicDetails', { clinicId: current.clinicId });
   }
 
   navigateToSubOrder(subOrderId: string): void {
-    this.navigationService.navigate('subOrder', { orderId: this.order().id, subOrderId });
+    const current = this.order();
+    if (!current) return;
+    this.navigationService.navigate('subOrder', { orderId: current.id, subOrderId });
   }
 
   getStatusConfig(status: string) {

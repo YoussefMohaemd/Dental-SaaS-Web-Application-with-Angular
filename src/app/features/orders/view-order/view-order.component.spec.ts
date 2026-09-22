@@ -23,14 +23,29 @@ describe('ViewOrderComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should expose seven stages and four sub-orders', () => {
+  it('should expose seven stages and data-driven sub-orders', () => {
     expect(component.stages.length).toBe(7);
-    expect(component.subOrders.length).toBe(4);
+    // Sub-orders come from SubOrderDataService.getByOrderId (same source as
+    // the TreeTable) — empty until the async JSON loads, never hardcoded.
+    expect(component.subOrders()).toEqual([]);
   });
 
   it('should format sub-order ids and progress', () => {
     expect(component.formatSubOrderId(0)).toBe('SO-01');
-    const progress = component.subOrderProgress(component.subOrders[0]);
+    const progress = component.subOrderProgress({
+      id: 'so-x',
+      service: 'Test',
+      icon: '🦷',
+      status: 'completed',
+      formsComplete: 3,
+      formsTotal: 3,
+      scansComplete: 3,
+      scansTotal: 3,
+      teeth: [],
+      priority: 'Normal',
+      dueDate: '2024-01-01',
+      notes: '',
+    } as never);
     expect(progress).toBeGreaterThanOrEqual(0);
     expect(progress).toBeLessThanOrEqual(100);
   });

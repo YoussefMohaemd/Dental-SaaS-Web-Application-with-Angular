@@ -78,7 +78,7 @@
         <div>
           <label for="email" class="block text-sm font-medium text-foreground mb-1.5">Email address</label>
           <div class="relative">
-            <span [innerHTML]="getMailIconSvg() | safeHtml" class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none flex shrink-0" aria-hidden="true"></span>
+            <span [innerHTML]="getMailIconSvg() | safeHtml" class="login-leading-icon absolute left-3 top-1/2 -translate-y-1/2 z-10 text-muted-foreground pointer-events-none flex shrink-0" aria-hidden="true"></span>
             <app-input
               id="email"
               type="email"
@@ -98,7 +98,7 @@
             <button type="button" class="text-xs text-primary hover:underline">Forgot password?</button>
           </div>
           <div class="relative">
-            <span [innerHTML]="getLockIconSvg() | safeHtml" class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none flex shrink-0" aria-hidden="true"></span>
+            <span [innerHTML]="getLockIconSvg() | safeHtml" class="login-leading-icon absolute left-3 top-1/2 -translate-y-1/2 z-10 text-muted-foreground pointer-events-none flex shrink-0" aria-hidden="true"></span>
             <app-input
               id="password"
               [type]="passwordType"

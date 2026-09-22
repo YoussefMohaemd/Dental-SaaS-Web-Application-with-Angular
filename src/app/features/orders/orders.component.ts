@@ -1,10 +1,12 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TableModule } from 'primeng/table';
+import { TreeTableModule } from 'primeng/treetable';
+import { TreeNode } from 'primeng/api';
 import { OrderDataService } from '@core/services/order-data.service';
+import { SubOrderDataService } from '@core/services/sub-order-data.service';
 import { NavigationService } from '@core/services/navigation.service';
 import { FormatUtils } from '@core/services/format-utils.service';
-import { Order, OrderStatus, Priority } from '@core/models';
+import { Order, OrderStatus, Priority, SubOrder } from '@core/models';
 import { StatusBadgeComponent } from '@shared/components/status-badge/status-badge.component';
 import { ArchBadgeComponent } from '@shared/components/arch-badge/arch-badge.component';
 import { ButtonComponent } from '@shared/components/button/button.component';
@@ -12,9 +14,53 @@ import { SearchInputComponent } from '@shared/components/search-input/search-inp
 import { SafeHtmlPipe } from '../../shared/pipes/safe-html.pipe';
 import { lucideSvg } from '@shared/icons/lucide-icons';
 
+/**
+ * TreeTable row payload — single source for the Order → Service hierarchy.
+ * `kind: 'order'` renders the parent Order row; `kind: 'service'` renders a
+ * child Service / Sub Order row. Transformation is strictly derived from the
+ * existing Order + SubOrder services; no backend/API contract changes.
+ *
+ * Real business relationship: `SubOrder.orderId` → `Order.id`.
+ * Only sub-orders whose `orderId` matches the parent are attached. Orders
+ * without matches stay leaf rows (no expander, no fake children).
+ */
+export interface OrderTreeRowData {
+  kind: 'order' | 'service';
+  order: Order;
+  subOrder?: SubOrder;
+}
+
+/** Leaf child node for one real Sub Order belonging to `order`. */
+export function mapSubOrderToTreeNode(order: Order, subOrder: SubOrder): TreeNode<OrderTreeRowData> {
+  return {
+    key: `${order.id}-${subOrder.id}`,
+    data: { kind: 'service', order, subOrder },
+    leaf: true,
+  };
+}
+
+/** Parent node for one Order with its real children (possibly none). */
+export function mapOrderToTreeNode(
+  order: Order,
+  children: SubOrder[],
+  expanded: boolean,
+): TreeNode<OrderTreeRowData> {
+  const hasKids = children.length > 0;
+  return {
+    key: order.id,
+    data: { kind: 'order', order },
+    leaf: !hasKids,
+    expanded: hasKids && expanded,
+    children: hasKids ? children.map(so => mapSubOrderToTreeNode(order, so)) : undefined,
+  };
+}
+
 export type OrdersViewState = 'normal' | 'loading' | 'empty' | 'error';
 
 const PAGE_SIZES = [10, 20, 30, 40, 50];
+
+/** Must match the `treetable-row-out` CSS exit animation duration. */
+const COLLAPSE_ANIMATION_MS = 220;
 const STATUS_OPTIONS: OrderStatus[] = ['New', 'Review', 'Design', 'Production', 'Quality Check', 'Ready', 'Completed', 'Cancelled'];
 const PRIORITY_OPTIONS: Priority[] = ['Low', 'Normal', 'High', 'Urgent'];
 
@@ -58,16 +104,18 @@ export function compareOrderValues(a: unknown, b: unknown): number {
 @Component({
   selector: 'app-orders',
   standalone: true,
-  imports: [CommonModule, TableModule, StatusBadgeComponent, ArchBadgeComponent, ButtonComponent, SearchInputComponent, SafeHtmlPipe],
+  imports: [CommonModule, TreeTableModule, StatusBadgeComponent, ArchBadgeComponent, ButtonComponent, SearchInputComponent, SafeHtmlPipe],
   templateUrl: './orders.component.html',
   styleUrl: './orders.component.scss'
 })
 export class OrdersComponent {
   private readonly orderService = inject(OrderDataService);
+  private readonly subOrderService = inject(SubOrderDataService);
   protected readonly navigationService = inject(NavigationService);
   protected readonly formatUtils = inject(FormatUtils);
 
   readonly orders = this.orderService.orders;
+  readonly subOrders = this.subOrderService.subOrders;
 
   readonly search = signal('');
   readonly statusFilter = signal<OrderStatus[]>([]);
@@ -109,6 +157,95 @@ export class OrdersComponent {
   readonly pageData = computed(() => {
     if (this.viewState() !== 'normal') return [];
     return this.filtered().slice((this.page() - 1) * this.pageSize(), this.page() * this.pageSize());
+  });
+
+  /**
+   * Expanded Order ids — the only TreeTable expansion state. Survives
+   * filter/sort/page recomputations because treeNodes are rebuilt from it.
+   */
+  readonly expandedIds = signal<Set<string>>(new Set());
+
+  /**
+   * Orders currently playing their collapse (exit) animation. The id stays in
+   * `expandedIds` until the animation finishes, so child rows remain rendered
+   * with the `is-leaving` class instead of vanishing instantly (PrimeNG
+   * removes collapsed rows from the DOM with no close transition of its own).
+   */
+  readonly collapsingIds = signal<Set<string>>(new Set());
+  private readonly collapseTimers = new Map<string, number>();
+
+  isExpanded(orderId: string): boolean {
+    return this.expandedIds().has(orderId);
+  }
+
+  isCollapsing(orderId: string): boolean {
+    return this.collapsingIds().has(orderId);
+  }
+
+  /**
+   * Animated expand/collapse toggle (owns the TreeTable hierarchy motion).
+   * Expand is instant (child rows play the CSS entrance animation on insert).
+   * Collapse first flags the order as collapsing — child rows play the CSS
+   * exit animation — then removes the id after COLLAPSE_ANIMATION_MS so the
+   * rows unmount. Re-toggling mid-collapse cancels the pending collapse.
+   * Honors prefers-reduced-motion by collapsing instantly.
+   */
+  toggleNodeExpand(orderId: string): void {
+    if (!orderId) return;
+    const pending = this.collapseTimers.get(orderId);
+    if (pending !== undefined) {
+      window.clearTimeout(pending);
+      this.collapseTimers.delete(orderId);
+      this.collapsingIds.update(current => {
+        const next = new Set(current);
+        next.delete(orderId);
+        return next;
+      });
+      return;
+    }
+    if (this.expandedIds().has(orderId)) {
+      if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+        this.expandedIds.update(current => {
+          const next = new Set(current);
+          next.delete(orderId);
+          return next;
+        });
+        return;
+      }
+      this.collapsingIds.update(current => new Set(current).add(orderId));
+      const timer = window.setTimeout(() => {
+        this.collapseTimers.delete(orderId);
+        this.collapsingIds.update(current => {
+          const next = new Set(current);
+          next.delete(orderId);
+          return next;
+        });
+        this.expandedIds.update(current => {
+          const next = new Set(current);
+          next.delete(orderId);
+          return next;
+        });
+      }, COLLAPSE_ANIMATION_MS);
+      this.collapseTimers.set(orderId, timer);
+    } else {
+      this.expandedIds.update(current => new Set(current).add(orderId));
+    }
+  }
+
+  /**
+   * PrimeNG TreeTable value: Order (parent) → Services / Sub Orders (children).
+   * Strict mapping — only sub-orders whose `orderId` matches the parent are
+   * attached. Orders without children get `leaf: true` and no `children`, so
+   * the toggler is hidden and no fake/empty level is created.
+   */
+  readonly treeNodes = computed<TreeNode<OrderTreeRowData>[]>(() => {
+    const expanded = this.expandedIds();
+    // Touch subOrders signal so nodes rebuild once async JSON arrives.
+    const allSubs = this.subOrders();
+    void allSubs;
+    return this.pageData().map(order =>
+      mapOrderToTreeNode(order, this.subOrdersFor(order.id), expanded.has(order.id)),
+    );
   });
 
   readonly activeFilters = computed(() => [
@@ -318,6 +455,10 @@ export class OrdersComponent {
     this.navigationService.navigate('viewOrder', { orderId });
   }
 
+  openSubOrder(orderId: string, subOrderId: string): void {
+    this.navigationService.navigate('subOrder', { orderId, subOrderId });
+  }
+
   openPatient(patientId: string): void {
     this.navigationService.navigate('patientDetails', { patientId });
   }
@@ -328,6 +469,59 @@ export class OrdersComponent {
 
   createOrder(): void {
     this.navigationService.navigate('createOrder');
+  }
+
+  /**
+   * Strict child lookup — no fallback. Returns [] when the Order has no
+   * Services / Sub Orders so the TreeTable renders a plain leaf row with no
+   * expander and no fake children.
+   */
+  subOrdersFor(orderId: string): SubOrder[] {
+    return this.subOrders().filter(s => s.orderId === orderId);
+  }
+
+  hasChildren(orderId: string): boolean {
+    return this.subOrdersFor(orderId).length > 0;
+  }
+
+  onNodeExpand(event: { node: TreeNode<OrderTreeRowData> }): void {
+    const id = event.node?.data?.order?.id ?? event.node?.key;
+    if (!id) return;
+    this.expandedIds.update(current => {
+      const next = new Set(current);
+      next.add(String(id));
+      return next;
+    });
+  }
+
+  onNodeCollapse(event: { node: TreeNode<OrderTreeRowData> }): void {
+    const id = event.node?.data?.order?.id ?? event.node?.key;
+    if (!id) return;
+    this.expandedIds.update(current => {
+      const next = new Set(current);
+      next.delete(String(id));
+      return next;
+    });
+  }
+
+  subOrderStatusLabel(status: SubOrder['status']): string {
+    if (status === 'completed') return 'Completed';
+    if (status === 'in-progress') return 'In Progress';
+    if (status === 'blocked') return 'Blocked';
+    return 'Pending';
+  }
+
+  subOrderStatusClasses(status: SubOrder['status']): string {
+    if (status === 'completed') return 'bg-emerald-50 text-emerald-700';
+    if (status === 'in-progress') return 'bg-blue-50 text-blue-700';
+    if (status === 'blocked') return 'bg-red-50 text-red-700';
+    return 'bg-muted text-muted-foreground';
+  }
+
+  subOrderProgress(sub: SubOrder): number {
+    const forms = sub.formsTotal === 0 ? 1 : sub.formsComplete / sub.formsTotal;
+    const scans = sub.scansTotal === 0 ? 1 : sub.scansComplete / sub.scansTotal;
+    return Math.round(((forms + scans) / 2) * 100);
   }
 
   shorten(value: string, maxLength: number): string {
@@ -370,3 +564,4 @@ export class OrdersComponent {
     return lucideSvg(entry.icon, entry.size);
   }
 }
+

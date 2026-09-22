@@ -80,16 +80,16 @@ Library:
 
 - Sign In button: `app-button` variant `primary` / size `lg` renders
   `bg-primary text-primary-foreground …` → `#2563EB` bg, `#FFFFFF`
-  text (both themes); text comes from projected content
+  text (both themes);   text comes from projected content
   (`Sign in` / `Signing in...`), spinner via `.loading-spinner`,
   disabled+`aria-busy` while loading. Verified in DOM spec
   (`login.component.spec.ts` asserts text + classes), in the bundle
   (`Signing in...` string present), and in generated CSS
   (`.bg-primary`, `.text-primary-foreground` present with correct
-  vars). No separate button defect found; if an invisible label is
-  ever observed again, capture computed `color`/`background-color`
-  — with the two shared causes fixed there is no code path left
-  that hides it.
+  vars). NOTE — superseded in part: a subsequent investigation found
+  and fixed a real projection defect (dual catch-all `<ng-content>`
+  outlets starved the button branch; see Addendum). With all three
+  shared causes fixed there is no code path left that hides it.
 - Email input: leading mail icon at `left-3` (15px, muted), input
   reserves `pl-9 pr-4`, focus ring + border-primary, placeholder
   `you@dentalab.com` in muted color, dark-mode via vars.
@@ -110,8 +110,69 @@ Library:
   sanitizer warnings expected.
 - React project untouched (reference only).
 
-## Follow-ups (not regressions, pre-existing)
+## Addendum — app-button content-projection defect (2026-09-22, second pass)
 
+The "Sign in" label was still invisible AFTER causes 1–2 were fixed, so the
+button got its own investigation (headless-Chrome DOM dumps + CDP computed
+styles + compiled-bundle analysis). It turned out to be a third, independent
+shared root cause — not a color/overlay issue.
+
+```text
+Problem:
+  ButtonComponent declared TWO selector-less <ng-content> outlets
+  (native <button> branch + routerLink <a> branch). That compiles to
+  ngContentSelectors ["*","*"], and Angular's selector matcher keeps
+  the LAST "*" match (framework _D(): `if(i==="*"){n=o;continue}`),
+  so EVERY projected node landed in slot 1 — the anchor branch that
+  never renders (routerLink had 0 usages). The rendered <button>
+  branch projects slot 0, which is always empty. Net effect: EVERY
+  app-button label app-wide ("Sign in", "New Order", "Add Patient",
+  …) was missing with ZERO console errors. Silent by framework design.
+
+Evidence:
+  - CDP Runtime.evaluate on served prod build, pre-fix:
+    app-button inner button HTML = "<!---->", textContent = "" —
+    while button color (#FFFFFF on #2563EB), size and states were all
+    correct (styling was never the problem).
+  - Static text AND interpolation children both absent → structural,
+    not a binding/update issue.
+  - Compiled output verified correct-looking on both sides
+    (projectionDef(["*","*"]) + projection(node, slot) calls;
+    light-DOM text node created inside app-button) — the mismatch is
+    purely the matcher preferring the last wildcard.
+  - Only component in src/app with two bare <ng-content> (audited all
+    templates); all others use select= or a single outlet and project
+    fine — hence no other component was affected.
+
+Fix:
+  - ButtonComponent template reduced to a SINGLE catch-all
+    <ng-content> (removed the unused routerLink anchor branch;
+    0 usages across 44 app-button instances). routerLink input,
+    isLink computed and RouterModule import removed with it.
+  - Template carries a comment documenting why a second catch-all
+    outlet must never be reintroduced.
+  - Added a host-component projection regression spec
+    (button.component.spec.ts: projects "Sign in" into the native
+    <button>).
+
+Validation:
+  - Post-fix CDP on served prod build: login button textContent =
+    "Sign in", orders "New Order" button projects icon + label.
+  - 15-route CDP audit (login→notifications): 0 empty icon spans,
+    0 empty buttons, healthy svg counts (e.g. orders 71, documents
+    62, dashboard 37), 0 JS console errors.
+  - `npm run build` green; `tsc -p tsconfig.spec.json --noEmit` clean.
+```
+
+Note on verification method: headless-Chrome screenshots in THIS
+environment do not rasterize inline SVG at all (proven: trivial red-circle
+data-URL SVG screenshots pure white while a red DIV paints fine), so
+screenshots cannot validate icons here. DOM + computed-style + pixel
+(prose/text) evidence was used instead; icon artwork itself comes from
+`shared/icons/lucide-icons.ts`, generated from React's own
+`lucide-react` install.
+
+## Follow-ups (not regressions, pre-existing)
 - `npm run lint` fails: `Cannot find builder "@angular/build:tsc"`
   (repo `angular.json` references a builder absent in Angular 21).
   Use `npx tsc -p tsconfig.app.json --noEmit` until the lint target
