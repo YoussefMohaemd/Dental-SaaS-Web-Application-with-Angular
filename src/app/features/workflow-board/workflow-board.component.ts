@@ -1,13 +1,11 @@
-import { Component, computed, inject, signal, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { DragDropModule, CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
+import { DragDropModule, CdkDragDrop, CdkDragEnter, CdkDragExit } from '@angular/cdk/drag-drop';
 import { OrderDataService } from '@core/services/order-data.service';
 import { NavigationService } from '@core/services/navigation.service';
 import { FormatUtils } from '@core/services/format-utils.service';
 import { Order, OrderStatus } from '@core/models';
 import { PriorityBadgeComponent } from '@shared/components/priority-badge/priority-badge.component';
-import { StatusBadgeComponent } from '@shared/components/status-badge/status-badge.component';
-import { AvatarComponent } from '@shared/components/avatar/avatar.component';
 import { SafeHtmlPipe } from '../../shared/pipes/safe-html.pipe';
 
 interface ColumnConfig {
@@ -15,6 +13,7 @@ interface ColumnConfig {
   label: string;
   dotColor: string;
   badgeColor: string;
+  dropListId: string;
 }
 
 @Component({
@@ -26,27 +25,30 @@ interface ColumnConfig {
     PriorityBadgeComponent,
     SafeHtmlPipe,
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './workflow-board.component.html',
   styleUrl: './workflow-board.component.scss'
 })
-export class WorkflowBoardComponent implements OnInit {
+export class WorkflowBoardComponent {
   private readonly orderService = inject(OrderDataService);
   protected readonly navigationService = inject(NavigationService);
   protected readonly formatUtils = inject(FormatUtils);
 
   readonly orders = this.orderService.orders;
 
-  readonly boardOrders = signal<Order[]>([]);
+  readonly boardOrders = computed(() => this.orders().slice(0, 32));
   readonly dragId = signal<string | null>(null);
+  readonly hoverDropListId = signal<string | null>(null);
+  readonly isDragActive = computed(() => this.dragId() !== null);
 
   readonly columns: ColumnConfig[] = [
-    { id: 'New', label: 'New', dotColor: 'bg-slate-400', badgeColor: 'bg-slate-100 text-slate-700' },
-    { id: 'Review', label: 'Review', dotColor: 'bg-amber-500', badgeColor: 'bg-amber-50 text-amber-700' },
-    { id: 'Design', label: 'Design', dotColor: 'bg-cyan-500', badgeColor: 'bg-cyan-50 text-cyan-700' },
-    { id: 'Production', label: 'Production', dotColor: 'bg-blue-500', badgeColor: 'bg-blue-50 text-blue-700' },
-    { id: 'Quality Check', label: 'QC', dotColor: 'bg-violet-500', badgeColor: 'bg-violet-50 text-violet-700' },
-    { id: 'Ready', label: 'Ready', dotColor: 'bg-emerald-500', badgeColor: 'bg-emerald-50 text-emerald-700' },
-    { id: 'Completed', label: 'Done', dotColor: 'bg-emerald-600', badgeColor: 'bg-emerald-100 text-emerald-800' }
+    { id: 'New', label: 'New', dotColor: 'bg-slate-400', badgeColor: 'bg-slate-100 text-slate-700', dropListId: 'workflow-col-new' },
+    { id: 'Review', label: 'Review', dotColor: 'bg-amber-500', badgeColor: 'bg-amber-50 text-amber-700', dropListId: 'workflow-col-review' },
+    { id: 'Design', label: 'Design', dotColor: 'bg-cyan-500', badgeColor: 'bg-cyan-50 text-cyan-700', dropListId: 'workflow-col-design' },
+    { id: 'Production', label: 'Production', dotColor: 'bg-blue-500', badgeColor: 'bg-blue-50 text-blue-700', dropListId: 'workflow-col-production' },
+    { id: 'Quality Check', label: 'QC', dotColor: 'bg-violet-500', badgeColor: 'bg-violet-50 text-violet-700', dropListId: 'workflow-col-quality-check' },
+    { id: 'Ready', label: 'Ready', dotColor: 'bg-emerald-500', badgeColor: 'bg-emerald-50 text-emerald-700', dropListId: 'workflow-col-ready' },
+    { id: 'Completed', label: 'Done', dotColor: 'bg-emerald-600', badgeColor: 'bg-emerald-100 text-emerald-800', dropListId: 'workflow-col-completed' }
   ];
 
   readonly columnOrders = computed(() => {
@@ -57,10 +59,7 @@ export class WorkflowBoardComponent implements OnInit {
     return result;
   });
 
-  ngOnInit(): void {
-    // Load first 32 orders for the board
-    this.boardOrders.set(this.orders().slice(0, 32));
-  }
+  readonly dropListIds = this.columns.map(col => col.dropListId);
 
   getColumnOrders(colId: string): Order[] {
     return this.columnOrders()[colId] || [];
@@ -72,38 +71,40 @@ export class WorkflowBoardComponent implements OnInit {
 
   onDragEnd(): void {
     this.dragId.set(null);
+    this.hoverDropListId.set(null);
   }
 
   drop(event: CdkDragDrop<Order[]>): void {
-    if (event.previousContainer === event.container) {
-      moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
-    } else {
-      transferArrayItem(
-        event.previousContainer.data,
-        event.container.data,
-        event.previousIndex,
-        event.currentIndex
-      );
+    const movedOrder = event.item.data as Order | undefined;
+    const newStatus = this.getStatusFromContainer(event.container.id);
 
-      // Update the order status in the signal
-      const movedOrder = event.container.data[event.currentIndex];
-      const newStatus = this.getStatusFromContainer(event.container.id);
-      if (movedOrder && newStatus) {
-        this.orderService.updateOrder(movedOrder.id, { status: newStatus as OrderStatus });
-      }
+    if (movedOrder && newStatus && movedOrder.status !== newStatus) {
+      this.orderService.updateOrder(movedOrder.id, { status: newStatus });
     }
+
     this.dragId.set(null);
+    this.hoverDropListId.set(null);
+  }
+
+  onDropListEntered(event: CdkDragEnter<Order[]>): void {
+    if (this.hoverDropListId() !== event.container.id) {
+      this.hoverDropListId.set(event.container.id);
+    }
+  }
+
+  onDropListExited(event: CdkDragExit<Order[]>): void {
+    if (this.hoverDropListId() === event.container.id) {
+      this.hoverDropListId.set(null);
+    }
   }
 
   private getStatusFromContainer(containerId: string): OrderStatus | null {
-    const col = this.columns.find(c => c.id === containerId);
+    const col = this.columns.find(c => c.dropListId === containerId);
     return col?.id || null;
   }
 
-  isDraggedInColumn(colId: string): boolean {
-    const id = this.dragId();
-    if (!id) return false;
-    return this.getColumnOrders(colId).some(o => o.id === id);
+  isDropListHovered(dropListId: string): boolean {
+    return this.hoverDropListId() === dropListId;
   }
 
   trackByOrderId(index: number, order: Order): string {

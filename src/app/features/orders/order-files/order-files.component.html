@@ -20,7 +20,7 @@
     (dragover)="onDragOver($event)"
     (dragleave)="onDragLeave($event)"
     (drop)="onDrop($event)"
-    class="mb-5 rounded-xl border-2 border-dashed p-8 text-center transition-colors"
+    class="mb-5 rounded-xl border-2 border-dashed p-8  cursor-pointer text-center transition-colors"
     [class]="dragOver() ? 'border-primary bg-primary/5' : 'border-border bg-card'"
     aria-label="Upload files by browsing or dragging and dropping"
   >

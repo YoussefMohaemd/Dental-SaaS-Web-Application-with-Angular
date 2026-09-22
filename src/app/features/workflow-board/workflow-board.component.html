@@ -7,13 +7,17 @@
 
   <!-- Board -->
   <div class="flex-1 overflow-x-auto overflow-y-hidden p-5">
-    <div class="flex gap-4 h-full" style="min-width: 1540px;">
+    <div class="flex gap-4 h-full" style="min-width: 1540px;" cdkDropListGroup>
       @for (col of columns; track col.id) {
+        @let colOrders = getColumnOrders(col.id);
         <div
           class="flex flex-col w-52 shrink-0"
           cdkDropList
-          [id]="col.id"
-          [cdkDropListData]="getColumnOrders(col.id)"
+          [id]="col.dropListId"
+          [cdkDropListConnectedTo]="dropListIds"
+          [cdkDropListData]="colOrders"
+          (cdkDropListEntered)="onDropListEntered($event)"
+          (cdkDropListExited)="onDropListExited($event)"
           (cdkDropListDropped)="drop($event)"
           cdkDropListOrientation="vertical"
         >
@@ -22,29 +26,30 @@
             <span class="w-2 h-2 rounded-full shrink-0 {{ col.dotColor }}"></span>
             <span class="font-semibold text-sm text-foreground">{{ col.label }}</span>
             <span class="ml-auto px-2 py-0.5 rounded-full text-[10px] font-bold {{ col.badgeColor }}">
-              {{ getColumnOrders(col.id).length }}
+              {{ colOrders.length }}
             </span>
           </div>
 
           <!-- Column body -->
           <div
             class="flex-1 rounded-xl p-2 overflow-y-auto min-h-32 border-2 border-dashed transition-colors"
-            [class.border-primary]="isDraggedInColumn(col.id)"
-            [class.border-transparent]="!isDraggedInColumn(col.id)"
+            [class.border-primary]="isDropListHovered(col.dropListId)"
+            [class.border-border]="isDragActive() && !isDropListHovered(col.dropListId)"
+            [class.border-transparent]="!isDragActive()"
           >
-            @if (getColumnOrders(col.id).length === 0) {
+            @if (colOrders.length === 0) {
               <div class="flex items-center justify-center h-16 text-xs text-muted-foreground">
                 Drop here
               </div>
             } @else {
-              @for (order of getColumnOrders(col.id); track order.id) {
+              @for (order of colOrders; track order.id) {
                 <div
                   cdkDrag
                   [cdkDragData]="order"
                   (cdkDragStarted)="onDragStart(order.id)"
                   (cdkDragEnded)="onDragEnd()"
                   (click)="navigateToOrder(order.id)"
-                  class="bg-card border border-border rounded-xl p-3 cursor-pointer hover:border-primary/40 hover:shadow-sm transition-all mb-2.5 select-none group kanban-card"
+                  class="bg-card border border-border rounded-xl p-3 cursor-pointer hover:border-primary/40 hover:shadow-sm mb-2.5 select-none group kanban-card"
                 >
                   <div class="flex items-start justify-between mb-2">
                     <span class="font-mono text-[10px] text-primary font-semibold">{{ order.orderNumber }}</span>

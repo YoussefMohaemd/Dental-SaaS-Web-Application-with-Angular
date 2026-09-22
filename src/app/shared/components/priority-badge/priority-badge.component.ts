@@ -21,14 +21,4 @@ export class PriorityBadgeComponent {
   readonly priority = input.required<string>();
 
   readonly dotClass = computed(() => DOT_CLASSES[this.priority()] ?? 'bg-slate-400');
-  // React parity (OrdersPage PriorityBadge): Low slate / Normal blue / High amber / Urgent red.
-  readonly colorClass = computed(() => {
-    const colors: Record<string, string> = {
-      Low: 'text-slate-400',
-      Normal: 'text-blue-500',
-      High: 'text-amber-500',
-      Urgent: 'text-red-500',
-    };
-    return colors[this.priority()] ?? 'text-slate-400';
-  });
 }

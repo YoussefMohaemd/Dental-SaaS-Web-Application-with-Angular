@@ -52,7 +52,12 @@
   </div>
 
   <div class="flex-1 overflow-auto">
-    @if (filtered().length === 0) {
+    @if (loading()) {
+      <div class="flex h-48 flex-col items-center justify-center text-center">
+        <span [innerHTML]="getIconSvg('refresh-lg') | safeHtml" class="mb-3 animate-spin text-muted-foreground" aria-hidden="true"></span>
+        <p class="font-semibold text-foreground">Loading change requests...</p>
+      </div>
+    } @else if (filtered().length === 0) {
       <div class="flex h-48 flex-col items-center justify-center text-center">
         <span [innerHTML]="getIconSvg('refresh-lg') | safeHtml" class="mb-3 text-muted-foreground" aria-hidden="true"></span>
         <p class="font-semibold text-foreground">No change requests found</p>
@@ -78,7 +83,9 @@
             <td><button type="button" (click)="openOrder(request.orderId)" class="font-mono text-xs text-foreground hover:text-primary hover:underline">{{ request.orderNumber }}</button></td>
             <td class="text-xs">{{ request.patientName }}</td>
             <td class="text-xs text-muted-foreground">{{ request.requester.replace('Dr. ', '') }}</td>
-            <td class="max-w-[240px] truncate text-xs text-foreground" [title]="request.description">{{ request.description }}</td>
+            <td class="max-w-60 text-xs text-foreground" [title]="request.description">
+              <p class="line-clamp-2">{{ request.description }}</p>
+            </td>
             <td>
               <app-priority-badge [priority]="request.priority" size="xs" />
             </td>

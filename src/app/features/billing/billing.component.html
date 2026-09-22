@@ -59,13 +59,18 @@
   </div>
 
   <div class="flex-1 overflow-auto">
-    @if (filtered().length === 0) {
+    @if (loading()) {
+      <div class="flex h-48 flex-col items-center justify-center text-center">
+        <span [innerHTML]="getIconSvg('loader') | safeHtml" class="mb-3 animate-spin text-muted-foreground" aria-hidden="true"></span>
+        <p class="font-semibold text-foreground">Loading billing records...</p>
+      </div>
+    } @else if (filtered().length === 0) {
       <div class="flex h-48 flex-col items-center justify-center text-center">
         <span [innerHTML]="getIconSvg('receipt') | safeHtml" class="mb-3 text-muted-foreground" aria-hidden="true"></span>
         <p class="font-semibold text-foreground">No billing records found</p>
       </div>
     } @else {
-      <p-table [value]="pageData()" [tableStyle]="{ 'min-width': '72rem' }" styleClass="p-datatable-sm">
+      <p-table [value]="pageData()" [tableStyle]="{ 'min-width': '900px' }" styleClass="p-datatable-sm">
         <ng-template pTemplate="header">
           <tr>
             <th><button type="button" (click)="toggleSort('orderNumber')" class="font-semibold">Order # <span aria-hidden="true" [class.text-primary]="sortIconActive('orderNumber')" [innerHTML]="sortIcon('orderNumber') | safeHtml"></span></button></th>
@@ -85,9 +90,15 @@
             <td><button type="button" (click)="openOrder(record.orderId)" class="font-mono text-xs font-semibold text-primary hover:underline">{{ record.orderNumber }}</button></td>
             <td class="text-xs">{{ record.patientName }}</td>
             <td class="text-xs text-muted-foreground">{{ record.doctorName.replace('Dr. ', '') }}</td>
-            <td class="max-w-[140px] truncate text-xs text-muted-foreground">{{ record.clinicName }}</td>
-            <td class="font-mono text-xs text-muted-foreground">{{ record.invoiceNumber || '—' }}</td>
-            <td class="text-right font-mono text-xs font-semibold">{{ formatUtils.formatCurrency(record.amount) }}</td>
+            <td class="max-w-35 truncate text-xs text-muted-foreground">{{ record.clinicName }}</td>
+            <td class="font-mono text-xs">
+              @if (record.invoiceNumber) {
+                <span class="text-foreground">{{ record.invoiceNumber }}</span>
+              } @else {
+                <span class="text-muted-foreground/40">—</span>
+              }
+            </td>
+            <td class="text-right font-mono font-semibold">{{ formatUtils.formatCurrency(record.amount) }}</td>
             <td><span class="rounded px-2 py-0.5 text-[10px] font-semibold" [class]="statusClasses(record.status)">{{ record.status }}</span></td>
             <td class="font-mono text-xs text-muted-foreground">{{ record.invoiceDate ? formatUtils.formatDate(record.invoiceDate) : '—' }}</td>
             <td class="font-mono text-xs text-muted-foreground">{{ formatUtils.formatDate(record.dueDate) }}</td>

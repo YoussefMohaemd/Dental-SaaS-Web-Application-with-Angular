@@ -2,3 +2,9 @@
   display: block;
   height: 100%;
 }
+
+:host ::ng-deep app-avatar.doctor-avatar > div {
+  background-color: rgb(237 233 254);
+  color: rgb(109 40 217);
+  font-size: 0.75rem;
+}

@@ -35,7 +35,12 @@
 
   <!-- Table -->
   <div class="flex-1 overflow-auto">
-    @if (filtered().length === 0) {
+    @if (loading()) {
+      <div class="flex flex-col items-center justify-center h-48 text-center">
+        <span [innerHTML]="getIconSvg('loader') | safeHtml" class="text-muted-foreground mb-3 animate-spin" style="width: 28px; height: 28px;"></span>
+        <p class="font-semibold text-foreground">Loading patients...</p>
+      </div>
+    } @else if (filtered().length === 0) {
       <div class="flex flex-col items-center justify-center h-48 text-center">
         <span [innerHTML]="getIconSvg('users') | safeHtml" class="text-muted-foreground mb-3" style="width: 32px; height: 32px;"></span>
         <p class="font-semibold text-foreground">No patients found</p>
@@ -79,7 +84,7 @@
               <td class="px-4 py-3 text-xs text-muted-foreground">{{ getGenderLabel(p.gender) }}</td>
               <td class="px-4 py-3 text-xs text-muted-foreground font-mono">{{ p.phone }}</td>
               <td class="px-4 py-3 text-xs text-muted-foreground">{{ p.email }}</td>
-              <td class="px-4 py-3 text-xs text-muted-foreground truncate max-w-[140px]">{{ p.clinicName }}</td>
+              <td class="px-4 py-3 text-xs text-muted-foreground truncate max-w-35">{{ p.clinicName }}</td>
               <td class="px-4 py-3 text-xs text-muted-foreground">{{ p.doctorName.replace('Dr. ', '') }}</td>
               <td class="px-4 py-3 text-xs font-mono font-semibold text-center">{{ p.ordersCount }}</td>
               <td class="px-4 py-3">

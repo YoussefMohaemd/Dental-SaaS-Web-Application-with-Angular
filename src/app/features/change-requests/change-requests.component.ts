@@ -20,6 +20,7 @@ export class ChangeRequestsComponent {
   protected readonly formatUtils = inject(FormatUtils);
 
   readonly requests = this.changeRequestService.changeRequests;
+  readonly loading = this.changeRequestService.loading;
   readonly search = signal('');
   readonly statusFilter = signal<ChangeRequest['status'] | ''>('');
   readonly page = signal(1);
@@ -105,7 +106,8 @@ export class ChangeRequestsComponent {
   statusClasses(status: ChangeRequest['status']): string {
     if (status === 'Pending') return 'bg-amber-50 text-amber-700';
     if (status === 'In Review') return 'bg-blue-50 text-blue-700';
+    if (status === 'Approved') return 'bg-emerald-50 text-emerald-700';
     if (status === 'Rejected') return 'bg-red-50 text-red-700';
-    return 'bg-emerald-50 text-emerald-700';
+    return 'bg-emerald-100 text-emerald-800';
   }
 }

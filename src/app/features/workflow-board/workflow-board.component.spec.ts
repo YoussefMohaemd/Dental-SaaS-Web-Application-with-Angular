@@ -27,12 +27,14 @@ describe('WorkflowBoardComponent', () => {
     expect(component.columns.length).toBe(7);
   });
 
-  it('should track drag state per column', () => {
-    expect(component.isDraggedInColumn('New')).toBeFalse();
+  it('should track drag active state', () => {
+    expect(component.isDragActive()).toBeFalse();
     component.onDragStart('ord-1');
     expect(component.dragId()).toBe('ord-1');
+    expect(component.isDragActive()).toBeTrue();
     component.onDragEnd();
     expect(component.dragId()).toBeNull();
+    expect(component.isDragActive()).toBeFalse();
   });
 
   it('should use order id as track key', () => {
