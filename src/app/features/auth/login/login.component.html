@@ -78,10 +78,7 @@
         <div>
           <label for="email" class="block text-sm font-medium text-foreground mb-1.5">Email address</label>
           <div class="relative">
-            <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none shrink-0" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-              <polyline points="22,6 12,13 2,6"></polyline>
-            </svg>
+            <span [innerHTML]="getMailIconSvg() | safeHtml" class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none flex shrink-0" aria-hidden="true"></span>
             <app-input
               id="email"
               type="email"
@@ -101,10 +98,7 @@
             <button type="button" class="text-xs text-primary hover:underline">Forgot password?</button>
           </div>
           <div class="relative">
-            <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none shrink-0" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-            </svg>
+            <span [innerHTML]="getLockIconSvg() | safeHtml" class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none flex shrink-0" aria-hidden="true"></span>
             <app-input
               id="password"
               [type]="passwordType"
@@ -119,11 +113,11 @@
             <button
               type="button"
               (click)="togglePasswordVisibility()"
-              class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center"
               aria-label="Toggle password visibility"
               [attr.aria-pressed]="showPassword()"
             >
-              <span [innerHTML]="getEyeIconSvg()" class="flex"></span>
+              <span [innerHTML]="getEyeIconSvg() | safeHtml" class="flex"></span>
             </button>
           </div>
         </div>

@@ -1,6 +1,27 @@
-import { Component, input, computed, inject } from '@angular/core';
+import { Component, input, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormatUtils } from '../../../core/services/format-utils.service';
+
+/** Status -> badge colors. Kept local so this presentational component never
+ *  depends on injectable services (React parity: StatusBadge is pure UI). */
+const STATUS_STYLES: Record<string, { bg: string; fg: string }> = {
+  'New': { bg: '#F1F5F9', fg: '#475569' },
+  'Review': { bg: '#FFFBEB', fg: '#B45309' },
+  'Design': { bg: '#ECFEFF', fg: '#164E63' },
+  'Production': { bg: '#EFF6FF', fg: '#1E40AF' },
+  'Quality Check': { bg: '#F5F3FF', fg: '#5B21B6' },
+  'Ready': { bg: '#ECFDF5', fg: '#065F46' },
+  'Completed': { bg: '#ECFDF5', fg: '#065F46' },
+  'Cancelled': { bg: '#FEF2F2', fg: '#B91C1C' },
+  'Open': { bg: '#EFF6FF', fg: '#1E40AF' },
+  'In Progress': { bg: '#FFFBEB', fg: '#B45309' },
+  'Closed': { bg: '#F1F5F9', fg: '#64748B' },
+  'Pending': { bg: '#F1F5F9', fg: '#64748B' },
+  'Invoiced': { bg: '#EFF6FF', fg: '#1E40AF' },
+  'Paid': { bg: '#ECFDF5', fg: '#065F46' },
+  'Overdue': { bg: '#FEF2F2', fg: '#B91C1C' }
+};
+
+const DEFAULT_STYLE = { bg: '#F1F5F9', fg: '#64748B' };
 
 @Component({
   selector: 'app-status-badge',
@@ -13,9 +34,7 @@ export class StatusBadgeComponent {
   readonly status = input.required<string>();
   readonly size = input<'xs' | 'sm' | 'md'>('xs');
 
-  private readonly formatUtils = inject(FormatUtils);
-
-  readonly styles = computed(() => this.formatUtils.getStatusStyles(this.status()));
+  readonly styles = computed(() => STATUS_STYLES[this.status()] ?? DEFAULT_STYLE);
 
   readonly badgeClasses = computed(() => {
     const base = 'inline-flex items-center px-1.5 py-0.5 rounded font-semibold';

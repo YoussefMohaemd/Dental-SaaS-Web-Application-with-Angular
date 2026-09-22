@@ -8,11 +8,12 @@ import { DoctorDataService } from '@core/services/doctor-data.service';
 import { ClinicDataService } from '@core/services/clinic-data.service';
 import { NavigationService } from '@core/services/navigation.service';
 import { ButtonComponent } from '@shared/components/button/button.component';
+import { SafeHtmlPipe } from '@shared/pipes/safe-html.pipe';
 
 @Component({
   selector: 'app-edit-order',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ButtonComponent],
+  imports: [CommonModule, ReactiveFormsModule, ButtonComponent, SafeHtmlPipe],
   templateUrl: './edit-order.component.html',
   styleUrl: './edit-order.component.scss'
 })
@@ -130,5 +131,17 @@ export class EditOrderComponent {
 
   goBack(): void {
     this.discard();
+  }
+
+  /**
+   * Lucide-equivalent inline SVGs (React parity: lucide `X` + `Save`
+   * at size 13 on the Discard / Save Changes actions).
+   */
+  getIconSvg(name: string): string {
+    const icons: Record<string, string> = {
+      x: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>',
+      save: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>'
+    };
+    return icons[name] || '';
   }
 }

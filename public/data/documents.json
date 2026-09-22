@@ -1,0 +1,12 @@
+[
+  { "id": "d1", "name": "rx_alice_johnson_dec2024.pdf", "category": "Prescriptions", "type": "PDF", "size": "380 KB", "date": "2024-12-15", "doctor": "Dr. Allison Park" },
+  { "id": "d2", "name": "upper_arch_scan_bc.stl", "category": "Scan Files", "type": "STL", "size": "4.2 MB", "date": "2024-12-14", "doctor": "Dr. Marcus Webb" },
+  { "id": "d3", "name": "patient_photos_cr_dec.zip", "category": "Patient Photos", "type": "ZIP", "size": "14.2 MB", "date": "2024-12-13", "doctor": "Dr. Sophia Lin" },
+  { "id": "d4", "name": "invoice_INV-010012.pdf", "category": "Invoices", "type": "PDF", "size": "142 KB", "date": "2024-12-12", "doctor": "–" },
+  { "id": "d5", "name": "monthly_report_nov2024.pdf", "category": "Reports", "type": "PDF", "size": "1.1 MB", "date": "2024-12-01", "doctor": "Lab Manager" },
+  { "id": "d6", "name": "bite_registration_eng.stl", "category": "Scan Files", "type": "STL", "size": "1.3 MB", "date": "2024-12-10", "doctor": "Dr. Robert Chen" },
+  { "id": "d7", "name": "shade_guide_ref_final.jpg", "category": "Patient Photos", "type": "JPG", "size": "2.4 MB", "date": "2024-12-09", "doctor": "Dr. Jennifer Walsh" },
+  { "id": "d8", "name": "rx_david_nguyen.pdf", "category": "Prescriptions", "type": "PDF", "size": "290 KB", "date": "2024-12-08", "doctor": "Dr. Robert Chen" },
+  { "id": "d9", "name": "case_summary_cs8102.pdf", "category": "Reports", "type": "PDF", "size": "890 KB", "date": "2024-12-05", "doctor": "Lab Manager" },
+  { "id": "d10", "name": "full_arch_scan_ef.ply", "category": "Scan Files", "type": "PLY", "size": "8.6 MB", "date": "2024-12-04", "doctor": "Dr. Jennifer Walsh" }
+]

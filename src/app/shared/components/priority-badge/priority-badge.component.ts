@@ -1,6 +1,14 @@
-import { Component, input, computed, inject } from '@angular/core';
+import { Component, input, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormatUtils } from '../../../core/services/format-utils.service';
+
+/** Priority -> dot colors. Kept local so this presentational component never
+ *  depends on injectable services (React parity: PriorityBadge is pure UI). */
+const DOT_CLASSES: Record<string, string> = {
+  Low: 'bg-slate-400',
+  Normal: 'bg-blue-500',
+  High: 'bg-amber-500',
+  Urgent: 'bg-red-500'
+};
 
 @Component({
   selector: 'app-priority-badge',
@@ -12,9 +20,7 @@ import { FormatUtils } from '../../../core/services/format-utils.service';
 export class PriorityBadgeComponent {
   readonly priority = input.required<string>();
 
-  private readonly formatUtils = inject(FormatUtils);
-
-  readonly dotClass = computed(() => this.formatUtils.getPriorityDotClass(this.priority()));
+  readonly dotClass = computed(() => DOT_CLASSES[this.priority()] ?? 'bg-slate-400');
   // React parity (OrdersPage PriorityBadge): Low slate / Normal blue / High amber / Urgent red.
   readonly colorClass = computed(() => {
     const colors: Record<string, string> = {

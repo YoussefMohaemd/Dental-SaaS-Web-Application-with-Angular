@@ -5,9 +5,9 @@ import { DoctorDataService } from '@core/services/doctor-data.service';
 import { NavigationService } from '@core/services/navigation.service';
 import { FormatUtils } from '@core/services/format-utils.service';
 import { Doctor, DoctorStatus } from '@core/models';
-import { StatusBadgeComponent } from '@shared/components/status-badge/status-badge.component';
 import { ButtonComponent } from '@shared/components/button/button.component';
 import { AvatarComponent } from '@shared/components/avatar/avatar.component';
+import { SafeHtmlPipe } from '@shared/pipes/safe-html.pipe';
 
 interface SortConfig {
   label: string;
@@ -20,9 +20,9 @@ interface SortConfig {
   imports: [
     CommonModule,
     FormsModule,
-    StatusBadgeComponent,
     ButtonComponent,
-    AvatarComponent
+    AvatarComponent,
+    SafeHtmlPipe
   ],
   templateUrl: './doctors.component.html',
   styleUrl: './doctors.component.scss'

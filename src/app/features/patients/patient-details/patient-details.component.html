@@ -3,7 +3,7 @@
     <div class="px-6 py-4 border-b border-border bg-card shrink-0">
       <div class="flex items-center gap-3">
         <button (click)="goBack()" class="p-1.5 hover:bg-muted rounded-lg text-muted-foreground">
-          <span [innerHTML]="getIconSvg('arrow-left')"></span>
+          <span [innerHTML]="getIconSvg('arrow-left') | safeHtml"></span>
         </button>
         <div class="flex items-center gap-4 flex-1">
           <app-avatar [name]="patient()!.name" [size]="'lg'" [variant]="'primary'" />
@@ -48,7 +48,7 @@
                 @for (item of contactItems(); track item.label) {
                   <div class="flex items-center gap-3">
                     <div class="w-8 h-8 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                      <span [innerHTML]="getIconSvg(item.icon)" class="text-muted-foreground" style="width: 14px; height: 14px;"></span>
+                      <span [innerHTML]="getIconSvg(item.icon) | safeHtml" class="text-muted-foreground" style="width: 14px; height: 14px;"></span>
                     </div>
                     <div>
                       <p class="text-xs text-muted-foreground">{{ item.label }}</p>
@@ -96,7 +96,7 @@
               <h2 class="font-display font-semibold text-sm mb-3">Quick Actions</h2>
               <div class="space-y-2">
                 <app-button variant="outline" size="sm" class="w-full flex items-center gap-2 justify-start" (onClick)="navigationService.navigate('createOrder')">
-                  <span [innerHTML]="getIconSvg('clipboard-list')" class="text-muted-foreground" style="width: 14px; height: 14px;"></span>
+                  <span [innerHTML]="getIconSvg('clipboard-list') | safeHtml" class="text-muted-foreground" style="width: 14px; height: 14px;"></span>
                   New Order
                 </app-button>
               </div>
@@ -140,7 +140,7 @@
       @if (activeTab() === 'Cases' || activeTab() === 'Documents' || activeTab() === 'Activity') {
         <div class="max-w-2xl flex flex-col items-center justify-center py-16 text-center">
           <div class="w-14 h-14 bg-muted rounded-2xl flex items-center justify-center mb-4">
-            <span [innerHTML]="getIconSvg('clipboard-list')" class="text-muted-foreground" style="width: 24px; height: 24px;"></span>
+            <span [innerHTML]="getIconSvg('clipboard-list') | safeHtml" class="text-muted-foreground" style="width: 24px; height: 24px;"></span>
           </div>
           <p class="font-semibold text-foreground">No {{ activeTab().toLowerCase() }} yet</p>
           <p class="text-sm text-muted-foreground">Patient {{ activeTab().toLowerCase() }} will appear here</p>

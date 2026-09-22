@@ -6,14 +6,14 @@ import { BillingDataService } from '@core/services/billing-data.service';
 import { NavigationService } from '@core/services/navigation.service';
 import { FormatUtils } from '@core/services/format-utils.service';
 import { BillingRecord } from '@core/models';
-import { ButtonComponent } from '@shared/components/button/button.component';
+import { SafeHtmlPipe } from '../../shared/pipes/safe-html.pipe';
 
 type BillingSortColumn = 'orderNumber' | 'patientName' | 'amount' | 'dueDate' | 'invoiceDate';
 
 @Component({
   selector: 'app-billing',
   standalone: true,
-  imports: [CommonModule, FormsModule, TableModule, ButtonComponent],
+  imports: [CommonModule, FormsModule, TableModule, SafeHtmlPipe],
   templateUrl: './billing.component.html',
   styleUrl: './billing.component.scss'
 })

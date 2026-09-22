@@ -3,54 +3,37 @@ import { CommonModule } from '@angular/common';
 import { TableModule } from 'primeng/table';
 import { DialogModule } from 'primeng/dialog';
 import { ButtonComponent } from '@shared/components/button/button.component';
+import { DocumentDataService } from '@core/services/document-data.service';
+import { DOCUMENT_CATEGORIES, DocumentCategory, LabDocument } from '@core/models/document.model';
+import { SafeHtmlPipe } from '@shared/pipes/safe-html.pipe';
 
-export type DocumentCategory = 'Prescriptions' | 'Scan Files' | 'Patient Photos' | 'Invoices' | 'Reports';
-
-export interface LabDocument {
-  id: string;
-  name: string;
-  category: DocumentCategory;
-  type: string;
-  size: string;
-  date: string;
-  doctor: string;
-}
-
-const SEED_DOCUMENTS: LabDocument[] = [
-  { id: 'd1', name: 'rx_alice_johnson_dec2024.pdf', category: 'Prescriptions', type: 'PDF', size: '380 KB', date: '2024-12-15', doctor: 'Dr. Allison Park' },
-  { id: 'd2', name: 'upper_arch_scan_bc.stl', category: 'Scan Files', type: 'STL', size: '4.2 MB', date: '2024-12-14', doctor: 'Dr. Marcus Webb' },
-  { id: 'd3', name: 'patient_photos_cr_dec.zip', category: 'Patient Photos', type: 'ZIP', size: '14.2 MB', date: '2024-12-13', doctor: 'Dr. Sophia Lin' },
-  { id: 'd4', name: 'invoice_INV-010012.pdf', category: 'Invoices', type: 'PDF', size: '142 KB', date: '2024-12-12', doctor: '–' },
-  { id: 'd5', name: 'monthly_report_nov2024.pdf', category: 'Reports', type: 'PDF', size: '1.1 MB', date: '2024-12-01', doctor: 'Lab Manager' },
-  { id: 'd6', name: 'bite_registration_eng.stl', category: 'Scan Files', type: 'STL', size: '1.3 MB', date: '2024-12-10', doctor: 'Dr. Robert Chen' },
-  { id: 'd7', name: 'shade_guide_ref_final.jpg', category: 'Patient Photos', type: 'JPG', size: '2.4 MB', date: '2024-12-09', doctor: 'Dr. Jennifer Walsh' },
-  { id: 'd8', name: 'rx_david_nguyen.pdf', category: 'Prescriptions', type: 'PDF', size: '290 KB', date: '2024-12-08', doctor: 'Dr. Robert Chen' },
-  { id: 'd9', name: 'case_summary_cs8102.pdf', category: 'Reports', type: 'PDF', size: '890 KB', date: '2024-12-05', doctor: 'Lab Manager' },
-  { id: 'd10', name: 'full_arch_scan_ef.ply', category: 'Scan Files', type: 'PLY', size: '8.6 MB', date: '2024-12-04', doctor: 'Dr. Jennifer Walsh' }
-];
-
-const CATEGORIES: ('All' | DocumentCategory)[] = ['All', 'Prescriptions', 'Scan Files', 'Patient Photos', 'Invoices', 'Reports'];
+export type { DocumentCategory, LabDocument };
 
 @Component({
   selector: 'app-documents',
   standalone: true,
-  imports: [CommonModule, TableModule, DialogModule, ButtonComponent],
+  imports: [CommonModule, TableModule, DialogModule, ButtonComponent, SafeHtmlPipe],
   templateUrl: './documents.component.html',
   styleUrl: './documents.component.scss'
 })
 export class DocumentsComponent {
-  readonly documents = signal<LabDocument[]>(SEED_DOCUMENTS);
+  private readonly documentService = inject(DocumentDataService);
+
+  readonly documents = this.documentService.documents;
+  private readonly uploads = signal<LabDocument[]>([]);
   readonly search = signal('');
   readonly category = signal<'All' | DocumentCategory>('All');
   readonly dragOver = signal(false);
   readonly preview = signal<LabDocument | null>(null);
   readonly previewVisible = signal(false);
 
-  readonly categories = CATEGORIES;
+  readonly categories = DOCUMENT_CATEGORIES;
 
   readonly filtered = computed(() => {
     const query = this.search().trim().toLowerCase();
-    return this.documents().filter(doc => {
+    const removed = this.removedIds();
+    const all = [...this.uploads(), ...this.documents()].filter(doc => !removed.has(doc.id));
+    return all.filter(doc => {
       const matchesCategory = this.category() === 'All' || doc.category === this.category();
       const matchesQuery =
         !query || doc.name.toLowerCase().includes(query) || doc.doctor.toLowerCase().includes(query);
@@ -89,8 +72,11 @@ export class DocumentsComponent {
     input.value = '';
   }
 
+  private readonly removedIds = signal<Set<string>>(new Set());
+
   deleteDocument(documentId: string): void {
-    this.documents.update(current => current.filter(d => d.id !== documentId));
+    this.removedIds.update(current => new Set(current).add(documentId));
+    this.uploads.update(current => current.filter(d => d.id !== documentId));
   }
 
   downloadDocument(doc: LabDocument): void {
@@ -157,7 +143,7 @@ export class DocumentsComponent {
       date: new Date().toISOString().slice(0, 10),
       doctor: 'You'
     }));
-    if (additions.length > 0) this.documents.update(current => [...additions, ...current]);
+    if (additions.length > 0) this.uploads.update(current => [...additions, ...current]);
   }
 
   private formatBytes(bytes: number): string {

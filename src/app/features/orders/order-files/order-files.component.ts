@@ -5,6 +5,7 @@ import { DialogModule } from 'primeng/dialog';
 import { OrderDataService } from '@core/services/order-data.service';
 import { NavigationService } from '@core/services/navigation.service';
 import { ButtonComponent } from '@shared/components/button/button.component';
+import { SafeHtmlPipe } from '@shared/pipes/safe-html.pipe';
 
 export type FileStatus = 'uploaded' | 'uploading' | 'failed';
 
@@ -34,7 +35,7 @@ const ACCEPTED_TYPES = ['STL', 'PLY', 'OBJ', 'JPG', 'PNG', 'PDF', 'DCM'];
 @Component({
   selector: 'app-order-files',
   standalone: true,
-  imports: [CommonModule, DialogModule, ButtonComponent],
+  imports: [CommonModule, DialogModule, ButtonComponent, SafeHtmlPipe],
   templateUrl: './order-files.component.html',
   styleUrl: './order-files.component.scss'
 })

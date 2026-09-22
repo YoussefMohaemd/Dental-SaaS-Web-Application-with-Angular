@@ -6,6 +6,8 @@ export * from './case.model';
 export * from './billing.model';
 export * from './change-request.model';
 export * from './notification.model';
+export * from './document.model';
+export * from './report.model';
 export * from './scan-center.model';
 export * from './sub-order.model';
 export * from './navigation.model';

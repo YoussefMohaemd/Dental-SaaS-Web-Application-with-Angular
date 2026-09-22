@@ -6,7 +6,7 @@
         <p class="text-xs text-muted-foreground">{{ filtered().length }} billing records</p>
       </div>
       <button type="button" (click)="exportRecords()" class="ml-auto flex items-center gap-2 rounded-lg border border-border px-3.5 py-2 text-xs font-medium text-foreground hover:bg-muted transition-colors" aria-label="Export billing records">
-        <span [innerHTML]="getIconSvg('download')" aria-hidden="true"></span> Export
+        <span [innerHTML]="getIconSvg('download') | safeHtml" aria-hidden="true"></span> Export
       </button>
     </div>
   </div>
@@ -34,7 +34,7 @@
 
   <div class="flex shrink-0 items-center gap-3 border-b border-border bg-card px-6 py-3">
     <div class="relative">
-      <span [innerHTML]="getIconSvg('search')" class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden="true"></span>
+      <span [innerHTML]="getIconSvg('search') | safeHtml" class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden="true"></span>
       <input
         class="w-56 rounded-lg border border-border bg-muted py-1.5 pl-8 pr-4 text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
         placeholder="Search billing..."
@@ -61,22 +61,22 @@
   <div class="flex-1 overflow-auto">
     @if (filtered().length === 0) {
       <div class="flex h-48 flex-col items-center justify-center text-center">
-        <span [innerHTML]="getIconSvg('receipt')" class="mb-3 text-muted-foreground" aria-hidden="true"></span>
+        <span [innerHTML]="getIconSvg('receipt') | safeHtml" class="mb-3 text-muted-foreground" aria-hidden="true"></span>
         <p class="font-semibold text-foreground">No billing records found</p>
       </div>
     } @else {
       <p-table [value]="pageData()" [tableStyle]="{ 'min-width': '72rem' }" styleClass="p-datatable-sm">
         <ng-template pTemplate="header">
           <tr>
-            <th><button type="button" (click)="toggleSort('orderNumber')" class="font-semibold">Order # <span aria-hidden="true" [class.text-primary]="sortIconActive('orderNumber')" [innerHTML]="sortIcon('orderNumber')"></span></button></th>
-            <th><button type="button" (click)="toggleSort('patientName')" class="font-semibold">Patient <span aria-hidden="true" [class.text-primary]="sortIconActive('patientName')" [innerHTML]="sortIcon('patientName')"></span></button></th>
+            <th><button type="button" (click)="toggleSort('orderNumber')" class="font-semibold">Order # <span aria-hidden="true" [class.text-primary]="sortIconActive('orderNumber')" [innerHTML]="sortIcon('orderNumber') | safeHtml"></span></button></th>
+            <th><button type="button" (click)="toggleSort('patientName')" class="font-semibold">Patient <span aria-hidden="true" [class.text-primary]="sortIconActive('patientName')" [innerHTML]="sortIcon('patientName') | safeHtml"></span></button></th>
             <th>Doctor</th>
             <th>Clinic</th>
             <th>Invoice #</th>
-            <th><button type="button" (click)="toggleSort('amount')" class="font-semibold">Amount <span aria-hidden="true" [class.text-primary]="sortIconActive('amount')" [innerHTML]="sortIcon('amount')"></span></button></th>
+            <th><button type="button" (click)="toggleSort('amount')" class="font-semibold">Amount <span aria-hidden="true" [class.text-primary]="sortIconActive('amount')" [innerHTML]="sortIcon('amount') | safeHtml"></span></button></th>
             <th>Status</th>
-            <th><button type="button" (click)="toggleSort('invoiceDate')" class="font-semibold">Invoice Date <span aria-hidden="true" [class.text-primary]="sortIconActive('invoiceDate')" [innerHTML]="sortIcon('invoiceDate')"></span></button></th>
-            <th><button type="button" (click)="toggleSort('dueDate')" class="font-semibold">Due Date <span aria-hidden="true" [class.text-primary]="sortIconActive('dueDate')" [innerHTML]="sortIcon('dueDate')"></span></button></th>
+            <th><button type="button" (click)="toggleSort('invoiceDate')" class="font-semibold">Invoice Date <span aria-hidden="true" [class.text-primary]="sortIconActive('invoiceDate')" [innerHTML]="sortIcon('invoiceDate') | safeHtml"></span></button></th>
+            <th><button type="button" (click)="toggleSort('dueDate')" class="font-semibold">Due Date <span aria-hidden="true" [class.text-primary]="sortIconActive('dueDate')" [innerHTML]="sortIcon('dueDate') | safeHtml"></span></button></th>
             <th class="text-center">Vouchers</th>
           </tr>
         </ng-template>
@@ -102,7 +102,7 @@
     <div class="flex shrink-0 items-center justify-between border-t border-border bg-card px-6 py-3">
       <span class="text-xs text-muted-foreground">{{ rangeStart() }}–{{ rangeEnd() }} of {{ filtered().length }}</span>
       <div class="flex items-center gap-1">
-        <button type="button" (click)="prevPage()" [disabled]="page() === 1" class="rounded border border-border p-1.5 text-muted-foreground hover:bg-muted disabled:opacity-40" aria-label="Previous page"><span [innerHTML]="getIconSvg('chevron-left')"></span></button>
+        <button type="button" (click)="prevPage()" [disabled]="page() === 1" class="rounded border border-border p-1.5 text-muted-foreground hover:bg-muted disabled:opacity-40" aria-label="Previous page"><span [innerHTML]="getIconSvg('chevron-left') | safeHtml"></span></button>
         @for (pg of pageNumbers(); track pg) {
           <button
             type="button"
@@ -113,7 +113,7 @@
             {{ pg }}
           </button>
         }
-        <button type="button" (click)="nextPage()" [disabled]="page() === totalPages()" class="rounded border border-border p-1.5 text-muted-foreground hover:bg-muted disabled:opacity-40" aria-label="Next page"><span [innerHTML]="getIconSvg('chevron-right')"></span></button>
+        <button type="button" (click)="nextPage()" [disabled]="page() === totalPages()" class="rounded border border-border p-1.5 text-muted-foreground hover:bg-muted disabled:opacity-40" aria-label="Next page"><span [innerHTML]="getIconSvg('chevron-right') | safeHtml"></span></button>
       </div>
     </div>
   }

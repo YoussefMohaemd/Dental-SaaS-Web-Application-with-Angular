@@ -11,15 +11,15 @@
   <div class="shrink-0 border-b border-border px-6 py-3">
     <div class="flex gap-4">
       <div class="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-1.5 text-amber-700">
-        <span [innerHTML]="getIconSvg('refresh')" aria-hidden="true"></span>
+        <span [innerHTML]="getIconSvg('refresh') | safeHtml" aria-hidden="true"></span>
         <span class="text-xs font-semibold">{{ pendingCount() }} Pending</span>
       </div>
       <div class="flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-blue-700">
-        <span [innerHTML]="getIconSvg('refresh')" aria-hidden="true"></span>
+        <span [innerHTML]="getIconSvg('refresh') | safeHtml" aria-hidden="true"></span>
         <span class="text-xs font-semibold">{{ inReviewCount() }} In Review</span>
       </div>
       <div class="flex items-center gap-2 rounded-lg border border-border bg-muted px-3 py-1.5 text-muted-foreground">
-        <span [innerHTML]="getIconSvg('refresh')" aria-hidden="true"></span>
+        <span [innerHTML]="getIconSvg('refresh') | safeHtml" aria-hidden="true"></span>
         <span class="text-xs font-semibold">{{ requests().length }} Total</span>
       </div>
     </div>
@@ -27,7 +27,7 @@
 
   <div class="flex shrink-0 items-center gap-3 border-b border-border bg-card px-6 py-3">
     <div class="relative">
-      <span [innerHTML]="getIconSvg('search')" class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden="true"></span>
+      <span [innerHTML]="getIconSvg('search') | safeHtml" class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden="true"></span>
       <input
         class="w-64 rounded-lg border border-border bg-muted py-1.5 pl-8 pr-4 text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
         placeholder="Search requests..."
@@ -54,7 +54,7 @@
   <div class="flex-1 overflow-auto">
     @if (filtered().length === 0) {
       <div class="flex h-48 flex-col items-center justify-center text-center">
-        <span [innerHTML]="getIconSvg('refresh-lg')" class="mb-3 text-muted-foreground" aria-hidden="true"></span>
+        <span [innerHTML]="getIconSvg('refresh-lg') | safeHtml" class="mb-3 text-muted-foreground" aria-hidden="true"></span>
         <p class="font-semibold text-foreground">No change requests found</p>
       </div>
     } @else {
@@ -111,7 +111,7 @@
     <div class="flex shrink-0 items-center justify-between border-t border-border bg-card px-6 py-3">
       <span class="text-xs text-muted-foreground">{{ (page() - 1) * pageSize + 1 }}–{{ page() * pageSize > filtered().length ? filtered().length : page() * pageSize }} of {{ filtered().length }}</span>
       <div class="flex items-center gap-1">
-        <button type="button" (click)="prevPage()" [disabled]="page() === 1" class="rounded border border-border p-1.5 text-muted-foreground hover:bg-muted disabled:opacity-40" aria-label="Previous page"><span [innerHTML]="getIconSvg('chevron-left')"></span></button>
+        <button type="button" (click)="prevPage()" [disabled]="page() === 1" class="rounded border border-border p-1.5 text-muted-foreground hover:bg-muted disabled:opacity-40" aria-label="Previous page"><span [innerHTML]="getIconSvg('chevron-left') | safeHtml"></span></button>
         @for (pg of pageNumbers(); track pg) {
           <button
             type="button"
@@ -122,7 +122,7 @@
             {{ pg }}
           </button>
         }
-        <button type="button" (click)="nextPage()" [disabled]="page() === totalPages()" class="rounded border border-border p-1.5 text-muted-foreground hover:bg-muted disabled:opacity-40" aria-label="Next page"><span [innerHTML]="getIconSvg('chevron-right')"></span></button>
+        <button type="button" (click)="nextPage()" [disabled]="page() === totalPages()" class="rounded border border-border p-1.5 text-muted-foreground hover:bg-muted disabled:opacity-40" aria-label="Next page"><span [innerHTML]="getIconSvg('chevron-right') | safeHtml"></span></button>
       </div>
     </div>
   }

@@ -3,13 +3,14 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ThemeService } from '@core/services/theme.service';
 import { ButtonComponent } from '@shared/components/button/button.component';
+import { SafeHtmlPipe } from '../../shared/pipes/safe-html.pipe';
 
 type SettingsSection = 'profile' | 'notifications' | 'appearance' | 'language' | 'security' | 'organization';
 
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ButtonComponent],
+  imports: [CommonModule, ReactiveFormsModule, ButtonComponent, SafeHtmlPipe],
   templateUrl: './settings.component.html',
   styleUrl: './settings.component.scss'
 })

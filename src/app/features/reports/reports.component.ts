@@ -3,67 +3,15 @@ import { CommonModule } from '@angular/common';
 import { OrderDataService } from '@core/services/order-data.service';
 import { CaseDataService } from '@core/services/case-data.service';
 import { BillingDataService } from '@core/services/billing-data.service';
+import { ReportsDataService } from '@core/services/reports-data.service';
 import { FormatUtils } from '@core/services/format-utils.service';
-
-interface RevenuePoint {
-  month: string;
-  revenue: number;
-}
-
-interface BreakdownSlice {
-  name: string;
-  value: number;
-}
-
-interface TurnaroundPoint {
-  day: string;
-  days: number;
-}
-
-interface StageShare {
-  stage: string;
-  count: number;
-  percent: number;
-}
-
-const MONTHLY_REVENUE: RevenuePoint[] = [
-  { month: 'Jul', revenue: 48200 },
-  { month: 'Aug', revenue: 52800 },
-  { month: 'Sep', revenue: 44600 },
-  { month: 'Oct', revenue: 61300 },
-  { month: 'Nov', revenue: 58900 },
-  { month: 'Dec', revenue: 39200 }
-];
-
-const RESTORATION_BREAKDOWN: BreakdownSlice[] = [
-  { name: 'Crown', value: 38 },
-  { name: 'Bridge', value: 22 },
-  { name: 'Veneer', value: 15 },
-  { name: 'Implant', value: 12 },
-  { name: 'Full Arch', value: 8 },
-  { name: 'Other', value: 5 }
-];
-
-const TURNAROUND: TurnaroundPoint[] = [
-  { day: 'Mon', days: 2.1 },
-  { day: 'Tue', days: 2.4 },
-  { day: 'Wed', days: 1.9 },
-  { day: 'Thu', days: 2.8 },
-  { day: 'Fri', days: 2.2 },
-  { day: 'Sat', days: 1.5 },
-  { day: 'Sun', days: 1.2 }
-];
-
-const WORKFLOW_SHARE: StageShare[] = [
-  { stage: 'New', count: 8, percent: 25 },
-  { stage: 'Review', count: 5, percent: 15.6 },
-  { stage: 'Design', count: 7, percent: 21.9 },
-  { stage: 'Production', count: 12, percent: 37.5 },
-  { stage: 'Quality Check', count: 4, percent: 12.5 },
-  { stage: 'Ready', count: 6, percent: 18.8 }
-];
-
-const BREAKDOWN_COLORS = ['#2563EB', '#06B6D4', '#10B981', '#F59E0B', '#8B5CF6', '#94A3B8'];
+import {
+  BREAKDOWN_COLORS,
+  BreakdownSlice,
+  RevenuePoint,
+  StageShare,
+  TurnaroundPoint
+} from '@core/models/report.model';
 
 @Component({
   selector: 'app-reports',
@@ -76,15 +24,32 @@ export class ReportsComponent {
   private readonly orderService = inject(OrderDataService);
   private readonly caseService = inject(CaseDataService);
   private readonly billingService = inject(BillingDataService);
+  private readonly reportsService = inject(ReportsDataService);
   protected readonly formatUtils = inject(FormatUtils);
 
-  readonly monthlyRevenue: RevenuePoint[] = MONTHLY_REVENUE;
-  readonly restorationBreakdown: BreakdownSlice[] = RESTORATION_BREAKDOWN;
-  readonly turnaround: TurnaroundPoint[] = TURNAROUND;
-  readonly workflowShare: StageShare[] = WORKFLOW_SHARE;
+  get monthlyRevenue(): RevenuePoint[] {
+    return this.reportsService.reports().monthlyRevenue;
+  }
 
-  readonly maxRevenue = Math.max(...MONTHLY_REVENUE.map(r => r.revenue));
-  readonly maxTurnaround = Math.max(...TURNAROUND.map(t => t.days));
+  get restorationBreakdown(): BreakdownSlice[] {
+    return this.reportsService.reports().restorationBreakdown;
+  }
+
+  get turnaround(): TurnaroundPoint[] {
+    return this.reportsService.reports().turnaround;
+  }
+
+  get workflowShare(): StageShare[] {
+    return this.reportsService.reports().workflowShare;
+  }
+
+  get maxRevenue(): number {
+    return Math.max(...this.monthlyRevenue.map(r => r.revenue));
+  }
+
+  get maxTurnaround(): number {
+    return Math.max(...this.turnaround.map(t => t.days));
+  }
 
   readonly totalRevenue = computed(() =>
     this.billingService.records().filter(r => r.status === 'Paid').reduce((sum, r) => sum + r.amount, 0)

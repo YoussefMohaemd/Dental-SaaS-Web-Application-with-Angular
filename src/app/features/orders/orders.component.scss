@@ -3,7 +3,7 @@
   height: 100%;
 }
 
-// PrimeNG data-table layer: sticky header + zebra + sticky actions (React parity).
+// PrimeNG data-table layer: sticky header + zebra (React parity).
 // Visual tokens come from CSS vars so light/dark stay in sync with React.
 ::ng-deep .orders-table.p-datatable-sm .p-datatable-thead > tr > th {
   font-size: 10px;
@@ -63,22 +63,4 @@
 
 ::ng-deep .orders-table.p-datatable-sm .p-datatable-tbody > tr:hover > td {
   background: color-mix(in srgb, var(--color-muted) 55%, transparent);
-}
-
-// Sticky right actions column (React: sticky right-0).
-::ng-deep .orders-table.p-datatable-sm .p-datatable-thead > tr > th:last-child,
-::ng-deep .orders-table.p-datatable-sm .p-datatable-tbody > tr > td:last-child {
-  position: sticky;
-  right: 0;
-  z-index: 1;
-  background: var(--color-card);
-  box-shadow: -8px 0 12px -8px rgb(0 0 0 / 0.12);
-}
-
-@media (max-width: 768px) {
-  ::ng-deep .orders-table.p-datatable-sm .p-datatable-thead > tr > th:last-child,
-  ::ng-deep .orders-table.p-datatable-sm .p-datatable-tbody > tr > td:last-child {
-    position: static;
-    box-shadow: none;
-  }
 }

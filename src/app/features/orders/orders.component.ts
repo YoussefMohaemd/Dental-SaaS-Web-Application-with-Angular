@@ -6,10 +6,11 @@ import { NavigationService } from '@core/services/navigation.service';
 import { FormatUtils } from '@core/services/format-utils.service';
 import { Order, OrderStatus, Priority } from '@core/models';
 import { StatusBadgeComponent } from '@shared/components/status-badge/status-badge.component';
-import { PriorityBadgeComponent } from '@shared/components/priority-badge/priority-badge.component';
 import { ArchBadgeComponent } from '@shared/components/arch-badge/arch-badge.component';
 import { ButtonComponent } from '@shared/components/button/button.component';
 import { SearchInputComponent } from '@shared/components/search-input/search-input.component';
+import { SafeHtmlPipe } from '../../shared/pipes/safe-html.pipe';
+import { lucideSvg } from '@shared/icons/lucide-icons';
 
 export type OrdersViewState = 'normal' | 'loading' | 'empty' | 'error';
 
@@ -57,7 +58,7 @@ export function compareOrderValues(a: unknown, b: unknown): number {
 @Component({
   selector: 'app-orders',
   standalone: true,
-  imports: [CommonModule, TableModule, StatusBadgeComponent, ArchBadgeComponent, ButtonComponent, SearchInputComponent],
+  imports: [CommonModule, TableModule, StatusBadgeComponent, ArchBadgeComponent, ButtonComponent, SearchInputComponent, SafeHtmlPipe],
   templateUrl: './orders.component.html',
   styleUrl: './orders.component.scss'
 })
@@ -340,29 +341,32 @@ export class OrdersComponent {
   }
 
   /**
-   * Lucide-equivalent inline SVGs (root cause fix: template previously used
-   * emoji glyphs ⤓⟳☰✕👁✎⋯🔒🔓📝🔍📄 which mismatched React's lucide-react icons
-   * in size, alignment and hover color).
+   * Exact React parity (OrdersPage.tsx lucide-react v1.47.0):
+   * Plus 13, Download 15, RefreshCw 15, SlidersHorizontal, X 12,
+   * ChevronLeft/Right 14, ChevronDown 10, Lock/Unlock 12, FileText 12,
+   * ArrowUpDown 10, CheckSquare/Square 14/13, Search 13.
    */
   getIconSvg(name: string): string {
-    const icons: Record<string, string> = {
-      plus: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>',
-      download: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
-      refresh: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.23 4.27A9 9 0 0 1 3.51 15"/></svg>',
-      sliders: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="21" y1="4" x2="14" y2="4"/><line x1="10" y1="4" x2="3" y2="4"/><line x1="21" y1="12" x2="12" y2="12"/><line x1="8" y1="12" x2="3" y2="12"/><line x1="21" y1="20" x2="16" y2="20"/><line x1="12" y1="20" x2="3" y2="20"/><line x1="14" y1="2" x2="14" y2="6"/><line x1="8" y1="10" x2="8" y2="14"/><line x1="16" y1="18" x2="16" y2="22"/></svg>',
-      x: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>',
-      'chevron-left': '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>',
-      'chevron-right': '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>',
-      'chevron-down': '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>',
-      lock: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>',
-      unlock: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>',
-      'file-text': '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
-      search: '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>',
-      'check-square': '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>',
-      square: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/></svg>',
-      'check-square-sm': '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>',
-      'square-sm': '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/></svg>',
+    const sizes: Record<string, { icon: string; size: number }> = {
+      plus: { icon: 'plus', size: 13 },
+      download: { icon: 'download', size: 15 },
+      refresh: { icon: 'refresh-cw', size: 15 },
+      sliders: { icon: 'sliders-horizontal', size: 12 },
+      x: { icon: 'x', size: 12 },
+      'chevron-left': { icon: 'chevron-left', size: 14 },
+      'chevron-right': { icon: 'chevron-right', size: 14 },
+      'chevron-down': { icon: 'chevron-down', size: 10 },
+      lock: { icon: 'lock', size: 12 },
+      unlock: { icon: 'lock-open', size: 12 },
+      'file-text': { icon: 'file-text', size: 12 },
+      search: { icon: 'search', size: 13 },
+      'check-square': { icon: 'square-check-big', size: 14 },
+      square: { icon: 'square', size: 14 },
+      'check-square-sm': { icon: 'square-check-big', size: 13 },
+      'square-sm': { icon: 'square', size: 13 },
     };
-    return icons[name] || '';
+    const entry = sizes[name];
+    if (!entry) return '';
+    return lucideSvg(entry.icon, entry.size);
   }
 }

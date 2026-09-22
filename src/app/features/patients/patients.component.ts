@@ -8,6 +8,7 @@ import { Patient, PatientStatus } from '@core/models';
 import { StatusBadgeComponent } from '@shared/components/status-badge/status-badge.component';
 import { ButtonComponent } from '@shared/components/button/button.component';
 import { AvatarComponent } from '@shared/components/avatar/avatar.component';
+import { SafeHtmlPipe } from '../../shared/pipes/safe-html.pipe';
 
 @Component({
   selector: 'app-patients',
@@ -16,7 +17,8 @@ import { AvatarComponent } from '@shared/components/avatar/avatar.component';
     CommonModule,
     FormsModule,
     ButtonComponent,
-    AvatarComponent
+    AvatarComponent,
+    SafeHtmlPipe
   ],
   templateUrl: './patients.component.html',
   styleUrl: './patients.component.scss'

@@ -7,6 +7,7 @@ import { ClinicDataService } from '@core/services/clinic-data.service';
 import { NavigationService } from '@core/services/navigation.service';
 import { ButtonComponent } from '@shared/components/button/button.component';
 import { TeethChartComponent } from '@shared/components/teeth-chart/teeth-chart.component';
+import { SafeHtmlPipe } from '@shared/pipes/safe-html.pipe';
 
 interface Service {
   id: string;
@@ -86,7 +87,7 @@ function defaultClinicalForm(): ServiceClinicalForm {
 @Component({
   selector: 'app-create-order',
   standalone: true,
-  imports: [CommonModule, FormsModule, ButtonComponent, TeethChartComponent],
+  imports: [CommonModule, FormsModule, ButtonComponent, TeethChartComponent, SafeHtmlPipe],
   templateUrl: './create-order.component.html',
   styleUrl: './create-order.component.scss'
 })

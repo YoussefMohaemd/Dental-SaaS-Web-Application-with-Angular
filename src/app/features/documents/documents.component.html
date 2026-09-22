@@ -6,9 +6,9 @@
         <p class="text-xs text-muted-foreground">{{ filtered().length }} documents</p>
       </div>
       <div class="ml-auto">
-        <app-button variant="primary" size="sm" (onClick)="fileInput.click()">
+        <app-button variant="primary" size="md" (onClick)="fileInput.click()">
           <span class="flex items-center gap-2">
-            <span [innerHTML]="uploadIconSvg()" aria-hidden="true"></span> Upload
+            <span [innerHTML]="uploadIconSvg() | safeHtml" aria-hidden="true"></span> Upload
           </span>
         </app-button>
       </div>
@@ -27,7 +27,7 @@
     [class]="dragOver() ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/40'"
     aria-label="Upload documents by browsing or dragging and dropping"
   >
-    <span [innerHTML]="uploadIconSvg()" [class]="dragOver() ? 'text-primary' : 'text-muted-foreground'" aria-hidden="true"></span>
+    <span [innerHTML]="uploadIconSvg() | safeHtml" [class]="dragOver() ? 'text-primary' : 'text-muted-foreground'" aria-hidden="true"></span>
     <div>
       <p class="text-sm font-medium text-foreground">Drag &amp; drop files or click to browse</p>
       <p class="text-xs text-muted-foreground">Supports STL, PLY, OBJ, JPG, PNG, PDF</p>
@@ -37,7 +37,7 @@
 
   <div class="mt-3 flex shrink-0 flex-wrap items-center gap-3 border-b border-border bg-card px-6 py-3">
     <div class="relative">
-      <span [innerHTML]="searchIconSvg()" class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden="true"></span>
+      <span [innerHTML]="searchIconSvg() | safeHtml" class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden="true"></span>
       <input
         class="w-56 rounded-lg border border-border bg-muted py-1.5 pl-8 pr-4 text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
         placeholder="Search documents..."
@@ -64,7 +64,7 @@
   <div class="flex-1 overflow-auto">
     @if (filtered().length === 0) {
       <div class="flex flex-col items-center justify-center py-16 text-center">
-        <span [innerHTML]="emptyIconSvg()" class="mb-3 text-muted-foreground" aria-hidden="true"></span>
+        <span [innerHTML]="emptyIconSvg() | safeHtml" class="mb-3 text-muted-foreground" aria-hidden="true"></span>
         <p class="font-semibold text-foreground">No documents found</p>
         <p class="text-sm text-muted-foreground">Try adjusting your search or category</p>
       </div>
@@ -86,7 +86,7 @@
             <tr class="group border-b border-border last:border-0 hover:bg-muted/20">
               <td class="px-5 py-3">
                 <div class="flex items-center gap-3">
-                  <span [innerHTML]="typeIconSvg(doc.type)" aria-hidden="true"></span>
+                  <span [innerHTML]="typeIconSvg(doc.type) | safeHtml" aria-hidden="true"></span>
                   <span class="text-sm font-medium text-foreground">{{ doc.name }}</span>
                 </div>
               </td>
@@ -129,7 +129,7 @@
   >
     @if (preview(); as selected) {
       <div class="flex flex-col items-center gap-2 py-4 text-center">
-        <span [innerHTML]="typeIconLargeSvg(selected.type)" aria-hidden="true"></span>
+        <span [innerHTML]="typeIconLargeSvg(selected.type) | safeHtml" aria-hidden="true"></span>
         <p class="text-sm font-semibold text-foreground">{{ selected.name }}</p>
         <p class="font-mono text-xs text-muted-foreground">{{ selected.type }} · {{ selected.size }}</p>
         <p class="text-xs text-muted-foreground">{{ selected.category }} · {{ selected.doctor }} · {{ selected.date }}</p>

@@ -8,6 +8,7 @@ import { SubOrderDataService } from '@core/services/sub-order-data.service';
 import { NavigationService } from '@core/services/navigation.service';
 import { SubOrderTab } from '@core/models/sub-order.model';
 import { TeethChartComponent } from '@shared/components/teeth-chart/teeth-chart.component';
+import { SafeHtmlPipe } from '@shared/pipes/safe-html.pipe';
 
 const TABS: SubOrderTab[] = ['overview', 'forms', 'scans', 'activity'];
 
@@ -24,7 +25,7 @@ const TABS: SubOrderTab[] = ['overview', 'forms', 'scans', 'activity'];
 @Component({
   selector: 'app-sub-order',
   standalone: true,
-  imports: [CommonModule, FormsModule, TeethChartComponent],
+  imports: [CommonModule, FormsModule, TeethChartComponent, SafeHtmlPipe],
   templateUrl: './sub-order.component.html',
   styleUrl: './sub-order.component.scss',
 })

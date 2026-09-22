@@ -10,7 +10,7 @@
       <div class="bg-card border border-border rounded-xl p-4">
         <div class="flex items-start justify-between mb-3">
           <div class="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
-            <span [innerHTML]="getIconSvg('scan-line')" class="text-primary" style="width: 16px; height: 16px;"></span>
+            <span [innerHTML]="getIconSvg('scan-line') | safeHtml" class="text-primary" style="width: 16px; height: 16px;"></span>
           </div>
           <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold" [class]="getStatusColor(sc.status)">
             {{ sc.status }}
@@ -43,7 +43,7 @@
         <p class="text-xs text-muted-foreground">{{ filteredOrders().length }} active scans</p>
       </div>
       <div class="ml-auto relative">
-        <span [innerHTML]="getIconSvg('search')" class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"></span>
+        <span [innerHTML]="getIconSvg('search') | safeHtml" class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"></span>
         <input
           class="pl-8 pr-4 py-1.5 text-xs bg-muted rounded-lg border border-border placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 w-56"
           placeholder="Search scans..."
@@ -78,7 +78,7 @@
               <td class="px-4 py-3">
                 @let scanStatus = getScanStatus(o);
                 <span class="flex items-center gap-1 text-xs" [class]="scanStatus.class">
-                  <span [innerHTML]="getIconSvg(scanStatus.icon)" style="width: 12px; height: 12px;"></span>
+                  <span [innerHTML]="getIconSvg(scanStatus.icon) | safeHtml" style="width: 12px; height: 12px;"></span>
                   {{ scanStatus.label }}
                 </span>
               </td>

@@ -1,13 +1,14 @@
 import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { SafeHtmlPipe } from '@shared/pipes/safe-html.pipe';
 
 export type FormsSectionId = 'patient' | 'restoration' | 'doctor' | 'billing' | 'changeRequest' | 'scan' | 'validation';
 
 @Component({
   selector: 'app-forms',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, SafeHtmlPipe],
   templateUrl: './forms.component.html',
   styleUrl: './forms.component.scss'
 })

@@ -9,6 +9,7 @@ import { Patient, Order } from '@core/models';
 import { StatusBadgeComponent } from '@shared/components/status-badge/status-badge.component';
 import { ButtonComponent } from '@shared/components/button/button.component';
 import { AvatarComponent } from '@shared/components/avatar/avatar.component';
+import { SafeHtmlPipe } from '@shared/pipes/safe-html.pipe';
 
 interface ContactItem {
   icon: string;
@@ -23,7 +24,8 @@ interface ContactItem {
     CommonModule,
     StatusBadgeComponent,
     ButtonComponent,
-    AvatarComponent
+    AvatarComponent,
+    SafeHtmlPipe
   ],
   templateUrl: './patient-details.component.html',
   styleUrl: './patient-details.component.scss'

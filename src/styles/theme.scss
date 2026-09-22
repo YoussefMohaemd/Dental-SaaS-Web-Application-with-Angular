@@ -81,8 +81,10 @@
 
   // Status colors
   --success: #{$color-success};
+  --success-foreground: #FFFFFF;
   --warning: #{$color-warning};
   --danger: #{$color-danger};
+  --danger-foreground: #FFFFFF;
 
   // Border & Input
   --border: #{$color-border};
@@ -121,8 +123,10 @@
   --accent-foreground: #{$color-accent-foreground-dark};
 
   --success: #{$color-success-dark};
+  --success-foreground: #FFFFFF;
   --warning: #{$color-warning-dark};
   --danger: #{$color-danger-dark};
+  --danger-foreground: #FFFFFF;
 
   --border: #{$color-border-dark};
   --input: #{$color-input-dark};
@@ -147,8 +151,10 @@
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
   --color-warning: var(--warning);
   --color-danger: var(--danger);
+  --color-danger-foreground: var(--danger-foreground);
   --color-border: var(--border);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);

@@ -5,9 +5,8 @@ import { ClinicDataService } from '@core/services/clinic-data.service';
 import { NavigationService } from '@core/services/navigation.service';
 import { FormatUtils } from '@core/services/format-utils.service';
 import { Clinic, ClinicStatus } from '@core/models';
-import { StatusBadgeComponent } from '@shared/components/status-badge/status-badge.component';
 import { ButtonComponent } from '@shared/components/button/button.component';
-import { AvatarComponent } from '@shared/components/avatar/avatar.component';
+import { SafeHtmlPipe } from '../../shared/pipes/safe-html.pipe';
 
 interface StatItem {
   label: string;
@@ -20,9 +19,8 @@ interface StatItem {
   imports: [
     CommonModule,
     FormsModule,
-    StatusBadgeComponent,
     ButtonComponent,
-    AvatarComponent
+    SafeHtmlPipe
   ],
   templateUrl: './clinics.component.html',
   styleUrl: './clinics.component.scss'

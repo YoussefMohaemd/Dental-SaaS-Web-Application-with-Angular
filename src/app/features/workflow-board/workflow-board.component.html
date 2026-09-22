@@ -50,13 +50,13 @@
                     <span class="font-mono text-[10px] text-primary font-semibold">{{ order.orderNumber }}</span>
                     <div class="flex items-center gap-1">
                       @if (order.isLocked) {
-                        <span [innerHTML]="getIconSvg('lock')" class="text-amber-500" style="width: 10px; height: 10px;"></span>
+                        <span [innerHTML]="getIconSvg('lock') | safeHtml" class="text-amber-500" style="width: 10px; height: 10px;"></span>
                       }
                       @if (order.priority === 'Urgent') {
-                        <span [innerHTML]="getIconSvg('alert-triangle')" class="text-red-500" style="width: 10px; height: 10px;"></span>
+                        <span [innerHTML]="getIconSvg('alert-triangle') | safeHtml" class="text-red-500" style="width: 10px; height: 10px;"></span>
                       }
                       @if (order.changeRequest) {
-                        <span [innerHTML]="getIconSvg('refresh-ccw')" class="text-violet-500" style="width: 10px; height: 10px;"></span>
+                        <span [innerHTML]="getIconSvg('refresh-ccw') | safeHtml" class="text-violet-500" style="width: 10px; height: 10px;"></span>
                       }
                     </div>
                   </div>

@@ -13,7 +13,7 @@
   <div class="flex items-start justify-between mb-6 gap-4 flex-wrap">
     <div class="flex items-center gap-3">
       <button (click)="navigationService.navigate('orders')" class="p-1.5 hover:bg-muted rounded-lg text-muted-foreground" aria-label="Back to orders">
-        <span [innerHTML]="getStageSvg('arrow-left')"></span>
+        <span [innerHTML]="getStageSvg('arrow-left') | safeHtml"></span>
       </button>
       <div>
         <div class="flex items-center gap-2.5 flex-wrap">
@@ -35,14 +35,14 @@
       </div>
     </div>
     <div class="relative flex items-center gap-2">
-      <app-button variant="outline" size="sm" (onClick)="navigateToEditOrder()" class="flex items-center gap-1.5">
-        <span [innerHTML]="getStageSvg('edit')"></span> Edit
+      <app-button variant="outline" size="sm" (onClick)="navigateToEditOrder()" class="flex items-center gap-1.5 text-sm">
+        <span [innerHTML]="getStageSvg('edit') | safeHtml"></span> Edit
       </app-button>
-      <app-button variant="outline" size="sm" (onClick)="exportOrder()" class="flex items-center gap-1.5">
-        <span [innerHTML]="getStageSvg('download')"></span> Export
+      <app-button variant="outline" size="sm" (onClick)="exportOrder()" class="flex items-center gap-1.5 text-sm">
+        <span [innerHTML]="getStageSvg('download') | safeHtml"></span> Export
       </app-button>
       <button (click)="openMoreMenu()" class="p-1.5 border border-border rounded-lg hover:bg-muted text-muted-foreground" aria-label="More actions" [attr.aria-expanded]="moreMenuOpen()">
-        <span [innerHTML]="getStageSvg('more-horizontal')"></span>
+        <span [innerHTML]="getStageSvg('more-horizontal') | safeHtml"></span>
       </button>
       @if (moreMenuOpen()) {
         <div class="absolute right-0 top-10 z-20 w-52 rounded-xl border border-border bg-card p-1.5 shadow-lg" role="menu" aria-label="Order actions">
@@ -67,7 +67,7 @@
   <div class="bg-card border border-border rounded-xl p-5 mb-5">
     <div class="flex items-center gap-6 flex-wrap">
       <div class="flex items-center gap-3">
-        <div [innerHTML]="getProgressRingSvg(overallProgress(), 52)"></div>
+        <div [innerHTML]="getProgressRingSvg(overallProgress(), 52) | safeHtml"></div>
         <div>
           <p class="font-display font-bold text-2xl text-foreground">{{ completedServices() }} of {{ totalServices }}</p>
           <p class="text-xs text-muted-foreground">Services Completed</p>
@@ -81,7 +81,7 @@
                 <div class="w-6 h-6 rounded-full flex items-center justify-center text-xs"
                   [class]="i < currentStage ? 'bg-success' : i === currentStage ? 'bg-primary ring-4 ring-primary/20' : 'bg-muted'">
                   @if (i < currentStage) {
-                    <span [innerHTML]="getStatusIconSvg('check-circle-2')" class="text-white"></span>
+                    <span [innerHTML]="getStatusIconSvg('check-circle-2') | safeHtml" class="text-white"></span>
                   } @else if (i === currentStage) {
                     <span class="font-bold text-white text-[9px]">{{ i + 1 }}</span>
                   } @else {
@@ -124,7 +124,7 @@
                 <span class="font-semibold text-sm text-foreground">{{ sub.service }}</span>
                 <span class="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold"
                   [class]="getStatusConfig(sub.status).bg + ' ' + getStatusConfig(sub.status).color">
-                  <span [innerHTML]="getStatusIconSvg(getStatusConfig(sub.status).icon, 9)"></span>
+                  <span [innerHTML]="getStatusIconSvg(getStatusConfig(sub.status).icon, 9) | safeHtml"></span>
                   {{ getStatusConfig(sub.status).label }}
                 </span>
                 <span class="text-[10px] text-muted-foreground font-mono ml-auto">{{ formatSubOrderId(idx) }}</span>
@@ -136,16 +136,16 @@
 
               <div class="flex items-center gap-4 flex-wrap">
                 <div class="flex items-center gap-1 text-xs text-muted-foreground">
-                  <span [innerHTML]="getStageSvg('file-text', 11)"></span>
+                  <span [innerHTML]="getStageSvg('file-text', 11) | safeHtml"></span>
                   <span>Forms: <span [class]="sub.formsComplete === sub.formsTotal ? 'text-success font-semibold' : 'text-foreground font-semibold'">{{ sub.formsComplete }}/{{ sub.formsTotal }}</span></span>
                 </div>
                 <div class="flex items-center gap-1 text-xs text-muted-foreground">
-                  <span [innerHTML]="getStageSvg('scan-line', 11)"></span>
+                  <span [innerHTML]="getStageSvg('scan-line', 11) | safeHtml"></span>
                   <span>Scans: <span [class]="sub.scansComplete === sub.scansTotal ? 'text-success font-semibold' : 'text-foreground font-semibold'">{{ sub.scansComplete }}/{{ sub.scansTotal }}</span></span>
                 </div>
                 @if (sub.teeth.length > 0) {
                   <div class="flex items-center gap-1 text-xs text-muted-foreground">
-                    <span [innerHTML]="getStageSvg('layers', 11)"></span>
+                    <span [innerHTML]="getStageSvg('layers', 11) | safeHtml"></span>
                     <span class="font-mono text-[10px]">{{ sub.teeth.join(', ') }}</span>
                   </div>
                 }
@@ -164,7 +164,7 @@
                 </span>
               </div>
             </div>
-            <span [innerHTML]="getStageSvg('chevron-right')" class="text-muted-foreground group-hover:text-primary transition-colors shrink-0 mt-2" style="width: 14px; height: 14px;"></span>
+            <span [innerHTML]="getStageSvg('chevron-right') | safeHtml" class="text-muted-foreground group-hover:text-primary transition-colors shrink-0 mt-2" style="width: 14px; height: 14px;"></span>
           </div>
         </button>
       }
@@ -182,7 +182,7 @@
                 <p class="text-sm font-semibold text-foreground group-hover:text-primary truncate">{{ p.name }}</p>
                 <p class="text-xs text-muted-foreground">{{ p.dob }}</p>
               </div>
-              <span [innerHTML]="getStageSvg('chevron-right')" class="text-muted-foreground ml-auto group-hover:text-primary shrink-0" style="width: 12px; height: 12px;"></span>
+              <span [innerHTML]="getStageSvg('chevron-right') | safeHtml" class="text-muted-foreground ml-auto group-hover:text-primary shrink-0" style="width: 12px; height: 12px;"></span>
             </div>
             <div class="space-y-0.5 text-xs text-muted-foreground">
               <div class="truncate">{{ p.phone }}</div>
@@ -204,7 +204,7 @@
                 <p class="text-sm font-semibold text-foreground group-hover:text-primary truncate">{{ d.name }}</p>
                 <p class="text-xs text-muted-foreground">{{ d.specialty }}</p>
               </div>
-              <span [innerHTML]="getStageSvg('chevron-right')" class="text-muted-foreground ml-auto group-hover:text-primary shrink-0" style="width: 12px; height: 12px;"></span>
+              <span [innerHTML]="getStageSvg('chevron-right') | safeHtml" class="text-muted-foreground ml-auto group-hover:text-primary shrink-0" style="width: 12px; height: 12px;"></span>
             </div>
           </button>
         } @else {
@@ -222,7 +222,7 @@
                 <p class="text-sm font-semibold text-foreground group-hover:text-primary truncate">{{ c.name }}</p>
                 <p class="text-xs text-muted-foreground">{{ c.city }}</p>
               </div>
-              <span [innerHTML]="getStageSvg('chevron-right')" class="text-muted-foreground ml-auto group-hover:text-primary shrink-0" style="width: 12px; height: 12px;"></span>
+              <span [innerHTML]="getStageSvg('chevron-right') | safeHtml" class="text-muted-foreground ml-auto group-hover:text-primary shrink-0" style="width: 12px; height: 12px;"></span>
             </div>
           </button>
         } @else {
@@ -233,13 +233,13 @@
       <div class="bg-card border border-border rounded-xl p-4 space-y-2">
         <p class="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Quick Actions</p>
         <app-button variant="ghost" size="sm" class="w-full flex items-center gap-2 justify-start" (onClick)="navigateToWorkflow()">
-          <span [innerHTML]="getStageSvg('layers')" style="width: 13px; height: 13px;"></span> View Workflow
+          <span [innerHTML]="getStageSvg('layers') | safeHtml" style="width: 13px; height: 13px;"></span> View Workflow
         </app-button>
         <app-button variant="ghost" size="sm" class="w-full flex items-center gap-2 justify-start" (onClick)="navigateToFiles()">
-          <span [innerHTML]="getStageSvg('scan-line')" style="width: 13px; height: 13px;"></span> All Files & Scans
+          <span [innerHTML]="getStageSvg('scan-line') | safeHtml" style="width: 13px; height: 13px;"></span> All Files & Scans
         </app-button>
         <app-button variant="ghost" size="sm" class="w-full flex items-center gap-2 justify-start" (onClick)="openNoteDialog()">
-          <span [innerHTML]="getStageSvg('message-square')" style="width: 13px; height: 13px;"></span> Add Note
+          <span [innerHTML]="getStageSvg('message-square') | safeHtml" style="width: 13px; height: 13px;"></span> Add Note
         </app-button>
       </div>
 

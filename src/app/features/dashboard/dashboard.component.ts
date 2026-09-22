@@ -11,6 +11,8 @@ import { EmptyStateComponent } from "@shared/components/empty-state/empty-state.
 import { LoadingStateComponent } from "@shared/components/loading-state/loading-state.component";
 import { PriorityBadgeComponent } from "@shared/components/priority-badge/priority-badge.component";
 import { StatusBadgeComponent } from "@shared/components/status-badge/status-badge.component";
+import { SafeHtmlPipe } from '@shared/pipes/safe-html.pipe';
+import { lucideSvg } from '@shared/icons/lucide-icons';
 
 interface WorkflowDataPoint {
   name: string;
@@ -63,7 +65,8 @@ const FALLBACK_WORKFLOW: WorkflowDataPoint[] = [
     StatusBadgeComponent,
     PriorityBadgeComponent,
     LoadingStateComponent,
-    EmptyStateComponent
+    EmptyStateComponent,
+    SafeHtmlPipe
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
@@ -193,21 +196,26 @@ export class DashboardComponent implements OnInit {
   }
 
   getIconSvg(name: string): string {
-    const icons: Record<string, string> = {
-      'clipboard-list': '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>',
-      'folder-open': '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"></path></svg>',
-      'clock': '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>',
-      'check-circle-2': '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>',
-      'trending-up': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>',
-      'alert-triangle': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>',
-      'alert-triangle-sm': '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>',
-      'plus': '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>',
-      'chevron-right': '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>',
-      'chevron-right-lg': '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>',
-      'arrow-right': '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>',
-      'activity': '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>'
+    // Exact React parity (DashboardPage lucide-react v1.47.0):
+    // stat icons 18, Plus 15, AlertTriangle 16, ArrowRight 12,
+    // ChevronRight 16/12, Activity 16, TrendingUp/Clock 20/18.
+    const sizes: Record<string, { icon: string; size: number }> = {
+      'clipboard-list': { icon: 'clipboard-list', size: 18 },
+      'folder-open': { icon: 'folder-open', size: 18 },
+      clock: { icon: 'clock', size: 18 },
+      'check-circle-2': { icon: 'circle-check', size: 18 },
+      'trending-up': { icon: 'trending-up', size: 20 },
+      'alert-triangle': { icon: 'triangle-alert', size: 20 },
+      'alert-triangle-sm': { icon: 'triangle-alert', size: 16 },
+      plus: { icon: 'plus', size: 15 },
+      'chevron-right': { icon: 'chevron-right', size: 12 },
+      'chevron-right-lg': { icon: 'chevron-right', size: 16 },
+      'arrow-right': { icon: 'arrow-right', size: 12 },
+      activity: { icon: 'activity', size: 16 },
     };
-    return icons[name] || '';
+    const entry = sizes[name];
+    if (!entry) return '';
+    return lucideSvg(entry.icon, entry.size);
   }
 
   getWorkflowBarWidth(count: number): number {

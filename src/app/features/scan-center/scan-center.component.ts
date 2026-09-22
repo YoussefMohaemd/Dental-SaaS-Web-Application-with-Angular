@@ -8,6 +8,7 @@ import { Order, ScanCenter } from '@core/models';
 import { StatusBadgeComponent } from '@shared/components/status-badge/status-badge.component';
 import { ButtonComponent } from '@shared/components/button/button.component';
 import { AvatarComponent } from '@shared/components/avatar/avatar.component';
+import { SafeHtmlPipe } from '../../shared/pipes/safe-html.pipe';
 
 interface ScanOrderRow extends Order {
   scanStatus: 'Active' | 'Review' | 'Done';
@@ -18,6 +19,7 @@ interface ScanOrderRow extends Order {
   standalone: true,
   imports: [
     CommonModule,
+    SafeHtmlPipe,
   ],
   templateUrl: './scan-center.component.html',
   styleUrl: './scan-center.component.scss'

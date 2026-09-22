@@ -18,7 +18,7 @@
             [attr.aria-label]="'Step ' + s.id + ': ' + s.label + (s.id < step() ? ' (completed)' : s.id === step() ? ' (current)' : '')"
           >
             @if (s.id < step()) {
-              <span class="text-white" [innerHTML]="getIconSvg('check')"></span>
+              <span class="text-white" [innerHTML]="getIconSvg('check') | safeHtml"></span>
             } @else {
               <span [class]="s.id === step() ? 'text-white' : 'text-muted-foreground'">{{ s.id }}</span>
             }
@@ -165,7 +165,7 @@
         >
           @if (selectedServices().includes(svc.id)) {
             <div class="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-white">
-              <span [innerHTML]="getIconSvg('check')"></span>
+              <span [innerHTML]="getIconSvg('check') | safeHtml"></span>
             </div>
           }
           <div class="mb-2 text-2xl" aria-hidden="true">{{ svc.icon }}</div>
@@ -456,7 +456,7 @@
             @for (req of svc.scanRequirements; track req) {
               <div class="flex items-center gap-3 rounded-lg bg-muted/40 p-3">
                 <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-border text-muted-foreground">
-                  <span [innerHTML]="getIconSvg('file-up')"></span>
+                  <span [innerHTML]="getIconSvg('file-up') | safeHtml"></span>
                 </div>
                 <div class="min-w-0 flex-1">
                   <p class="text-xs font-medium text-foreground">{{ req }}</p>
@@ -470,7 +470,7 @@
           </div>
           <div class="cursor-pointer rounded-xl border-2 border-dashed border-border p-6 text-center transition-all hover:border-primary/50 hover:bg-muted/20">
             <div class="mb-2 flex justify-center text-muted-foreground">
-              <span [innerHTML]="getIconSvg('file-up-lg')"></span>
+              <span [innerHTML]="getIconSvg('file-up-lg') | safeHtml"></span>
             </div>
             <p class="text-sm font-medium text-foreground">Drop files here</p>
             <p class="text-xs text-muted-foreground">or click to browse</p>
@@ -558,7 +558,7 @@
       }
 
       <div class="flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
-        <span class="shrink-0 text-emerald-600" [innerHTML]="getIconSvg('check-lg')"></span>
+        <span class="shrink-0 text-emerald-600" [innerHTML]="getIconSvg('check-lg') | safeHtml"></span>
         <p class="text-sm text-emerald-800">
           Order is ready to submit. This will create <strong>{{ selectedServices().length }} sub-order{{ selectedServices().length > 1 ? 's' : '' }}</strong> under one parent order.
         </p>
@@ -570,7 +570,7 @@
   <div class="mt-6 flex items-center justify-between border-t border-border pt-4">
     <app-button variant="outline" size="md" (onClick)="prevStep()">
       <span class="flex items-center gap-2">
-        <span [innerHTML]="getIconSvg('chevron-left')"></span>
+        <span [innerHTML]="getIconSvg('chevron-left') | safeHtml"></span>
         {{ step() === 1 ? 'Cancel' : 'Back' }}
       </span>
     </app-button>
@@ -580,13 +580,13 @@
         <app-button variant="primary" size="md" [disabled]="!canProceed()" (onClick)="nextStep()">
           <span class="flex items-center gap-2">
             Continue
-            <span [innerHTML]="getIconSvg('chevron-right')"></span>
+            <span [innerHTML]="getIconSvg('chevron-right') | safeHtml"></span>
           </span>
         </app-button>
       } @else {
         <app-button variant="primary" size="md" (onClick)="submitOrder()">
           <span class="flex items-center gap-2">
-            <span [innerHTML]="getIconSvg('check-lg')"></span>
+            <span [innerHTML]="getIconSvg('check-lg') | safeHtml"></span>
             Create Order
           </span>
         </app-button>

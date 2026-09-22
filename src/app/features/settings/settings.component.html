@@ -14,7 +14,7 @@
           [class]="section() === item.id ? 'bg-primary/10 font-semibold text-primary' : 'text-muted-foreground hover:bg-muted'"
           [attr.aria-current]="section() === item.id ? 'page' : null"
         >
-          <span [innerHTML]="getIconSvg(item.icon)" aria-hidden="true"></span>
+          <span [innerHTML]="getIconSvg(item.icon) | safeHtml" aria-hidden="true"></span>
           {{ item.label }}
         </button>
       }
@@ -93,7 +93,7 @@
                 </button>
               }
             </div>
-            <div class="mt-4"><app-button variant="primary" size="sm" (onClick)="saveChanges()"><span class="flex items-center gap-2"><span [innerHTML]="getIconSvg('save')"></span>{{ saved() ? 'Saved!' : 'Save Changes' }}</span></app-button></div>
+            <div class="mt-4"><app-button variant="primary" size="sm" (onClick)="saveChanges()"><span class="flex items-center gap-2"><span [innerHTML]="getIconSvg('save') | safeHtml"></span>{{ saved() ? 'Saved!' : 'Save Changes' }}</span></app-button></div>
           </section>
         }
         @case ('language') {

@@ -1,6 +1,6 @@
+import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { provideRouter } from '@angular/router';
 import { ButtonComponent } from './button.component';
 
 describe('ButtonComponent', () => {
@@ -10,7 +10,6 @@ describe('ButtonComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ButtonComponent],
-      providers: [provideRouter([])],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ButtonComponent);
@@ -81,8 +80,7 @@ describe('ButtonComponent', () => {
     expect(component.onClick.emit).not.toHaveBeenCalled();
   });
 
-  it('should not emit when loading (link variant)', () => {
-    fixture.componentRef.setInput('routerLink', '/test');
+  it('should not emit when loading', () => {
     fixture.componentRef.setInput('loading', true);
     fixture.detectChanges();
     spyOn(component.onClick, 'emit');
@@ -93,12 +91,20 @@ describe('ButtonComponent', () => {
     expect(component.onClick.emit).not.toHaveBeenCalled();
   });
 
-  it('should render as link when routerLink is provided', () => {
-    fixture.componentRef.setInput('routerLink', '/test');
-    fixture.detectChanges();
-    const link = fixture.debugElement.query(By.css('a'));
-    expect(link).toBeTruthy();
-    expect(link.nativeElement).toHaveClass('rounded-lg');
+  it('should project light-DOM content into the native button (single catch-all outlet)', async () => {
+    @Component({
+      standalone: true,
+      imports: [ButtonComponent],
+      template: `<app-button variant="primary">Sign in</app-button>`,
+    })
+    class ProjectionHostComponent {}
+
+    await TestBed.configureTestingModule({ imports: [ProjectionHostComponent] }).compileComponents();
+    const hostFixture = TestBed.createComponent(ProjectionHostComponent);
+    hostFixture.detectChanges();
+    const button = hostFixture.debugElement.query(By.css('app-button button'));
+    expect(button).toBeTruthy();
+    expect(button.nativeElement.textContent).toContain('Sign in');
   });
 
   it('should expose focus-visible ring for keyboard users', () => {

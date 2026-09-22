@@ -11,12 +11,21 @@ export class ThemeService {
 
   constructor() {
     effect(() => {
-      if (isPlatformBrowser(this.platformId)) {
-        const dark = this.isDark();
-        document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
-        localStorage.setItem(this.STORAGE_KEY, dark ? 'dark' : 'light');
-      }
+      // Reactive mirror of applyTheme() for signal-driven updates.
+      this.applyTheme(this.isDark() ? 'dark' : 'light');
     });
+  }
+
+  /** Synchronously applies the theme to the DOM and storage. Called directly
+   *  (not only via effect) so toggles persist deterministically. */
+  private applyTheme(theme: 'light' | 'dark'): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    document.documentElement.setAttribute('data-theme', theme);
+    try {
+      localStorage.setItem(this.STORAGE_KEY, theme);
+    } catch {
+      // storage unavailable — theme still applies to the document
+    }
   }
 
   init(): void {
@@ -30,15 +39,19 @@ export class ThemeService {
 
     this.isDark.set(initialTheme === 'dark');
     this.theme.set(initialTheme);
+    this.applyTheme(initialTheme);
   }
 
   toggle(): void {
-    this.isDark.update(v => !v);
-    this.theme.update(v => v === 'light' ? 'dark' : 'light');
+    const next = !this.isDark();
+    this.isDark.set(next);
+    this.theme.set(next ? 'dark' : 'light');
+    this.applyTheme(next ? 'dark' : 'light');
   }
 
   setTheme(theme: 'light' | 'dark'): void {
     this.isDark.set(theme === 'dark');
     this.theme.set(theme);
+    this.applyTheme(theme);
   }
 }

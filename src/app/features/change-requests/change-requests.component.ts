@@ -5,11 +5,12 @@ import { ChangeRequestDataService } from '@core/services/change-request-data.ser
 import { NavigationService } from '@core/services/navigation.service';
 import { FormatUtils } from '@core/services/format-utils.service';
 import { ChangeRequest } from '@core/models';
+import { SafeHtmlPipe } from '../../shared/pipes/safe-html.pipe';
 
 @Component({
   selector: 'app-change-requests',
   standalone: true,
-  imports: [CommonModule, TableModule],
+  imports: [CommonModule, TableModule, SafeHtmlPipe],
   templateUrl: './change-requests.component.html',
   styleUrl: './change-requests.component.scss'
 })

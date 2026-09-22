@@ -3,7 +3,7 @@
     <div class="px-6 py-4 border-b border-border bg-card shrink-0">
       <div class="flex items-center gap-3">
         <button (click)="goBack()" class="p-1.5 hover:bg-muted rounded-lg text-muted-foreground">
-          <span [innerHTML]="getIconSvg('arrow-left')"></span>
+          <span [innerHTML]="getIconSvg('arrow-left') | safeHtml"></span>
         </button>
         <div class="flex items-center gap-4">
           <app-avatar [name]="doctor()!.name" [size]="'lg'" [variant]="'violet'" />
@@ -44,7 +44,7 @@
                 @for (item of contactItems(); track item.label) {
                   <div class="flex items-center gap-3">
                     <div class="w-8 h-8 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                      <span [innerHTML]="getIconSvg(item.icon)" class="text-muted-foreground" style="width: 14px; height: 14px;"></span>
+                      <span [innerHTML]="getIconSvg(item.icon) | safeHtml" class="text-muted-foreground" style="width: 14px; height: 14px;"></span>
                     </div>
                     <div>
                       <p class="text-xs text-muted-foreground">{{ item.label }}</p>
@@ -90,7 +90,7 @@
                 }
               </div>
               <app-button variant="outline" size="sm" class="mt-4 w-full flex items-center justify-center gap-1.5" (onClick)="navigationService.navigate('clinicDetails', { clinicId: doctor()!.clinicId })">
-                <span [innerHTML]="getIconSvg('building-2')" style="width: 12px; height: 12px;"></span>
+                <span [innerHTML]="getIconSvg('building-2') | safeHtml" style="width: 12px; height: 12px;"></span>
                 View Clinic
               </app-button>
             </div>

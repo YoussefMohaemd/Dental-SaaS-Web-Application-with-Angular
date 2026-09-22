@@ -6,6 +6,7 @@ import { NavigationService } from '@core/services/navigation.service';
 import { FormatUtils } from '@core/services/format-utils.service';
 import { OrderStatus } from '@core/models';
 import { ButtonComponent } from '@shared/components/button/button.component';
+import { SafeHtmlPipe } from '@shared/pipes/safe-html.pipe';
 
 interface WorkflowStage {
   status: OrderStatus;
@@ -30,7 +31,7 @@ const STAGES: WorkflowStage[] = [
 @Component({
   selector: 'app-order-workflow',
   standalone: true,
-  imports: [CommonModule, ButtonComponent],
+  imports: [CommonModule, ButtonComponent, SafeHtmlPipe],
   templateUrl: './order-workflow.component.html',
   styleUrl: './order-workflow.component.scss'
 })
@@ -85,5 +86,16 @@ export class OrderWorkflowComponent {
       this.orderService.updateOrder(current.id, { status: next.status });
       this.advancing.set(false);
     }, 600);
+  }
+
+  /**
+   * Lucide-equivalent inline SVG (React parity: lucide `ChevronRight`
+   * on the "Move to next stage" action).
+   */
+  getIconSvg(name: string): string {
+    const icons: Record<string, string> = {
+      'chevron-right': '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>'
+    };
+    return icons[name] || '';
   }
 }

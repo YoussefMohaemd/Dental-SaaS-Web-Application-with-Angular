@@ -7,7 +7,7 @@ import { Case, CaseStatus, Priority } from '@core/models';
 import { StatusBadgeComponent } from '@shared/components/status-badge/status-badge.component';
 import { PriorityBadgeComponent } from '@shared/components/priority-badge/priority-badge.component';
 import { ButtonComponent } from '@shared/components/button/button.component';
-import { EmptyStateComponent } from '@shared/components/empty-state/empty-state.component';
+import { SafeHtmlPipe } from '../../shared/pipes/safe-html.pipe';
 
 type ViewMode = 'table' | 'grid';
 
@@ -19,7 +19,7 @@ type ViewMode = 'table' | 'grid';
     StatusBadgeComponent,
     PriorityBadgeComponent,
     ButtonComponent,
-    EmptyStateComponent
+    SafeHtmlPipe
   ],
   templateUrl: './cases.component.html',
   styleUrl: './cases.component.scss'

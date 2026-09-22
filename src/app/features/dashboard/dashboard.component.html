@@ -12,7 +12,7 @@
       (click)="navigateTo('createOrder')"
       class="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
     >
-      <span [innerHTML]="getIconSvg('plus')"></span>
+      <span [innerHTML]="getIconSvg('plus') | safeHtml"></span>
       New Order
     </button>
   </div>
@@ -20,7 +20,7 @@
   <!-- Alert -->
   @if (urgentOrdersCount() > 0) {
     <div class="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex items-center gap-3">
-      <span [innerHTML]="getIconSvg('alert-triangle-sm')" class="text-amber-600 shrink-0 flex"></span>
+      <span [innerHTML]="getIconSvg('alert-triangle-sm') | safeHtml" class="text-amber-600 shrink-0 flex"></span>
       <p class="text-sm text-amber-800">
         <strong>{{ urgentOrdersCount() }} urgent orders</strong> require immediate attention today.
       </p>
@@ -29,7 +29,7 @@
         (click)="navigateTo('orders')"
         class="ml-auto text-xs text-amber-700 font-semibold hover:underline flex items-center gap-1 shrink-0"
       >
-        View <span [innerHTML]="getIconSvg('arrow-right')" class="flex"></span>
+        View <span [innerHTML]="getIconSvg('arrow-right') | safeHtml" class="flex"></span>
       </button>
     </div>
   }
@@ -43,14 +43,14 @@
         class="bg-card border border-border rounded-xl p-5 flex items-start gap-4 hover:border-primary/40 transition-all text-left w-full group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
       >
         <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 {{ card.color }}">
-          <span [innerHTML]="getIconSvg(card.icon)" class="text-white flex"></span>
+          <span [innerHTML]="getIconSvg(card.icon) | safeHtml" class="text-white flex"></span>
         </div>
         <div class="min-w-0">
           <p class="text-xs text-muted-foreground font-medium">{{ card.label }}</p>
           <p class="text-2xl font-display font-bold text-foreground mt-0.5">{{ card.value }}</p>
           <p class="text-xs text-muted-foreground mt-1">{{ card.sub }}</p>
         </div>
-        <span [innerHTML]="getIconSvg('chevron-right-lg')" class="text-muted-foreground ml-auto mt-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"></span>
+        <span [innerHTML]="getIconSvg('chevron-right-lg') | safeHtml" class="text-muted-foreground ml-auto mt-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"></span>
       </button>
     }
   </div>
@@ -167,7 +167,7 @@
         (click)="navigateTo('workflowBoard')"
         class="mt-5 w-full flex items-center justify-center gap-2 py-2 text-xs text-primary border border-primary/30 rounded-lg hover:bg-primary/5 transition-colors font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
       >
-        View Board <span [innerHTML]="getIconSvg('arrow-right')" class="flex"></span>
+        View Board <span [innerHTML]="getIconSvg('arrow-right') | safeHtml" class="flex"></span>
       </button>
     </div>
   </div>
@@ -186,7 +186,7 @@
           (click)="navigateTo('orders')"
           class="text-xs text-primary font-medium hover:underline flex items-center gap-1"
         >
-          View all <span [innerHTML]="getIconSvg('chevron-right')" class="flex"></span>
+          View all <span [innerHTML]="getIconSvg('chevron-right') | safeHtml" class="flex"></span>
         </button>
       </div>
       <div class="overflow-x-auto">
@@ -247,7 +247,7 @@
           <h2 class="font-display font-semibold text-foreground">Activity</h2>
           <p class="text-xs text-muted-foreground mt-0.5">Recent events</p>
         </div>
-        <span [innerHTML]="getIconSvg('activity')" class="text-muted-foreground flex"></span>
+        <span [innerHTML]="getIconSvg('activity') | safeHtml" class="text-muted-foreground flex"></span>
       </div>
       @if (activityLoading()) {
         <app-loading-state type="skeleton" [skeletonClass]="'skeleton h-10'" />
@@ -273,7 +273,7 @@
           (click)="navigateTo('notifications')"
           class="w-full text-xs text-primary font-medium hover:underline flex items-center justify-center gap-1"
         >
-          All activity <span [innerHTML]="getIconSvg('chevron-right')" class="flex"></span>
+          All activity <span [innerHTML]="getIconSvg('chevron-right') | safeHtml" class="flex"></span>
         </button>
       </div>
     </div>
@@ -283,7 +283,7 @@
   <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
     @for (card of quickStats(); track card.label) {
       <div class="bg-card border border-border rounded-xl p-4 flex items-center gap-4">
-        <span [innerHTML]="getIconSvg(card.icon)" [class]="card.color + ' flex shrink-0'"></span>
+        <span [innerHTML]="getIconSvg(card.icon) | safeHtml" [class]="card.color + ' flex shrink-0'"></span>
         <div>
           <p class="text-xs text-muted-foreground">{{ card.label }}</p>
           <p class="font-display font-bold text-foreground">{{ card.value }}</p>

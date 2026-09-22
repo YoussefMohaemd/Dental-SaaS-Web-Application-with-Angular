@@ -9,9 +9,58 @@
   width: 100%;
 }
 
-:host(.w-full) button,
-:host(.w-full) a {
+:host(.w-full) button {
   width: 100%;
+}
+
+// Layout forwarding: alignment/gap utilities placed on <app-button> by
+// callers (e.g. ghost buttons with `justify-start`, `gap-2`) must reach the
+// inner native element, which owns the flex layout (React parity: View Order
+// quick actions are left-aligned, dialogs use default centering).
+:host(.justify-start) button,
+:host(.justify-start) a {
+  justify-content: flex-start;
+}
+
+:host(.justify-end) button,
+:host(.justify-end) a {
+  justify-content: flex-end;
+}
+
+:host(.justify-center) button,
+:host(.justify-center) a {
+  justify-content: center;
+}
+
+:host(.gap-2) button,
+:host(.gap-2) a {
+  gap: 0.5rem;
+}
+
+// React parity: ViewOrder Edit/Export buttons use text-sm (14px) while the
+// sm size defaults to text-xs. Forward an explicit text-sm placed on
+// <app-button> to the inner native element.
+:host(.text-sm) button,
+:host(.text-sm) a {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+// Icon + text slotted inside <app-button> (e.g. `<span innerHTML>Plus</span>
+// New Order) must stay on one centered row like React's
+// `flex items-center gap-2`. The inner spans are plain inline by default,
+// which drops vertical centering of the 13px lucide SVGs.
+button > span,
+a > span {
+  display: inline-flex;
+  align-items: center;
+  gap: inherit;
+}
+
+button > span > span,
+a > span > span {
+  display: inline-flex;
+  flex-shrink: 0;
 }
 
 .loading-spinner {

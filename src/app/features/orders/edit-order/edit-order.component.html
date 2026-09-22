@@ -8,9 +8,16 @@
       <p class="font-mono text-xs text-muted-foreground">{{ order()?.orderNumber || '—' }}</p>
     </div>
     <div class="ml-auto flex items-center gap-2">
-      <app-button variant="outline" size="sm" (onClick)="discard()">Discard</app-button>
+      <app-button variant="outline" size="sm" (onClick)="discard()">
+        <span class="flex items-center gap-1.5">
+          <span [innerHTML]="getIconSvg('x') | safeHtml" aria-hidden="true"></span> Discard
+        </span>
+      </app-button>
       <app-button variant="primary" size="sm" [disabled]="editForm.invalid" (onClick)="saveChanges()">
-        {{ saved() ? 'Saved!' : 'Save Changes' }}
+        <span class="flex items-center gap-1.5">
+          <span [innerHTML]="getIconSvg('save') | safeHtml" aria-hidden="true"></span>
+          {{ saved() ? 'Saved!' : 'Save Changes' }}
+        </span>
       </app-button>
     </div>
   </div>
@@ -158,9 +165,16 @@
     </section>
 
     <div class="flex justify-end gap-2">
-      <app-button variant="outline" size="sm" (onClick)="discard()">Discard</app-button>
+      <app-button variant="outline" size="sm" (onClick)="discard()">
+        <span class="flex items-center gap-1.5">
+          <span [innerHTML]="getIconSvg('x') | safeHtml" aria-hidden="true"></span> Discard
+        </span>
+      </app-button>
       <app-button variant="primary" size="sm" [disabled]="editForm.invalid" (onClick)="saveChanges()">
-        {{ saved() ? 'Saved!' : 'Save Changes' }}
+        <span class="flex items-center gap-1.5">
+          <span [innerHTML]="getIconSvg('save') | safeHtml" aria-hidden="true"></span>
+          {{ saved() ? 'Saved!' : 'Save Changes' }}
+        </span>
       </app-button>
     </div>
   </form>

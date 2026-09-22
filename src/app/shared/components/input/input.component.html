@@ -1,7 +1,7 @@
 <div class="relative">
   <label *ngIf="label()" [for]="id()" class="label-base">{{ label() }}</label>
   <div class="relative">
-    <ng-content select="[slot=prefix]" />
+    <ng-content select="[slot=prefix]"></ng-content>
     <input
       [id]="id()"
       [type]="type()"
@@ -17,7 +17,7 @@
       [attr.aria-describedby]="error() ? errorId() : hint() ? hintId() : null"
       [attr.aria-invalid]="!!error()"
     />
-    <ng-content select="[slot=suffix]" />
+    <ng-content select="[slot=suffix]"></ng-content>
   </div>
   <p *ngIf="hint() && !error()" [id]="hintId()" class="field-hint">{{ hint() }}</p>
   <p *ngIf="error()" [id]="errorId()" class="field-error">{{ error() }}</p>

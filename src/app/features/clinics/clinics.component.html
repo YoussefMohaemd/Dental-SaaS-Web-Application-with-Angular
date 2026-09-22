@@ -8,7 +8,7 @@
       </div>
       <div class="ml-auto flex items-center gap-3">
         <div class="relative">
-          <span [innerHTML]="getIconSvg('search')" class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"></span>
+          <span [innerHTML]="getIconSvg('search') | safeHtml" class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"></span>
           <input
             class="pl-8 pr-4 py-1.5 text-xs bg-muted rounded-lg border border-border placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 w-56"
             placeholder="Search clinics..."
@@ -16,8 +16,8 @@
             (input)="onSearchChange($event)"
           />
         </div>
-        <app-button variant="primary" size="sm" (onClick)="openAddDialog()" class="flex items-center gap-2">
-          <span [innerHTML]="getIconSvg('plus')"></span>
+        <app-button variant="primary" size="md" (onClick)="openAddDialog()" class="flex items-center gap-2">
+          <span [innerHTML]="getIconSvg('plus') | safeHtml"></span>
           Add Clinic
         </app-button>
       </div>
@@ -34,7 +34,7 @@
         >
           <div class="flex items-start justify-between mb-3">
             <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
-              <span [innerHTML]="getIconSvg('building-2')" class="text-emerald-600" style="width: 18px; height: 18px;"></span>
+              <span [innerHTML]="getIconSvg('building-2') | safeHtml" class="text-emerald-600" style="width: 18px; height: 18px;"></span>
             </div>
             <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold" [class]="getStatusClass(c.status)">
               {{ c.status }}

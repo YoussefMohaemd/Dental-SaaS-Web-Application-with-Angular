@@ -7,9 +7,8 @@ import { NavigationService } from '@core/services/navigation.service';
 import { FormatUtils } from '@core/services/format-utils.service';
 import { Case, Order } from '@core/models';
 import { StatusBadgeComponent } from '@shared/components/status-badge/status-badge.component';
-import { PriorityBadgeComponent } from '@shared/components/priority-badge/priority-badge.component';
 import { ButtonComponent } from '@shared/components/button/button.component';
-import { AvatarComponent } from '@shared/components/avatar/avatar.component';
+import { SafeHtmlPipe } from '@shared/pipes/safe-html.pipe';
 
 interface FileItem {
   name: string;
@@ -30,9 +29,8 @@ interface ActivityItem {
   imports: [
     CommonModule,
     StatusBadgeComponent,
-    PriorityBadgeComponent,
     ButtonComponent,
-    AvatarComponent
+    SafeHtmlPipe
   ],
   templateUrl: './case-details.component.html',
   styleUrl: './case-details.component.scss'

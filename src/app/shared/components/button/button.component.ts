@@ -1,6 +1,5 @@
 import { Component, input, output, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success';
 export type ButtonSize = 'sm' | 'md' | 'lg' | 'icon' | 'icon-sm';
@@ -39,7 +38,7 @@ const SIZE_CLASSES: Record<ButtonSize, string> = {
 @Component({
   selector: 'app-button',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule],
   templateUrl: './button.component.html',
   styleUrl: './button.component.scss'
 })
@@ -49,7 +48,6 @@ export class ButtonComponent {
   readonly type = input<'button' | 'submit' | 'reset'>('button');
   readonly disabled = input<boolean>(false);
   readonly loading = input<boolean>(false);
-  readonly routerLink = input<string | string[] | null>(null);
 
   readonly onClick = output<MouseEvent>();
 
@@ -58,19 +56,17 @@ export class ButtonComponent {
       'inline-flex items-center justify-center gap-1.5 font-semibold rounded-lg transition-colors duration-150 ' +
       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-1 ' +
       'focus-visible:ring-offset-card disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none ' +
-      '[&_svg]:size-3.5 [&_svg]:shrink-0';
+      '[&_svg]:shrink-0 [&_svg]:block';
 
     return `${base} ${VARIANT_CLASSES[this.variant()]} ${SIZE_CLASSES[this.size()]}`;
   });
 
-  readonly isLink = computed(() => !!this.routerLink());
   readonly isDisabled = computed(() => this.disabled() || this.loading());
 
   /**
-   * Guarded click emitter (root cause fix: the anchor variant has no native
-   * `disabled` attribute, so clicks/keyboard activation previously emitted
-   * onClick even when disabled or loading — unlike the native <button>
-   * variant which the browser blocks automatically).
+   * Guarded click emitter: the native <button> is already blocked by the
+   * browser when disabled, but the guard additionally covers the loading
+   * state (also reflected via [disabled]) for programmatic callers.
    */
   handleClick(event: MouseEvent): void {
     if (this.isDisabled()) {

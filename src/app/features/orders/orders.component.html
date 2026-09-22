@@ -6,15 +6,15 @@
     </div>
     <app-button variant="primary" size="md" (onClick)="createOrder()">
       <span class="flex items-center gap-2">
-        <span [innerHTML]="getIconSvg('plus')"></span>
+        <span [innerHTML]="getIconSvg('plus') | safeHtml"></span>
         New Order
       </span>
     </app-button>
     <button type="button" (click)="exportCsv()" class="rounded-lg border border-border p-2 text-muted-foreground hover:bg-muted transition-colors" aria-label="Export orders" title="Export">
-      <span [innerHTML]="getIconSvg('download')"></span>
+      <span [innerHTML]="getIconSvg('download') | safeHtml"></span>
     </button>
     <button type="button" (click)="simulateRefresh()" class="rounded-lg border border-border p-2 text-muted-foreground hover:bg-muted transition-colors" aria-label="Refresh orders" title="Refresh">
-      <span [innerHTML]="getIconSvg('refresh')"></span>
+      <span [innerHTML]="getIconSvg('refresh') | safeHtml"></span>
     </button>
     <div class="flex overflow-hidden rounded-lg border border-border" role="group" aria-label="Preview table states">
       @for (state of ['normal', 'loading', 'empty', 'error']; track state) {
@@ -54,7 +54,7 @@
             <option [value]="status">{{ status }}</option>
           }
         </select>
-        <span [innerHTML]="getIconSvg('chevron-down')" class="absolute right-1.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"></span>
+        <span [innerHTML]="getIconSvg('chevron-down') | safeHtml" class="absolute right-1.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"></span>
       </div>
       <div class="relative">
         <select
@@ -68,7 +68,7 @@
             <option [value]="priority">{{ priority }}</option>
           }
         </select>
-        <span [innerHTML]="getIconSvg('chevron-down')" class="absolute right-1.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"></span>
+        <span [innerHTML]="getIconSvg('chevron-down') | safeHtml" class="absolute right-1.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"></span>
       </div>
       <button
         type="button"
@@ -77,11 +77,11 @@
         [class]="advancedFilters() ? 'border-primary bg-primary/5 text-primary' : 'border-border text-muted-foreground hover:bg-muted'"
         [attr.aria-expanded]="advancedFilters()"
       >
-        <span [innerHTML]="getIconSvg('sliders')"></span> Advanced
+        <span [innerHTML]="getIconSvg('sliders') | safeHtml"></span> Advanced
       </button>
       @if (activeFilters().length > 0) {
         <button type="button" (click)="clearAllFilters()" class="flex items-center gap-1 text-xs text-muted-foreground hover:text-danger transition-colors">
-          <span [innerHTML]="getIconSvg('x')"></span> Clear filters
+          <span [innerHTML]="getIconSvg('x') | safeHtml"></span> Clear filters
         </button>
       }
       <div class="flex-1"></div>
@@ -105,7 +105,7 @@
             <option [value]="size">{{ size }} / page</option>
           }
         </select>
-        <span [innerHTML]="getIconSvg('chevron-down')" class="absolute right-1.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"></span>
+        <span [innerHTML]="getIconSvg('chevron-down') | safeHtml" class="absolute right-1.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"></span>
       </div>
     </div>
     @if (activeFilters().length > 0) {
@@ -115,7 +115,7 @@
           <span class="flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
             {{ filter.label }}
             <button type="button" (click)="removeFilter(filter.type, filter.label)" class="hover:text-danger transition-colors" [attr.aria-label]="'Remove ' + filter.label + ' filter'">
-              <span [innerHTML]="getIconSvg('x')"></span>
+              <span [innerHTML]="getIconSvg('x') | safeHtml"></span>
             </button>
           </span>
         }
@@ -138,13 +138,13 @@
       @case ('empty') {
         <div class="flex h-64 flex-col items-center justify-center text-center">
           <div class="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-muted text-muted-foreground" aria-hidden="true">
-            <span [innerHTML]="getIconSvg('file-text')"></span>
+            <span [innerHTML]="getIconSvg('file-text') | safeHtml"></span>
           </div>
           <h3 class="font-display font-semibold text-foreground">No orders yet</h3>
           <p class="mb-4 text-sm text-muted-foreground">Start by creating your first dental order.</p>
           <app-button variant="primary" size="md" (onClick)="createOrder()">
             <span class="flex items-center gap-2">
-              <span [innerHTML]="getIconSvg('plus')"></span>
+              <span [innerHTML]="getIconSvg('plus') | safeHtml"></span>
               Create Order
             </span>
           </app-button>
@@ -153,7 +153,7 @@
       @case ('error') {
         <div class="flex h-64 flex-col items-center justify-center text-center">
           <div class="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-red-50 text-danger" aria-hidden="true">
-            <span [innerHTML]="getIconSvg('refresh')"></span>
+            <span [innerHTML]="getIconSvg('refresh') | safeHtml"></span>
           </div>
           <h3 class="font-display font-semibold text-foreground">Failed to load orders</h3>
           <p class="mb-4 text-sm text-muted-foreground">An error occurred while loading the order list.</p>
@@ -164,7 +164,7 @@
         @if (filtered().length === 0) {
           <div class="flex h-64 flex-col items-center justify-center text-center">
             <div class="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-muted text-muted-foreground" aria-hidden="true">
-              <span [innerHTML]="getIconSvg('search')"></span>
+              <span [innerHTML]="getIconSvg('search') | safeHtml"></span>
             </div>
             <h3 class="font-display font-semibold text-foreground">No matching orders</h3>
             <p class="mb-4 text-sm text-muted-foreground">Try adjusting your search or filters.</p>
@@ -176,27 +176,27 @@
               <tr>
                 <th scope="col" style="width: 2.25rem">
                   <button type="button" (click)="toggleSelectAll()" class="text-muted-foreground hover:text-foreground transition-colors" aria-label="Select all orders on page" [attr.aria-pressed]="allPageSelected()">
-                    <span [innerHTML]="getIconSvg(allPageSelected() ? 'check-square' : 'square')" [class]="allPageSelected() ? 'text-primary' : ''"></span>
+                    <span [innerHTML]="getIconSvg(allPageSelected() ? 'check-square' : 'square') | safeHtml" [class]="allPageSelected() ? 'text-primary' : ''"></span>
                   </button>
                 </th>
-                <th scope="col" [attr.aria-sort]="sortAriaSort('orderNumber')"><button type="button" (click)="toggleSort('orderNumber')" [attr.aria-label]="sortAriaLabel('orderNumber')">Order # <span aria-hidden="true" class="sort-icon" [innerHTML]="sortIconSvg('orderNumber')"></span></button></th>
-                <th scope="col" [attr.aria-sort]="sortAriaSort('patientName')"><button type="button" (click)="toggleSort('patientName')" [attr.aria-label]="sortAriaLabel('patientName')">Patient <span aria-hidden="true" class="sort-icon" [innerHTML]="sortIconSvg('patientName')"></span></button></th>
-                <th scope="col" [attr.aria-sort]="sortAriaSort('doctorName')"><button type="button" (click)="toggleSort('doctorName')" [attr.aria-label]="sortAriaLabel('doctorName')">Doctor <span aria-hidden="true" class="sort-icon" [innerHTML]="sortIconSvg('doctorName')"></span></button></th>
-                <th scope="col" [attr.aria-sort]="sortAriaSort('scanCenterName')"><button type="button" (click)="toggleSort('scanCenterName')" [attr.aria-label]="sortAriaLabel('scanCenterName')">Scan Center <span aria-hidden="true" class="sort-icon" [innerHTML]="sortIconSvg('scanCenterName')"></span></button></th>
-                <th scope="col" [attr.aria-sort]="sortAriaSort('billTo')"><button type="button" (click)="toggleSort('billTo')" [attr.aria-label]="sortAriaLabel('billTo')">Bill To <span aria-hidden="true" class="sort-icon" [innerHTML]="sortIconSvg('billTo')"></span></button></th>
-                <th scope="col" [attr.aria-sort]="sortAriaSort('arch')"><button type="button" (click)="toggleSort('arch')" [attr.aria-label]="sortAriaLabel('arch')">Max/Mand <span aria-hidden="true" class="sort-icon" [innerHTML]="sortIconSvg('arch')"></span></button></th>
-                <th scope="col" [attr.aria-sort]="sortAriaSort('restoration')"><button type="button" (click)="toggleSort('restoration')" [attr.aria-label]="sortAriaLabel('restoration')">Format / Rest. <span aria-hidden="true" class="sort-icon" [innerHTML]="sortIconSvg('restoration')"></span></button></th>
-                <th scope="col" class="text-right" [attr.aria-sort]="sortAriaSort('amount')"><button type="button" (click)="toggleSort('amount')" [attr.aria-label]="sortAriaLabel('amount')">Amount <span aria-hidden="true" class="sort-icon" [innerHTML]="sortIconSvg('amount')"></span></button></th>
+                <th scope="col" [attr.aria-sort]="sortAriaSort('orderNumber')"><button type="button" (click)="toggleSort('orderNumber')" [attr.aria-label]="sortAriaLabel('orderNumber')">Order # <span aria-hidden="true" class="sort-icon" [innerHTML]="sortIconSvg('orderNumber') | safeHtml"></span></button></th>
+                <th scope="col" [attr.aria-sort]="sortAriaSort('patientName')"><button type="button" (click)="toggleSort('patientName')" [attr.aria-label]="sortAriaLabel('patientName')">Patient <span aria-hidden="true" class="sort-icon" [innerHTML]="sortIconSvg('patientName') | safeHtml"></span></button></th>
+                <th scope="col" [attr.aria-sort]="sortAriaSort('doctorName')"><button type="button" (click)="toggleSort('doctorName')" [attr.aria-label]="sortAriaLabel('doctorName')">Doctor <span aria-hidden="true" class="sort-icon" [innerHTML]="sortIconSvg('doctorName') | safeHtml"></span></button></th>
+                <th scope="col" [attr.aria-sort]="sortAriaSort('scanCenterName')"><button type="button" (click)="toggleSort('scanCenterName')" [attr.aria-label]="sortAriaLabel('scanCenterName')">Scan Center <span aria-hidden="true" class="sort-icon" [innerHTML]="sortIconSvg('scanCenterName') | safeHtml"></span></button></th>
+                <th scope="col" [attr.aria-sort]="sortAriaSort('billTo')"><button type="button" (click)="toggleSort('billTo')" [attr.aria-label]="sortAriaLabel('billTo')">Bill To <span aria-hidden="true" class="sort-icon" [innerHTML]="sortIconSvg('billTo') | safeHtml"></span></button></th>
+                <th scope="col" [attr.aria-sort]="sortAriaSort('arch')"><button type="button" (click)="toggleSort('arch')" [attr.aria-label]="sortAriaLabel('arch')">Max/Mand <span aria-hidden="true" class="sort-icon" [innerHTML]="sortIconSvg('arch') | safeHtml"></span></button></th>
+                <th scope="col" [attr.aria-sort]="sortAriaSort('restoration')"><button type="button" (click)="toggleSort('restoration')" [attr.aria-label]="sortAriaLabel('restoration')">Format / Rest. <span aria-hidden="true" class="sort-icon" [innerHTML]="sortIconSvg('restoration') | safeHtml"></span></button></th>
+                <th scope="col" class="text-right" [attr.aria-sort]="sortAriaSort('amount')"><button type="button" (click)="toggleSort('amount')" [attr.aria-label]="sortAriaLabel('amount')">Amount <span aria-hidden="true" class="sort-icon" [innerHTML]="sortIconSvg('amount') | safeHtml"></span></button></th>
                 <th scope="col">Billed</th>
                 <th scope="col" class="text-center">Vouchers</th>
-                <th scope="col" [attr.aria-sort]="sortAriaSort('status')"><button type="button" (click)="toggleSort('status')" [attr.aria-label]="sortAriaLabel('status')">Status <span aria-hidden="true" class="sort-icon" [innerHTML]="sortIconSvg('status')"></span></button></th>
+                <th scope="col" [attr.aria-sort]="sortAriaSort('status')"><button type="button" (click)="toggleSort('status')" [attr.aria-label]="sortAriaLabel('status')">Status <span aria-hidden="true" class="sort-icon" [innerHTML]="sortIconSvg('status') | safeHtml"></span></button></th>
                 <th scope="col" class="text-center">Lock</th>
                 <th scope="col" class="text-center">Notes</th>
-                <th scope="col" [attr.aria-sort]="sortAriaSort('archiveDate')"><button type="button" (click)="toggleSort('archiveDate')" [attr.aria-label]="sortAriaLabel('archiveDate')">Archive <span aria-hidden="true" class="sort-icon" [innerHTML]="sortIconSvg('archiveDate')"></span></button></th>
-                <th scope="col" [attr.aria-sort]="sortAriaSort('receivedAt')"><button type="button" (click)="toggleSort('receivedAt')" [attr.aria-label]="sortAriaLabel('receivedAt')">Received <span aria-hidden="true" class="sort-icon" [innerHTML]="sortIconSvg('receivedAt')"></span></button></th>
-                <th scope="col" [attr.aria-sort]="sortAriaSort('sentAt')"><button type="button" (click)="toggleSort('sentAt')" [attr.aria-label]="sortAriaLabel('sentAt')">Sent <span aria-hidden="true" class="sort-icon" [innerHTML]="sortIconSvg('sentAt')"></span></button></th>
-                <th scope="col" [attr.aria-sort]="sortAriaSort('updatedAt')"><button type="button" (click)="toggleSort('updatedAt')" [attr.aria-label]="sortAriaLabel('updatedAt')">Updated <span aria-hidden="true" class="sort-icon" [innerHTML]="sortIconSvg('updatedAt')"></span></button></th>
-                <th scope="col" [attr.aria-sort]="sortAriaSort('chargedAt')"><button type="button" (click)="toggleSort('chargedAt')" [attr.aria-label]="sortAriaLabel('chargedAt')">Charged <span aria-hidden="true" class="sort-icon" [innerHTML]="sortIconSvg('chargedAt')"></span></button></th>
+                <th scope="col" [attr.aria-sort]="sortAriaSort('archiveDate')"><button type="button" (click)="toggleSort('archiveDate')" [attr.aria-label]="sortAriaLabel('archiveDate')">Archive <span aria-hidden="true" class="sort-icon" [innerHTML]="sortIconSvg('archiveDate') | safeHtml"></span></button></th>
+                <th scope="col" [attr.aria-sort]="sortAriaSort('receivedAt')"><button type="button" (click)="toggleSort('receivedAt')" [attr.aria-label]="sortAriaLabel('receivedAt')">Received <span aria-hidden="true" class="sort-icon" [innerHTML]="sortIconSvg('receivedAt') | safeHtml"></span></button></th>
+                <th scope="col" [attr.aria-sort]="sortAriaSort('sentAt')"><button type="button" (click)="toggleSort('sentAt')" [attr.aria-label]="sortAriaLabel('sentAt')">Sent <span aria-hidden="true" class="sort-icon" [innerHTML]="sortIconSvg('sentAt') | safeHtml"></span></button></th>
+                <th scope="col" [attr.aria-sort]="sortAriaSort('updatedAt')"><button type="button" (click)="toggleSort('updatedAt')" [attr.aria-label]="sortAriaLabel('updatedAt')">Updated <span aria-hidden="true" class="sort-icon" [innerHTML]="sortIconSvg('updatedAt') | safeHtml"></span></button></th>
+                <th scope="col" [attr.aria-sort]="sortAriaSort('chargedAt')"><button type="button" (click)="toggleSort('chargedAt')" [attr.aria-label]="sortAriaLabel('chargedAt')">Charged <span aria-hidden="true" class="sort-icon" [innerHTML]="sortIconSvg('chargedAt') | safeHtml"></span></button></th>
                 <th scope="col">Change Req.</th>
                 <th scope="col">CS Task</th>
               </tr>
@@ -205,7 +205,7 @@
               <tr [class]="isSelected(order.id) ? 'bg-primary/5' : ''">
                 <td>
                   <button type="button" (click)="toggleSelect(order.id)" class="hover:text-primary transition-colors" [class]="isSelected(order.id) ? 'text-primary' : 'text-muted-foreground'" [attr.aria-label]="'Select order ' + order.orderNumber" [attr.aria-pressed]="isSelected(order.id)">
-                    <span [innerHTML]="getIconSvg(isSelected(order.id) ? 'check-square-sm' : 'square-sm')"></span>
+                    <span [innerHTML]="getIconSvg(isSelected(order.id) ? 'check-square-sm' : 'square-sm') | safeHtml"></span>
                   </button>
                 </td>
                 <td><button type="button" (click)="openOrder(order.id)" class="font-mono text-[10px] font-semibold text-primary hover:underline">{{ order.orderNumber }}</button></td>
@@ -230,14 +230,14 @@
                 <td><app-status-badge [status]="order.status" size="xs" /></td>
                 <td class="text-center">
                   @if (order.isLocked) {
-                    <span class="inline-flex text-amber-500" title="Locked" aria-label="Locked" [innerHTML]="getIconSvg('lock')"></span>
+                    <span class="inline-flex text-amber-500" title="Locked" aria-label="Locked" [innerHTML]="getIconSvg('lock') | safeHtml"></span>
                   } @else {
-                    <span class="inline-flex text-muted-foreground/40" title="Unlocked" aria-label="Unlocked" [innerHTML]="getIconSvg('unlock')"></span>
+                    <span class="inline-flex text-muted-foreground/40" title="Unlocked" aria-label="Unlocked" [innerHTML]="getIconSvg('unlock') | safeHtml"></span>
                   }
                 </td>
                 <td class="text-center">
                   @if (order.hasNotes) {
-                    <span class="inline-flex text-primary" title="Has notes" aria-label="Has notes" [innerHTML]="getIconSvg('file-text')"></span>
+                    <span class="inline-flex text-primary" title="Has notes" aria-label="Has notes" [innerHTML]="getIconSvg('file-text') | safeHtml"></span>
                   } @else {
                     <span class="text-muted-foreground/30">–</span>
                   }
@@ -277,7 +277,7 @@
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="11 17 6 12 11 7"/><polyline points="18 17 13 12 18 7"/></svg>
         </button>
         <button type="button" (click)="prevPage()" [disabled]="page() === 1" class="rounded border border-border p-1.5 text-muted-foreground hover:bg-muted disabled:opacity-40 transition-colors" aria-label="Previous page">
-          <span [innerHTML]="getIconSvg('chevron-left')"></span>
+          <span [innerHTML]="getIconSvg('chevron-left') | safeHtml"></span>
         </button>
         @for (pg of visiblePageNumbers(); track pg) {
           <button
@@ -295,7 +295,7 @@
           <span class="px-1 text-muted-foreground" aria-hidden="true">…</span>
         }
         <button type="button" (click)="nextPage()" [disabled]="page() === totalPages()" class="rounded border border-border p-1.5 text-muted-foreground hover:bg-muted disabled:opacity-40 transition-colors" aria-label="Next page">
-          <span [innerHTML]="getIconSvg('chevron-right')"></span>
+          <span [innerHTML]="getIconSvg('chevron-right') | safeHtml"></span>
         </button>
         <button type="button" (click)="lastPage()" [disabled]="page() === totalPages()" class="rounded border border-border p-1.5 text-muted-foreground hover:bg-muted disabled:opacity-40 transition-colors" aria-label="Last page">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>

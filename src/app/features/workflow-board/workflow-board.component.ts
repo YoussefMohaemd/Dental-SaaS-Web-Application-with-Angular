@@ -8,6 +8,7 @@ import { Order, OrderStatus } from '@core/models';
 import { PriorityBadgeComponent } from '@shared/components/priority-badge/priority-badge.component';
 import { StatusBadgeComponent } from '@shared/components/status-badge/status-badge.component';
 import { AvatarComponent } from '@shared/components/avatar/avatar.component';
+import { SafeHtmlPipe } from '../../shared/pipes/safe-html.pipe';
 
 interface ColumnConfig {
   id: OrderStatus;
@@ -23,6 +24,7 @@ interface ColumnConfig {
     CommonModule,
     DragDropModule,
     PriorityBadgeComponent,
+    SafeHtmlPipe,
   ],
   templateUrl: './workflow-board.component.html',
   styleUrl: './workflow-board.component.scss'

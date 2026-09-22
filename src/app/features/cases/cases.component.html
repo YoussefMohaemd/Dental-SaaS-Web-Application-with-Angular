@@ -6,8 +6,8 @@
         <h1 class="font-display font-bold text-lg text-foreground">Cases</h1>
         <p class="text-xs text-muted-foreground">{{ filtered().length }} dental cases</p>
       </div>
-      <app-button variant="primary" size="sm" (onClick)="navigateToCreateOrder()" class="flex items-center gap-2">
-        <span [innerHTML]="getIconSvg('plus')"></span>
+      <app-button variant="primary" size="md" (onClick)="navigateToCreateOrder()" class="flex items-center gap-2">
+        <span [innerHTML]="getIconSvg('plus') | safeHtml"></span>
         New Case
       </app-button>
     </div>
@@ -16,7 +16,7 @@
   <!-- Toolbar -->
   <div class="px-6 py-3 border-b border-border bg-card shrink-0 flex items-center gap-3">
     <div class="relative flex-1 max-w-72">
-      <span [innerHTML]="getIconSvg('search')" class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"></span>
+      <span [innerHTML]="getIconSvg('search') | safeHtml" class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"></span>
       <input
         class="w-full pl-8 pr-4 py-1.5 text-xs bg-muted rounded-lg border border-border placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
         placeholder="Search cases..."
@@ -40,14 +40,14 @@
         [class]="view() === 'table' ? 'bg-primary text-white' : 'hover:bg-muted text-muted-foreground'"
         class="p-2"
       >
-        <span [innerHTML]="getIconSvg('list')"></span>
+        <span [innerHTML]="getIconSvg('list') | safeHtml"></span>
       </button>
       <button
         (click)="setView('grid')"
         [class]="view() === 'grid' ? 'bg-primary text-white' : 'hover:bg-muted text-muted-foreground'"
         class="p-2"
       >
-        <span [innerHTML]="getIconSvg('grid-3x3')"></span>
+        <span [innerHTML]="getIconSvg('grid-3x3') | safeHtml"></span>
       </button>
     </div>
   </div>
@@ -56,7 +56,7 @@
   <div class="flex-1 overflow-auto p-6">
     @if (filtered().length === 0) {
       <div class="flex flex-col items-center justify-center h-48 text-center">
-        <span [innerHTML]="getIconSvg('folder-open')" class="text-muted-foreground mb-3" style="width: 32px; height: 32px;"></span>
+        <span [innerHTML]="getIconSvg('folder-open') | safeHtml" class="text-muted-foreground mb-3" style="width: 32px; height: 32px;"></span>
         <p class="font-semibold text-foreground">No cases found</p>
         <p class="text-sm text-muted-foreground">Adjust your search or filters</p>
       </div>
@@ -137,7 +137,7 @@
           [disabled]="page() === 1"
           class="p-1.5 rounded border border-border hover:bg-muted disabled:opacity-40 text-muted-foreground"
         >
-          <span [innerHTML]="getIconSvg('chevron-left')" style="width: 14px; height: 14px;"></span>
+          <span [innerHTML]="getIconSvg('chevron-left') | safeHtml" style="width: 14px; height: 14px;"></span>
         </button>
         @for (pg of getPageNumbers(); track pg) {
           <button
@@ -153,7 +153,7 @@
           [disabled]="page() === totalPages()"
           class="p-1.5 rounded border border-border hover:bg-muted disabled:opacity-40 text-muted-foreground"
         >
-          <span [innerHTML]="getIconSvg('chevron-right')" style="width: 14px; height: 14px;"></span>
+          <span [innerHTML]="getIconSvg('chevron-right') | safeHtml" style="width: 14px; height: 14px;"></span>
         </button>
       </div>
     </div>

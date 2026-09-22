@@ -1,30 +1,19 @@
-@if (!isLink()) {
-  <button
-    [type]="type()"
-    [disabled]="isDisabled()"
-    [class]="buttonClasses()"
-    [attr.aria-busy]="loading() ? 'true' : null"
-    [attr.aria-disabled]="isDisabled() ? 'true' : null"
-    (click)="handleClick($event)"
-  >
-    @if (loading()) {
-      <span class="loading-spinner" aria-hidden="true"></span>
-    }
-    <ng-content />
-  </button>
-} @else {
-  <a
-    [routerLink]="routerLink()"
-    [class]="buttonClasses()"
-    [class.pointer-events-none]="isDisabled()"
-    [class.opacity-50]="isDisabled()"
-    [attr.aria-disabled]="isDisabled() ? 'true' : null"
-    [attr.aria-busy]="loading() ? 'true' : null"
-    (click)="handleClick($event)"
-  >
-    @if (loading()) {
-      <span class="loading-spinner" aria-hidden="true"></span>
-    }
-    <ng-content />
-  </a>
-}
+<!-- Single catch-all <ng-content> by design. A previous two-outlet version
+  (button + router-link anchor) compiled to ngContentSelectors ["*","*"],
+  and Angular's matcher keeps the LAST "*" match: every projected node
+  landed in the unreachable anchor slot, leaving all button labels empty
+  with zero console errors. If a link variant is ever needed, add a
+  dedicated component instead of a second catch-all outlet. -->
+<button
+  [type]="type()"
+  [disabled]="isDisabled()"
+  [class]="buttonClasses()"
+  [attr.aria-busy]="loading() ? 'true' : null"
+  [attr.aria-disabled]="isDisabled() ? 'true' : null"
+  (click)="handleClick($event)"
+>
+  @if (loading()) {
+    <span class="loading-spinner" aria-hidden="true"></span>
+  }
+  <ng-content></ng-content>
+</button>

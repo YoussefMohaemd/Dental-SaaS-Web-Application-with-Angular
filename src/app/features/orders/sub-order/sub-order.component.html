@@ -7,14 +7,14 @@
       class="p-1.5 hover:bg-muted rounded-lg text-muted-foreground shrink-0"
       aria-label="Back to order"
     >
-      <span [innerHTML]="getIconSvg('arrow-left')"></span>
+      <span [innerHTML]="getIconSvg('arrow-left') | safeHtml"></span>
     </button>
     <div class="flex-1 min-w-0">
       <div class="flex items-center gap-2.5 flex-wrap mb-0.5">
         <span class="text-xl" aria-hidden="true">{{ subOrder()?.icon }}</span>
         <h1 class="font-display font-bold text-xl text-foreground">{{ subOrder()?.service }}</h1>
         <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold" [class]="statusBadgeClasses()">
-          <span [innerHTML]="getStatusIconSvg()"></span> {{ statusLabel() }}
+          <span [innerHTML]="getStatusIconSvg() | safeHtml"></span> {{ statusLabel() }}
         </span>
         <span class="px-2 py-0.5 rounded-full text-xs font-medium border" [class]="priorityPillClasses()">{{ subOrder()?.priority }}</span>
       </div>
@@ -100,16 +100,16 @@
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div class="bg-card border border-border rounded-xl p-4">
           <div class="flex items-center gap-2 mb-3">
-            <span [innerHTML]="getIconSvg('file-text')" class="text-muted-foreground"></span>
+            <span [innerHTML]="getIconSvg('file-text') | safeHtml" class="text-muted-foreground"></span>
             <p class="text-xs font-semibold text-foreground">Forms</p>
           </div>
           <div class="space-y-2">
             @for (f of detail().forms; track f.id) {
               <div class="flex items-center gap-2">
                 @if (f.status === 'complete') {
-                  <span [innerHTML]="getIconSvg('check-circle')" class="text-success shrink-0"></span>
+                  <span [innerHTML]="getIconSvg('check-circle') | safeHtml" class="text-success shrink-0"></span>
                 } @else {
-                  <span [innerHTML]="getIconSvg('alert-circle')" class="text-warning shrink-0"></span>
+                  <span [innerHTML]="getIconSvg('alert-circle') | safeHtml" class="text-warning shrink-0"></span>
                 }
                 <span class="text-xs" [class]="f.status === 'complete' ? 'text-foreground' : 'text-muted-foreground'">{{ f.label }}</span>
                 @if (f.required && f.status !== 'complete') {
@@ -123,16 +123,16 @@
 
         <div class="bg-card border border-border rounded-xl p-4">
           <div class="flex items-center gap-2 mb-3">
-            <span [innerHTML]="getIconSvg('scan-line')" class="text-muted-foreground"></span>
+            <span [innerHTML]="getIconSvg('scan-line') | safeHtml" class="text-muted-foreground"></span>
             <p class="text-xs font-semibold text-foreground">Scans &amp; Files</p>
           </div>
           <div class="space-y-2">
             @for (s of detail().scans; track s.id) {
               <div class="flex items-center gap-2">
                 @if (s.status === 'uploaded') {
-                  <span [innerHTML]="getIconSvg('check-circle')" class="text-success shrink-0"></span>
+                  <span [innerHTML]="getIconSvg('check-circle') | safeHtml" class="text-success shrink-0"></span>
                 } @else {
-                  <span [innerHTML]="getIconSvg('circle')" class="text-muted-foreground shrink-0"></span>
+                  <span [innerHTML]="getIconSvg('circle') | safeHtml" class="text-muted-foreground shrink-0"></span>
                 }
                 <span class="text-xs" [class]="s.status === 'uploaded' ? 'text-foreground' : 'text-muted-foreground'">{{ s.label }}</span>
                 <span class="text-[9px] font-mono text-muted-foreground ml-auto">{{ s.format }}</span>
@@ -153,9 +153,9 @@
           <div class="flex items-start gap-3">
             <div class="w-7 h-7 rounded-full flex items-center justify-center shrink-0" [class]="f.status === 'complete' ? 'bg-success/10' : 'bg-muted'">
               @if (f.status === 'complete') {
-                <span [innerHTML]="getIconSvg('check')" class="text-success"></span>
+                <span [innerHTML]="getIconSvg('check') | safeHtml" class="text-success"></span>
               } @else {
-                <span [innerHTML]="getIconSvg('file-text-sm')" class="text-muted-foreground"></span>
+                <span [innerHTML]="getIconSvg('file-text-sm') | safeHtml" class="text-muted-foreground"></span>
               }
             </div>
             <div class="flex-1 min-w-0">
@@ -190,9 +190,9 @@
           <div class="flex items-center gap-3">
             <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" [class]="s.status === 'uploaded' ? 'bg-success/10' : 'bg-muted'">
               @if (s.status === 'uploaded') {
-                <span [innerHTML]="getIconSvg('check-circle-lg')" class="text-success"></span>
+                <span [innerHTML]="getIconSvg('check-circle-lg') | safeHtml" class="text-success"></span>
               } @else {
-                <span [innerHTML]="getIconSvg('upload')" class="text-muted-foreground"></span>
+                <span [innerHTML]="getIconSvg('upload') | safeHtml" class="text-muted-foreground"></span>
               }
             </div>
             <div class="flex-1 min-w-0">
@@ -212,7 +212,7 @@
 
       <div class="border-2 border-dashed border-border rounded-xl p-6 text-center hover:border-primary/50 hover:bg-muted/20 transition-all cursor-pointer mt-4">
         <div class="mb-2 flex justify-center text-muted-foreground">
-          <span [innerHTML]="getIconSvg('upload-lg')"></span>
+          <span [innerHTML]="getIconSvg('upload-lg') | safeHtml"></span>
         </div>
         <p class="text-sm font-medium text-foreground">Drop additional files here</p>
         <p class="text-xs text-muted-foreground">STL, PLY, OBJ, DICOM, JPG, PDF</p>

@@ -8,7 +8,7 @@
       </div>
       <div class="ml-auto flex items-center gap-3">
         <div class="relative">
-          <span [innerHTML]="getIconSvg('search')" class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"></span>
+          <span [innerHTML]="getIconSvg('search') | safeHtml" class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"></span>
           <input
             class="pl-8 pr-4 py-1.5 text-xs bg-muted rounded-lg border border-border placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 w-56"
             placeholder="Search doctors..."
@@ -25,8 +25,8 @@
           <option value="Active">Active</option>
           <option value="Inactive">Inactive</option>
         </select>
-        <app-button variant="primary" size="sm" (onClick)="openAddDialog()" class="flex items-center gap-2">
-          <span [innerHTML]="getIconSvg('plus')"></span>
+        <app-button variant="primary" size="md" (onClick)="openAddDialog()" class="flex items-center gap-2">
+          <span [innerHTML]="getIconSvg('plus') | safeHtml"></span>
           Add Doctor
         </app-button>
       </div>
@@ -37,7 +37,7 @@
   <div class="flex-1 overflow-auto">
     @if (filtered().length === 0) {
       <div class="flex flex-col items-center justify-center h-48 text-center">
-        <span [innerHTML]="getIconSvg('user-cog')" class="text-muted-foreground mb-3" style="width: 32px; height: 32px;"></span>
+        <span [innerHTML]="getIconSvg('user-cog') | safeHtml" class="text-muted-foreground mb-3" style="width: 32px; height: 32px;"></span>
         <p class="font-semibold text-foreground">No doctors found</p>
       </div>
     } @else {
@@ -51,7 +51,7 @@
               >
                 {{ config.label }}
                 <span
-                  [innerHTML]="getIconSvg('arrow-up-down')"
+                  [innerHTML]="getIconSvg('arrow-up-down') | safeHtml"
                   class="inline"
                   [class.text-primary]="sortCol() === config.col"
                   [class.text-muted-foreground/40]="sortCol() !== config.col"
