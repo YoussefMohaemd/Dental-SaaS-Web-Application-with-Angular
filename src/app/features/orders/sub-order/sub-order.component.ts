@@ -61,8 +61,7 @@ export class SubOrderComponent {
     () => this.subOrderService.getById(this.subOrderId()),
   );
   readonly detail = computed(() => {
-    const sub = this.subOrder();
-    return this.subOrderService.getDetailById(sub?.id ?? '') ?? EMPTY_DETAIL;
+    return this.subOrderService.getDetailByContext(this.orderId(), this.subOrderId()) ?? EMPTY_DETAIL;
   });
 
   /** Initial tab honors ?tab= (React parity: params.subOrderTab). */

@@ -39,6 +39,7 @@ export interface NavParams {
 export interface BreadcrumbItem {
   label: string;
   page?: PageId;
+  params?: NavParams;
 }
 
 export interface NavItem {

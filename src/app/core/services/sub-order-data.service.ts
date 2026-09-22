@@ -28,6 +28,48 @@ interface SubOrderJson {
   priority: SubOrder['priority'];
   dueDate: string;
   notes: string;
+  forms?: SubOrderDetail['forms'];
+  scans?: SubOrderDetail['scans'];
+  activity?: SubOrderDetail['activity'];
+}
+
+function cloneDetail(detail: SubOrderDetail): SubOrderDetail {
+  return {
+    id: detail.id,
+    forms: detail.forms.map(form => ({ ...form })),
+    scans: detail.scans.map(scan => ({ ...scan })),
+    activity: detail.activity.map(item => ({ ...item })),
+  };
+}
+
+function toDetailFromJson(row: SubOrderJson): SubOrderDetail | null {
+  if (!row.forms && !row.scans && !row.activity) return null;
+  return {
+    id: row.id,
+    forms: row.forms?.map(form => ({ ...form })) ?? [],
+    scans: row.scans?.map(scan => ({ ...scan })) ?? [],
+    activity: row.activity?.map(item => ({ ...item })) ?? [],
+  };
+}
+
+function buildDetailFromSummary(
+  row: Pick<SubOrderJson, 'id' | 'service' | 'formsComplete' | 'formsTotal' | 'scansComplete' | 'scansTotal'>,
+): SubOrderDetail {
+  const forms: SubOrderDetail['forms'] = Array.from({ length: row.formsTotal }, (_, index) => ({
+    id: `${row.id}-form-${index + 1}`,
+    label: row.formsTotal === 1 ? `${row.service} Form` : `${row.service} Form ${index + 1}`,
+    required: true,
+    status: index < row.formsComplete ? 'complete' : 'incomplete',
+  }));
+
+  const scans: SubOrderDetail['scans'] = Array.from({ length: row.scansTotal }, (_, index) => ({
+    id: `${row.id}-scan-${index + 1}`,
+    label: row.scansTotal === 1 ? `${row.service} Scan` : `${row.service} Scan ${index + 1}`,
+    format: 'Linked record',
+    status: index < row.scansComplete ? 'uploaded' : 'missing',
+  }));
+
+  return { id: row.id, forms, scans, activity: [] };
 }
 
 const FALLBACK_SUB_ORDERS: SubOrder[] = [
@@ -183,6 +225,13 @@ export class SubOrderDataService {
       .subscribe({
         next: rows => {
           this._subOrders.set(rows.length > 0 ? rows : FALLBACK_SUB_ORDERS);
+          const nextDetails = structuredClone(SUB_ORDER_DETAILS);
+          rows.forEach(row => {
+            if (!(row.id in nextDetails)) {
+              nextDetails[row.id] = toDetailFromJson(row) ?? buildDetailFromSummary(row);
+            }
+          });
+          this._details.set(nextDetails);
           this._loading.set(false);
         },
         error: () => this._loading.set(false),
@@ -195,6 +244,13 @@ export class SubOrderDataService {
 
   getDetailById(id: string): SubOrderDetail | undefined {
     return this._details()[id];
+  }
+
+  getDetailByContext(orderId: string, subOrderId: string): SubOrderDetail | undefined {
+    if (!orderId || !subOrderId) return undefined;
+    const subOrder = this.getById(subOrderId);
+    if (!subOrder || subOrder.orderId !== orderId) return undefined;
+    return this._details()[subOrderId];
   }
 
   createForOrder(orderId: string, rows: CreateSubOrderInput[]): SubOrder[] {

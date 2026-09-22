@@ -50,4 +50,35 @@ describe('SubOrderDataService', () => {
     expect(service.getByOrderId('ord-42').length).toBe(1);
     expect(service.getDetailById(created[0].id)?.forms.length).toBe(1);
   });
+
+  it('should synthesize detail records from the summary counts for the exact sub-order id', async () => {
+    httpMock.expectOne('/data/sub-orders.json').flush([
+      {
+        id: 'so-58',
+        orderId: 'ord-33',
+        service: 'Shade Match',
+        icon: 'clipboard',
+        status: 'in-progress',
+        formsComplete: 1,
+        formsTotal: 1,
+        scansComplete: 1,
+        scansTotal: 1,
+        teeth: [45, 46, 47],
+        priority: 'High',
+        dueDate: '2024-12-27',
+        notes: 'Shade A3 verified against clinic photos before glaze.',
+      },
+    ]);
+    await new Promise(resolve => setTimeout(resolve, 250));
+
+    const detail = service.getDetailByContext('ord-33', 'so-58');
+
+    expect(detail?.id).toBe('so-58');
+    expect(detail?.forms.length).toBe(1);
+    expect(detail?.scans.length).toBe(1);
+    expect(detail?.forms[0].label).toBe('Shade Match Form');
+    expect(detail?.scans[0].label).toBe('Shade Match Scan');
+    expect(service.getDetailByContext('ord-33', 'missing-sub-order')).toBeUndefined();
+    expect(service.getDetailByContext('ord-99', 'so-58')).toBeUndefined();
+  });
 });

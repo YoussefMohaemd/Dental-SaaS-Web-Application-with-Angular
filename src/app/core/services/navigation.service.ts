@@ -28,13 +28,18 @@ export class NavigationService {
 
   readonly breadcrumbs = computed<BreadcrumbItem[]>(() => {
     const page = this.currentPage();
+    const params = this.currentParams();
     const crumbs: BreadcrumbItem[] = [];
     let current: PageId | undefined = page;
 
     while (current) {
       const info = BREADCRUMB_MAP[current] as { label: string; parent?: PageId } | undefined;
       if (!info) break;
-      crumbs.unshift({ label: info.label, page: current === page ? undefined : current });
+      const crumb: BreadcrumbItem = { label: info.label, page: current === page ? undefined : current };
+      if (current === 'viewOrder' && params.orderId) {
+        crumb.params = { orderId: params.orderId };
+      }
+      crumbs.unshift(crumb);
       current = info.parent;
     }
     return crumbs;

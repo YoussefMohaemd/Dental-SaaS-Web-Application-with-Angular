@@ -17,7 +17,7 @@
         }
         @if (crumb.page) {
           <button
-            (click)="navigationService.navigate(crumb.page!)"
+            (click)="navigationService.navigate(crumb.page!, crumb.params)"
             class="text-muted-foreground hover:text-foreground truncate"
           >
             {{ crumb.label }}
