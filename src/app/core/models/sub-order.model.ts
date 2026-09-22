@@ -57,13 +57,14 @@ export type SubOrderViewState = 'loading' | 'normal' | 'error';
 
 /** React parity (SubOrderPage.tsx): per-sub-order detail collections. */
 export type SubOrderFormItemStatus = 'complete' | 'incomplete' | 'optional';
-export type SubOrderScanItemStatus = 'uploaded' | 'missing' | 'optional';
+export type SubOrderScanItemStatus = 'uploaded' | 'missing' | 'optional' | 'selected-local';
 
 export interface SubOrderFormItem {
   id: string;
   label: string;
   required: boolean;
   status: SubOrderFormItemStatus;
+  value?: SubOrderFormItemValue;
 }
 
 export interface SubOrderScanItem {
@@ -71,6 +72,18 @@ export interface SubOrderScanItem {
   label: string;
   format: string;
   status: SubOrderScanItemStatus;
+  localFiles?: SubOrderScanLocalFile[];
+  updatedAt?: string;
+}
+
+export interface SubOrderScanLocalFile {
+  id: string;
+  name: string;
+  sizeBytes: number;
+  sizeLabel: string;
+  type: string;
+  lastModified: number;
+  selectedAt: string;
 }
 
 export interface SubOrderActivityItem {
@@ -84,6 +97,33 @@ export interface SubOrderDetail {
   forms: SubOrderFormItem[];
   scans: SubOrderScanItem[];
   activity: SubOrderActivityItem[];
+}
+
+export interface SubOrderFormDraftValue {
+  clinicalNotes: string;
+  occlusalContact: string;
+  marginType: string;
+  material: string;
+  shade: string;
+  specialInstructions: string;
+}
+
+export interface SubOrderContextSnapshot {
+  orderId: string;
+  orderNumber: string;
+  subOrderId: string;
+  service: string;
+  patientName: string;
+  doctorName: string;
+  clinicName: string;
+  selectedTeeth: number[];
+  caseNotes: string;
+}
+
+export interface SubOrderFormItemValue {
+  values: SubOrderFormDraftValue;
+  context: SubOrderContextSnapshot;
+  updatedAt: string;
 }
 
 export type SubOrderTab = 'overview' | 'forms' | 'scans' | 'activity';

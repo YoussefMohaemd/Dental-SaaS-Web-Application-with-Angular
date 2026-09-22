@@ -4,3 +4,25 @@
 :host {
   display: block;
 }
+
+.accordion-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 180ms ease;
+}
+
+.accordion-panel-inner {
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.accordion-panel.open {
+  grid-template-rows: 1fr;
+}
+
+.accordion-panel.open .accordion-panel-inner {
+  opacity: 1;
+  transform: translateY(0);
+}

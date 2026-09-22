@@ -129,7 +129,7 @@
           <div class="space-y-2">
             @for (s of detail().scans; track s.id) {
               <div class="flex items-center gap-2">
-                @if (s.status === 'uploaded') {
+                @if (s.status === 'uploaded' || s.status === 'selected-local') {
                   <span [innerHTML]="getIconSvg('check-circle') | safeHtml" class="text-success shrink-0"></span>
                 } @else {
                   <span [innerHTML]="getIconSvg('circle') | safeHtml" class="text-muted-foreground shrink-0"></span>
@@ -147,35 +147,178 @@
 
   <!-- Forms -->
   @if (tab() === 'forms') {
-    <div class="space-y-3" role="tabpanel">
+    <div class="space-y-3" role="tabpanel" aria-label="Sub-order forms list">
       @for (f of detail().forms; track f.id) {
-        <div class="bg-card border border-border rounded-xl p-4">
-          <div class="flex items-start gap-3">
-            <div class="w-7 h-7 rounded-full flex items-center justify-center shrink-0" [class]="f.status === 'complete' ? 'bg-success/10' : 'bg-muted'">
-              @if (f.status === 'complete') {
-                <span [innerHTML]="getIconSvg('check') | safeHtml" class="text-success"></span>
-              } @else {
-                <span [innerHTML]="getIconSvg('file-text-sm') | safeHtml" class="text-muted-foreground"></span>
-              }
-            </div>
-            <div class="flex-1 min-w-0">
-              <div class="flex items-center gap-2 mb-1">
-                <p class="text-sm font-semibold text-foreground">{{ f.label }}</p>
-                @if (f.required) {
-                  <span class="text-[9px] text-danger font-semibold">Required</span>
+        <div
+          class="bg-card border rounded-xl transition-colors"
+          [class]="isFormOpen(f.id) ? 'border-primary/40 shadow-sm' : 'border-border hover:border-primary/25'"
+        >
+          <button
+            type="button"
+            class="w-full p-4 text-left"
+            (click)="openForm(f)"
+            [attr.aria-expanded]="isFormOpen(f.id)"
+            [attr.aria-controls]="'form-panel-' + f.id"
+          >
+            <div class="flex items-start gap-3">
+              <div class="w-7 h-7 rounded-full flex items-center justify-center shrink-0" [class]="f.status === 'complete' ? 'bg-success/10' : 'bg-muted'">
+                @if (f.status === 'complete') {
+                  <span [innerHTML]="getIconSvg('check') | safeHtml" class="text-success"></span>
+                } @else {
+                  <span [innerHTML]="getIconSvg('file-text-sm') | safeHtml" class="text-muted-foreground"></span>
                 }
               </div>
-              <p class="text-xs text-muted-foreground">
-                {{ f.status === 'complete' ? 'Completed and reviewed' : 'Not yet filled in' }}
-              </p>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1 flex-wrap">
+                  <p class="text-sm font-semibold text-foreground">{{ f.label }}</p>
+                  <span class="rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                    [class]="f.status === 'complete' ? 'bg-success/10 text-success' : f.required ? 'bg-danger/10 text-danger' : 'bg-muted text-muted-foreground'">
+                    {{ formStatusText(f) }}
+                  </span>
+                </div>
+                <p class="text-xs text-muted-foreground">
+                  {{ f.status === 'complete' ? 'Completed and reviewed' : 'Not yet filled in' }}
+                </p>
+              </div>
+              <div class="shrink-0 flex items-center gap-2">
+                @if (f.status === 'complete') {
+                  <span class="text-[11px] font-semibold text-success">Saved</span>
+                }
+                <span [innerHTML]="getIconSvg(isFormOpen(f.id) ? 'chevron-down' : 'chevron-right') | safeHtml" class="text-muted-foreground"></span>
+              </div>
             </div>
-            <button
-              type="button"
-              class="px-3 py-1.5 rounded-lg text-xs font-medium shrink-0"
-              [class]="f.status === 'complete' ? 'bg-muted text-muted-foreground hover:bg-muted/80' : 'bg-primary text-primary-foreground hover:bg-primary/90'"
-            >
-              {{ f.status === 'complete' ? 'Review' : 'Fill In' }}
-            </button>
+          </button>
+
+          <div class="accordion-panel" [class.open]="isFormOpen(f.id)" [attr.id]="'form-panel-' + f.id">
+            <div class="accordion-panel-inner">
+              @if (isFormOpen(f.id)) {
+                <div class="mx-4 mb-4 mt-0 border border-border rounded-xl p-4 space-y-4 bg-muted/10">
+                  <div class="flex items-center justify-between gap-3 flex-wrap">
+                    <div>
+                      <p class="text-sm font-semibold text-foreground">{{ f.label }} Form</p>
+                      <p class="text-xs text-muted-foreground">Editing for {{ subOrder()?.service }} in {{ orderTag() }}</p>
+                    </div>
+                    <span class="text-xs text-warning bg-warning/10 px-2 py-1 rounded-full">Session only</span>
+                  </div>
+
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div class="rounded-lg border border-border bg-card px-3 py-2">
+                      <p class="text-[10px] uppercase tracking-wide text-muted-foreground">Patient</p>
+                      <p class="text-xs font-semibold text-foreground">{{ activeContext().patientName || '—' }}</p>
+                    </div>
+                    <div class="rounded-lg border border-border bg-card px-3 py-2">
+                      <p class="text-[10px] uppercase tracking-wide text-muted-foreground">Service</p>
+                      <p class="text-xs font-semibold text-foreground">{{ activeContext().service || '—' }}</p>
+                    </div>
+                    <div class="rounded-lg border border-border bg-card px-3 py-2">
+                      <p class="text-[10px] uppercase tracking-wide text-muted-foreground">Order</p>
+                      <p class="text-xs font-mono text-foreground">{{ activeContext().orderNumber || orderTag() }}</p>
+                    </div>
+                    <div class="rounded-lg border border-border bg-card px-3 py-2">
+                      <p class="text-[10px] uppercase tracking-wide text-muted-foreground">Teeth</p>
+                      <p class="text-xs font-mono text-foreground">{{ activeContext().selectedTeeth.length > 0 ? activeContext().selectedTeeth.join(', ') : '—' }}</p>
+                    </div>
+                  </div>
+
+                  <div class="space-y-3">
+                    <div>
+                      <label class="mb-1.5 block text-xs font-semibold text-foreground" [for]="'clinical-notes-' + f.id">
+                        Clinical Notes
+                        @if (f.required) {
+                          <span class="text-danger">*</span>
+                        }
+                      </label>
+                      <textarea
+                        [id]="'clinical-notes-' + f.id"
+                        class="w-full min-h-20 rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                        [value]="formDraft().clinicalNotes"
+                        (input)="setFormField('clinicalNotes', $any($event.target).value)"
+                        placeholder="Document service-specific clinical instructions"
+                      ></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label class="mb-1.5 block text-xs font-semibold text-foreground" [for]="'occlusal-contact-' + f.id">Occlusal Contact</label>
+                        <select
+                          [id]="'occlusal-contact-' + f.id"
+                          class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                          [value]="formDraft().occlusalContact"
+                          (change)="setFormField('occlusalContact', $any($event.target).value)"
+                        >
+                          @for (option of occlusalContactOptions; track option) {
+                            <option [value]="option">{{ option }}</option>
+                          }
+                        </select>
+                      </div>
+                      <div>
+                        <label class="mb-1.5 block text-xs font-semibold text-foreground" [for]="'margin-type-' + f.id">Margin Type</label>
+                        <select
+                          [id]="'margin-type-' + f.id"
+                          class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                          [value]="formDraft().marginType"
+                          (change)="setFormField('marginType', $any($event.target).value)"
+                        >
+                          @for (option of marginTypeOptions; track option) {
+                            <option [value]="option">{{ option }}</option>
+                          }
+                        </select>
+                      </div>
+                      <div>
+                        <label class="mb-1.5 block text-xs font-semibold text-foreground" [for]="'material-' + f.id">Material</label>
+                        <select
+                          [id]="'material-' + f.id"
+                          class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                          [value]="formDraft().material"
+                          (change)="setFormField('material', $any($event.target).value)"
+                        >
+                          @for (option of materialOptions; track option) {
+                            <option [value]="option">{{ option }}</option>
+                          }
+                        </select>
+                      </div>
+                      <div>
+                        <label class="mb-1.5 block text-xs font-semibold text-foreground" [for]="'shade-' + f.id">Shade</label>
+                        <input
+                          [id]="'shade-' + f.id"
+                          type="text"
+                          class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                          [value]="formDraft().shade"
+                          (input)="setFormField('shade', $any($event.target).value)"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label class="mb-1.5 block text-xs font-semibold text-foreground" [for]="'special-instructions-' + f.id">Special Instructions</label>
+                      <textarea
+                        [id]="'special-instructions-' + f.id"
+                        class="w-full min-h-16 rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                        [value]="formDraft().specialInstructions"
+                        (input)="setFormField('specialInstructions', $any($event.target).value)"
+                        placeholder="Additional instructions for the lab team"
+                      ></textarea>
+                    </div>
+
+                    @if (activeContext().caseNotes) {
+                      <div class="rounded-lg border border-border bg-card px-3 py-2">
+                        <p class="text-[10px] uppercase tracking-wide text-muted-foreground">Case Information</p>
+                        <p class="text-xs text-foreground mt-1">{{ activeContext().caseNotes }}</p>
+                      </div>
+                    }
+                  </div>
+
+                  @if (formMessage()) {
+                    <p class="text-xs" [class]="formMessage()?.includes('required') ? 'text-danger' : 'text-success'">{{ formMessage() }}</p>
+                  }
+
+                  <div class="flex justify-end gap-2">
+                    <button type="button" (click)="cancelForm()" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-muted text-muted-foreground hover:bg-muted/80">Cancel</button>
+                    <button type="button" (click)="saveForm()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90">Save</button>
+                  </div>
+                </div>
+              }
+            </div>
           </div>
         </div>
       }
@@ -185,11 +328,13 @@
   <!-- Scans -->
   @if (tab() === 'scans') {
     <div class="space-y-3" role="tabpanel">
+      <input #scanPicker type="file" class="hidden" multiple (change)="onFileInputChange($event)" />
+
       @for (s of detail().scans; track s.id) {
         <div class="bg-card border border-border rounded-xl p-4">
           <div class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" [class]="s.status === 'uploaded' ? 'bg-success/10' : 'bg-muted'">
-              @if (s.status === 'uploaded') {
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" [class]="s.status === 'uploaded' || s.status === 'selected-local' ? 'bg-success/10' : 'bg-muted'">
+              @if (s.status === 'uploaded' || s.status === 'selected-local') {
                 <span [innerHTML]="getIconSvg('check-circle-lg') | safeHtml" class="text-success"></span>
               } @else {
                 <span [innerHTML]="getIconSvg('upload') | safeHtml" class="text-muted-foreground"></span>
@@ -197,26 +342,79 @@
             </div>
             <div class="flex-1 min-w-0">
               <p class="text-sm font-semibold text-foreground">{{ s.label }}</p>
-              <p class="text-xs text-muted-foreground">{{ s.format }} · {{ s.status === 'uploaded' ? 'Uploaded' : 'Not yet uploaded' }}</p>
+              <p class="text-xs text-muted-foreground">{{ s.format }} · {{ scanStatusLabel(s) }}</p>
             </div>
             <button
               type="button"
+              (click)="openFilePicker(s.id, scanPicker)"
               class="px-3 py-1.5 rounded-lg text-xs font-medium shrink-0"
-              [class]="s.status === 'uploaded' ? 'bg-muted text-muted-foreground hover:bg-muted/80' : 'bg-primary text-primary-foreground hover:bg-primary/90'"
+              [class]="s.status === 'uploaded' || s.status === 'selected-local' ? 'bg-muted text-muted-foreground hover:bg-muted/80' : 'bg-primary text-primary-foreground hover:bg-primary/90'"
             >
-              {{ s.status === 'uploaded' ? 'View / Replace' : 'Upload' }}
+              {{ s.status === 'uploaded' || s.status === 'selected-local' ? 'View / Replace' : 'Upload' }}
             </button>
           </div>
+
+          @if ((s.localFiles?.length ?? 0) > 0) {
+            <div class="mt-3 space-y-2 border-t border-border pt-3">
+              @for (file of s.localFiles ?? []; track file.id) {
+                <div class="flex items-center gap-2 rounded-lg bg-muted/30 px-2.5 py-2">
+                  <div class="min-w-0 flex-1">
+                    <p class="truncate text-xs font-medium text-foreground">{{ file.name }}</p>
+                    <p class="text-[10px] text-muted-foreground">{{ file.sizeLabel }} · Local selection only</p>
+                  </div>
+                  <button type="button" (click)="removeLocalFile(s.id, file.id)" class="rounded p-1 text-muted-foreground hover:bg-muted hover:text-danger" aria-label="Remove file">
+                    <span [innerHTML]="getIconSvg('trash') | safeHtml"></span>
+                  </button>
+                </div>
+              }
+            </div>
+          }
         </div>
       }
 
-      <div class="border-2 border-dashed border-border rounded-xl p-6 text-center hover:border-primary/50 hover:bg-muted/20 transition-all cursor-pointer mt-4">
-        <div class="mb-2 flex justify-center text-muted-foreground">
-          <span [innerHTML]="getIconSvg('upload-lg') | safeHtml"></span>
+      <div class="bg-card border border-border rounded-xl p-4 space-y-3">
+        <div class="flex items-center gap-2">
+          <label class="text-xs font-semibold text-foreground" for="scan-target">Drop target</label>
+          <select
+            id="scan-target"
+            class="rounded-lg border border-border bg-card px-2.5 py-1 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+            [value]="selectedScanTarget() ?? ''"
+            (change)="selectedScanTarget.set($any($event.target).value || null)"
+          >
+            <option value="">Select requirement</option>
+            @for (scan of detail().scans; track scan.id) {
+              <option [value]="scan.id">{{ scan.label }}</option>
+            }
+          </select>
         </div>
-        <p class="text-sm font-medium text-foreground">Drop additional files here</p>
-        <p class="text-xs text-muted-foreground">STL, PLY, OBJ, DICOM, JPG, PDF</p>
+
+        <div
+          class="border-2 border-dashed rounded-xl p-6 text-center transition-all cursor-pointer"
+          [class]="dragOver() ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50 hover:bg-muted/20'"
+          (click)="onDropZoneSelect(scanPicker)"
+          (dragover)="onDragOver($event)"
+          (dragleave)="onDragLeave($event)"
+          (drop)="onDrop($event)"
+        >
+          <div class="mb-2 flex justify-center text-muted-foreground">
+            <span [innerHTML]="getIconSvg('upload-lg') | safeHtml"></span>
+          </div>
+          <p class="text-sm font-medium text-foreground">Drop local files for {{ scanTargetLabel() }}</p>
+          <p class="text-xs text-muted-foreground">Any file type allowed · max 100 MB per file · max 10 files per requirement</p>
+        </div>
+
+        <p class="text-[11px] text-warning">Files are selected locally for this session and are not uploaded to a backend endpoint.</p>
+        @if (scanMessage()) {
+          <p class="text-xs text-muted-foreground">{{ scanMessage() }}</p>
+        }
       </div>
+
+      <div class="border border-border rounded-xl p-3 bg-muted/10">
+        <p class="text-xs text-muted-foreground">
+          Backend upload is not configured in this environment. Selected files remain in session state and can be reviewed or replaced.
+        </p>
+      </div>
+
     </div>
   }
 
@@ -251,6 +449,7 @@
         <div class="flex justify-end">
           <button
             type="button"
+            (click)="onPostNote()"
             [disabled]="!note().trim()"
             class="px-4 py-1.5 bg-primary text-primary-foreground rounded-lg text-xs font-semibold disabled:opacity-40"
           >

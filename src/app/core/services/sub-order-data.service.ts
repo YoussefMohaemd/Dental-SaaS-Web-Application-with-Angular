@@ -2,7 +2,16 @@ import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { of } from 'rxjs';
 import { catchError, delay, map } from 'rxjs/operators';
-import { SubOrder, SubOrderDetail } from '../models/sub-order.model';
+import {
+  SubOrder,
+  SubOrderContextSnapshot,
+  SubOrderDetail,
+  SubOrderFormDraftValue,
+  SubOrderFormItemStatus,
+  SubOrderFormItemValue,
+  SubOrderScanLocalFile,
+  SubOrderScanItemStatus,
+} from '../models/sub-order.model';
 
 interface SubOrderJson {
   id: string;
@@ -105,6 +114,25 @@ const ICON_MAP: Record<string, string> = {
   clipboard: '📋',
 };
 
+const DEFAULT_FORM_VALUES: SubOrderFormDraftValue = {
+  clinicalNotes: '',
+  occlusalContact: 'Light contact',
+  marginType: 'Chamfer',
+  material: 'Zirconia (Multilayer)',
+  shade: 'A2',
+  specialInstructions: '',
+};
+
+export interface CreateSubOrderInput {
+  service: string;
+  icon: string;
+  priority: SubOrder['priority'];
+  dueDate: string;
+  notes: string;
+  teeth: number[];
+  scanRequirements: string[];
+}
+
 /**
  * Sub-order data flow: RxJS (HttpClient + delay/catchError) feeds
  * Signals state. Falls back to sanitized local data when JSON is missing.
@@ -115,12 +143,14 @@ export class SubOrderDataService {
   private readonly URL = '/data/sub-orders.json';
 
   private readonly _subOrders = signal<SubOrder[]>(FALLBACK_SUB_ORDERS);
+  private readonly _details = signal<Record<string, SubOrderDetail>>(structuredClone(SUB_ORDER_DETAILS));
   private readonly _loading = signal<boolean>(false);
   private readonly _error = signal<string | null>(null);
 
   readonly subOrders = this._subOrders.asReadonly();
   readonly loading = this._loading.asReadonly();
   readonly error = this._error.asReadonly();
+  readonly details = this._details.asReadonly();
 
   readonly count = computed(() => this._subOrders().length);
 
@@ -162,7 +192,144 @@ export class SubOrderDataService {
 
   /** React parity: unknown ids fall back to the default 'so-2' detail set. */
   getDetailById(id: string): SubOrderDetail {
-    return SUB_ORDER_DETAILS[id] ?? SUB_ORDER_DETAILS['so-2'];
+    return this._details()[id] ?? this._details()['so-2'];
+  }
+
+  createForOrder(orderId: string, rows: CreateSubOrderInput[]): SubOrder[] {
+    if (!orderId || rows.length === 0) return [];
+
+    const created: SubOrder[] = [];
+    const details: Record<string, SubOrderDetail> = {};
+    let nextId = this.nextSequenceId();
+
+    for (const row of rows) {
+      const id = `so-${nextId++}`;
+      const detailForms = [
+        { id: `${id}-form-clinical`, label: `${row.service} Clinical Form`, required: true, status: 'incomplete' as const },
+      ];
+      const detailScans = row.scanRequirements.map((label, index) => ({
+        id: `${id}-scan-${index + 1}`,
+        label,
+        format: 'Any file type',
+        status: 'missing' as const,
+      }));
+
+      const subOrder: SubOrder = {
+        id,
+        orderId,
+        service: row.service,
+        icon: row.icon,
+        status: 'pending',
+        formsComplete: 0,
+        formsTotal: detailForms.length,
+        scansComplete: 0,
+        scansTotal: detailScans.length,
+        teeth: [...row.teeth],
+        priority: row.priority,
+        dueDate: row.dueDate,
+        notes: row.notes,
+      };
+
+      created.push(subOrder);
+      details[id] = {
+        id,
+        forms: detailForms,
+        scans: detailScans,
+        activity: [
+          { time: 'just now', user: 'System', text: `${row.service} sub-order created from order ${orderId}.` },
+        ],
+      };
+    }
+
+    this._subOrders.update(current => [...created, ...current]);
+    this._details.update(current => ({ ...details, ...current }));
+    this.refreshSubOrderCounts(created.map(item => item.id));
+    return created;
+  }
+
+  saveFormItem(
+    subOrderId: string,
+    formId: string,
+    payload: { values: Partial<SubOrderFormDraftValue>; context: SubOrderContextSnapshot; required: boolean },
+  ): void {
+    const detail = this._details()[subOrderId];
+    if (!detail) return;
+    const now = new Date().toISOString();
+    const mergedValues: SubOrderFormDraftValue = {
+      ...DEFAULT_FORM_VALUES,
+      ...payload.values,
+    };
+
+    const value: SubOrderFormItemValue = {
+      values: mergedValues,
+      context: payload.context,
+      updatedAt: now,
+    };
+
+    const updatedForms = detail.forms.map(form => {
+      if (form.id !== formId) return form;
+      const hasMinimumRequired = mergedValues.clinicalNotes.trim().length > 0;
+      const nextStatus: SubOrderFormItemStatus = form.required || payload.required
+        ? (hasMinimumRequired ? 'complete' : 'incomplete')
+        : (hasMinimumRequired ? 'complete' : 'optional');
+      return {
+        ...form,
+        value,
+        status: nextStatus,
+      };
+    });
+
+    this._details.update(current => ({
+      ...current,
+      [subOrderId]: {
+        ...detail,
+        forms: updatedForms,
+      },
+    }));
+    this.refreshSubOrderCounts([subOrderId]);
+  }
+
+  saveScanFiles(subOrderId: string, scanId: string, files: SubOrderScanLocalFile[]): void {
+    const detail = this._details()[subOrderId];
+    if (!detail) return;
+    const now = new Date().toISOString();
+    const updatedScans = detail.scans.map(scan => {
+      if (scan.id !== scanId) return scan;
+      const nextStatus: SubOrderScanItemStatus = files.length > 0 ? 'selected-local' : 'missing';
+      return {
+        ...scan,
+        localFiles: files,
+        status: nextStatus,
+        updatedAt: now,
+      };
+    });
+
+    this._details.update(current => ({
+      ...current,
+      [subOrderId]: {
+        ...detail,
+        scans: updatedScans,
+      },
+    }));
+    this.refreshSubOrderCounts([subOrderId]);
+  }
+
+  addActivityNote(subOrderId: string, user: string, text: string): void {
+    const detail = this._details()[subOrderId];
+    if (!detail) return;
+    const nextText = text.trim();
+    if (!nextText) return;
+
+    this._details.update(current => ({
+      ...current,
+      [subOrderId]: {
+        ...detail,
+        activity: [
+          { time: 'just now', user, text: nextText },
+          ...detail.activity,
+        ],
+      },
+    }));
   }
 
   /**
@@ -177,5 +344,47 @@ export class SubOrderDataService {
   getByOrderId(orderId: string): SubOrder[] {
     if (!orderId) return [];
     return this._subOrders().filter(s => s.orderId === orderId);
+  }
+
+  private refreshSubOrderCounts(subOrderIds: string[]): void {
+    const idSet = new Set(subOrderIds);
+    const details = this._details();
+
+    this._subOrders.update(rows => rows.map(row => {
+      if (!idSet.has(row.id)) return row;
+      const detail = details[row.id];
+      if (!detail) return row;
+
+      const formsTotal = detail.forms.length;
+      const formsComplete = detail.forms.filter(form => form.status === 'complete').length;
+      const scansTotal = detail.scans.length;
+      const scansComplete = detail.scans.filter(scan => scan.status === 'uploaded' || scan.status === 'selected-local').length;
+      const status = this.deriveStatus(formsTotal, formsComplete, scansTotal, scansComplete);
+
+      return {
+        ...row,
+        formsTotal,
+        formsComplete,
+        scansTotal,
+        scansComplete,
+        status,
+      };
+    }));
+  }
+
+  private deriveStatus(formsTotal: number, formsComplete: number, scansTotal: number, scansComplete: number): SubOrder['status'] {
+    const total = formsTotal + scansTotal;
+    const done = formsComplete + scansComplete;
+    if (total > 0 && done >= total) return 'completed';
+    if (done > 0) return 'in-progress';
+    return 'pending';
+  }
+
+  private nextSequenceId(): number {
+    const numericIds = this._subOrders()
+      .map(subOrder => Number(subOrder.id.replace('so-', '')))
+      .filter(value => Number.isFinite(value));
+    const max = numericIds.length > 0 ? Math.max(...numericIds) : 0;
+    return max + 1;
   }
 }

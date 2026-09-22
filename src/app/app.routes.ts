@@ -3,6 +3,7 @@ import { LayoutComponent } from './core/layout/shell/layout.component';
 import { AuthGuard } from './core/guards/auth.guard';
 
 export const appRoutes: Routes = [
+  { path: '', redirectTo: 'login', pathMatch: 'full' },
   {
     path: 'login',
     loadComponent: () =>

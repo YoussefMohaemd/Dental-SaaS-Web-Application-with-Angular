@@ -30,15 +30,15 @@ export class SidebarComponent {
   readonly userRole = 'Lab Manager';
 
   readonly sidebarClasses = computed(() => `
-    flex flex-col h-full bg-sidebar text-sidebar-foreground transition-all duration-300 shrink-0
+    relative z-10 flex flex-col h-full bg-background text-foreground border-r border-border sidebar-surface-separator transition-all duration-300 shrink-0
     ${this.sidebarOpen() ? 'w-56' : 'w-14'}
   `);
 
   navItemClasses(item: { id: string }): string {
     const isActive = this.activeGroup() === item.id || (item.id === 'dashboard' && this.currentPage() === 'dashboard');
     return `
-      w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors relative
-      ${isActive ? 'bg-white/10 text-white' : 'text-sidebar-foreground hover:bg-white/5 hover:text-white'}
+      w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors relative rounded-r-lg border-l border-transparent
+      ${isActive ? 'bg-primary/10 text-primary border-primary' : 'text-foreground hover:bg-muted hover:text-foreground'}
     `;
   }
 

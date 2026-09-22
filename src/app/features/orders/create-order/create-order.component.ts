@@ -5,17 +5,14 @@ import { PatientDataService } from '@core/services/patient-data.service';
 import { DoctorDataService } from '@core/services/doctor-data.service';
 import { ClinicDataService } from '@core/services/clinic-data.service';
 import { NavigationService } from '@core/services/navigation.service';
+import { OrderDataService } from '@core/services/order-data.service';
+import { ScanCenterDataService } from '@core/services/scan-center-data.service';
+import { SubOrderDataService } from '@core/services/sub-order-data.service';
+import { AVAILABLE_SERVICES, CreateOrderService, ServiceTeethMapping } from '@core/models/create-order.model';
+import { ArchType, RestoType } from '@core/models';
 import { ButtonComponent } from '@shared/components/button/button.component';
 import { TeethChartComponent } from '@shared/components/teeth-chart/teeth-chart.component';
 import { SafeHtmlPipe } from '@shared/pipes/safe-html.pipe';
-
-interface Service {
-  id: string;
-  name: string;
-  description: string;
-  icon: string;
-  scanRequirements: string[];
-}
 
 export interface ServiceDetail {
   shade: string;
@@ -33,17 +30,6 @@ export interface ServiceClinicalForm {
   material: string;
   specialInstructions: string;
 }
-
-const SERVICES: Service[] = [
-  { id: 'treatment-plan', name: 'Treatment Plan', description: 'Comprehensive treatment planning with diagnostic data and clinical workflow.', icon: '📋', scanRequirements: ['Full arch STL', 'Bite registration'] },
-  { id: 'surgical-guide', name: 'Surgical Guide', description: 'Precision-guided implant surgery using CT and digital planning.', icon: '🦷', scanRequirements: ['CBCT / CT scan', 'STL dental model', 'Supporting reference files'] },
-  { id: 'gfmr', name: 'GFMR', description: 'Full-mouth rehabilitation with a guided functional occlusal approach.', icon: '⚙️', scanRequirements: ['Upper arch scan', 'Lower arch scan', 'Bite scan'] },
-  { id: 'fmb', name: 'FMB / FMP', description: 'Full-mouth bridge or partial restoration fabricated to precision.', icon: '🔬', scanRequirements: ['Upper arch STL', 'Lower arch STL'] },
-  { id: 'temp-restoration', name: 'Temporary Restoration', description: 'Interim restorations to protect and maintain occlusion during treatment.', icon: '🛡️', scanRequirements: ['Working model scan', 'Antagonist scan'] },
-  { id: 'final-restoration', name: 'Final Restoration', description: 'Definitive crowns, bridges, veneers, or full-arch restorations.', icon: '✨', scanRequirements: ['Prep scan', 'Antagonist scan', 'Shade reference photo'] },
-  { id: 'full-guide', name: 'Full Guide Case', description: 'End-to-end digital workflow with guided surgery and final prosthetics.', icon: '🔑', scanRequirements: ['CBCT / CT scan', 'Full arch STL', 'Diagnostic model', 'Bite registration'] },
-  { id: 'other', name: 'Other Service', description: 'Custom lab service or specialized dental work not listed above.', icon: '➕', scanRequirements: ['As specified'] },
-];
 
 const STEPS = [
   { id: 1, label: 'Patient & Clinic', short: 'Patient' },
@@ -95,16 +81,20 @@ export class CreateOrderComponent {
   private readonly patientService = inject(PatientDataService);
   private readonly doctorService = inject(DoctorDataService);
   private readonly clinicService = inject(ClinicDataService);
+  private readonly orderService = inject(OrderDataService);
+  private readonly scanCenterService = inject(ScanCenterDataService);
+  private readonly subOrderService = inject(SubOrderDataService);
   protected readonly navigationService = inject(NavigationService);
 
   readonly patients = this.patientService.patients;
   readonly doctors = this.doctorService.doctors;
   readonly clinics = this.clinicService.clinics;
+  readonly scanCenters = this.scanCenterService.scanCenters;
 
   readonly step = signal(1);
   readonly selectedServices = signal<string[]>([]);
   readonly selectedTeeth = signal<number[]>([]);
-  readonly serviceTeeth = signal<Record<string, number[]>>({});
+  readonly serviceTeeth = signal<ServiceTeethMapping>({});
   readonly activeServiceForTeeth = signal<string | null>(null);
 
   readonly form = signal({
@@ -126,7 +116,7 @@ export class CreateOrderComponent {
   readonly selectedPatient = computed(() => this.patients().find(p => p.id === this.form().patientId));
   readonly selectedDoctor = computed(() => this.doctors().find(d => d.id === this.form().doctorId));
   readonly selectedClinic = computed(() => this.clinics().find(c => c.id === this.form().clinicId));
-  readonly selectedServiceObjects = computed(() => SERVICES.filter(s => this.selectedServices().includes(s.id)));
+  readonly selectedServiceObjects = computed(() => AVAILABLE_SERVICES.filter(s => this.selectedServices().includes(s.id)));
   /** Service names for the tooth chart legend (React parity). */
   readonly serviceNames = computed(() => this.selectedServiceObjects().map(s => s.name));
   /** serviceTeeth keyed by service NAME for the chart (React maps id -> name). */
@@ -134,12 +124,12 @@ export class CreateOrderComponent {
     const byId = this.serviceTeeth();
     const out: Record<string, number[]> = {};
     for (const [id, teeth] of Object.entries(byId)) {
-      out[SERVICES.find(s => s.id === id)?.name ?? id] = teeth;
+      out[AVAILABLE_SERVICES.find(s => s.id === id)?.name ?? id] = teeth;
     }
     return out;
   });
   readonly steps = STEPS;
-  readonly services: Service[] = SERVICES;
+  readonly services: CreateOrderService[] = AVAILABLE_SERVICES;
   readonly shades = SHADES;
   readonly fileFormats = FILE_FORMATS;
   readonly occlusalConcepts = OCCLUSAL_CONCEPTS;
@@ -252,7 +242,7 @@ export class CreateOrderComponent {
   }
 
   serviceName(serviceId: string): string {
-    return SERVICES.find(s => s.id === serviceId)?.name ?? serviceId;
+    return AVAILABLE_SERVICES.find(s => s.id === serviceId)?.name ?? serviceId;
   }
 
   canProceed(): boolean {
@@ -309,8 +299,86 @@ export class CreateOrderComponent {
   }
 
   submitOrder(): void {
-    // React parity: final "Create Order" navigates to the created order view.
-    this.navigationService.navigate('viewOrder', { orderId: 'ord-1' });
+    const patient = this.selectedPatient();
+    const doctor = this.selectedDoctor();
+    const clinic = this.selectedClinic();
+    if (!patient || !doctor || !clinic || this.selectedServiceObjects().length === 0) {
+      return;
+    }
+
+    const scanCenter = this.scanCenters()[0];
+    const dueDate = this.form().dueDate || this.defaultDueDate();
+    const selectedServices = this.selectedServiceObjects();
+    const allTeeth = this.allTeethCombined();
+    const serviceRows = selectedServices.map(service => ({
+      service: service.name,
+      icon: service.icon,
+      priority: this.form().priority as 'Low' | 'Normal' | 'High' | 'Urgent',
+      dueDate,
+      notes: this.getServiceDetail(service.id).serviceNotes || this.form().notes || this.fallbackServiceNote(service.name),
+      teeth: this.serviceTeeth()[service.id]?.length
+        ? [...this.serviceTeeth()[service.id]]
+        : [...allTeeth],
+      scanRequirements: service.scanRequirements,
+    }));
+
+    const createdOrder = this.orderService.createOrder({
+      patientId: patient.id,
+      patientName: patient.name,
+      doctorId: doctor.id,
+      doctorName: doctor.name,
+      clinicId: clinic.id,
+      clinicName: clinic.name,
+      scanCenterId: scanCenter?.id ?? 'scan-local',
+      scanCenterName: scanCenter?.name ?? 'Local Session',
+      status: 'New',
+      priority: this.form().priority as 'Low' | 'Normal' | 'High' | 'Urgent',
+      restoration: this.mapServiceToRestoration(selectedServices[0].id),
+      arch: this.deriveArchFromSelection(allTeeth),
+      format: this.form().format,
+      shade: this.form().shade,
+      units: Math.max(allTeeth.length, 1),
+      amount: Math.max(selectedServices.length * 250, 250),
+      billed: false,
+      billTo: clinic.name,
+      vouchers: 0,
+      isLocked: false,
+      hasNotes: this.form().notes.trim().length > 0,
+      notes: this.form().notes,
+      dueDate,
+    });
+
+    this.subOrderService.createForOrder(createdOrder.id, serviceRows);
+    this.navigationService.navigate('viewOrder', { orderId: createdOrder.id });
+  }
+
+  private defaultDueDate(): string {
+    const date = new Date();
+    date.setDate(date.getDate() + 7);
+    return date.toISOString().slice(0, 10);
+  }
+
+  private fallbackServiceNote(serviceName: string): string {
+    const selected = this.allTeethCombined();
+    const teethLabel = selected.length > 0 ? `teeth ${selected.join(', ')}` : 'no specific teeth';
+    return `${serviceName} requested with ${teethLabel}.`;
+  }
+
+  private mapServiceToRestoration(serviceId: string): RestoType {
+    if (serviceId === 'surgical-guide') return 'Implant Crown';
+    if (serviceId === 'final-restoration' || serviceId === 'fmb') return 'Bridge';
+    if (serviceId === 'temp-restoration') return 'Crown';
+    if (serviceId === 'gfmr' || serviceId === 'full-guide') return 'Full Arch';
+    return 'Crown';
+  }
+
+  private deriveArchFromSelection(teeth: number[]): ArchType {
+    const hasUpper = teeth.some(tooth => tooth >= 11 && tooth <= 28);
+    const hasLower = teeth.some(tooth => tooth >= 31 && tooth <= 48);
+    if (hasUpper && hasLower) return 'Both';
+    if (hasUpper) return 'Maxilla';
+    if (hasLower) return 'Mandible';
+    return 'Both';
   }
 
   getStepConfig(stepId: number) {

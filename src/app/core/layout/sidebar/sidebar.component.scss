@@ -2,6 +2,10 @@
   display: block;
 }
 
+.sidebar-surface-separator {
+  box-shadow: 2px 0 8px color-mix(in srgb, var(--border) 55%, transparent);
+}
+
 .sidebar-scrollbar::-webkit-scrollbar {
   width: 3px;
 }
@@ -9,20 +13,4 @@
 .sidebar-scrollbar::-webkit-scrollbar-thumb {
   background: var(--sidebar-muted);
   border-radius: 2px;
-}
-
-.nav-item {
-  @apply w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors relative;
-}
-
-.nav-item.active {
-  @apply bg-white/10 text-white;
-}
-
-.nav-item.inactive {
-  @apply text-sidebar-foreground hover:bg-white/5 hover:text-white;
-}
-
-.nav-indicator {
-  @apply absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-primary rounded-r-full;
 }

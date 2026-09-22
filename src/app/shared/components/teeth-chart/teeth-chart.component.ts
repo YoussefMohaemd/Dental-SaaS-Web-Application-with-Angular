@@ -1,11 +1,12 @@
 import { Component, computed, input, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { LOWER_JAW_TEETH, UPPER_JAW_TEETH } from '@core/models/tooth.model';
 
 export type ToothStatus = 'normal' | 'planned' | 'implant' | 'missing' | 'extract';
 export type JawFilter = 'both' | 'upper' | 'lower';
 
-export const UPPER_TEETH = [18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24, 25, 26, 27, 28];
-export const LOWER_TEETH = [48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38];
+export const UPPER_TEETH = UPPER_JAW_TEETH.map(tooth => tooth.number);
+export const LOWER_TEETH = LOWER_JAW_TEETH.map(tooth => tooth.number);
 
 export const SERVICE_COLORS = [
   '#2563EB', '#06B6D4', '#10B981', '#F59E0B',
