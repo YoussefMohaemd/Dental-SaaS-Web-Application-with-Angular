@@ -80,10 +80,7 @@
             <td class="text-xs text-muted-foreground">{{ request.requester.replace('Dr. ', '') }}</td>
             <td class="max-w-[240px] truncate text-xs text-foreground" [title]="request.description">{{ request.description }}</td>
             <td>
-              <span class="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-                <span class="h-2 w-2 rounded-full" [class]="priorityClasses(request.priority)" aria-hidden="true"></span>
-                {{ request.priority }}
-              </span>
+              <app-priority-badge [priority]="request.priority" size="xs" />
             </td>
             <td><span class="rounded px-2 py-0.5 text-[10px] font-semibold" [class]="statusClasses(request.status)">{{ request.status }}</span></td>
             <td class="text-xs text-muted-foreground">{{ formatUtils.timeAgo(request.createdAt) }}</td>

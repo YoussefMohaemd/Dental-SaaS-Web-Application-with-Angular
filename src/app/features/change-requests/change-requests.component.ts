@@ -6,11 +6,11 @@ import { NavigationService } from '@core/services/navigation.service';
 import { FormatUtils } from '@core/services/format-utils.service';
 import { ChangeRequest } from '@core/models';
 import { SafeHtmlPipe } from '../../shared/pipes/safe-html.pipe';
+import { PriorityBadgeComponent } from '@shared/components/priority-badge/priority-badge.component';
 
 @Component({
   selector: 'app-change-requests',
-  standalone: true,
-  imports: [CommonModule, TableModule, SafeHtmlPipe],
+  imports: [CommonModule, TableModule, SafeHtmlPipe, PriorityBadgeComponent],
   templateUrl: './change-requests.component.html',
   styleUrl: './change-requests.component.scss'
 })
@@ -100,13 +100,6 @@ export class ChangeRequestsComponent {
 
   isActionable(status: ChangeRequest['status']): boolean {
     return status === 'Pending' || status === 'In Review';
-  }
-
-  priorityClasses(priority: ChangeRequest['priority']): string {
-    if (priority === 'Urgent') return 'bg-red-500';
-    if (priority === 'High') return 'bg-amber-500';
-    if (priority === 'Normal') return 'bg-blue-500';
-    return 'bg-slate-400';
   }
 
   statusClasses(status: ChangeRequest['status']): string {
