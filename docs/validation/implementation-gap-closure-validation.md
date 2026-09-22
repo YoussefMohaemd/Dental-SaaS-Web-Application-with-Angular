@@ -15,6 +15,8 @@ Date: 2026-09-22
 - Create Order now carries service details, clinical-form values, selected teeth, scan requirements, and file-reference slots through the in-memory parent and sub-order contracts.
 - Order Files now rejects unsupported extensions, files over 100 MB, and case-insensitive duplicate names while retaining the existing valid upload path.
 - Forms and files prototype/in-memory boundaries are documented in `docs/decisions/forms-files-policy.md`.
+- Reusable business components now exist for the order summary card and workflow timeline, and the live order detail and workflow pages consume those shared components without changing the rendered layout.
+- A reusable select control now exists for native-select reuse with the same geometry and styling conventions as the existing pages.
 
 ## Executed Checks
 
@@ -28,18 +30,19 @@ Date: 2026-09-22
 | `npm test -- --watch=false --browsers=ChromeHeadless` | Passed: 232/232 |
 | `npx tsc -p tsconfig.app.json --noEmit` | Passed |
 | `npx tsc -p tsconfig.spec.json --noEmit` | Passed |
+| `npm run build` after reusable-component extraction | Passed |
 | `npm run lint` | Blocked: configured `@angular/build:tsc` builder is unavailable in the installed CLI environment |
 
 Known non-blocking build output consists of existing Sass deprecation notices and stylesheet budget warnings. Lint remains a tooling configuration gap and is not represented as a passing result.
 
 ## UI Preservation Record
 
-No stylesheet, token, renderer-library, or protected layout values were changed. Valid route/data paths retain the existing templates and controls. The only new rendered branches are missing-entity and rejected-upload states, both behavior-driven states required by the plan. The baseline screenshots and measurements are the comparison reference for subsequent slices.
+No stylesheet, token, renderer-library, or protected layout values were intentionally redesigned. Valid route/data paths retain the existing templates and controls. The reusable order summary and workflow timeline components were extracted from existing markup and then wired back into the live pages using the same visual structure. The only new rendered branches are missing-entity and rejected-upload states, both behavior-driven states required by the plan. The baseline screenshots and measurements remain the comparison reference for subsequent slices.
 
 ## Remaining Work
 
 - Keep the restored `karma.conf.js` test-runner configuration and run it in CI/local environments.
-- Add focused tests for invalid ids, creation metadata, and Order Files validation.
+- Add focused tests for invalid ids, creation metadata, Order Files validation, and the new reusable components.
 - Complete shared table-state/icon extraction only where DOM/computed-style parity is demonstrated.
 - Capture remaining protected surfaces, accessibility scans, responsive artifacts, and final before/after comparisons.
 - Complete final re-audit and update the historical parity report with executable evidence.

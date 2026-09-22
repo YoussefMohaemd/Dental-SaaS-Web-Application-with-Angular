@@ -36,61 +36,7 @@
       </div>
     </div>
 
-    <ol class="relative space-y-3 border-l-2 border-border pl-5" aria-label="Workflow timeline">
-      @for (stage of stages; track stage.status; let i = $index) {
-        <li
-          class="relative rounded-xl border p-4"
-          [class]="isStageCurrent(i) ? 'border-primary bg-primary/5' : isStageDone(i) ? 'border-success/40 bg-success/5' : 'border-border bg-card'"
-        >
-          <span
-            class="absolute -left-[27px] flex h-5 w-5 items-center justify-center rounded-full border-2 border-white text-[10px] font-bold"
-            [class]="isStageDone(i) ? 'bg-success text-white' : isStageCurrent(i) ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'"
-            aria-hidden="true"
-          >
-            @if (isStageDone(i)) { <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> } @else { {{ i + 1 }} }
-          </span>
-          <div class="flex items-center gap-2">
-            <p class="text-sm font-semibold text-foreground">{{ stage.label }}</p>
-            <span class="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">{{ stage.status }}</span>
-          </div>
-          <p class="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-            {{ stage.owner }}
-            @if (isStageDone(i)) {
-              <span class="text-success">· Completed {{ formatUtils.timeAgo(current.updatedAt) }}</span>
-            }
-          </p>
-          <p class="mt-1.5 text-xs text-muted-foreground">{{ stage.description }}</p>
-          @if (stage.actions.length > 0) {
-            <ul class="mt-2 space-y-1">
-              @for (action of stage.actions; track action) {
-                <li class="flex items-center gap-2 text-xs" [class]="isStageDone(i) ? 'text-muted-foreground line-through' : 'text-foreground'">
-                  <span
-                    class="flex h-3.5 w-3.5 items-center justify-center rounded border text-[9px]"
-                    [class]="isStageDone(i) ? 'border-success bg-success text-white' : 'border-border'"
-                    aria-hidden="true"
-                  >
-                    @if (isStageDone(i)) { <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> }
-                  </span>
-                  {{ action }}
-                </li>
-              }
-            </ul>
-          }
-        </li>
-      }
-    </ol>
-
-    <div class="mt-5 rounded-xl border border-border bg-card p-5">
-      <h2 class="mb-3 text-sm font-semibold text-foreground">Timeline Summary</h2>
-      <dl class="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
-        <div><dt class="text-[11px] uppercase tracking-wide text-muted-foreground">Received</dt><dd class="font-semibold text-foreground">{{ formatUtils.formatDate(current.receivedAt) }}</dd></div>
-        <div><dt class="text-[11px] uppercase tracking-wide text-muted-foreground">Sent to Production</dt><dd class="font-semibold text-foreground">{{ current.sentAt ? formatUtils.formatDate(current.sentAt) : '—' }}</dd></div>
-        <div><dt class="text-[11px] uppercase tracking-wide text-muted-foreground">Last Update</dt><dd class="font-semibold text-foreground">{{ formatUtils.formatDate(current.updatedAt) }}</dd></div>
-        <div><dt class="text-[11px] uppercase tracking-wide text-muted-foreground">Due Date</dt><dd class="font-semibold text-foreground">{{ formatUtils.formatDate(current.dueDate) }}</dd></div>
-      </dl>
-      <p class="mt-3 text-xs text-muted-foreground">{{ completedCount() }} of {{ stages.length }} stages complete</p>
-    </div>
+    <app-workflow-timeline [stages]="stages" [currentIndex]="currentIndex()" [completedCount]="completedCount()" [currentUpdatedAt]="order() ? formatUtils.formatDate(order()!.updatedAt) : ''"></app-workflow-timeline>
   } @else {
     <p class="rounded-xl border border-border bg-card p-6 text-center text-sm text-muted-foreground">No order found.</p>
   }

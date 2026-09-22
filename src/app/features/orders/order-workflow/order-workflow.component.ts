@@ -6,6 +6,7 @@ import { NavigationService } from '@core/services/navigation.service';
 import { FormatUtils } from '@core/services/format-utils.service';
 import { OrderStatus } from '@core/models';
 import { ButtonComponent } from '@shared/components/button/button.component';
+import { WorkflowTimelineComponent } from '@shared/components/workflow-timeline/workflow-timeline.component';
 import { SafeHtmlPipe } from '@shared/pipes/safe-html.pipe';
 
 interface WorkflowStage {
@@ -31,7 +32,7 @@ const STAGES: WorkflowStage[] = [
 @Component({
   selector: 'app-order-workflow',
   standalone: true,
-  imports: [CommonModule, ButtonComponent, SafeHtmlPipe],
+  imports: [CommonModule, ButtonComponent, WorkflowTimelineComponent, SafeHtmlPipe],
   templateUrl: './order-workflow.component.html',
   styleUrl: './order-workflow.component.scss'
 })
