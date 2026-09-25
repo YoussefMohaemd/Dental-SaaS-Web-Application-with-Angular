@@ -198,6 +198,14 @@
   color: var(--color-muted-foreground);
 }
 
+.visual-grid-metric-value {
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-foreground);
+  line-height: 1.2;
+}
+
 ::ng-deep .showcase-table .p-datatable-thead > tr > th {
   background: color-mix(in srgb, var(--color-muted) 78%, transparent);
   color: var(--color-muted-foreground);
