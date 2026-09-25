@@ -114,7 +114,7 @@
                       <td class="py-2.5 pr-2 font-mono text-xs font-semibold text-primary">{{ order.orderNumber }}</td>
                       <td class="py-2.5 pr-2 text-xs text-foreground">{{ order.patientName }}</td>
                       <td class="py-2.5 pr-2 text-xs text-muted-foreground">{{ order.restoration }}</td>
-                      <td class="py-2.5 pr-2 text-xs text-muted-foreground">{{ order.status }}</td>
+                      <td class="py-2.5 pr-2 text-xs text-muted-foreground">{{ statusLabel(order.status) }}</td>
                       <td class="py-2.5 font-mono text-xs text-muted-foreground">{{ formatUtils.formatDate(order.updatedAt) }}</td>
                     </tr>
                   }
@@ -131,7 +131,7 @@
                 <li class="flex items-center gap-2.5 text-sm">
                   <span class="h-2 w-2 shrink-0 rounded-full bg-primary" aria-hidden="true"></span>
                   <button type="button" (click)="openOrder(order.id)" class="font-mono text-xs font-semibold text-primary hover:underline">{{ order.orderNumber }}</button>
-                  <span class="truncate text-xs text-muted-foreground">{{ order.patientName }} · {{ order.status }} · {{ formatUtils.timeAgo(order.updatedAt) }}</span>
+                  <span class="truncate text-xs text-muted-foreground">{{ order.patientName }} · {{ statusLabel(order.status) }} · {{ formatUtils.timeAgo(order.updatedAt) }}</span>
                 </li>
               } @empty {
                 <li class="py-6 text-center text-xs text-muted-foreground">No recent activity.</li>

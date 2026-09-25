@@ -7,6 +7,7 @@ import { OrderDataService } from '@core/services/order-data.service';
 import { NavigationService } from '@core/services/navigation.service';
 import { FormatUtils } from '@core/services/format-utils.service';
 import { AvatarComponent } from '@shared/components/avatar/avatar.component';
+import { statusDisplayLabel } from '@shared/utils/status-label';
 
 type ClinicTab = 'overview' | 'doctors' | 'orders' | 'activity';
 
@@ -70,5 +71,9 @@ export class ClinicDetailsComponent {
 
   statusClasses(status: string): string {
     return status === 'Active' ? 'bg-emerald-50 text-emerald-700' : 'bg-muted text-muted-foreground';
+  }
+
+  statusLabel(status: string): string {
+    return statusDisplayLabel(status);
   }
 }

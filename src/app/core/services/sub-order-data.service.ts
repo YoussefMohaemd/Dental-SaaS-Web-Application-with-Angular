@@ -73,7 +73,7 @@ function buildDetailFromSummary(
 }
 
 const FALLBACK_SUB_ORDERS: SubOrder[] = [
-  { id: 'so-1', orderId: 'ord-1', service: 'Surgical Guide', icon: '🦷', status: 'completed', formsComplete: 3, formsTotal: 3, scansComplete: 3, scansTotal: 3, teeth: [14, 15, 24, 25], priority: 'High', dueDate: '2024-03-15', notes: 'Standard surgical guide for dual implant placement at sites 14, 15, 24, 25. Straumann BLT Ø4.1mm.' },
+  { id: 'so-1', orderId: 'ord-1', service: 'Surgical Guide', icon: '🦷', status: 'done', formsComplete: 3, formsTotal: 3, scansComplete: 3, scansTotal: 3, teeth: [14, 15, 24, 25], priority: 'High', dueDate: '2024-03-15', notes: 'Standard surgical guide for dual implant placement at sites 14, 15, 24, 25. Straumann BLT Ø4.1mm.' },
   { id: 'so-2', orderId: 'ord-1', service: 'GFMR', icon: '⚙️', status: 'in-progress', formsComplete: 2, formsTotal: 3, scansComplete: 1, scansTotal: 3, teeth: [11, 12, 13, 21, 22, 23], priority: 'High', dueDate: '2024-03-20', notes: 'Full mouth rehabilitation. Occlusal vertical dimension (OVD) increase of 3mm confirmed by Dr. Kim. Mutually protected occlusion concept.' },
   { id: 'so-3', orderId: 'ord-1', service: 'Final Restoration', icon: '✨', status: 'pending', formsComplete: 0, formsTotal: 2, scansComplete: 0, scansTotal: 2, teeth: [16, 17, 26, 27], priority: 'Normal', dueDate: '2024-04-01', notes: 'Posterior zirconia crowns with shade A2 and internal characterization. Confirm margin type with Dr. Kim before fabrication.' },
   { id: 'so-4', orderId: 'ord-1', service: 'Treatment Plan', icon: '📋', status: 'pending', formsComplete: 1, formsTotal: 2, scansComplete: 0, scansTotal: 1, teeth: [], priority: 'Normal', dueDate: '2024-03-10', notes: 'Full treatment plan document to be reviewed by lab and clinic team jointly before proceeding.' },
@@ -434,7 +434,7 @@ export class SubOrderDataService {
   private deriveStatus(formsTotal: number, formsComplete: number, scansTotal: number, scansComplete: number): SubOrder['status'] {
     const total = formsTotal + scansTotal;
     const done = formsComplete + scansComplete;
-    if (total > 0 && done >= total) return 'completed';
+    if (total > 0 && done >= total) return 'done';
     if (done > 0) return 'in-progress';
     return 'pending';
   }

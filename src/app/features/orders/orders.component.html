@@ -51,7 +51,7 @@
         >
           <option value="">Status</option>
           @for (status of statusOptions; track status) {
-            <option [value]="status">{{ status }}</option>
+            <option [value]="status">{{ orderStatusLabel(status) }}</option>
           }
         </select>
         <span [innerHTML]="getIconSvg('chevron-down') | safeHtml" class="absolute right-1.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"></span>
@@ -113,8 +113,8 @@
         <span class="text-xs text-muted-foreground">Active filters:</span>
         @for (filter of activeFilters(); track filter.type + '-' + filter.label) {
           <span class="flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-            {{ filter.label }}
-            <button type="button" (click)="removeFilter(filter.type, filter.label)" class="hover:text-danger transition-colors" [attr.aria-label]="'Remove ' + filter.label + ' filter'">
+            {{ filter.type === 'status' ? orderStatusLabel($any(filter.label)) : filter.label }}
+            <button type="button" (click)="removeFilter(filter.type, filter.label)" class="hover:text-danger transition-colors" [attr.aria-label]="'Remove ' + (filter.type === 'status' ? orderStatusLabel($any(filter.label)) : filter.label) + ' filter'">
               <span [innerHTML]="getIconSvg('x') | safeHtml"></span>
             </button>
           </span>
@@ -224,6 +224,65 @@
                 }"
                 [class.is-leaving]="rowData.kind === 'service' && isCollapsing(rowData.order.id)"
               >
+                @if (rowData.kind === 'service' && rowData.subOrder) {
+                  <td class="sub-order-empty-cell" aria-hidden="true"></td>
+                  <td class="treetable-expander-cell sub-order-empty-cell" aria-hidden="true"></td>
+                  <td class="sub-order-service-cell" colspan="5">
+                    <div class="sub-order-service" role="group" [attr.aria-label]="'Sub-order ' + rowData.subOrder.service + ' details'">
+                      <div class="sub-order-service-block" [ngStyle]="subOrderServiceBlockStyle(rowData.subOrder)">
+                        <span class="child-connector" aria-hidden="true">↳</span>
+                        <span class="service-icon" aria-hidden="true">{{ rowData.subOrder.icon }}</span>
+                        <span class="sub-order-service-text">
+                          <span class="sub-order-service-topline">
+                            <button
+                              type="button"
+                              (click)="openSubOrder(rowData.order.id, rowData.subOrder.id)"
+                              class="service-name"
+                              [title]="'Open sub-order ' + rowData.subOrder.service + ' — details, forms, scans and files'"
+                              [attr.aria-label]="'Open sub-order ' + rowData.subOrder.service + ' of order ' + rowData.order.orderNumber + ' — details, forms, scans and files'"
+                            >{{ rowData.subOrder.service }}</button>
+                            <span class="service-id" title="Sub-order ID">{{ rowData.subOrder.id }}</span>
+                          </span>
+                          <span class="sub-order-service-meta">Due {{ formatUtils.formatDate(rowData.subOrder.dueDate) }} · {{ subOrderProgress(rowData.subOrder) }}% ready</span>
+                        </span>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="sub-order-teeth-cell">
+                    <div class="sub-order-teeth">
+                      @if (rowData.subOrder.teeth.length > 0) {
+                        <span class="font-mono text-[10px] text-muted-foreground" [title]="'Teeth: ' + rowData.subOrder.teeth.join(', ')">{{ rowData.subOrder.teeth.join(', ') }}</span>
+                      } @else {
+                        <span class="text-muted-foreground/40">—</span>
+                      }
+                    </div>
+                  </td>
+                  <td class="sub-order-forms-cell" colspan="4">
+                    <div class="sub-order-forms">
+                      <span class="whitespace-nowrap text-[10px] text-muted-foreground" [title]="'Forms ' + rowData.subOrder.formsComplete + '/' + rowData.subOrder.formsTotal + ', scans ' + rowData.subOrder.scansComplete + '/' + rowData.subOrder.scansTotal">Forms {{ rowData.subOrder.formsComplete }}/{{ rowData.subOrder.formsTotal }} · Scans {{ rowData.subOrder.scansComplete }}/{{ rowData.subOrder.scansTotal }}</span>
+                    </div>
+                  </td>
+                  <td class="sub-order-status-cell" colspan="2">
+                    <div class="sub-order-status">
+                      <span class="sub-order-status-surface" [ngStyle]="subOrderStatusBlockStyle(rowData.subOrder.status)">
+                        <span class="sub-order-status-block">
+                          {{ subOrderStatusLabel(rowData.subOrder.status) }}
+                        </span>
+                      </span>
+                    </div>
+                  </td>
+                  <td class="sub-order-note-cell">
+                    <div class="sub-order-note">
+                      @if (rowData.subOrder.notes) {
+                        <span class="inline-flex" aria-hidden="true" [innerHTML]="getIconSvg('file-text') | safeHtml"></span>
+                        <span [title]="rowData.subOrder.notes">{{ shorten(rowData.subOrder.notes, 48) }}</span>
+                      } @else {
+                        <span class="text-muted-foreground/40">—</span>
+                      }
+                    </div>
+                  </td>
+                  <td class="sub-order-trailing-cell" colspan="7" aria-hidden="true"></td>
+                } @else {
                 <td>
                   @if (rowData.kind === 'order') {
                     <button type="button" (click)="toggleSelect(rowData.order.id)" class="hover:text-primary transition-colors" [class]="isSelected(rowData.order.id) ? 'text-primary' : 'text-muted-foreground'" [attr.aria-label]="'Select order ' + rowData.order.orderNumber" [attr.aria-pressed]="isSelected(rowData.order.id)">
@@ -359,9 +418,11 @@
                 </td>
                 <td>
                   @if (rowData.kind === 'order') {
-                    <app-status-badge [status]="rowData.order.status" size="xs" />
+                    <app-status-badge [status]="rowData.order.status" [label]="orderStatusLabel(rowData.order.status)" size="sm" />
                   } @else if (rowData.subOrder) {
-                    <span class="rounded px-1.5 py-0.5 text-[9px] font-semibold" [class]="subOrderStatusClasses(rowData.subOrder.status)">{{ subOrderStatusLabel(rowData.subOrder.status) }}</span>
+                    <span class="treetable-status-surface" [ngStyle]="subOrderStatusBlockStyle(rowData.subOrder.status)">
+                      <span class="treetable-status-block">{{ subOrderStatusLabel(rowData.subOrder.status) }}</span>
+                    </span>
                   } @else {
                     <span class="text-muted-foreground/30">—</span>
                   }
@@ -447,11 +508,12 @@
                     <span class="text-muted-foreground/30">—</span>
                   }
                 </td>
+                }
               </tr>
             </ng-template>
             <ng-template #emptymessage>
               <tr>
-                <td colspan="22" class="!py-10 text-center text-sm text-muted-foreground">No orders match the current filters.</td>
+                <td colspan="22" class="py-10! text-center text-sm text-muted-foreground">No orders match the current filters.</td>
               </tr>
             </ng-template>
           </p-treetable>

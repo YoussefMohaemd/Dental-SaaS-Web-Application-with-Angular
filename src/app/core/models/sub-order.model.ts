@@ -1,4 +1,4 @@
-export type SubOrderStatus = 'completed' | 'in-progress' | 'pending' | 'blocked';
+export type SubOrderStatus = 'done' | 'in-progress' | 'pending' | 'blocked';
 
 export interface SubOrder {
   id: string;
@@ -59,7 +59,7 @@ export interface SubOrderWorkflowStep {
   name: string;
   description: string;
   assignee: string;
-  state: 'completed' | 'current' | 'pending';
+  state: 'done' | 'current' | 'pending';
   requiredActions: string[];
 }
 

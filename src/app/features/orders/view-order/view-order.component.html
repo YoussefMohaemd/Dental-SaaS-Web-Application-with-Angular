@@ -13,7 +13,7 @@
             [class]="o.status === 'Completed' ? 'bg-success/10 text-success' :
               o.status === 'Production' || o.status === 'Design' ? 'bg-primary/10 text-primary' :
               'bg-muted text-muted-foreground'">
-            {{ o.status }}
+            {{ statusLabel(o.status) }}
           </span>
           <span class="px-2 py-0.5 rounded-full text-xs font-medium border"
             [class]="o.priority === 'Urgent' ? 'border-danger/40 text-danger bg-danger/5' :

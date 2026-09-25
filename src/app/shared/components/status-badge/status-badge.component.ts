@@ -1,5 +1,6 @@
 import { Component, input, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { statusDisplayLabel } from '@shared/utils/status-label';
 
 /** Status -> badge colors. Kept local so this presentational component never
  *  depends on injectable services (React parity: StatusBadge is pure UI). */
@@ -32,9 +33,11 @@ const DEFAULT_STYLE = { bg: '#F1F5F9', fg: '#64748B' };
 })
 export class StatusBadgeComponent {
   readonly status = input.required<string>();
+  readonly label = input<string | null | undefined>(undefined);
   readonly size = input<'xs' | 'sm' | 'md'>('xs');
 
   readonly styles = computed(() => STATUS_STYLES[this.status()] ?? DEFAULT_STYLE);
+  readonly displayLabel = computed(() => this.label() ?? statusDisplayLabel(this.status()));
 
   readonly badgeClasses = computed(() => {
     const base = 'inline-flex items-center px-1.5 py-0.5 rounded font-semibold';

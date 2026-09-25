@@ -17,6 +17,7 @@ import { OrderSummaryCardComponent } from '@shared/components/order-summary-card
 import { SafeHtmlPipe } from '@shared/pipes/safe-html.pipe';
 import { lucideSvg } from '@shared/icons/lucide-icons';
 import { SubOrderDataService } from '@core/services/sub-order-data.service';
+import { statusDisplayLabel } from '@shared/utils/status-label';
 
 /**
  * Single source of truth for the Order → Sub Order relationship.
@@ -119,7 +120,7 @@ export class ViewOrderComponent implements OnInit {
     return this.subOrderService.getByOrderId(order.id);
   });
 
-  readonly completedServices = computed(() => this.subOrders().filter(s => s.status === 'completed').length);
+  readonly completedServices = computed(() => this.subOrders().filter(s => s.status === 'done').length);
   readonly totalServices = computed(() => this.subOrders().length);
   readonly overallProgress = computed(() => {
     const total = this.totalServices();
@@ -284,7 +285,7 @@ export class ViewOrderComponent implements OnInit {
 
   getStatusConfig(status: string) {
     const configs: Record<string, { label: string; color: string; bg: string; icon: string }> = {
-      completed: { label: 'Completed', color: 'text-success', bg: 'bg-success/10', icon: 'check-circle-2' },
+      done: { label: 'done', color: 'text-success', bg: 'bg-success/10', icon: 'check-circle-2' },
       'in-progress': { label: 'In Progress', color: 'text-primary', bg: 'bg-primary/10', icon: 'clock' },
       pending: { label: 'Pending', color: 'text-muted-foreground', bg: 'bg-muted', icon: 'circle' },
       blocked: { label: 'Blocked', color: 'text-danger', bg: 'bg-danger/10', icon: 'alert-triangle' }
@@ -292,8 +293,12 @@ export class ViewOrderComponent implements OnInit {
     return configs[status] || configs['pending'];
   }
 
+  statusLabel(status: string): string {
+    return statusDisplayLabel(status);
+  }
+
   getStatusIconSvg(name: string, size = 12): string {
-    // Exact React parity: completed=CheckCircle2(12 white), in-progress=Clock,
+    // Exact React parity: done=CheckCircle2(12 white), in-progress=Clock,
     // pending=Circle, blocked=AlertTriangle. Sub-order badges use 9px.
     const map: Record<string, string> = {
       'check-circle-2': 'circle-check',

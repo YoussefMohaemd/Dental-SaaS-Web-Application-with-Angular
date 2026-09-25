@@ -4,13 +4,14 @@ import { TreeTableModule } from 'primeng/treetable';
 import { TreeNode } from 'primeng/api';
 import { OrderDataService } from '@core/services/order-data.service';
 import { SubOrderDataService } from '@core/services/sub-order-data.service';
+import { SubOrderColorService } from '@core/services/sub-order-color.service';
 import { NavigationService } from '@core/services/navigation.service';
 import { FormatUtils } from '@core/services/format-utils.service';
 import { Order, OrderStatus, Priority, SubOrder } from '@core/models';
-import { StatusBadgeComponent } from '@shared/components/status-badge/status-badge.component';
 import { ArchBadgeComponent } from '@shared/components/arch-badge/arch-badge.component';
 import { ButtonComponent } from '@shared/components/button/button.component';
 import { SearchInputComponent } from '@shared/components/search-input/search-input.component';
+import { StatusBadgeComponent } from '@shared/components/status-badge/status-badge.component';
 import { SafeHtmlPipe } from '../../shared/pipes/safe-html.pipe';
 import { lucideSvg } from '@shared/icons/lucide-icons';
 import { filterTableRows } from '@shared/utils/table-state';
@@ -65,6 +66,24 @@ const COLLAPSE_ANIMATION_MS = 220;
 const STATUS_OPTIONS: OrderStatus[] = ['New', 'Review', 'Design', 'Production', 'Quality Check', 'Ready', 'Completed', 'Cancelled'];
 const PRIORITY_OPTIONS: Priority[] = ['Low', 'Normal', 'High', 'Urgent'];
 
+const ORDER_STATUS_BLOCK_STYLES: Record<OrderStatus, { bg: string; fg: string }> = {
+  'New': { bg: '#F1F5F9', fg: '#475569' },
+  'Review': { bg: '#FFFBEB', fg: '#B45309' },
+  'Design': { bg: '#ECFEFF', fg: '#164E63' },
+  'Production': { bg: '#EFF6FF', fg: '#1E40AF' },
+  'Quality Check': { bg: '#F5F3FF', fg: '#5B21B6' },
+  'Ready': { bg: '#ECFDF5', fg: '#065F46' },
+  'Completed': { bg: '#ECFDF5', fg: '#065F46' },
+  'Cancelled': { bg: '#FEF2F2', fg: '#B91C1C' },
+};
+
+const SUB_ORDER_STATUS_BLOCK_STYLES: Record<SubOrder['status'], { bg: string; fg: string }> = {
+  'pending': { bg: '#E2E8F0', fg: '#475569' },
+  'in-progress': { bg: '#DBEAFE', fg: '#1E40AF' },
+  'blocked': { bg: '#FECACA', fg: '#991B1B' },
+  'done': { bg: '#D1FAE5', fg: '#065F46' },
+};
+
 /** Human-readable column names for sort-button accessible labels. */
 const SORT_COLUMN_LABELS: Partial<Record<keyof Order, string>> = {
   orderNumber: 'Order number',
@@ -105,13 +124,14 @@ export function compareOrderValues(a: unknown, b: unknown): number {
 @Component({
   selector: 'app-orders',
   standalone: true,
-  imports: [CommonModule, TreeTableModule, StatusBadgeComponent, ArchBadgeComponent, ButtonComponent, SearchInputComponent, SafeHtmlPipe],
+  imports: [CommonModule, TreeTableModule, ArchBadgeComponent, ButtonComponent, SearchInputComponent, StatusBadgeComponent, SafeHtmlPipe],
   templateUrl: './orders.component.html',
   styleUrl: './orders.component.scss'
 })
 export class OrdersComponent {
   private readonly orderService = inject(OrderDataService);
   private readonly subOrderService = inject(SubOrderDataService);
+  private readonly subOrderColorService = inject(SubOrderColorService);
   protected readonly navigationService = inject(NavigationService);
   protected readonly formatUtils = inject(FormatUtils);
 
@@ -501,18 +521,40 @@ export class OrdersComponent {
     });
   }
 
+  orderStatusLabel(status: OrderStatus): string {
+    if (status === 'Completed') return 'Shapped';
+    return status;
+  }
+
   subOrderStatusLabel(status: SubOrder['status']): string {
-    if (status === 'completed') return 'Completed';
+    if (status === 'done') return 'done';
     if (status === 'in-progress') return 'In Progress';
     if (status === 'blocked') return 'Blocked';
     return 'Pending';
   }
 
-  subOrderStatusClasses(status: SubOrder['status']): string {
-    if (status === 'completed') return 'bg-emerald-50 text-emerald-700';
-    if (status === 'in-progress') return 'bg-blue-50 text-blue-700';
-    if (status === 'blocked') return 'bg-red-50 text-red-700';
-    return 'bg-muted text-muted-foreground';
+  orderStatusBlockStyle(status: OrderStatus): Record<string, string> {
+    const style = ORDER_STATUS_BLOCK_STYLES[status] ?? { bg: '#F1F5F9', fg: '#64748B' };
+    return {
+      'background-color': style.bg,
+      color: style.fg,
+    };
+  }
+
+  subOrderStatusBlockStyle(status: SubOrder['status']): Record<string, string> {
+    const style = SUB_ORDER_STATUS_BLOCK_STYLES[status] ?? { bg: '#F1F5F9', fg: '#64748B' };
+    return {
+      'background-color': style.bg,
+      color: style.fg,
+    };
+  }
+
+  subOrderServiceBlockStyle(subOrder: SubOrder): Record<string, string> {
+    const background = this.subOrderColorService.colorForServiceLabel(subOrder.service);
+    return {
+      'background-color': background,
+      color: this.contrastText(background),
+    };
   }
 
   subOrderProgress(sub: SubOrder): number {
@@ -523,6 +565,24 @@ export class OrdersComponent {
 
   shorten(value: string, maxLength: number): string {
     return value.length > maxLength ? `${value.slice(0, maxLength)}…` : value;
+  }
+
+  private contrastText(hex: string): string {
+    const parsed = this.parseHex(hex);
+    if (!parsed) return '#0F172A';
+    const { r, g, b } = parsed;
+    const luminance = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+    return luminance > 0.62 ? '#0F172A' : '#FFFFFF';
+  }
+
+  private parseHex(hex: string): { r: number; g: number; b: number } | null {
+    const raw = hex.replace('#', '').trim();
+    if (raw.length !== 6) return null;
+    const r = Number.parseInt(raw.slice(0, 2), 16);
+    const g = Number.parseInt(raw.slice(2, 4), 16);
+    const b = Number.parseInt(raw.slice(4, 6), 16);
+    if (![r, g, b].every(Number.isFinite)) return null;
+    return { r, g, b };
   }
 
   changeRequestClasses(changeRequest: string): string {

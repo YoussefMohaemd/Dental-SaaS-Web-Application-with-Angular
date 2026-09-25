@@ -175,7 +175,7 @@ export class SubOrderComponent {
   }
 
   formStatusText(form: SubOrderFormItem): string {
-    if (form.status === 'complete') return 'Completed';
+    if (form.status === 'complete') return 'done';
     if (form.required) return 'Required';
     if (form.status === 'optional') return 'Optional';
     return 'Pending';
@@ -282,14 +282,14 @@ export class SubOrderComponent {
 
   statusBadgeClasses(): string {
     const status = this.subOrder()?.status;
-    if (status === 'completed') return 'bg-success/10 text-success';
+    if (status === 'done') return 'bg-success/10 text-success';
     if (status === 'in-progress') return 'bg-primary/10 text-primary';
     return 'bg-muted text-muted-foreground';
   }
 
   statusLabel(): string {
     const status = this.subOrder()?.status;
-    if (status === 'completed') return 'Completed';
+    if (status === 'done') return 'done';
     if (status === 'in-progress') return 'In Progress';
     if (status === 'blocked') return 'Blocked';
     return 'Pending';
@@ -298,7 +298,7 @@ export class SubOrderComponent {
   getStatusIconSvg(size = 10): string {
     const status = this.subOrder()?.status;
     const common = `width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"`;
-    if (status === 'completed') {
+    if (status === 'done') {
       return `<svg ${common}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`;
     }
     if (status === 'in-progress') {
