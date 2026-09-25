@@ -36,7 +36,7 @@
       variant="primary"
       size="md"
       [disabled]="actionDisabled()"
-      [attr.aria-label]="actionAriaLabel() || null"
+      [ariaLabel]="actionAriaLabel()"
       (onClick)="onActionClick()"
       class="flex items-center gap-2"
     >

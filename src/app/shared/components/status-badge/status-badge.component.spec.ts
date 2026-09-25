@@ -25,7 +25,7 @@ describe("StatusBadgeComponent", () => {
     fixture.componentRef.setInput("status", "Completed");
     fixture.detectChanges();
     const badge = fixture.debugElement.query(By.css("span"));
-    expect(badge.nativeElement.textContent.trim()).toBe("Shapped");
+    expect(badge.nativeElement.textContent.trim()).toBe("Shipped");
   });
 
   it("should apply correct background color for Completed status", () => {

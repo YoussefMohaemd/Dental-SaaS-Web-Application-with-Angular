@@ -584,7 +584,7 @@ export class OrdersComponent {
   }
 
   orderStatusLabel(status: OrderStatus): string {
-    if (status === "Completed") return "Shapped";
+    if (status === "Completed") return "Shipped";
     return status;
   }
 
