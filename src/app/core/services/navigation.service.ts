@@ -13,9 +13,15 @@ import {
 @Injectable({ providedIn: "root" })
 export class NavigationService {
   private readonly router = inject(Router);
+  private readonly mobileQuery: MediaQueryList | null =
+    typeof window !== "undefined" && "matchMedia" in window
+      ? window.matchMedia("(max-width: 640px)")
+      : null;
 
   readonly currentPage = signal<PageId>("dashboard");
   readonly currentParams = signal<NavParams>({});
+  readonly isMobile = signal(false);
+  private readonly desktopSidebarOpen = signal(true);
   readonly sidebarOpen = signal<boolean>(true);
   readonly searchOpen = signal<boolean>(false);
   readonly notificationsOpen = signal<boolean>(false);
@@ -69,6 +75,13 @@ export class NavigationService {
   readonly unreadNotificationsCount = signal<number>(3);
 
   constructor() {
+    this.applyViewportState(this.mobileQuery?.matches ?? false);
+    if (this.mobileQuery) {
+      const handler = (event: MediaQueryListEvent) =>
+        this.applyViewportState(event.matches);
+      this.mobileQuery.addEventListener("change", handler);
+    }
+
     this.router.events
       .pipe(
         filter(
@@ -79,6 +92,16 @@ export class NavigationService {
         const url = event.urlAfterRedirects;
         this.updateStateFromUrl(url);
       });
+  }
+
+  private applyViewportState(mobile: boolean): void {
+    this.isMobile.set(mobile);
+    if (mobile) {
+      this.sidebarOpen.set(false);
+      this.closeDropdowns();
+      return;
+    }
+    this.sidebarOpen.set(this.desktopSidebarOpen());
   }
 
   private updateStateFromUrl(url: string): void {
@@ -166,6 +189,7 @@ export class NavigationService {
   navigate(page: PageId, params?: NavParams): void {
     if (page === "login") {
       this.router.navigate(["/login"]);
+      if (this.isMobile()) this.sidebarOpen.set(false);
       this.closeDropdowns();
       return;
     }
@@ -203,15 +227,26 @@ export class NavigationService {
     const routeBuilder = routeMap[page];
     if (routeBuilder) {
       this.router.navigateByUrl(routeBuilder(params || {}));
+      if (this.isMobile()) this.sidebarOpen.set(false);
       this.closeDropdowns();
     }
   }
 
   toggleSidebar(): void {
-    this.sidebarOpen.update((v) => !v);
+    if (this.isMobile()) {
+      this.sidebarOpen.update((v) => !v);
+      return;
+    }
+    this.desktopSidebarOpen.update((v) => !v);
+    this.sidebarOpen.set(this.desktopSidebarOpen());
   }
 
   setSidebarOpen(open: boolean): void {
+    if (this.isMobile()) {
+      this.sidebarOpen.set(open);
+      return;
+    }
+    this.desktopSidebarOpen.set(open);
     this.sidebarOpen.set(open);
   }
 

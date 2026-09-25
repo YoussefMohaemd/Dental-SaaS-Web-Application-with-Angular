@@ -37,10 +37,11 @@
         variant="primary"
         size="md"
         (onClick)="navigateToAddPatient()"
+        aria-label="Add patient"
         class="flex items-center gap-2"
       >
         <span [innerHTML]="getIconSvg('plus') | safeHtml"></span>
-        Add Patient
+        <span class="hidden sm:inline">Add Patient</span>
       </app-button>
     </div>
   </div>
@@ -306,7 +307,7 @@
               [ngModel]="newClinic()"
               (ngModelChange)="newClinic.set($event)"
           /></label>
-          <div class="grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <label class="block"
               ><span class="mb-1 block text-xs font-semibold">Phone</span
               ><input

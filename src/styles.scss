@@ -11,6 +11,7 @@
   body {
     margin: 0;
     padding: 0;
+    overflow-x: hidden;
     font-family: var(--font-sans);
     background-color: var(--background);
     color: var(--foreground);
@@ -24,6 +25,11 @@
   body,
   app-root {
     height: 100%;
+  }
+
+  app-root {
+    display: block;
+    overflow-x: hidden;
   }
 
   ::selection {
@@ -237,10 +243,10 @@
   app-orders .orders-treetable.p-treetable .p-treetable-thead > tr > th {
     font-size: 11px;
     font-weight: 600;
-    background: #eaf1f8 !important;
+    background: color-mix(in srgb, var(--color-muted) 76%, var(--color-card)) !important;
     color: var(--color-muted-foreground);
     padding: 0.95rem 0.875rem;
-    border-bottom: 1px solid #d5deea !important;
+    border-bottom: 1px solid color-mix(in srgb, var(--color-border) 80%, var(--color-card)) !important;
     white-space: nowrap;
     position: sticky;
     top: 0;
@@ -266,6 +272,17 @@
     > th
     button:hover {
     color: var(--color-foreground);
+  }
+
+  [data-theme="dark"]
+    app-orders
+    .orders-treetable.p-treetable
+    .p-treetable-thead
+    > tr
+    > th {
+    background: color-mix(in srgb, var(--color-card) 86%, #0b1220) !important;
+    border-bottom: 1px solid color-mix(in srgb, var(--color-border) 78%, #0b1220) !important;
+    color: color-mix(in srgb, var(--color-muted-foreground) 90%, #f8fafc);
   }
 
   app-orders

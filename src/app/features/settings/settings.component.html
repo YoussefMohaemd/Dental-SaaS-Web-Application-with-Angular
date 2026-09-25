@@ -6,13 +6,16 @@
     </p>
   </div>
 
-  <div class="flex flex-1 gap-6 overflow-auto p-6">
-    <nav class="w-52 shrink-0 space-y-1" aria-label="Settings sections">
+  <div class="flex flex-1 flex-col gap-4 lg:flex-row lg:gap-6 overflow-auto p-4 sm:p-6">
+    <nav
+      class="w-full lg:w-52 shrink-0 flex lg:block gap-1.5 lg:space-y-1 overflow-x-auto pb-1"
+      aria-label="Settings sections"
+    >
       @for (item of sections; track item.id) {
         <button
           type="button"
           (click)="setSection(item.id)"
-          class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm transition-colors"
+          class="flex w-auto lg:w-full shrink-0 items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm whitespace-nowrap transition-colors"
           [class]="
             section() === item.id
               ? 'bg-primary/10 font-semibold text-primary'
@@ -120,7 +123,7 @@
                   >
                     <span
                       class="absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all"
-                      [class]="entry.value ? 'left-[22px]' : 'left-0.5'"
+                      [class]="entry.value ? 'left-5.5' : 'left-0.5'"
                     ></span>
                   </button>
                   <span class="text-sm text-foreground">{{ entry.label }}</span>
@@ -135,7 +138,7 @@
             aria-label="Appearance settings"
           >
             <h2 class="mb-3 text-sm font-semibold text-foreground">Theme</h2>
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <button
                 type="button"
                 (click)="setAppearance('light')"
@@ -188,7 +191,11 @@
             <h2 class="mb-2 mt-5 text-sm font-semibold text-foreground">
               Density
             </h2>
-            <div class="flex gap-3" role="group" aria-label="Interface density">
+            <div
+              class="flex flex-wrap gap-3"
+              role="group"
+              aria-label="Interface density"
+            >
               @for (
                 option of ["Compact", "Default", "Comfortable"];
                 track option
@@ -324,7 +331,7 @@
               >
                 <span
                   class="absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all"
-                  [class]="twoFactor() ? 'left-[22px]' : 'left-0.5'"
+                  [class]="twoFactor() ? 'left-5.5' : 'left-0.5'"
                 ></span>
               </button>
               <span class="text-sm"

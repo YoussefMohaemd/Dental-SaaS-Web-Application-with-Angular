@@ -113,3 +113,11 @@
 .quick-stat-sub {
   @apply text-xs text-muted-foreground;
 }
+
+@media (max-width: 640px) {
+  .dashboard-new-order-btn {
+    width: auto !important;
+    padding: 0.375rem 0.625rem !important;
+    font-size: 0.75rem !important;
+  }
+}

@@ -2,3 +2,9 @@
   display: block;
   height: 100%;
 }
+
+.cases-table-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}

@@ -1,7 +1,7 @@
 <div class="flex flex-col h-full">
   <div class="px-6 py-4 border-b border-border bg-card shrink-0">
-    <div class="flex items-center gap-3">
-      <div class="flex-1">
+    <div class="flex flex-wrap items-center gap-3">
+      <div class="min-w-0 flex-1">
         <h1 class="font-display font-bold text-lg text-foreground">Cases</h1>
         <p class="text-xs text-muted-foreground">
           {{ filtered().length }} dental cases
@@ -11,18 +11,19 @@
         variant="primary"
         size="md"
         (onClick)="navigateToCreateOrder()"
+        aria-label="Create new case"
         class="flex items-center gap-2"
       >
         <span [innerHTML]="getIconSvg('plus') | safeHtml"></span>
-        New Case
+        <span class="hidden sm:inline">New Case</span>
       </app-button>
     </div>
   </div>
 
   <div
-    class="px-6 py-3 border-b border-border bg-card shrink-0 flex items-center gap-3"
+    class="px-4 sm:px-6 py-3 border-b border-border bg-card shrink-0 flex flex-wrap items-center gap-3"
   >
-    <div class="relative flex-1 max-w-72">
+    <div class="relative w-full sm:w-auto flex-1 sm:max-w-72">
       <span
         [innerHTML]="getIconSvg('search') | safeHtml"
         class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
@@ -44,7 +45,7 @@
         <option [value]="status">{{ status }}</option>
       }
     </select>
-    <div class="ml-auto flex border border-border rounded-lg overflow-hidden">
+    <div class="sm:ml-auto flex border border-border rounded-lg overflow-hidden">
       <button
         (click)="setView('table')"
         [class]="
@@ -85,8 +86,9 @@
       </div>
     } @else if (view() === "table") {
       <div class="bg-card border border-border rounded-xl overflow-hidden">
-        <table class="w-full text-sm">
-          <thead className="bg-muted/40 border-b border-border">
+        <div class="cases-table-scroll">
+          <table class="w-full min-w-272 text-sm">
+            <thead class="bg-muted/40 border-b border-border">
             <tr>
               @for (
                 header of [
@@ -110,8 +112,8 @@
                 </th>
               }
             </tr>
-          </thead>
-          <tbody>
+            </thead>
+            <tbody>
             @for (c of pageData(); track c.id) {
               <tr
                 class="border-b border-border last:border-0 hover:bg-muted/20 cursor-pointer"
@@ -122,7 +124,7 @@
                     c.caseNumber
                   }}</span>
                 </td>
-                <td class="px-4 py-3 max-w-[200px]">
+                <td class="px-4 py-3 max-w-50">
                   <span
                     class="text-sm font-medium text-foreground truncate block"
                     >{{ c.title }}</span
@@ -135,7 +137,7 @@
                   {{ c.doctorName.replace("Dr. ", "") }}
                 </td>
                 <td
-                  class="px-4 py-3 text-xs text-muted-foreground truncate max-w-[120px]"
+                  class="px-4 py-3 text-xs text-muted-foreground truncate max-w-30"
                 >
                   {{ c.clinicName }}
                 </td>
@@ -158,8 +160,9 @@
                 </td>
               </tr>
             }
-          </tbody>
-        </table>
+            </tbody>
+          </table>
+        </div>
       </div>
     } @else {
       <div

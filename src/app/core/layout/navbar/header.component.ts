@@ -31,6 +31,10 @@ export class HeaderComponent {
   readonly isDark = this.themeService.isDark;
   readonly notifications = this.notificationService.recentNotifications;
   readonly unreadCount = this.notificationService.unreadCount;
+  readonly currentPageLabel = computed(() => {
+    const trail = this.breadcrumbs();
+    return trail[trail.length - 1]?.label ?? "Dashboard";
+  });
 
   readonly searchOpen = signal(false);
   readonly notificationsOpen = this.navigationService.notificationsOpen;

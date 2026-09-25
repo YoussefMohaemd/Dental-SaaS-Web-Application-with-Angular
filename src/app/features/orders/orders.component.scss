@@ -2,3 +2,16 @@
   display: block;
   height: 100%;
 }
+
+.orders-table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 640px) {
+  :host ::ng-deep .orders-treetable.p-treetable .p-treetable-table {
+    min-width: 120rem !important;
+  }
+}

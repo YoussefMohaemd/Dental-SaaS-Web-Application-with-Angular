@@ -1,4 +1,13 @@
-<div class="flex h-screen overflow-hidden bg-background">
+<div class="relative flex h-screen overflow-hidden bg-background">
+  @if (navigationService.isMobile() && navigationService.sidebarOpen()) {
+    <button
+      type="button"
+      class="fixed inset-0 z-40 bg-slate-950/40 sm:hidden"
+      (click)="navigationService.setSidebarOpen(false)"
+      aria-label="Close sidebar"
+    ></button>
+  }
+
   <app-sidebar />
   <div class="flex flex-col flex-1 min-w-0 overflow-hidden">
     <app-header />

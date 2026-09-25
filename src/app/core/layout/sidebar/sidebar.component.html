@@ -19,7 +19,7 @@
   <nav class="flex-1 py-3 overflow-y-auto sidebar-scrollbar">
     @for (item of navItems; track item.id) {
       <button
-        (click)="navigationService.navigate(item.id)"
+        (click)="navigationService.navigate(item.id); closeSidebarOnMobile()"
         [class]="navItemClasses(item)"
       >
         @if (isItemActive(item)) {

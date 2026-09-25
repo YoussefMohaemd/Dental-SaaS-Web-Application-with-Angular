@@ -1,6 +1,6 @@
 <div class="flex h-full flex-col">
   <div
-    class="flex shrink-0 items-center gap-3 border-b border-border bg-card px-6 py-4"
+    class="flex shrink-0 flex-wrap items-center gap-2 sm:gap-3 border-b border-border bg-card px-4 sm:px-6 py-3 sm:py-4"
   >
     <div class="min-w-0 flex-1">
       <h1 class="font-display text-lg font-bold text-foreground">Orders</h1>
@@ -8,10 +8,15 @@
         {{ filtered().length }} orders total
       </p>
     </div>
-    <app-button variant="primary" size="md" (onClick)="createOrder()">
+    <app-button
+      variant="primary"
+      size="md"
+      (onClick)="createOrder()"
+      aria-label="Create new order"
+    >
       <span class="flex items-center gap-2">
         <span [innerHTML]="getIconSvg('plus') | safeHtml"></span>
-        New Order
+        <span class="hidden sm:inline">New Order</span>
       </span>
     </app-button>
     <button
@@ -55,9 +60,9 @@
     </div>
   </div>
 
-  <div class="shrink-0 space-y-2 border-b border-border bg-card px-6 py-3">
+  <div class="shrink-0 space-y-2 border-b border-border bg-card px-4 sm:px-6 py-3">
     <div class="flex flex-wrap items-center gap-2">
-      <div class="relative flex-1 min-w-48 max-w-72">
+      <div class="relative w-full sm:w-auto flex-1 min-w-0 sm:min-w-48 sm:max-w-72">
         <app-search-input
           placeholder="Search order, patient, doctor..."
           size="xs"
@@ -125,10 +130,10 @@
           <span [innerHTML]="getIconSvg('x') | safeHtml"></span> Clear filters
         </button>
       }
-      <div class="flex-1"></div>
+      <div class="hidden lg:block flex-1"></div>
       @if (selectedIds().size > 0) {
         <div
-          class="flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/10 px-3 py-1.5"
+          class="flex w-full sm:w-auto items-center gap-2 rounded-lg border border-primary/20 bg-primary/10 px-3 py-1.5"
         >
           <span class="text-xs font-semibold text-primary"
             >{{ selectedIds().size }} selected</span
@@ -147,7 +152,7 @@
           </button>
         </div>
       }
-      <div class="relative flex items-center gap-2">
+      <div class="relative flex w-full sm:w-auto items-center justify-end gap-2">
         <label
           for="orders-page-size"
           class="text-xs text-muted-foreground whitespace-nowrap"
@@ -214,7 +219,7 @@
   <div class="flex-1 overflow-auto">
     @switch (viewState()) {
       @case ("loading") {
-        <div class="space-y-2 p-6" aria-label="Loading orders" role="status">
+        <div class="space-y-2 p-4 sm:p-6" aria-label="Loading orders" role="status">
           @for (row of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; track row) {
             <div class="skeleton h-10 animate-pulse rounded-lg bg-muted"></div>
           }
@@ -287,12 +292,13 @@
             </button>
           </div>
         } @else {
-          <p-treetable
-            [value]="treeNodes()"
-            [tableStyle]="{ 'min-width': '164rem' }"
-            styleClass="orders-treetable"
-            [rowHover]="true"
-          >
+          <div class="orders-table-scroll">
+            <p-treetable
+              [value]="treeNodes()"
+              [tableStyle]="{ 'min-width': '164rem' }"
+              styleClass="orders-treetable"
+              [rowHover]="true"
+            >
             <ng-template #header>
               <tr>
                 <th scope="col" style="width: 3rem; min-width: 3rem">
@@ -1182,7 +1188,8 @@
                 </td>
               </tr>
             </ng-template>
-          </p-treetable>
+            </p-treetable>
+          </div>
         }
       }
     }
@@ -1190,7 +1197,7 @@
 
   @if (viewState() === "normal" && filtered().length > 0) {
     <div
-      class="flex shrink-0 flex-wrap items-center justify-between gap-2 border-t border-border bg-card px-6 py-3"
+      class="flex shrink-0 flex-wrap items-center justify-between gap-2 border-t border-border bg-card px-4 sm:px-6 py-3"
     >
       <span class="text-xs text-muted-foreground" role="status"
         >Showing {{ rangeStart() }}–{{ rangeEnd() }} of

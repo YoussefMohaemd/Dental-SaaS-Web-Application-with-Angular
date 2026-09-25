@@ -23,6 +23,7 @@ export class SidebarComponent {
   readonly sidebarOpen = this.navigationService.sidebarOpen;
   readonly currentPage = this.navigationService.currentPage;
   readonly activeGroup = this.navigationService.activeGroup;
+  readonly isMobile = this.navigationService.isMobile;
   readonly isDark = this.themeService.isDark;
 
   readonly userInitials = "JR";
@@ -30,11 +31,26 @@ export class SidebarComponent {
   readonly userRole = "Lab Manager";
 
   readonly sidebarClasses = computed(
-    () => `
-    relative z-10 flex flex-col h-full bg-background text-foreground border-r border-border sidebar-surface-separator transition-all duration-300 shrink-0
-    ${this.sidebarOpen() ? "w-56" : "w-14"}
-  `,
+    () => {
+      if (this.isMobile()) {
+        return `fixed inset-y-0 left-0 z-50 flex h-screen w-72 max-w-[82vw] shrink-0 flex-col border-r border-border bg-background text-foreground sidebar-surface-separator transition-transform duration-300 ${
+          this.sidebarOpen()
+            ? "translate-x-0"
+            : "-translate-x-full pointer-events-none"
+        }`;
+      }
+
+      return `relative z-10 flex h-full shrink-0 flex-col border-r border-border bg-background text-foreground sidebar-surface-separator transition-all duration-300 ${
+        this.sidebarOpen() ? "w-56" : "w-14"
+      }`;
+    },
   );
+
+  closeSidebarOnMobile(): void {
+    if (this.isMobile()) {
+      this.navigationService.setSidebarOpen(false);
+    }
+  }
 
   navItemClasses(item: { id: string }): string {
     const isActive =

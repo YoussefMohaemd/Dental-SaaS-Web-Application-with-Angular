@@ -24,10 +24,11 @@
           variant="primary"
           size="md"
           (onClick)="openAddDialog()"
+          aria-label="Add clinic"
           class="flex items-center gap-2"
         >
           <span [innerHTML]="getIconSvg('plus') | safeHtml"></span>
-          Add Clinic
+          <span class="hidden sm:inline">Add Clinic</span>
         </app-button>
       </div>
     </div>

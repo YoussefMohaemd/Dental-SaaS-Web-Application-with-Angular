@@ -162,6 +162,7 @@
                 <app-button
                   variant="outline"
                   size="sm"
+                  aria-label="Create new order"
                   class="w-full flex items-center gap-2 justify-start"
                   (onClick)="navigationService.navigate('createOrder')"
                 >
@@ -170,7 +171,7 @@
                     class="text-muted-foreground"
                     style="width: 14px; height: 14px"
                   ></span>
-                  New Order
+                  <span class="hidden sm:inline">New Order</span>
                 </app-button>
               </div>
             </div>
