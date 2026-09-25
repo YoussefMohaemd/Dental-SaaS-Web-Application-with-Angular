@@ -1,0 +1,51 @@
+<div class="enterprise-toolbar shrink-0">
+  <div class="enterprise-toolbar-group enterprise-toolbar-group--grow">
+    <div class="enterprise-toolbar-search">
+      @if (searchIconSvg()) {
+        <span
+          [innerHTML]="searchIconSvg() | safeHtml"
+          class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+        ></span>
+      }
+
+      <app-input
+        [id]="searchId()"
+        [unstyled]="true"
+        inputClass="enterprise-toolbar-input"
+        [placeholder]="searchPlaceholder()"
+        [value]="searchValue()"
+        (valueChange)="onSearchChanged($event)"
+      ></app-input>
+    </div>
+
+    <app-select
+      [id]="selectId()"
+      [unstyled]="true"
+      selectClass="enterprise-toolbar-select cursor-pointer focus:outline-none"
+      [placeholder]="selectPlaceholder()"
+      [options]="selectOptions()"
+      [value]="selectValue()"
+      (valueChange)="onSelectChanged($event)"
+    ></app-select>
+
+    <ng-content select="[toolbar-extra-filters]"></ng-content>
+  </div>
+
+  <div class="enterprise-toolbar-group">
+    <app-button
+      variant="primary"
+      size="md"
+      [disabled]="actionDisabled()"
+      [attr.aria-label]="actionAriaLabel() || null"
+      (onClick)="onActionClick()"
+      class="flex items-center gap-2"
+    >
+      @if (actionIconSvg()) {
+        <span [innerHTML]="actionIconSvg() | safeHtml"></span>
+      }
+      <span class="hidden sm:inline">{{ actionLabel() }}</span>
+    </app-button>
+
+    <ng-content select="[toolbar-extra-actions]"></ng-content>
+  </div>
+</div>

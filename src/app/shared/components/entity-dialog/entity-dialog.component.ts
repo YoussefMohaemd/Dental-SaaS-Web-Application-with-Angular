@@ -1,11 +1,12 @@
 import { CommonModule } from "@angular/common";
 import { Component, input, output } from "@angular/core";
+import { A11yModule } from "@angular/cdk/a11y";
 import { DialogModule } from "primeng/dialog";
 
 @Component({
   selector: "app-entity-dialog",
   standalone: true,
-  imports: [CommonModule, DialogModule],
+  imports: [CommonModule, DialogModule, A11yModule],
   templateUrl: "./entity-dialog.component.html",
   styleUrl: "./entity-dialog.component.scss",
 })

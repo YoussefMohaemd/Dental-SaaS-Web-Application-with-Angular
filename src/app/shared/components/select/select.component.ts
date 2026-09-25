@@ -8,13 +8,14 @@ import {
   signal,
 } from "@angular/core";
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from "@angular/forms";
+import { TuiLabel } from "@taiga-ui/core/components/label";
 
 type SelectOption = string | { label: string; value: string };
 
 @Component({
   selector: "app-select",
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TuiLabel],
   templateUrl: "./select.component.html",
   styleUrl: "./select.component.scss",
   providers: [

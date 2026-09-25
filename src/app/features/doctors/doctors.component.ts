@@ -10,6 +10,8 @@ import { AvatarComponent } from "@shared/components/avatar/avatar.component";
 import { InputComponent } from "@shared/components/input/input.component";
 import { SelectComponent } from "@shared/components/select/select.component";
 import { EntityDialogComponent } from "@shared/components/entity-dialog/entity-dialog.component";
+import { DataTableToolbarComponent } from "@shared/components/data-table-toolbar/data-table-toolbar.component";
+import { SearchFilterToolbarComponent } from "@shared/components/search-filter-toolbar/search-filter-toolbar.component";
 import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
 import { filterTableRows, sortTableRows } from "@shared/utils/table-state";
 
@@ -29,6 +31,8 @@ interface SortConfig {
     InputComponent,
     SelectComponent,
     EntityDialogComponent,
+    DataTableToolbarComponent,
+    SearchFilterToolbarComponent,
     SafeHtmlPipe,
   ],
   templateUrl: "./doctors.component.html",

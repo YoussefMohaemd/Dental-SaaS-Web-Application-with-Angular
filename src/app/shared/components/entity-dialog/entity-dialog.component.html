@@ -24,7 +24,9 @@
     </div>
   </ng-template>
 
-  <ng-content></ng-content>
+  <div cdkTrapFocus [cdkTrapFocusAutoCapture]="visible()">
+    <ng-content></ng-content>
+  </div>
 
   <ng-template pTemplate="footer">
     <div class="flex justify-end gap-2">

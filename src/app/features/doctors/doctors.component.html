@@ -1,52 +1,25 @@
 <div class="enterprise-table-page">
-  <div class="enterprise-page-header shrink-0">
-    <div class="enterprise-header-copy">
-      <h1 class="font-display text-lg font-bold text-foreground">Doctors</h1>
-      <p class="text-xs text-muted-foreground">
-        {{ filtered().length }} referring dentists
-      </p>
-    </div>
-  </div>
+  <app-data-table-toolbar
+    title="Doctors"
+    [subtitle]="filtered().length + ' referring dentists'"
+  ></app-data-table-toolbar>
 
-  <div class="enterprise-toolbar shrink-0">
-    <div class="enterprise-toolbar-group enterprise-toolbar-group--grow">
-      <div class="enterprise-toolbar-search">
-        <span
-          [innerHTML]="getIconSvg('search') | safeHtml"
-          class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-        ></span>
-        <app-input
-          id="doctors-search"
-          [unstyled]="true"
-          inputClass="enterprise-toolbar-input"
-          placeholder="Search doctors..."
-          [value]="search()"
-          (valueChange)="onSearchValueChange($event)"
-        ></app-input>
-      </div>
-      <app-select
-        id="doctors-status-filter"
-        [unstyled]="true"
-        selectClass="enterprise-toolbar-select cursor-pointer focus:outline-none"
-        placeholder="All Status"
-        [options]="STATUS_OPTIONS"
-        [value]="statusFilter()"
-        (valueChange)="onStatusFilterValueChange($event)"
-      ></app-select>
-    </div>
-    <div class="enterprise-toolbar-group">
-      <app-button
-        variant="primary"
-        size="md"
-        (onClick)="openAddDialog()"
-        aria-label="Add doctor"
-        class="flex items-center gap-2"
-      >
-        <span [innerHTML]="getIconSvg('plus') | safeHtml"></span>
-        <span class="hidden sm:inline">Add Doctor</span>
-      </app-button>
-    </div>
-  </div>
+  <app-search-filter-toolbar
+    searchId="doctors-search"
+    searchPlaceholder="Search doctors..."
+    [searchValue]="search()"
+    [searchIconSvg]="getIconSvg('search')"
+    selectId="doctors-status-filter"
+    selectPlaceholder="All Status"
+    [selectOptions]="STATUS_OPTIONS"
+    [selectValue]="statusFilter()"
+    actionLabel="Add Doctor"
+    actionAriaLabel="Add doctor"
+    [actionIconSvg]="getIconSvg('plus')"
+    (searchValueChange)="onSearchValueChange($event)"
+    (selectValueChange)="onStatusFilterValueChange($event)"
+    (actionClick)="openAddDialog()"
+  ></app-search-filter-toolbar>
 
   <div class="enterprise-table-panel">
     <div class="enterprise-table-scroll">

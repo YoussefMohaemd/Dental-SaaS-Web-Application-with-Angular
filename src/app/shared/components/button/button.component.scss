@@ -36,6 +36,16 @@
   line-height: 1.25rem;
 }
 
+:host(.rounded-xl) button,
+:host(.rounded-xl) a {
+  border-radius: 0.75rem;
+}
+
+:host(.rounded-2xl) button,
+:host(.rounded-2xl) a {
+  border-radius: 1rem;
+}
+
 button > span,
 a > span {
   display: inline-flex;

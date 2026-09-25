@@ -8,9 +8,10 @@ import { Patient, PatientStatus } from "@core/models";
 import { ButtonComponent } from "@shared/components/button/button.component";
 import { AvatarComponent } from "@shared/components/avatar/avatar.component";
 import { InputComponent } from "@shared/components/input/input.component";
-import { SelectComponent } from "@shared/components/select/select.component";
 import { EntityDialogComponent } from "@shared/components/entity-dialog/entity-dialog.component";
 import { EnterprisePaginatorComponent } from "@shared/components/enterprise-paginator/enterprise-paginator.component";
+import { DataTableToolbarComponent } from "@shared/components/data-table-toolbar/data-table-toolbar.component";
+import { SearchFilterToolbarComponent } from "@shared/components/search-filter-toolbar/search-filter-toolbar.component";
 import { SafeHtmlPipe } from "../../shared/pipes/safe-html.pipe";
 import { filterTableRows } from "@shared/utils/table-state";
 import {
@@ -29,9 +30,10 @@ import {
     ButtonComponent,
     AvatarComponent,
     InputComponent,
-    SelectComponent,
     EntityDialogComponent,
     EnterprisePaginatorComponent,
+    DataTableToolbarComponent,
+    SearchFilterToolbarComponent,
     SafeHtmlPipe,
   ],
   templateUrl: "./patients.component.html",

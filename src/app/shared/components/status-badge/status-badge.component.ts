@@ -1,5 +1,6 @@
 import { Component, input, computed } from "@angular/core";
 import { CommonModule } from "@angular/common";
+import { TuiStatus } from "@taiga-ui/kit/components/status";
 import { statusDisplayLabel } from "@shared/utils/status-label";
 
 const STATUS_STYLES: Record<string, { bg: string; fg: string }> = {
@@ -25,7 +26,7 @@ const DEFAULT_STYLE = { bg: "#F1F5F9", fg: "#64748B" };
 @Component({
   selector: "app-status-badge",
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TuiStatus],
   templateUrl: "./status-badge.component.html",
   styleUrl: "./status-badge.component.scss",
 })

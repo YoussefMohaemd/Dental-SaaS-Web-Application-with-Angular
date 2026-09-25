@@ -12,6 +12,11 @@ Use PrimeNG for enterprise and data-heavy widgets:
 
 Avoid PrimeNG for simple form controls when shared Taiga-backed controls are sufficient.
 
+Current standard wrappers:
+
+- `app-entity-dialog` wraps PrimeNG `p-dialog` as the single app-level modal shell
+- `app-enterprise-paginator` wraps PrimeNG `p-paginator` as the default enterprise pagination control
+
 ## Taiga UI
 
 Use Taiga UI for lightweight control behavior via shared components:
@@ -22,12 +27,23 @@ Use Taiga UI for lightweight control behavior via shared components:
 
 Avoid direct ad-hoc usage in feature templates when a shared component already exists.
 
+Current standard wrappers:
+
+- `app-button` is the preferred basic action primitive and includes Taiga button behavior
+- `app-status-badge` includes Taiga status semantics for lightweight status display
+- Keep feature templates on shared wrappers instead of raw Taiga primitives unless a feature requires a unique behavior
+
 ## Angular CDK
 
 Use CDK only for interaction primitives:
 
 - Drag and drop (especially workflow board)
 - Focus, keyboard, overlay, and positioning primitives
+
+Current standard usage:
+
+- `workflow-board` uses CDK drag/drop as the canonical board interaction
+- `app-entity-dialog` applies CDK focus trapping for keyboard focus containment within modal content
 
 Do not use CDK as a visual component library.
 
@@ -56,5 +72,7 @@ Avoid maintaining multiple competing systems for the same responsibility:
 - One shared input/select API
 - One enterprise pagination system
 - One enterprise dialog pattern
+- One shared enterprise toolbar pattern (`app-search-filter-toolbar`) for search/filter/action rows
+- One shared enterprise table header pattern (`app-data-table-toolbar`) for title/subtitle blocks
 
 If an exception is required, document the reason in the relevant feature decision note.
