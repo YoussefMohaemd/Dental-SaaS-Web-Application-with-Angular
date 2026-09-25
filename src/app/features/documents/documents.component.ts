@@ -1,9 +1,10 @@
 import { Component, computed, inject, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
-import { TableModule } from "primeng/table";
 import { DialogModule } from "primeng/dialog";
 import { ButtonComponent } from "@shared/components/button/button.component";
 import { InputComponent } from "@shared/components/input/input.component";
+import { TableFeedbackComponent } from "@shared/components/table-feedback/table-feedback.component";
+import { IconActionButtonComponent } from "@shared/components/icon-action-button/icon-action-button.component";
 import { DocumentDataService } from "@core/services/document-data.service";
 import {
   DOCUMENT_CATEGORIES,
@@ -19,10 +20,11 @@ export type { DocumentCategory, LabDocument };
   standalone: true,
   imports: [
     CommonModule,
-    TableModule,
     DialogModule,
     ButtonComponent,
     InputComponent,
+    TableFeedbackComponent,
+    IconActionButtonComponent,
     SafeHtmlPipe,
   ],
   templateUrl: "./documents.component.html",
@@ -32,6 +34,8 @@ export class DocumentsComponent {
   private readonly documentService = inject(DocumentDataService);
 
   readonly documents = this.documentService.documents;
+  readonly loading = this.documentService.loading;
+  readonly error = this.documentService.error;
   private readonly uploads = signal<LabDocument[]>([]);
   readonly search = signal("");
   readonly category = signal<"All" | DocumentCategory>("All");
@@ -157,6 +161,18 @@ export class DocumentsComponent {
 
   typeIcon(documentType: string): string {
     return this.typeIconSvg(documentType);
+  }
+
+  previewActionIconSvg(): string {
+    return '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>';
+  }
+
+  downloadActionIconSvg(): string {
+    return '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>';
+  }
+
+  deleteActionIconSvg(): string {
+    return '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>';
   }
 
   private addFiles(fileList: FileList): void {

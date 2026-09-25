@@ -13,6 +13,7 @@ import { EnterprisePaginatorComponent } from "@shared/components/enterprise-pagi
 import { DataTableToolbarComponent } from "@shared/components/data-table-toolbar/data-table-toolbar.component";
 import { SearchFilterToolbarComponent } from "@shared/components/search-filter-toolbar/search-filter-toolbar.component";
 import { TableFeedbackComponent } from "@shared/components/table-feedback/table-feedback.component";
+import { StatusBadgeComponent } from "@shared/components/status-badge/status-badge.component";
 import { SafeHtmlPipe } from "../../shared/pipes/safe-html.pipe";
 import { filterTableRows } from "@shared/utils/table-state";
 import {
@@ -36,6 +37,7 @@ import {
     DataTableToolbarComponent,
     SearchFilterToolbarComponent,
     TableFeedbackComponent,
+    StatusBadgeComponent,
     SafeHtmlPipe,
   ],
   templateUrl: "./patients.component.html",
@@ -144,12 +146,6 @@ export class PatientsComponent {
 
   getGenderLabel(gender: string): string {
     return gender === "M" ? "Male" : "Female";
-  }
-
-  getStatusClass(status: string): string {
-    return status === "Active"
-      ? "enterprise-status-active"
-      : "enterprise-status-inactive";
   }
 
   navigateToAddPatient(): void {

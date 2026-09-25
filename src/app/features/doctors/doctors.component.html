@@ -125,12 +125,7 @@
                   {{ d.joinedDate }}
                 </td>
                 <td>
-                  <span
-                    class="enterprise-status-chip"
-                    [class]="getStatusClass(d.status)"
-                  >
-                    {{ d.status }}
-                  </span>
+                  <app-status-badge [status]="d.status" size="xs" />
                 </td>
               </tr>
             }

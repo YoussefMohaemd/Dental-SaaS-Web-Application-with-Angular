@@ -1,0 +1,35 @@
+:host {
+  display: inline-flex;
+}
+
+:host ::ng-deep .icon-action-btn {
+  backdrop-filter: blur(1px);
+  transition:
+    transform 120ms ease,
+    background-color 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease,
+    box-shadow 150ms ease;
+}
+
+:host ::ng-deep .icon-action-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px -8px rgba(15, 23, 42, 0.55);
+}
+
+:host ::ng-deep .icon-action-btn:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.icon-action-svg {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+}
+
+:host ::ng-deep .icon-action-svg svg {
+  width: 0.875rem;
+  height: 0.875rem;
+}

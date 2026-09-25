@@ -4,6 +4,10 @@ import { TuiStatus } from "@taiga-ui/kit/components/status";
 import { statusDisplayLabel } from "@shared/utils/status-label";
 
 const STATUS_STYLES: Record<string, { bg: string; fg: string }> = {
+  Active: { bg: "#ECFDF5", fg: "#065F46" },
+  active: { bg: "#ECFDF5", fg: "#065F46" },
+  Inactive: { bg: "#F1F5F9", fg: "#64748B" },
+  inactive: { bg: "#F1F5F9", fg: "#64748B" },
   New: { bg: "#F1F5F9", fg: "#475569" },
   Review: { bg: "#FFFBEB", fg: "#B45309" },
   Design: { bg: "#ECFEFF", fg: "#164E63" },

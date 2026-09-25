@@ -9,6 +9,8 @@ import { PriorityBadgeComponent } from "@shared/components/priority-badge/priori
 import { ButtonComponent } from "@shared/components/button/button.component";
 import { InputComponent } from "@shared/components/input/input.component";
 import { SelectComponent } from "@shared/components/select/select.component";
+import { EnterprisePaginatorComponent } from "@shared/components/enterprise-paginator/enterprise-paginator.component";
+import { TableFeedbackComponent } from "@shared/components/table-feedback/table-feedback.component";
 import { SafeHtmlPipe } from "../../shared/pipes/safe-html.pipe";
 
 type ViewMode = "table" | "grid";
@@ -23,6 +25,8 @@ type ViewMode = "table" | "grid";
     ButtonComponent,
     InputComponent,
     SelectComponent,
+    EnterprisePaginatorComponent,
+    TableFeedbackComponent,
     SafeHtmlPipe,
   ],
   templateUrl: "./cases.component.html",
@@ -103,28 +107,8 @@ export class CasesComponent {
     this.page.set(1);
   }
 
-  prevPage(): void {
-    this.page.update((p) => Math.max(1, p - 1));
-  }
-
-  nextPage(): void {
-    this.page.update((p) => Math.min(this.totalPages(), p + 1));
-  }
-
-  goToPage(pg: number): void {
-    this.page.set(pg);
-  }
-
-  getPageNumbers(): number[] {
-    const total = this.totalPages();
-    const current = this.page();
-    const maxPages = 5;
-    let start = Math.max(1, current - Math.floor(maxPages / 2));
-    let end = Math.min(total, start + maxPages - 1);
-    if (end - start + 1 < maxPages) {
-      start = Math.max(1, end - maxPages + 1);
-    }
-    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+  onPageNumberChange(pageNumber: number): void {
+    this.page.set(pageNumber);
   }
 
   navigateToCreateOrder(): void {
@@ -143,17 +127,9 @@ export class CasesComponent {
       list: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>',
       "grid-3x3":
         '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect></svg>',
-      "chevron-left":
-        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>',
-      "chevron-right":
-        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>',
       "folder-open":
         '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"></path></svg>',
     };
     return icons[name] || "";
-  }
-
-  min(a: number, b: number): number {
-    return Math.min(a, b);
   }
 }

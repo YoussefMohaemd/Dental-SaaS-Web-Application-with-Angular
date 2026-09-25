@@ -13,6 +13,7 @@ import { EntityDialogComponent } from "@shared/components/entity-dialog/entity-d
 import { DataTableToolbarComponent } from "@shared/components/data-table-toolbar/data-table-toolbar.component";
 import { SearchFilterToolbarComponent } from "@shared/components/search-filter-toolbar/search-filter-toolbar.component";
 import { TableFeedbackComponent } from "@shared/components/table-feedback/table-feedback.component";
+import { StatusBadgeComponent } from "@shared/components/status-badge/status-badge.component";
 import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
 import { filterTableRows, sortTableRows } from "@shared/utils/table-state";
 
@@ -35,6 +36,7 @@ interface SortConfig {
     DataTableToolbarComponent,
     SearchFilterToolbarComponent,
     TableFeedbackComponent,
+    StatusBadgeComponent,
     SafeHtmlPipe,
   ],
   templateUrl: "./doctors.component.html",
@@ -109,12 +111,6 @@ export class DoctorsComponent {
 
   onStatusFilterValueChange(value: string): void {
     this.statusFilter.set(value as DoctorStatus | "");
-  }
-
-  getStatusClass(status: string): string {
-    return status === "Active"
-      ? "enterprise-status-active"
-      : "enterprise-status-inactive";
   }
 
   openAddDialog(): void {

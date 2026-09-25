@@ -183,12 +183,7 @@
                   {{ p.ordersCount }}
                 </td>
                 <td>
-                  <span
-                    class="enterprise-status-chip"
-                    [class]="getStatusClass(p.status)"
-                  >
-                    {{ p.status }}
-                  </span>
+                  <app-status-badge [status]="p.status" size="xs" />
                 </td>
                 <td
                   class="text-xs font-mono text-muted-foreground whitespace-nowrap"

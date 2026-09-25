@@ -148,7 +148,8 @@ describe("CasesComponent", () => {
   it("should paginate with a page size of 12", () => {
     expect(component.pageSize).toBe(12);
     expect(component.totalPages()).toBe(1);
-    component.nextPage();
+    component.onPageNumberChange(1);
     expect(component.page()).toBe(1);
+    expect(component.pageData().length).toBe(3);
   });
 });

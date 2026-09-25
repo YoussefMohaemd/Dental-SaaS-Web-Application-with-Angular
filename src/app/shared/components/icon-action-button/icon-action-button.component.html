@@ -1,0 +1,15 @@
+<app-button
+  variant="ghost"
+  size="icon-sm"
+  [disabled]="disabled()"
+  [ariaLabel]="ariaLabel()"
+  [title]="title() || ariaLabel()"
+  [buttonClass]="buttonClass()"
+  (onClick)="onClick($event)"
+>
+  <span
+    class="icon-action-svg"
+    [innerHTML]="iconSvg() | safeHtml"
+    aria-hidden="true"
+  ></span>
+</app-button>

@@ -74,17 +74,15 @@
 
   <div class="flex-1 overflow-auto p-6">
     @if (filtered().length === 0) {
-      <div class="flex flex-col items-center justify-center h-48 text-center">
-        <span
-          [innerHTML]="getIconSvg('folder-open') | safeHtml"
-          class="text-muted-foreground mb-3"
-          style="width: 32px; height: 32px"
-        ></span>
-        <p class="font-semibold text-foreground">No cases found</p>
-        <p class="text-sm text-muted-foreground">
-          Adjust your search or filters
-        </p>
-      </div>
+      <app-table-feedback
+        mode="empty"
+        message="No cases found"
+        [iconSvg]="getIconSvg('folder-open')"
+        iconClass="text-muted-foreground mb-3"
+        iconWidth="32px"
+        iconHeight="32px"
+        containerClass="flex h-48 flex-col items-center justify-center text-center"
+      ></app-table-feedback>
     } @else if (view() === "table") {
       <div class="bg-card border border-border rounded-xl overflow-hidden">
         <div class="cases-table-scroll">
@@ -205,50 +203,13 @@
   </div>
 
   @if (filtered().length > 0) {
-    <div
-      class="px-6 py-3 border-t border-border bg-card flex items-center justify-between shrink-0"
-    >
-      <span class="text-xs text-muted-foreground">
-        {{ (page() - 1) * pageSize + 1 }}&ndash;{{
-          min(page() * pageSize, filtered().length)
-        }}
-        of {{ filtered().length }}
-      </span>
-      <div class="flex items-center gap-1">
-        <button
-          (click)="prevPage()"
-          [disabled]="page() === 1"
-          class="p-1.5 rounded border border-border hover:bg-muted disabled:opacity-40 text-muted-foreground"
-        >
-          <span
-            [innerHTML]="getIconSvg('chevron-left') | safeHtml"
-            style="width: 14px; height: 14px"
-          ></span>
-        </button>
-        @for (pg of getPageNumbers(); track pg) {
-          <button
-            (click)="goToPage(pg)"
-            [class]="
-              page() === pg
-                ? 'bg-primary text-primary-foreground'
-                : 'hover:bg-muted text-muted-foreground'
-            "
-            class="w-7 h-7 rounded text-xs font-medium"
-          >
-            {{ pg }}
-          </button>
-        }
-        <button
-          (click)="nextPage()"
-          [disabled]="page() === totalPages()"
-          class="p-1.5 rounded border border-border hover:bg-muted disabled:opacity-40 text-muted-foreground"
-        >
-          <span
-            [innerHTML]="getIconSvg('chevron-right') | safeHtml"
-            style="width: 14px; height: 14px"
-          ></span>
-        </button>
-      </div>
+    <div class="px-6 py-3 border-t border-border bg-card shrink-0">
+      <app-enterprise-paginator
+        [totalRecords]="filtered().length"
+        [rows]="pageSize"
+        [page]="page()"
+        (pageChange)="onPageNumberChange($event)"
+      ></app-enterprise-paginator>
     </div>
   }
 </div>

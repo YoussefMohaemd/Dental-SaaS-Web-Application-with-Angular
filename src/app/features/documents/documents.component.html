@@ -99,18 +99,37 @@
   </div>
 
   <div class="flex-1 overflow-auto">
-    @if (filtered().length === 0) {
-      <div class="flex flex-col items-center justify-center py-16 text-center">
-        <span
-          [innerHTML]="emptyIconSvg() | safeHtml"
-          class="mb-3 text-muted-foreground"
-          aria-hidden="true"
-        ></span>
-        <p class="font-semibold text-foreground">No documents found</p>
-        <p class="text-sm text-muted-foreground">
-          Try adjusting your search or category
-        </p>
-      </div>
+    @if (loading()) {
+      <app-table-feedback
+        mode="loading"
+        message="Loading documents..."
+        [iconSvg]="searchIconSvg()"
+        [spin]="true"
+        iconClass="text-muted-foreground mb-3"
+        iconWidth="28px"
+        iconHeight="28px"
+        containerClass="flex flex-col items-center justify-center py-16 text-center"
+      ></app-table-feedback>
+    } @else if (error()) {
+      <app-table-feedback
+        mode="empty"
+        [message]="error()!"
+        [iconSvg]="emptyIconSvg()"
+        iconClass="text-danger mb-3"
+        iconWidth="32px"
+        iconHeight="32px"
+        containerClass="flex flex-col items-center justify-center py-16 text-center"
+      ></app-table-feedback>
+    } @else if (filtered().length === 0) {
+      <app-table-feedback
+        mode="empty"
+        message="No documents found"
+        [iconSvg]="emptyIconSvg()"
+        iconClass="text-muted-foreground mb-3"
+        iconWidth="32px"
+        iconHeight="32px"
+        containerClass="flex flex-col items-center justify-center py-16 text-center"
+      ></app-table-feedback>
     } @else {
       <table class="w-full text-sm">
         <thead
@@ -195,72 +214,27 @@
                 <div
                   class="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100"
                 >
-                  <button
-                    type="button"
-                    (click)="openPreview(doc)"
-                    class="rounded p-1.5 text-muted-foreground hover:bg-muted hover:text-primary"
-                    [attr.aria-label]="'Preview ' + doc.name"
+                  <app-icon-action-button
+                    [iconSvg]="previewActionIconSvg()"
+                    [ariaLabel]="'Preview ' + doc.name"
                     title="Preview"
-                  >
-                    <svg
-                      width="13"
-                      height="13"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    >
-                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                      <circle cx="12" cy="12" r="3" />
-                    </svg>
-                  </button>
-                  <button
-                    type="button"
-                    (click)="downloadDocument(doc)"
-                    class="rounded p-1.5 text-muted-foreground hover:bg-muted"
-                    [attr.aria-label]="'Download ' + doc.name"
+                    tone="primary"
+                    (actionClick)="openPreview(doc)"
+                  ></app-icon-action-button>
+                  <app-icon-action-button
+                    [iconSvg]="downloadActionIconSvg()"
+                    [ariaLabel]="'Download ' + doc.name"
                     title="Download"
-                  >
-                    <svg
-                      width="13"
-                      height="13"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    >
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                      <polyline points="7 10 12 15 17 10" />
-                      <line x1="12" y1="15" x2="12" y2="3" />
-                    </svg>
-                  </button>
-                  <button
-                    type="button"
-                    (click)="deleteDocument(doc.id)"
-                    class="rounded p-1.5 text-muted-foreground hover:bg-muted hover:text-danger"
-                    [attr.aria-label]="'Delete ' + doc.name"
+                    tone="neutral"
+                    (actionClick)="downloadDocument(doc)"
+                  ></app-icon-action-button>
+                  <app-icon-action-button
+                    [iconSvg]="deleteActionIconSvg()"
+                    [ariaLabel]="'Delete ' + doc.name"
                     title="Delete"
-                  >
-                    <svg
-                      width="13"
-                      height="13"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    >
-                      <polyline points="3 6 5 6 21 6" />
-                      <path
-                        d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
-                      />
-                    </svg>
-                  </button>
+                    tone="danger"
+                    (actionClick)="deleteDocument(doc.id)"
+                  ></app-icon-action-button>
                 </div>
               </td>
             </tr>
