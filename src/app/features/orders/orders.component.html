@@ -19,24 +19,24 @@
         <span class="hidden sm:inline">New Order</span>
       </span>
     </app-button>
-    <button
-      type="button"
-      (click)="exportCsv()"
-      class="rounded-lg border border-border p-2 text-muted-foreground hover:bg-muted transition-colors"
-      aria-label="Export orders"
+    <app-button
+      variant="outline"
+      size="icon"
+      [ariaLabel]="'Export orders'"
       title="Export"
+      (onClick)="exportCsv()"
     >
       <span [innerHTML]="getIconSvg('download') | safeHtml"></span>
-    </button>
-    <button
-      type="button"
-      (click)="simulateRefresh()"
-      class="rounded-lg border border-border p-2 text-muted-foreground hover:bg-muted transition-colors"
-      aria-label="Refresh orders"
+    </app-button>
+    <app-button
+      variant="outline"
+      size="icon"
+      [ariaLabel]="'Refresh orders'"
       title="Refresh"
+      (onClick)="simulateRefresh()"
     >
       <span [innerHTML]="getIconSvg('refresh') | safeHtml"></span>
-    </button>
+    </app-button>
     <div
       class="flex overflow-hidden rounded-lg border border-border"
       role="group"
@@ -1193,93 +1193,14 @@
     <div
       class="flex shrink-0 flex-wrap items-center justify-between gap-2 border-t border-border bg-card px-4 sm:px-6 py-3"
     >
-      <span class="text-xs text-muted-foreground" role="status"
-        >Showing {{ rangeStart() }}–{{ rangeEnd() }} of
-        {{ filtered().length }} orders</span
-      >
-      <nav class="flex items-center gap-1" aria-label="Orders pagination">
-        <button
-          type="button"
-          (click)="firstPage()"
-          [disabled]="page() === 1"
-          class="rounded border border-border p-1.5 text-muted-foreground hover:bg-muted disabled:opacity-40 transition-colors"
-          aria-label="First page"
-        >
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            aria-hidden="true"
-          >
-            <polyline points="11 17 6 12 11 7" />
-            <polyline points="18 17 13 12 18 7" />
-          </svg>
-        </button>
-        <button
-          type="button"
-          (click)="prevPage()"
-          [disabled]="page() === 1"
-          class="rounded border border-border p-1.5 text-muted-foreground hover:bg-muted disabled:opacity-40 transition-colors"
-          aria-label="Previous page"
-        >
-          <span [innerHTML]="getIconSvg('chevron-left') | safeHtml"></span>
-        </button>
-        @for (pg of visiblePageNumbers(); track pg) {
-          <button
-            type="button"
-            (click)="goToPage(pg)"
-            class="h-7 w-7 rounded text-xs font-medium transition-colors"
-            [class]="
-              page() === pg
-                ? 'bg-primary text-white'
-                : 'text-muted-foreground hover:bg-muted'
-            "
-            [attr.aria-current]="page() === pg ? 'page' : null"
-            [attr.aria-label]="'Go to page ' + pg"
-          >
-            {{ pg }}
-          </button>
-        }
-        @if (totalPages() > 7) {
-          <span class="px-1 text-muted-foreground" aria-hidden="true">…</span>
-        }
-        <button
-          type="button"
-          (click)="nextPage()"
-          [disabled]="page() === totalPages()"
-          class="rounded border border-border p-1.5 text-muted-foreground hover:bg-muted disabled:opacity-40 transition-colors"
-          aria-label="Next page"
-        >
-          <span [innerHTML]="getIconSvg('chevron-right') | safeHtml"></span>
-        </button>
-        <button
-          type="button"
-          (click)="lastPage()"
-          [disabled]="page() === totalPages()"
-          class="rounded border border-border p-1.5 text-muted-foreground hover:bg-muted disabled:opacity-40 transition-colors"
-          aria-label="Last page"
-        >
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            aria-hidden="true"
-          >
-            <polyline points="13 17 18 12 13 7" />
-            <polyline points="6 17 11 12 6 7" />
-          </svg>
-        </button>
-      </nav>
+      <app-enterprise-paginator
+        class="w-full"
+        [totalRecords]="filtered().length"
+        [rows]="pageSize()"
+        [page]="page()"
+        [pageLinkSize]="7"
+        (pageChange)="onPageNumberChange($event)"
+      ></app-enterprise-paginator>
     </div>
   }
 </div>

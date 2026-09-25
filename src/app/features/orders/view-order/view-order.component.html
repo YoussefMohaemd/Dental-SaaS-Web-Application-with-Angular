@@ -73,11 +73,13 @@
         @if (moreMenuOpen()) {
           <div
             class="absolute right-0 top-10 z-20 w-52 rounded-xl border border-border bg-card p-1.5 shadow-lg"
+            cdkMenu
             role="menu"
             aria-label="Order actions"
           >
             <button
               type="button"
+              cdkMenuItem
               (click)="navigateToWorkflow()"
               class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-medium text-foreground hover:bg-muted"
               role="menuitem"
@@ -86,6 +88,7 @@
             </button>
             <button
               type="button"
+              cdkMenuItem
               (click)="navigateToFiles()"
               class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-medium text-foreground hover:bg-muted"
               role="menuitem"
@@ -94,6 +97,7 @@
             </button>
             <button
               type="button"
+              cdkMenuItem
               (click)="openNoteDialog()"
               class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-medium text-foreground hover:bg-muted"
               role="menuitem"
@@ -102,6 +106,7 @@
             </button>
             <button
               type="button"
+              cdkMenuItem
               (click)="exportOrder()"
               class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-medium text-foreground hover:bg-muted"
               role="menuitem"
@@ -111,6 +116,7 @@
             <div class="my-1 border-t border-border"></div>
             <button
               type="button"
+              cdkMenuItem
               (click)="askDelete()"
               class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold text-danger hover:bg-danger/10"
               role="menuitem"

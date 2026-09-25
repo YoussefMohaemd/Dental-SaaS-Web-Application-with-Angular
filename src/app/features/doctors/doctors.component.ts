@@ -12,6 +12,7 @@ import { SelectComponent } from "@shared/components/select/select.component";
 import { EntityDialogComponent } from "@shared/components/entity-dialog/entity-dialog.component";
 import { DataTableToolbarComponent } from "@shared/components/data-table-toolbar/data-table-toolbar.component";
 import { SearchFilterToolbarComponent } from "@shared/components/search-filter-toolbar/search-filter-toolbar.component";
+import { TableFeedbackComponent } from "@shared/components/table-feedback/table-feedback.component";
 import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
 import { filterTableRows, sortTableRows } from "@shared/utils/table-state";
 
@@ -33,6 +34,7 @@ interface SortConfig {
     EntityDialogComponent,
     DataTableToolbarComponent,
     SearchFilterToolbarComponent,
+    TableFeedbackComponent,
     SafeHtmlPipe,
   ],
   templateUrl: "./doctors.component.html",

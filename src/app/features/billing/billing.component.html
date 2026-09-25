@@ -1,24 +1,25 @@
 <div class="enterprise-table-page">
-  <div class="enterprise-page-header shrink-0">
-    <div class="enterprise-header-copy">
-      <h1 class="font-display text-lg font-bold text-foreground">Billing</h1>
-      <p class="text-xs text-muted-foreground">
-        {{ filtered().length }} billing records
-      </p>
-    </div>
-    <button
-      type="button"
-      (click)="exportRecords()"
-      class="inline-flex items-center gap-2 rounded-lg border border-border px-3.5 py-2 text-xs font-medium text-foreground transition-colors hover:bg-muted"
-      aria-label="Export billing records"
+  <app-data-table-toolbar
+    title="Billing"
+    [subtitle]="filtered().length + ' billing records'"
+  >
+    <app-button
+      header-actions
+      variant="outline"
+      size="sm"
+      [ariaLabel]="'Export billing records'"
+      [title]="'Export billing records'"
+      (onClick)="exportRecords()"
     >
-      <span
-        [innerHTML]="getIconSvg('download') | safeHtml"
-        aria-hidden="true"
-      ></span>
-      Export
-    </button>
-  </div>
+      <span class="flex items-center gap-2">
+        <span
+          [innerHTML]="getIconSvg('download') | safeHtml"
+          aria-hidden="true"
+        ></span>
+        Export
+      </span>
+    </app-button>
+  </app-data-table-toolbar>
 
   <div class="shrink-0 rounded-2xl border border-border bg-card p-4 sm:p-5">
     <div class="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
@@ -81,29 +82,24 @@
   <div class="enterprise-table-panel">
     <div class="enterprise-table-scroll">
       @if (loading()) {
-        <div
-          class="enterprise-empty-state flex flex-col items-center justify-center text-center"
-        >
-          <span
-            [innerHTML]="getIconSvg('loader') | safeHtml"
-            class="mb-3 animate-spin text-muted-foreground"
-            aria-hidden="true"
-          ></span>
-          <p class="font-semibold text-foreground">
-            Loading billing records...
-          </p>
-        </div>
+        <app-table-feedback
+          mode="loading"
+          message="Loading billing records..."
+          [iconSvg]="getIconSvg('loader')"
+          [spin]="true"
+          iconClass="mb-3 text-muted-foreground"
+          iconWidth="28px"
+          iconHeight="28px"
+        ></app-table-feedback>
       } @else if (filtered().length === 0) {
-        <div
-          class="enterprise-empty-state flex flex-col items-center justify-center text-center"
-        >
-          <span
-            [innerHTML]="getIconSvg('receipt') | safeHtml"
-            class="mb-3 text-muted-foreground"
-            aria-hidden="true"
-          ></span>
-          <p class="font-semibold text-foreground">No billing records found</p>
-        </div>
+        <app-table-feedback
+          mode="empty"
+          message="No billing records found"
+          [iconSvg]="getIconSvg('receipt')"
+          iconClass="mb-3 text-muted-foreground"
+          iconWidth="32px"
+          iconHeight="32px"
+        ></app-table-feedback>
       } @else {
         <p-table
           [value]="pageData()"

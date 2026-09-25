@@ -48,6 +48,11 @@ export class ButtonComponent {
   readonly type = input<"button" | "submit" | "reset">("button");
   readonly disabled = input<boolean>(false);
   readonly loading = input<boolean>(false);
+  readonly buttonClass = input<string>("");
+  readonly ariaLabel = input<string>("");
+  readonly title = input<string>("");
+  readonly ariaPressed = input<boolean | null>(null);
+  readonly ariaExpanded = input<boolean | null>(null);
 
   readonly onClick = output<MouseEvent>();
 
@@ -58,7 +63,7 @@ export class ButtonComponent {
       "focus-visible:ring-offset-card disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none " +
       "[&_svg]:shrink-0 [&_svg]:block";
 
-    return `${base} ${VARIANT_CLASSES[this.variant()]} ${SIZE_CLASSES[this.size()]}`;
+    return `${base} ${VARIANT_CLASSES[this.variant()]} ${SIZE_CLASSES[this.size()]} ${this.buttonClass()}`;
   });
 
   readonly isDisabled = computed(() => this.disabled() || this.loading());

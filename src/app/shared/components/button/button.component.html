@@ -3,8 +3,12 @@
   [type]="type()"
   [disabled]="isDisabled()"
   [class]="buttonClasses()"
+  [attr.aria-label]="ariaLabel() || null"
+  [attr.title]="title() || null"
   [attr.aria-busy]="loading() ? 'true' : null"
   [attr.aria-disabled]="isDisabled() ? 'true' : null"
+  [attr.aria-pressed]="ariaPressed() === null ? null : ariaPressed()"
+  [attr.aria-expanded]="ariaExpanded() === null ? null : ariaExpanded()"
   (click)="handleClick($event)"
 >
   @if (loading()) {

@@ -6,9 +6,12 @@ import { BillingDataService } from "@core/services/billing-data.service";
 import { NavigationService } from "@core/services/navigation.service";
 import { FormatUtils } from "@core/services/format-utils.service";
 import { BillingRecord } from "@core/models";
+import { ButtonComponent } from "@shared/components/button/button.component";
 import { InputComponent } from "@shared/components/input/input.component";
 import { SelectComponent } from "@shared/components/select/select.component";
 import { EnterprisePaginatorComponent } from "@shared/components/enterprise-paginator/enterprise-paginator.component";
+import { DataTableToolbarComponent } from "@shared/components/data-table-toolbar/data-table-toolbar.component";
+import { TableFeedbackComponent } from "@shared/components/table-feedback/table-feedback.component";
 import { SafeHtmlPipe } from "../../shared/pipes/safe-html.pipe";
 
 type BillingSortColumn =
@@ -21,9 +24,12 @@ type BillingSortColumn =
     CommonModule,
     FormsModule,
     TableModule,
+    ButtonComponent,
     InputComponent,
     SelectComponent,
     EnterprisePaginatorComponent,
+    DataTableToolbarComponent,
+    TableFeedbackComponent,
     SafeHtmlPipe,
   ],
   templateUrl: "./billing.component.html",

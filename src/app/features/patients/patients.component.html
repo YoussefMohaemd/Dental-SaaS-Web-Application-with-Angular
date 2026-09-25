@@ -24,27 +24,24 @@
   <div class="enterprise-table-panel">
     <div class="enterprise-table-scroll">
       @if (loading()) {
-        <div
-          class="enterprise-empty-state flex flex-col items-center justify-center text-center"
-        >
-          <span
-            [innerHTML]="getIconSvg('loader') | safeHtml"
-            class="text-muted-foreground mb-3 animate-spin"
-            style="width: 28px; height: 28px"
-          ></span>
-          <p class="font-semibold text-foreground">Loading patients...</p>
-        </div>
+        <app-table-feedback
+          mode="loading"
+          message="Loading patients..."
+          [iconSvg]="getIconSvg('loader')"
+          [spin]="true"
+          iconClass="text-muted-foreground mb-3"
+          iconWidth="28px"
+          iconHeight="28px"
+        ></app-table-feedback>
       } @else if (filtered().length === 0) {
-        <div
-          class="enterprise-empty-state flex flex-col items-center justify-center text-center"
-        >
-          <span
-            [innerHTML]="getIconSvg('users') | safeHtml"
-            class="text-muted-foreground mb-3"
-            style="width: 32px; height: 32px"
-          ></span>
-          <p class="font-semibold text-foreground">No patients found</p>
-        </div>
+        <app-table-feedback
+          mode="empty"
+          message="No patients found"
+          [iconSvg]="getIconSvg('users')"
+          iconClass="text-muted-foreground mb-3"
+          iconWidth="32px"
+          iconHeight="32px"
+        ></app-table-feedback>
       } @else {
         <table class="enterprise-data-table">
           <thead>

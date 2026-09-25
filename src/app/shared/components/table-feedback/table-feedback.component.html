@@ -1,0 +1,13 @@
+<div [class]="containerClass()">
+  @if (iconSvg()) {
+    <span
+      [innerHTML]="iconSvg() | safeHtml"
+      [class]="computedIconClass()"
+      [style.width]="iconWidth() || null"
+      [style.height]="iconHeight() || null"
+      [attr.aria-hidden]="true"
+    ></span>
+  }
+
+  <p class="font-semibold text-foreground">{{ message() }}</p>
+</div>

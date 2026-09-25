@@ -2,10 +2,44 @@
   display: block;
 }
 
+.enterprise-pagination-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+.enterprise-page-indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  height: 2rem;
+  padding: 0 0.625rem;
+  border-radius: 0.625rem;
+  border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+  background: color-mix(in srgb, var(--muted) 58%, var(--card));
+  color: var(--foreground);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
 :host ::ng-deep .enterprise-prime-paginator.p-paginator {
   border: 0 !important;
   background: transparent !important;
   padding: 0 !important;
+  --p-paginator-nav-button-selected-background: color-mix(
+    in srgb,
+    var(--primary) 90%,
+    #1d4ed8
+  );
+  --p-paginator-nav-button-selected-color: var(--primary-foreground);
+  --p-paginator-nav-button-selected-border-color: color-mix(
+    in srgb,
+    var(--primary) 78%,
+    #1e3a8a
+  );
 }
 
 :host ::ng-deep .enterprise-prime-paginator .p-paginator-content {
@@ -21,20 +55,25 @@
 :host ::ng-deep .enterprise-prime-paginator .p-paginator-next,
 :host ::ng-deep .enterprise-prime-paginator .p-paginator-first,
 :host ::ng-deep .enterprise-prime-paginator .p-paginator-last {
-  width: 1.875rem !important;
-  min-width: 1.875rem !important;
-  height: 1.875rem !important;
+  width: 2.0625rem !important;
+  min-width: 2.0625rem !important;
+  height: 2.0625rem !important;
   border-radius: 0.5rem !important;
   color: var(--muted-foreground) !important;
   border: 1px solid var(--border) !important;
-  background: transparent !important;
-  font-size: 0.75rem !important;
+  // background: color-mix(in srgb, var(--muted) 40%, var(--card)) !important;
+  font-size: 0.78125rem !important;
   font-weight: 600 !important;
-  transition: all 150ms ease;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
 }
 
 :host ::ng-deep .enterprise-prime-paginator .p-paginator-page {
-  border-color: transparent !important;
+  border-color: color-mix(in srgb, var(--border) 72%, transparent) !important;
 }
 
 :host ::ng-deep .enterprise-prime-paginator .p-paginator-page:hover,
@@ -42,13 +81,70 @@
 :host ::ng-deep .enterprise-prime-paginator .p-paginator-next:hover,
 :host ::ng-deep .enterprise-prime-paginator .p-paginator-first:hover,
 :host ::ng-deep .enterprise-prime-paginator .p-paginator-last:hover {
-  background: color-mix(in srgb, var(--muted) 72%, transparent) !important;
+  background: color-mix(in srgb, var(--primary) 12%, var(--card)) !important;
+  border-color: color-mix(in srgb, var(--primary) 45%, var(--border)) !important;
+  color: var(--foreground) !important;
 }
 
-:host ::ng-deep .enterprise-prime-paginator .p-paginator-page.p-highlight {
-  background: var(--primary) !important;
-  border-color: var(--primary) !important;
+:host ::ng-deep .enterprise-prime-paginator .p-paginator-page.p-highlight,
+:host
+  ::ng-deep
+  .enterprise-prime-paginator
+  .p-paginator-page.p-paginator-page-selected {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--primary) 90%, white 10%),
+    color-mix(in srgb, var(--primary) 92%, black 8%)
+  ) !important;
+  border-color: color-mix(in srgb, var(--primary) 82%, black 18%) !important;
   color: var(--primary-foreground) !important;
+  font-weight: 700 !important;
+  transform: translateY(-1px) scale(1.03);
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, var(--primary) 30%, transparent),
+    0 10px 20px -12px color-mix(in srgb, var(--primary) 80%, #0f172a);
+}
+
+:host
+  ::ng-deep
+  .enterprise-prime-paginator
+  .p-paginator-page.p-highlight:hover,
+:host
+  ::ng-deep
+  .enterprise-prime-paginator
+  .p-paginator-page.p-paginator-page-selected:hover {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--primary) 86%, white 14%),
+    color-mix(in srgb, var(--primary) 90%, black 10%)
+  ) !important;
+  border-color: color-mix(in srgb, var(--primary) 78%, black 22%) !important;
+  color: var(--primary-foreground) !important;
+}
+
+:host
+  ::ng-deep
+  .enterprise-prime-paginator
+  .p-paginator-page:focus-visible,
+:host
+  ::ng-deep
+  .enterprise-prime-paginator
+  .p-paginator-prev:focus-visible,
+:host
+  ::ng-deep
+  .enterprise-prime-paginator
+  .p-paginator-next:focus-visible,
+:host
+  ::ng-deep
+  .enterprise-prime-paginator
+  .p-paginator-first:focus-visible,
+:host
+  ::ng-deep
+  .enterprise-prime-paginator
+  .p-paginator-last:focus-visible {
+  outline: none !important;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 28%, transparent)
+    !important;
 }
 
 :host
@@ -68,4 +164,16 @@
   .enterprise-prime-paginator
   .p-paginator-last.p-disabled {
   opacity: 0.45;
+}
+
+@media (max-width: 640px) {
+  .enterprise-pagination-controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .enterprise-page-indicator {
+    font-size: 0.625rem;
+    padding: 0 0.5rem;
+  }
 }

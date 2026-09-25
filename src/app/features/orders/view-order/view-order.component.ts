@@ -11,6 +11,7 @@ import { CommonModule } from "@angular/common";
 import { ActivatedRoute } from "@angular/router";
 import { toSignal } from "@angular/core/rxjs-interop";
 import { FormsModule } from "@angular/forms";
+import { CdkMenuModule } from "@angular/cdk/menu";
 import { DialogModule } from "primeng/dialog";
 import { OrderDataService } from "@core/services/order-data.service";
 import { PatientDataService } from "@core/services/patient-data.service";
@@ -50,6 +51,7 @@ function withIconSize(svg: string, size?: number): string {
   imports: [
     CommonModule,
     FormsModule,
+    CdkMenuModule,
     DialogModule,
     AvatarComponent,
     ButtonComponent,

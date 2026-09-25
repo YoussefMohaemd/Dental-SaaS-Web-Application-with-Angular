@@ -10,6 +10,7 @@ import { FormatUtils } from "@core/services/format-utils.service";
 import { Order, OrderStatus, Priority, SubOrder } from "@core/models";
 import { ArchBadgeComponent } from "@shared/components/arch-badge/arch-badge.component";
 import { ButtonComponent } from "@shared/components/button/button.component";
+import { EnterprisePaginatorComponent } from "@shared/components/enterprise-paginator/enterprise-paginator.component";
 import { SearchInputComponent } from "@shared/components/search-input/search-input.component";
 import { SelectComponent } from "@shared/components/select/select.component";
 import { SafeHtmlPipe } from "../../shared/pipes/safe-html.pipe";
@@ -131,6 +132,7 @@ export function compareOrderValues(a: unknown, b: unknown): number {
     TreeTableModule,
     ArchBadgeComponent,
     ButtonComponent,
+    EnterprisePaginatorComponent,
     SearchInputComponent,
     SelectComponent,
     SafeHtmlPipe,
@@ -388,6 +390,10 @@ export class OrdersComponent {
   onPageSizeValueChange(value: string): void {
     this.pageSize.set(Number(value));
     this.page.set(1);
+  }
+
+  onPageNumberChange(pageNumber: number): void {
+    this.page.set(Math.max(1, Math.min(this.totalPages(), pageNumber)));
   }
 
   removeFilter(type: "status" | "priority", label?: string): void {

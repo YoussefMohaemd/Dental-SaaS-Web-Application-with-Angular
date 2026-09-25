@@ -5,9 +5,12 @@ import { ChangeRequestDataService } from "@core/services/change-request-data.ser
 import { NavigationService } from "@core/services/navigation.service";
 import { FormatUtils } from "@core/services/format-utils.service";
 import { ChangeRequest } from "@core/models";
+import { ButtonComponent } from "@shared/components/button/button.component";
 import { InputComponent } from "@shared/components/input/input.component";
 import { SelectComponent } from "@shared/components/select/select.component";
 import { EnterprisePaginatorComponent } from "@shared/components/enterprise-paginator/enterprise-paginator.component";
+import { DataTableToolbarComponent } from "@shared/components/data-table-toolbar/data-table-toolbar.component";
+import { TableFeedbackComponent } from "@shared/components/table-feedback/table-feedback.component";
 import { SafeHtmlPipe } from "../../shared/pipes/safe-html.pipe";
 import { PriorityBadgeComponent } from "@shared/components/priority-badge/priority-badge.component";
 
@@ -17,9 +20,12 @@ import { PriorityBadgeComponent } from "@shared/components/priority-badge/priori
   imports: [
     CommonModule,
     TableModule,
+    ButtonComponent,
     InputComponent,
     SelectComponent,
     EnterprisePaginatorComponent,
+    DataTableToolbarComponent,
+    TableFeedbackComponent,
     SafeHtmlPipe,
     PriorityBadgeComponent,
   ],

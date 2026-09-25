@@ -12,6 +12,7 @@ import { EntityDialogComponent } from "@shared/components/entity-dialog/entity-d
 import { EnterprisePaginatorComponent } from "@shared/components/enterprise-paginator/enterprise-paginator.component";
 import { DataTableToolbarComponent } from "@shared/components/data-table-toolbar/data-table-toolbar.component";
 import { SearchFilterToolbarComponent } from "@shared/components/search-filter-toolbar/search-filter-toolbar.component";
+import { TableFeedbackComponent } from "@shared/components/table-feedback/table-feedback.component";
 import { SafeHtmlPipe } from "../../shared/pipes/safe-html.pipe";
 import { filterTableRows } from "@shared/utils/table-state";
 import {
@@ -34,6 +35,7 @@ import {
     EnterprisePaginatorComponent,
     DataTableToolbarComponent,
     SearchFilterToolbarComponent,
+    TableFeedbackComponent,
     SafeHtmlPipe,
   ],
   templateUrl: "./patients.component.html",
