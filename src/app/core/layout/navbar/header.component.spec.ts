@@ -143,8 +143,12 @@ describe("HeaderComponent", () => {
       }
     ).set(true);
     fixture.detectChanges();
-    const dropdown = fixture.debugElement.query(By.css(".w-80"));
-    expect(dropdown).toBeTruthy();
+    const viewAllButton = fixture.debugElement
+      .queryAll(By.css("button"))
+      .find((el) =>
+        (el.nativeElement.textContent ?? "").trim().includes("View all"),
+      );
+    expect(viewAllButton).toBeTruthy();
     component.navigateToNotifications();
     expect(navigationService.navigate).toHaveBeenCalledWith("notifications");
   });
@@ -154,8 +158,12 @@ describe("HeaderComponent", () => {
       true,
     );
     fixture.detectChanges();
-    const menu = fixture.debugElement.query(By.css(".w-48"));
-    expect(menu).toBeTruthy();
+    const signOutButton = fixture.debugElement
+      .queryAll(By.css("button"))
+      .find((el) =>
+        (el.nativeElement.textContent ?? "").trim().includes("Sign Out"),
+      );
+    expect(signOutButton).toBeTruthy();
     component.logout();
     expect(navigationService.navigate).toHaveBeenCalledWith("login");
   });

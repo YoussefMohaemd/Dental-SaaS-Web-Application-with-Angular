@@ -13,7 +13,9 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "lint": "ng lint",
-    "format": "prettier --write \"src/**/*.{ts,html,scss,json}\""
+    "format": "prettier --write \"src/**/*.{ts,html,scss,json}\"",
+    "storybook": "ng run dental-saas-angular:storybook",
+    "build-storybook": "ng run dental-saas-angular:build-storybook"
   },
   "private": true,
   "dependencies": {
@@ -25,10 +27,16 @@
     "@angular/forms": "^21.0.0",
     "@angular/platform-browser": "^21.0.0",
     "@angular/router": "^21.0.0",
+    "@ng-web-apis/common": "^4.14.0",
+    "@ng-web-apis/mutation-observer": "^4.14.0",
     "@primeng/themes": "^21.0.0",
+    "@taiga-ui/cdk": "4.100.0",
     "@taiga-ui/core": "^4.0.0",
+    "@taiga-ui/event-plugins": "^4.7.0",
+    "@taiga-ui/i18n": "4.100.0",
     "@taiga-ui/kit": "^4.0.0",
     "@taiga-ui/layout": "^4.0.0",
+    "@taiga-ui/polymorpheus": "^4.10.0",
     "primeng": "21.0.4",
     "rxjs": "^7.8.0",
     "tailwindcss": "^4.0.0",
@@ -36,11 +44,24 @@
     "zone.js": "^0.15.0"
   },
   "devDependencies": {
+    "@analogjs/vite-plugin-angular": "^2.5.2",
+    "@angular-devkit/architect": "^0.2100.0",
+    "@angular-devkit/build-angular": "^21.0.0",
+    "@angular-devkit/core": "^21.0.0",
     "@angular/build": "^21.0.0",
     "@angular/cli": "^21.0.0",
     "@angular/compiler-cli": "^21.0.0",
-    "@types/jasmine": "~5.1.0",
+    "@chromatic-com/storybook": "latest",
+    "@storybook/addon-a11y": "^10.6.0",
+    "@storybook/addon-docs": "^10.6.0",
+    "@storybook/addon-onboarding": "^10.6.0",
+    "@storybook/addon-vitest": "^10.6.0",
+    "@storybook/angular-vite": "^10.6.0",
     "@tailwindcss/cli": "^4.0.0",
+    "@types/jasmine": "~5.1.0",
+    "@types/node": "^20",
+    "@vitest/browser-playwright": "^4.0.8",
+    "@vitest/coverage-v8": "^4.0.8",
     "concurrently": "^9.0.0",
     "jasmine-core": "~5.5.0",
     "karma": "~6.4.0",
@@ -48,7 +69,11 @@
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
+    "playwright": "latest",
     "prettier": "^3.0.0",
-    "typescript": "^5.9.3"
+    "storybook": "^10.6.0",
+    "typescript": "^5.9.3",
+    "vite": "latest",
+    "vitest": "^4.0.8"
   }
 }

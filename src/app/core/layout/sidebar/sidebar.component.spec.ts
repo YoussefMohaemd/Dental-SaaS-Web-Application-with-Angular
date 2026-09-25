@@ -15,11 +15,12 @@ describe("SidebarComponent", () => {
   beforeEach(async () => {
     const navSpy = jasmine.createSpyObj(
       "NavigationService",
-      ["navigate", "toggleSidebar"],
+      ["navigate", "toggleSidebar", "setSidebarOpen"],
       {
         sidebarOpen: signal(true),
         currentPage: signal("dashboard"),
         activeGroup: signal("dashboard"),
+        isMobile: signal(false),
       },
     );
     const themeSpy = jasmine.createSpyObj("ThemeService", [], {
