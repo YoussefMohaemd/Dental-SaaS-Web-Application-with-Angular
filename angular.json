@@ -106,12 +106,6 @@
             "scripts": []
           }
         },
-        "lint": {
-          "builder": "@angular/build:tsc",
-          "options": {
-            "tsConfig": "tsconfig.json"
-          }
-        },
         "storybook": {
           "builder": "@storybook/angular-vite:start-storybook",
           "options": {

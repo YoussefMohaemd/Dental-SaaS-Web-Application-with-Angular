@@ -1,4 +1,6 @@
 import type { Preview } from '@storybook/angular-vite'
+import '../src/styles.scss'
+import '../src/styles/tailwind-generated.css'
 
 const preview: Preview = {
   parameters: {
