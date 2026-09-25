@@ -23,6 +23,7 @@ export type PageId =
   | 'reports'
   | 'notifications'
   | 'settings'
+  | 'grid'
   | 'forms'
   | 'subOrder';
 
@@ -62,6 +63,7 @@ export const NAV_ITEMS: NavItem[] = [
   { id: 'billing', label: 'Billing', icon: 'receipt' },
   { id: 'changeRequests', label: 'Change Requests', icon: 'refresh-ccw', badge: 4 },
   { id: 'reports', label: 'Reports', icon: 'bar-chart-3' },
+  { id: 'grid', label: 'Grid', icon: 'layers' },
   { id: 'forms', label: 'Forms', icon: 'square-stack' },
   { id: 'settings', label: 'Settings', icon: 'settings' }
 ];
@@ -90,6 +92,7 @@ export const BREADCRUMB_MAP: Partial<Record<PageId, { label: string; parent?: Pa
   reports: { label: 'Reports' },
   notifications: { label: 'Notifications' },
   settings: { label: 'Settings' },
+  grid: { label: 'Grid' },
   forms: { label: 'Forms' },
   subOrder: { label: 'Sub-Order', parent: 'viewOrder' }
 };

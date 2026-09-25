@@ -167,6 +167,11 @@ export const appRoutes: Routes = [
         path: 'forms',
         loadComponent: () =>
           import('./features/forms/forms.component').then(m => m.FormsComponent)
+      },
+      {
+        path: 'grid',
+        loadComponent: () =>
+          import('./features/grid/grid.component').then(m => m.GridComponent)
       }
     ]
   },

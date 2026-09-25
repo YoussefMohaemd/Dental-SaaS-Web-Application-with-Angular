@@ -1,0 +1,263 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+.grid-showcase-page {
+  margin: 0 auto;
+  width: min(100%, 1200px);
+  padding: 1.5rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.showcase-card {
+  border: 1px solid var(--color-border);
+  border-radius: 0.9rem;
+  background: var(--color-card);
+  padding: 1rem;
+  display: grid;
+  gap:.8rem;
+  overflow: hidden;
+}
+
+.showcase-title {
+  font-family: var(--font-display);
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--color-foreground);
+}
+
+.showcase-description {
+  font-size: 0.75rem;
+  color: var(--color-muted-foreground);
+}
+
+.showcase-toolbar {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1fr auto;
+  gap: 0.65rem;
+  align-items: center;
+}
+
+.toolbar-filter {
+  min-width: 10rem;
+}
+
+.table-scroll-wrap {
+  overflow-x: auto;
+}
+
+.showcase-native-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 760px;
+}
+
+.showcase-native-table thead th {
+  text-align: left;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--color-muted-foreground);
+  border-bottom: 1px solid var(--color-border);
+  padding: 0.58rem 0.68rem;
+  white-space: nowrap;
+}
+
+.showcase-native-table tbody td {
+  border-bottom: 1px solid var(--color-border);
+  padding: 0.66rem;
+  font-size: 0.76rem;
+  color: var(--color-foreground);
+}
+
+.showcase-native-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.row-actions {
+  display: inline-flex;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+}
+
+.grid-two-col {
+  display: grid;
+  grid-template-columns: 1.8fr 1fr;
+  gap: 0.9rem;
+}
+
+.selection-summary {
+  border: 1px solid var(--color-border);
+  border-radius: 0.8rem;
+  background: color-mix(in srgb, var(--color-muted) 70%, transparent);
+  padding: 0.85rem;
+  display: grid;
+  gap: 0.6rem;
+  align-content: start;
+}
+
+.summary-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.toggle-row {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  color: var(--color-muted-foreground);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.toggle-row:hover {
+  background: var(--color-muted);
+  color: var(--color-foreground);
+}
+
+.expansion-cell {
+  background: color-mix(in srgb, var(--color-muted) 65%, transparent);
+}
+
+.expansion-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 0.55rem;
+}
+
+.expansion-item {
+  border: 1px solid var(--color-border);
+  border-radius: 0.65rem;
+  background: var(--color-card);
+  padding: 0.55rem;
+  display: grid;
+  gap: 0.2rem;
+}
+
+.expansion-status {
+  width: fit-content;
+  border-radius: 999px;
+  padding: 0.14rem 0.45rem;
+  background: var(--color-muted);
+  color: var(--color-muted-foreground);
+  font-size: 0.63rem;
+  font-weight: 650;
+}
+
+.compact-head {
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: 0.7rem;
+}
+
+.compact-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 760px;
+}
+
+.compact-table thead th {
+  text-align: left;
+  font-size: 0.6rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--color-muted-foreground);
+  border-bottom: 1px solid var(--color-border);
+  padding: 0.42rem 0.5rem;
+  white-space: nowrap;
+}
+
+.compact-table tbody td {
+  border-bottom: 1px solid var(--color-border);
+  padding: 0.42rem 0.5rem;
+}
+
+.compact-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.responsive-grid-mobile {
+  display: none;
+}
+
+.mobile-order-card {
+  border: 1px solid var(--color-border);
+  border-radius: 0.8rem;
+  background: var(--color-card);
+  padding: 0.7rem;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.mobile-order-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.mobile-order-meta {
+  font-size: 0.7rem;
+  color: var(--color-muted-foreground);
+}
+
+::ng-deep .showcase-table .p-datatable-thead > tr > th {
+  background: color-mix(in srgb, var(--color-muted) 78%, transparent);
+  color: var(--color-muted-foreground);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--color-border);
+  padding: 0.56rem 0.68rem;
+  white-space: nowrap;
+}
+
+::ng-deep .showcase-table .p-datatable-tbody > tr > td {
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-foreground);
+  font-size: 0.75rem;
+  padding: 0.64rem 0.68rem;
+}
+
+::ng-deep .showcase-table .p-checkbox .p-checkbox-box {
+  border-color: var(--color-border);
+}
+
+@media (max-width: 1024px) {
+  .showcase-toolbar {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .grid-two-col {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .grid-showcase-page {
+    padding: 1rem;
+  }
+
+  .showcase-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .toolbar-filter {
+    min-width: 0;
+  }
+
+  .responsive-grid-desktop {
+    display: none;
+  }
+
+  .responsive-grid-mobile {
+    display: grid;
+    gap: 0.55rem;
+  }
+}

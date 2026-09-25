@@ -79,6 +79,7 @@ export class NavigationService {
       'reports': 'reports',
       'notifications': 'notifications',
       'settings': 'settings',
+      'grid': 'grid',
       'forms': 'forms'
     };
 
@@ -177,6 +178,7 @@ export class NavigationService {
       reports: () => '/reports',
       notifications: () => '/notifications',
       settings: () => '/settings',
+      grid: () => '/grid',
       forms: () => '/forms',
       // React parity: NavParams.subOrderTab selects the initial sub-order tab.
       subOrder: (p) => `/orders/${p.orderId}/sub-orders/${p.subOrderId}${p.subOrderTab ? `?tab=${p.subOrderTab}` : ''}`
