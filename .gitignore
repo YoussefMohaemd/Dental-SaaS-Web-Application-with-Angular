@@ -46,3 +46,6 @@ Thumbs.db
 # Secrets — never commit credentials
 .env
 .env.*
+
+*storybook.log
+storybook-static
