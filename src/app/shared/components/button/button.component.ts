@@ -52,7 +52,7 @@ export class ButtonComponent {
 
   readonly buttonClasses = computed(() => {
     const base =
-      "inline-flex items-center justify-center gap-1.5 font-semibold rounded-lg transition-colors duration-150 " +
+      "inline-flex items-center justify-center gap-2  font-semibold rounded-lg transition-colors duration-150 " +
       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-1 " +
       "focus-visible:ring-offset-card disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none " +
       "[&_svg]:shrink-0 [&_svg]:block";

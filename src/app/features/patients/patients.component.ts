@@ -9,6 +9,8 @@ import { ButtonComponent } from "@shared/components/button/button.component";
 import { AvatarComponent } from "@shared/components/avatar/avatar.component";
 import { InputComponent } from "@shared/components/input/input.component";
 import { SelectComponent } from "@shared/components/select/select.component";
+import { EntityDialogComponent } from "@shared/components/entity-dialog/entity-dialog.component";
+import { EnterprisePaginatorComponent } from "@shared/components/enterprise-paginator/enterprise-paginator.component";
 import { SafeHtmlPipe } from "../../shared/pipes/safe-html.pipe";
 import { filterTableRows } from "@shared/utils/table-state";
 import {
@@ -28,6 +30,8 @@ import {
     AvatarComponent,
     InputComponent,
     SelectComponent,
+    EntityDialogComponent,
+    EnterprisePaginatorComponent,
     SafeHtmlPipe,
   ],
   templateUrl: "./patients.component.html",
@@ -115,6 +119,10 @@ export class PatientsComponent {
 
   goToPage(pg: number): void {
     this.page.set(pg);
+  }
+
+  onPageNumberChange(pageNumber: number): void {
+    this.page.set(pageNumber);
   }
 
   getPageNumbers(): number[] {

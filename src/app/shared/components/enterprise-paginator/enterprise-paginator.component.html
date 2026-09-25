@@ -1,0 +1,17 @@
+<div class="enterprise-pagination">
+  <span class="text-xs text-muted-foreground"
+    >{{ rangeStart() }}&ndash;{{ rangeEnd() }} of
+    {{ totalRecords() }}</span
+  >
+
+  <p-paginator
+    [first]="firstRecord()"
+    [rows]="rows()"
+    [totalRecords]="totalRecords()"
+    [pageLinkSize]="pageLinkSize()"
+    [showFirstLastIcon]="false"
+    [alwaysShow]="false"
+    styleClass="enterprise-prime-paginator"
+    (onPageChange)="onPrimePageChange($event)"
+  />
+</div>

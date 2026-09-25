@@ -228,46 +228,12 @@
     </div>
 
     @if (filtered().length > 0) {
-      <div class="enterprise-pagination">
-        <span class="text-xs text-muted-foreground"
-          >{{ (page() - 1) * pageSize + 1 }}–{{
-            page() * pageSize > filtered().length
-              ? filtered().length
-              : page() * pageSize
-          }}
-          of {{ filtered().length }}</span
-        >
-        <div class="enterprise-pagination-pages">
-          <button
-            type="button"
-            (click)="prevPage()"
-            [disabled]="page() === 1"
-            class="enterprise-page-nav"
-            aria-label="Previous page"
-          >
-            <span [innerHTML]="getIconSvg('chevron-left') | safeHtml"></span>
-          </button>
-          @for (pg of pageNumbers(); track pg) {
-            <button
-              type="button"
-              (click)="goToPage(pg)"
-              class="enterprise-page-button"
-              [class.enterprise-page-button--active]="page() === pg"
-            >
-              {{ pg }}
-            </button>
-          }
-          <button
-            type="button"
-            (click)="nextPage()"
-            [disabled]="page() === totalPages()"
-            class="enterprise-page-nav"
-            aria-label="Next page"
-          >
-            <span [innerHTML]="getIconSvg('chevron-right') | safeHtml"></span>
-          </button>
-        </div>
-      </div>
+      <app-enterprise-paginator
+        [totalRecords]="filtered().length"
+        [rows]="pageSize"
+        [page]="page()"
+        (pageChange)="onPageNumberChange($event)"
+      ></app-enterprise-paginator>
     }
   </div>
 </div>

@@ -9,6 +9,7 @@ import { ButtonComponent } from "@shared/components/button/button.component";
 import { AvatarComponent } from "@shared/components/avatar/avatar.component";
 import { InputComponent } from "@shared/components/input/input.component";
 import { SelectComponent } from "@shared/components/select/select.component";
+import { EntityDialogComponent } from "@shared/components/entity-dialog/entity-dialog.component";
 import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
 import { filterTableRows, sortTableRows } from "@shared/utils/table-state";
 
@@ -27,6 +28,7 @@ interface SortConfig {
     AvatarComponent,
     InputComponent,
     SelectComponent,
+    EntityDialogComponent,
     SafeHtmlPipe,
   ],
   templateUrl: "./doctors.component.html",

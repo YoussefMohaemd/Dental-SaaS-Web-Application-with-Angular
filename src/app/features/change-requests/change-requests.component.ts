@@ -7,16 +7,19 @@ import { FormatUtils } from "@core/services/format-utils.service";
 import { ChangeRequest } from "@core/models";
 import { InputComponent } from "@shared/components/input/input.component";
 import { SelectComponent } from "@shared/components/select/select.component";
+import { EnterprisePaginatorComponent } from "@shared/components/enterprise-paginator/enterprise-paginator.component";
 import { SafeHtmlPipe } from "../../shared/pipes/safe-html.pipe";
 import { PriorityBadgeComponent } from "@shared/components/priority-badge/priority-badge.component";
 
 @Component({
   selector: "app-change-requests",
+  standalone: true,
   imports: [
     CommonModule,
     TableModule,
     InputComponent,
     SelectComponent,
+    EnterprisePaginatorComponent,
     SafeHtmlPipe,
     PriorityBadgeComponent,
   ],
@@ -100,6 +103,10 @@ export class ChangeRequestsComponent {
 
   goToPage(target: number): void {
     this.page.set(target);
+  }
+
+  onPageNumberChange(pageNumber: number): void {
+    this.page.set(pageNumber);
   }
 
   pageNumbers(): number[] {

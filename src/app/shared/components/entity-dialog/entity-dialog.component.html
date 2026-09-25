@@ -1,0 +1,34 @@
+<p-dialog
+  [visible]="visible()"
+  (visibleChange)="onDialogVisibleChange($event)"
+  (onHide)="onDialogHide()"
+  [modal]="true"
+  [dismissableMask]="dismissableMask()"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="false"
+  [closeOnEscape]="true"
+  [style]="{ width: width() }"
+  [breakpoints]="{ '640px': '95vw' }"
+  [contentStyle]="{ overflow: 'visible' }"
+  styleClass="app-entity-dialog"
+>
+  <ng-template pTemplate="header">
+    <div>
+      <h2 class="font-display text-sm font-semibold text-foreground">
+        {{ title() }}
+      </h2>
+      @if (subtitle()) {
+        <p class="mt-0.5 text-xs text-muted-foreground">{{ subtitle() }}</p>
+      }
+    </div>
+  </ng-template>
+
+  <ng-content></ng-content>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-2">
+      <ng-content select="[dialog-actions]"></ng-content>
+    </div>
+  </ng-template>
+</p-dialog>

@@ -8,6 +8,7 @@ import { FormatUtils } from "@core/services/format-utils.service";
 import { BillingRecord } from "@core/models";
 import { InputComponent } from "@shared/components/input/input.component";
 import { SelectComponent } from "@shared/components/select/select.component";
+import { EnterprisePaginatorComponent } from "@shared/components/enterprise-paginator/enterprise-paginator.component";
 import { SafeHtmlPipe } from "../../shared/pipes/safe-html.pipe";
 
 type BillingSortColumn =
@@ -22,6 +23,7 @@ type BillingSortColumn =
     TableModule,
     InputComponent,
     SelectComponent,
+    EnterprisePaginatorComponent,
     SafeHtmlPipe,
   ],
   templateUrl: "./billing.component.html",
@@ -178,6 +180,10 @@ export class BillingComponent {
 
   goToPage(target: number): void {
     this.page.set(target);
+  }
+
+  onPageNumberChange(pageNumber: number): void {
+    this.page.set(pageNumber);
   }
 
   pageNumbers(): number[] {

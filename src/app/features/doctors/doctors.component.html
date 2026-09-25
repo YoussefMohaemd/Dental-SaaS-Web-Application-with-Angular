@@ -170,98 +170,86 @@
     </div>
   </div>
 
-  @if (showAddDialog()) {
-    <div
-      class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4"
-      (click)="closeAddDialog()"
-    >
-      <div
-        class="w-full max-w-md rounded-xl border border-border bg-card p-5 shadow-xl"
-        (click)="$event.stopPropagation()"
-        role="dialog"
-        aria-modal="true"
-        aria-label="Add doctor"
-      >
-        <h2 class="font-display text-sm font-semibold text-foreground">
-          Add Doctor
-        </h2>
-        <p class="mt-0.5 text-xs text-muted-foreground">
-          Register a new referring dentist.
-        </p>
-        <div class="mt-4 space-y-3">
-          <label class="block"
-            ><span class="mb-1 block text-xs font-semibold">Full Name</span>
-            <app-input
-              id="doctor-new-name"
-              [unstyled]="true"
-              inputClass="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
-              placeholder="Dr. First Last"
-              [value]="newName()"
-              (valueChange)="newName.set($event)"
-            ></app-input
-          ></label>
-          <label class="block"
-            ><span class="mb-1 block text-xs font-semibold">Specialty</span>
-            <app-select
-              id="doctor-new-specialty"
-              [unstyled]="true"
-              selectClass="w-full cursor-pointer rounded-lg border border-border bg-card px-3 py-2 text-sm"
-              [options]="[
-                'General Dentistry',
-                'Prosthodontics',
-                'Oral Surgery',
-                'Orthodontics',
-                'Periodontics'
-              ]"
-              [value]="newSpecialty()"
-              (valueChange)="newSpecialty.set($event)"
-            ></app-select>
-          </label>
-          <label class="block"
-            ><span class="mb-1 block text-xs font-semibold">Clinic</span>
-            <app-input
-              id="doctor-new-clinic"
-              [unstyled]="true"
-              inputClass="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
-              [value]="newClinic()"
-              (valueChange)="newClinic.set($event)"
-            ></app-input
-          ></label>
-          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <label class="block"
-              ><span class="mb-1 block text-xs font-semibold">Email</span>
-              <app-input
-                id="doctor-new-email"
-                type="email"
-                [unstyled]="true"
-                inputClass="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
-                placeholder="doctor@clinic.com"
-                [value]="newEmail()"
-                (valueChange)="newEmail.set($event)"
-              ></app-input
-            ></label>
-            <label class="block"
-              ><span class="mb-1 block text-xs font-semibold">Phone</span>
-              <app-input
-                id="doctor-new-phone"
-                [unstyled]="true"
-                inputClass="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
-                placeholder="+1 (555) 000-0000"
-                [value]="newPhone()"
-                (valueChange)="newPhone.set($event)"
-              ></app-input
-            ></label>
-          </div>
-        </div>
-        <div class="mt-5 flex justify-end gap-2">
-          <app-button variant="outline" size="sm" (onClick)="closeAddDialog()"
-            >Cancel</app-button
-          >
-          <app-button variant="primary" size="sm" (onClick)="saveDoctor()"
-            >Save Doctor</app-button
-          >
-        </div>
+  <app-entity-dialog
+    [visible]="showAddDialog()"
+    (visibleChange)="showAddDialog.set($event)"
+    (closed)="closeAddDialog()"
+    title="Add Doctor"
+    subtitle="Register a new referring dentist."
+  >
+    <div class="mt-4 space-y-3">
+      <label class="block"
+        ><span class="mb-1 block text-xs font-semibold">Full Name</span>
+        <app-input
+          id="doctor-new-name"
+          [unstyled]="true"
+          inputClass="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
+          placeholder="Dr. First Last"
+          [value]="newName()"
+          (valueChange)="newName.set($event)"
+        ></app-input
+      ></label>
+      <label class="block"
+        ><span class="mb-1 block text-xs font-semibold">Specialty</span>
+        <app-select
+          id="doctor-new-specialty"
+          [unstyled]="true"
+          selectClass="w-full cursor-pointer rounded-lg border border-border bg-card px-3 py-2 text-sm"
+          [options]="[
+            'General Dentistry',
+            'Prosthodontics',
+            'Oral Surgery',
+            'Orthodontics',
+            'Periodontics'
+          ]"
+          [value]="newSpecialty()"
+          (valueChange)="newSpecialty.set($event)"
+        ></app-select>
+      </label>
+      <label class="block"
+        ><span class="mb-1 block text-xs font-semibold">Clinic</span>
+        <app-input
+          id="doctor-new-clinic"
+          [unstyled]="true"
+          inputClass="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
+          [value]="newClinic()"
+          (valueChange)="newClinic.set($event)"
+        ></app-input
+      ></label>
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <label class="block"
+          ><span class="mb-1 block text-xs font-semibold">Email</span>
+          <app-input
+            id="doctor-new-email"
+            type="email"
+            [unstyled]="true"
+            inputClass="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
+            placeholder="doctor@clinic.com"
+            [value]="newEmail()"
+            (valueChange)="newEmail.set($event)"
+          ></app-input
+        ></label>
+        <label class="block"
+          ><span class="mb-1 block text-xs font-semibold">Phone</span>
+          <app-input
+            id="doctor-new-phone"
+            [unstyled]="true"
+            inputClass="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
+            placeholder="+1 (555) 000-0000"
+            [value]="newPhone()"
+            (valueChange)="newPhone.set($event)"
+          ></app-input
+        ></label>
       </div>
     </div>
-  }
+
+    <div dialog-actions>
+      <app-button variant="outline" size="sm" (onClick)="closeAddDialog()"
+        >Cancel</app-button
+      >
+      <app-button variant="primary" size="sm" (onClick)="saveDoctor()"
+        >Save Doctor</app-button
+      >
+    </div>
+  </app-entity-dialog>
 </div>
