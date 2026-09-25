@@ -5,11 +5,7 @@ import { Subject, Subscription, debounceTime, distinctUntilChanged } from 'rxjs'
 
 export type SearchInputSize = 'xs' | 'sm';
 
-/**
- * Shared search input (Taiga-light + Tailwind visuals, React parity).
- * - `onSearch` emits immediately for model sync (back-compat).
- * - `debouncedSearch` emits via RxJS debounceTime for filtering workloads.
- */
+
 @Component({
   selector: 'app-search-input',
   standalone: true,
@@ -39,7 +35,7 @@ export class SearchInputComponent implements OnInit, OnDestroy {
       'w-full bg-muted rounded-lg border border-border placeholder:text-muted-foreground ' +
       'focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors ' +
       'text-foreground';
-    // React parity: header search is text-sm, toolbar search is text-xs; both py-1.5 with pl-8.
+    
     const sizeCls = this.size() === 'xs' ? 'pl-8 pr-8 py-1.5 text-xs' : 'pl-8 pr-10 py-1.5 text-sm';
     return `${base} ${sizeCls}`;
   });

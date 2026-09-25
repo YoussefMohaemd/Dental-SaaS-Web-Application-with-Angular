@@ -74,7 +74,7 @@ export class ReportsComponent {
     return BREAKDOWN_COLORS[index % BREAKDOWN_COLORS.length];
   }
 
-  // --- SVG chart geometry (recharts parity: Bar 240px, Donut 200px, Line 200px) ---
+  
   readonly barW = 560;
   readonly barH = 240;
   readonly barPadL = 44;

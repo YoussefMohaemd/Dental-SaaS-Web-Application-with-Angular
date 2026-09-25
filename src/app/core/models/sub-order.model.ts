@@ -65,7 +65,7 @@ export interface SubOrderWorkflowStep {
 
 export type SubOrderViewState = 'loading' | 'normal' | 'error';
 
-/** React parity (SubOrderPage.tsx): per-sub-order detail collections. */
+
 export type SubOrderFormItemStatus = 'complete' | 'incomplete' | 'optional';
 export type SubOrderScanItemStatus = 'uploaded' | 'missing' | 'optional' | 'selected-local';
 

@@ -21,15 +21,7 @@ const STATUS_STYLE: Record<ToothStatus, { fill: string; border: string }> = {
   extract: { fill: '#fee2e2', border: '#ef4444' },
 };
 
-/**
- * Anatomical FDI tooth chart (React parity: TeethChart.tsx).
- * Root cause of the previous mismatch: Create Order rendered teeth as a
- * generic numbered-button grid, losing tooth anatomy (per-tooth width/height,
- * rotation, crown shape), jaw filtering, status styling, per-service colors
- * and the legend. This component ports the React geometry 1:1.
- * Visuals use Tailwind + inline styles (no library component needed);
- * state uses Signals, interaction is a plain output event.
- */
+
 @Component({
   selector: 'app-teeth-chart',
   standalone: true,
@@ -49,14 +41,13 @@ export class TeethChartComponent {
   readonly activeJaw = signal<JawFilter>('both');
   readonly hoveredTooth = signal<number | null>(null);
 
-  /** Typed jaw options (root cause fix: template iterated an untyped string
-   * array and hid the mismatch with $any — now type-checked as JawFilter). */
+  
   readonly jaws: JawFilter[] = ['both', 'upper', 'lower'];
 
   readonly upperTeeth = UPPER_TEETH;
   readonly lowerTeeth = LOWER_TEETH;
 
-  /** Per-tooth service color (React parity: services[i] -> SERVICE_COLORS[i]). */
+  
   readonly serviceColors = computed<Record<number, string>>(() => {
     const map: Record<number, string> = {};
     const teethByService = this.serviceTeeth();
@@ -85,11 +76,7 @@ export class TeethChartComponent {
     if (!this.readOnly()) this.toothToggle.emit(num);
   }
 
-  /**
-   * Hover guards (root cause fix: mouseenter/mouseleave wrote hoveredTooth
-   * unconditionally, leaving stale hover state on read-only charts — e.g. the
-   * sub-order review chart — which leaked into fill/border/glow evaluation).
-   */
+  
   onHover(num: number): void {
     if (!this.readOnly()) this.hoveredTooth.set(num);
   }
@@ -98,7 +85,7 @@ export class TeethChartComponent {
     this.hoveredTooth.set(null);
   }
 
-  /** Space-key activation with scroll prevention (Enter needs no prevention). */
+  
   onSpaceKey(event: Event, num: number): void {
     event.preventDefault();
     this.onToggle(num);
@@ -144,7 +131,7 @@ export class TeethChartComponent {
     return isRight ? -base : base;
   }
 
-  /** Crown fill honoring selection > hover > status (React parity). */
+  
   fillOf(num: number): string {
     const status = this.statusOf(num);
     if (status === 'missing') return 'transparent';
@@ -160,7 +147,7 @@ export class TeethChartComponent {
     return STATUS_STYLE[status].border;
   }
 
-  /** Crown radius: upper teeth wider at the gum side, lower teeth mirrored. */
+  
   crownRadius(num: number, isUpper: boolean): string {
     const isMolar = num % 10 >= 6;
     return isUpper

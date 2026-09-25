@@ -33,7 +33,7 @@ export class HeaderComponent {
   constructor() {
     effect(() => {
       if (this.notificationsOpen() || this.profileOpen()) {
-        // Overlay is shown
+        
       }
     });
   }
@@ -73,7 +73,7 @@ export class HeaderComponent {
       localStorage.removeItem('dentalab-auth');
       localStorage.removeItem('dentalab-auth-token');
     } catch {
-      // storage unavailable (SSR) — navigation still returns to login
+      
     }
     this.navigationService.navigate('login');
     this.closeDropdowns();
@@ -101,7 +101,7 @@ export class HeaderComponent {
   }
 
   getIconSvg(name: string): string {
-    // Exact React parity: lucide-react v1.47.0 (AppLayout sizes).
+    
     const sizes: Record<string, number> = {
       menu: 18,
       'chevron-right': 14,

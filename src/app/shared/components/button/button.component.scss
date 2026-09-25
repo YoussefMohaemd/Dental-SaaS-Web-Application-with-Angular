@@ -1,8 +1,8 @@
 :host {
   display: inline-flex;
-  // Visual layer: Taiga UI owns basic control behavior in principle;
-  // this wrapper keeps React parity (rounded-lg, ring, dark/light) in SCSS
-  // so Tailwind utilities + tokens stay the single source of truth.
+  
+  
+  
 }
 
 :host(.w-full) {
@@ -13,10 +13,10 @@
   width: 100%;
 }
 
-// Layout forwarding: alignment/gap utilities placed on <app-button> by
-// callers (e.g. ghost buttons with `justify-start`, `gap-2`) must reach the
-// inner native element, which owns the flex layout (React parity: View Order
-// quick actions are left-aligned, dialogs use default centering).
+
+
+
+
 :host(.justify-start) button,
 :host(.justify-start) a {
   justify-content: flex-start;
@@ -37,19 +37,19 @@
   gap: 0.5rem;
 }
 
-// React parity: ViewOrder Edit/Export buttons use text-sm (14px) while the
-// sm size defaults to text-xs. Forward an explicit text-sm placed on
-// <app-button> to the inner native element.
+
+
+
 :host(.text-sm) button,
 :host(.text-sm) a {
   font-size: 0.875rem;
   line-height: 1.25rem;
 }
 
-// Icon + text slotted inside <app-button> (e.g. `<span innerHTML>Plus</span>
-// New Order) must stay on one centered row like React's
-// `flex items-center gap-2`. The inner spans are plain inline by default,
-// which drops vertical centering of the 13px lucide SVGs.
+
+
+
+
 button > span,
 a > span {
   display: inline-flex;
@@ -79,7 +79,7 @@ a > span > span {
   }
 }
 
-// Dark-mode contrast guard: primary foreground stays white in both themes
+
 :host-context([data-theme='dark']) {
   .loading-spinner {
     border-top-color: currentColor;

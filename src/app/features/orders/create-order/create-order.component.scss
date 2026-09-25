@@ -2,8 +2,8 @@
   display: block;
 }
 
-// React parity: inputs use primary-tinted focus ring; fall back gracefully if
-// the legacy --color-primary token is unavailable.
+
+
 select:focus,
 input:focus,
 textarea:focus {
@@ -12,7 +12,7 @@ textarea:focus {
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary, var(--color-primary)) 20%, transparent);
 }
 
-// Stepper buttons: completed steps stay interactive, future steps are inert.
+
 button[disabled] {
   cursor: not-allowed;
 }

@@ -268,7 +268,7 @@ export class GridComponent {
   })));
 
   openPatientProfile(_patientId: string): void {
-    // Showcase action only.
+    
   }
 
   setCompactStageFilter(value: string): void {

@@ -1,8 +1,7 @@
 import { Component, input, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-/** Priority -> dot colors. Kept local so this presentational component never
- *  depends on injectable services (React parity: PriorityBadge is pure UI). */
+
 const DOT_CLASSES: Record<string, string> = {
   Low: 'bg-slate-400',
   Normal: 'bg-blue-500',

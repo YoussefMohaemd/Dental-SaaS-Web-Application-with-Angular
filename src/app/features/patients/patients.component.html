@@ -1,136 +1,157 @@
-<div class="flex flex-col h-full">
-  <!-- Page header -->
-  <div class="px-6 py-4 border-b border-border bg-card shrink-0">
-    <div class="flex items-center gap-3">
-      <div>
-        <h1 class="font-display font-bold text-lg text-foreground">Patients</h1>
-        <p class="text-xs text-muted-foreground">{{ filtered().length }} registered patients</p>
-      </div>
-      <div class="ml-auto flex items-center gap-3">
-        <div class="relative">
-          <span [innerHTML]="getIconSvg('search') | safeHtml" class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"></span>
-          <input
-            class="pl-8 pr-4 py-1.5 text-xs bg-muted rounded-lg border border-border placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 w-56"
-            placeholder="Search patients..."
-            [value]="search()"
-            (input)="onSearchChange($event)"
-          />
-        </div>
-        <select
-          class="px-2 py-1.5 text-xs border border-border rounded-lg bg-card text-foreground focus:outline-none cursor-pointer"
-          [value]="statusFilter()"
-          (change)="onStatusFilterChange($event)"
-        >
-          <option value="">All Status</option>
-          <option value="Active">Active</option>
-          <option value="Inactive">Inactive</option>
-        </select>
-        <app-button variant="primary" size="md" (onClick)="navigateToAddPatient()" class="flex items-center gap-2">
-          <span [innerHTML]="getIconSvg('plus') | safeHtml"></span>
-          Add Patient
-        </app-button>
-      </div>
+<div class="enterprise-table-page">
+  <div class="enterprise-page-header shrink-0">
+    <div class="enterprise-header-copy">
+      <h1 class="font-display text-lg font-bold text-foreground">Patients</h1>
+      <p class="text-xs text-muted-foreground">{{ filtered().length }} registered patients</p>
     </div>
   </div>
 
-  <!-- Table -->
-  <div class="flex-1 overflow-auto">
-    @if (loading()) {
-      <div class="flex flex-col items-center justify-center h-48 text-center">
-        <span [innerHTML]="getIconSvg('loader') | safeHtml" class="text-muted-foreground mb-3 animate-spin" style="width: 28px; height: 28px;"></span>
-        <p class="font-semibold text-foreground">Loading patients...</p>
+  <div class="enterprise-toolbar shrink-0">
+    <div class="enterprise-toolbar-group enterprise-toolbar-group--grow">
+      <div class="enterprise-toolbar-search">
+        <span [innerHTML]="getIconSvg('search') | safeHtml" class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"></span>
+        <input
+          class="enterprise-toolbar-input"
+          placeholder="Search patients..."
+          [value]="search()"
+          (input)="onSearchChange($event)"
+        />
       </div>
-    } @else if (filtered().length === 0) {
-      <div class="flex flex-col items-center justify-center h-48 text-center">
-        <span [innerHTML]="getIconSvg('users') | safeHtml" class="text-muted-foreground mb-3" style="width: 32px; height: 32px;"></span>
-        <p class="font-semibold text-foreground">No patients found</p>
-      </div>
-    } @else {
-      <table class="w-full text-sm">
-        <thead class="sticky top-0 bg-muted/80 backdrop-blur-sm border-b border-border">
-          <tr>
-            <th class="px-4 py-2.5 text-left text-xs font-semibold text-muted-foreground cursor-pointer hover:text-foreground select-none" (click)="toggleSort('name')">
-              Name <span [innerHTML]="getIconSvg('arrow-up-down') | safeHtml" class="inline" [class.text-primary]="sortCol() === 'name'" [class.text-muted-foreground/40]="sortCol() !== 'name'" style="width: 10px; height: 10px;"></span>
-            </th>
-            <th class="px-4 py-2.5 text-left text-xs font-semibold text-muted-foreground cursor-pointer hover:text-foreground select-none" (click)="toggleSort('dob')">
-              Date of Birth <span [innerHTML]="getIconSvg('arrow-up-down') | safeHtml" class="inline" [class.text-primary]="sortCol() === 'dob'" [class.text-muted-foreground/40]="sortCol() !== 'dob'" style="width: 10px; height: 10px;"></span>
-            </th>
-            <th class="px-4 py-2.5 text-left text-xs font-semibold text-muted-foreground">Gender</th>
-            <th class="px-4 py-2.5 text-left text-xs font-semibold text-muted-foreground">Phone</th>
-            <th class="px-4 py-2.5 text-left text-xs font-semibold text-muted-foreground">Email</th>
-            <th class="px-4 py-2.5 text-left text-xs font-semibold text-muted-foreground cursor-pointer hover:text-foreground select-none" (click)="toggleSort('clinicName')">
-              Clinic <span [innerHTML]="getIconSvg('arrow-up-down') | safeHtml" class="inline" [class.text-primary]="sortCol() === 'clinicName'" [class.text-muted-foreground/40]="sortCol() !== 'clinicName'" style="width: 10px; height: 10px;"></span>
-            </th>
-            <th class="px-4 py-2.5 text-left text-xs font-semibold text-muted-foreground">Doctor</th>
-            <th class="px-4 py-2.5 text-left text-xs font-semibold text-muted-foreground cursor-pointer hover:text-foreground select-none" (click)="toggleSort('ordersCount')">
-              Orders <span [innerHTML]="getIconSvg('arrow-up-down') | safeHtml" class="inline" [class.text-primary]="sortCol() === 'ordersCount'" [class.text-muted-foreground/40]="sortCol() !== 'ordersCount'" style="width: 10px; height: 10px;"></span>
-            </th>
-            <th class="px-4 py-2.5 text-left text-xs font-semibold text-muted-foreground">Status</th>
-            <th class="px-4 py-2.5 text-left text-xs font-semibold text-muted-foreground cursor-pointer hover:text-foreground select-none" (click)="toggleSort('lastVisit')">
-              Last Visit <span [innerHTML]="getIconSvg('arrow-up-down') | safeHtml" class="inline" [class.text-primary]="sortCol() === 'lastVisit'" [class.text-muted-foreground/40]="sortCol() !== 'lastVisit'" style="width: 10px; height: 10px;"></span>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (p of pageData(); track p.id) {
-            <tr class="border-b border-border hover:bg-muted/20 cursor-pointer" (click)="navigationService.navigate('patientDetails', { patientId: p.id })">
-              <td class="px-4 py-3">
-                <div class="flex items-center gap-2.5">
-                  <app-avatar [name]="p.name" [size]="'sm'" [variant]="'primary'" />
-                  <span class="text-sm font-medium text-foreground">{{ p.name }}</span>
-                </div>
-              </td>
-              <td class="px-4 py-3 text-xs text-muted-foreground font-mono">{{ p.dob }}</td>
-              <td class="px-4 py-3 text-xs text-muted-foreground">{{ getGenderLabel(p.gender) }}</td>
-              <td class="px-4 py-3 text-xs text-muted-foreground font-mono">{{ p.phone }}</td>
-              <td class="px-4 py-3 text-xs text-muted-foreground">{{ p.email }}</td>
-              <td class="px-4 py-3 text-xs text-muted-foreground truncate max-w-35">{{ p.clinicName }}</td>
-              <td class="px-4 py-3 text-xs text-muted-foreground">{{ p.doctorName.replace('Dr. ', '') }}</td>
-              <td class="px-4 py-3 text-xs font-mono font-semibold text-center">{{ p.ordersCount }}</td>
-              <td class="px-4 py-3">
-                <span class="px-2 py-0.5 rounded text-[10px] font-semibold" [class]="getStatusClass(p.status)">
-                  {{ p.status }}
+      <select
+        class="enterprise-toolbar-select cursor-pointer focus:outline-none"
+        [value]="statusFilter()"
+        (change)="onStatusFilterChange($event)"
+      >
+        <option value="">All Status</option>
+        <option value="Active">Active</option>
+        <option value="Inactive">Inactive</option>
+      </select>
+    </div>
+    <div class="enterprise-toolbar-group">
+      <app-button variant="primary" size="md" (onClick)="navigateToAddPatient()" class="flex items-center gap-2">
+        <span [innerHTML]="getIconSvg('plus') | safeHtml"></span>
+        Add Patient
+      </app-button>
+    </div>
+  </div>
+
+  <div class="enterprise-table-panel">
+    <div class="enterprise-table-scroll">
+      @if (loading()) {
+        <div class="enterprise-empty-state flex flex-col items-center justify-center text-center">
+          <span [innerHTML]="getIconSvg('loader') | safeHtml" class="text-muted-foreground mb-3 animate-spin" style="width: 28px; height: 28px;"></span>
+          <p class="font-semibold text-foreground">Loading patients...</p>
+        </div>
+      } @else if (filtered().length === 0) {
+        <div class="enterprise-empty-state flex flex-col items-center justify-center text-center">
+          <span [innerHTML]="getIconSvg('users') | safeHtml" class="text-muted-foreground mb-3" style="width: 32px; height: 32px;"></span>
+          <p class="font-semibold text-foreground">No patients found</p>
+        </div>
+      } @else {
+        <table class="enterprise-data-table">
+          <thead>
+            <tr>
+              <th class="enterprise-th-sort" (click)="toggleSort('name')">
+                <span class="enterprise-th-label">Name
+                  <span [innerHTML]="getIconSvg('arrow-up-down') | safeHtml" class="inline" [class.text-primary]="sortCol() === 'name'" [class.text-muted-foreground/40]="sortCol() !== 'name'" style="width: 10px; height: 10px;"></span>
                 </span>
-              </td>
-              <td class="px-4 py-3 text-xs font-mono text-muted-foreground">{{ p.lastVisit }}</td>
+              </th>
+              <th class="enterprise-th-sort" (click)="toggleSort('dob')">
+                <span class="enterprise-th-label">Date of Birth
+                  <span [innerHTML]="getIconSvg('arrow-up-down') | safeHtml" class="inline" [class.text-primary]="sortCol() === 'dob'" [class.text-muted-foreground/40]="sortCol() !== 'dob'" style="width: 10px; height: 10px;"></span>
+                </span>
+              </th>
+              <th>Gender</th>
+              <th>Phone</th>
+              <th>Email</th>
+              <th class="enterprise-th-sort" (click)="toggleSort('clinicName')">
+                <span class="enterprise-th-label">Clinic
+                  <span [innerHTML]="getIconSvg('arrow-up-down') | safeHtml" class="inline" [class.text-primary]="sortCol() === 'clinicName'" [class.text-muted-foreground/40]="sortCol() !== 'clinicName'" style="width: 10px; height: 10px;"></span>
+                </span>
+              </th>
+              <th>Doctor</th>
+              <th class="enterprise-th-sort text-center" (click)="toggleSort('ordersCount')">
+                <span class="enterprise-th-label">Orders
+                  <span [innerHTML]="getIconSvg('arrow-up-down') | safeHtml" class="inline" [class.text-primary]="sortCol() === 'ordersCount'" [class.text-muted-foreground/40]="sortCol() !== 'ordersCount'" style="width: 10px; height: 10px;"></span>
+                </span>
+              </th>
+              <th>Status</th>
+              <th class="enterprise-th-sort" (click)="toggleSort('lastVisit')">
+                <span class="enterprise-th-label">Last Visit
+                  <span [innerHTML]="getIconSvg('arrow-up-down') | safeHtml" class="inline" [class.text-primary]="sortCol() === 'lastVisit'" [class.text-muted-foreground/40]="sortCol() !== 'lastVisit'" style="width: 10px; height: 10px;"></span>
+                </span>
+              </th>
             </tr>
+          </thead>
+          <tbody>
+            @for (p of pageData(); track p.id) {
+              <tr class="cursor-pointer" (click)="navigationService.navigate('patientDetails', { patientId: p.id })">
+                <td>
+                  <div class="flex min-w-0 items-center gap-3">
+                    <app-avatar [name]="p.name" [size]="'sm'" [variant]="'primary'" />
+                    <div class="enterprise-cell-stack">
+                      <span class="enterprise-cell-primary truncate-1" [title]="p.name">{{ p.name }}</span>
+                      <span class="enterprise-cell-secondary font-mono">ID: {{ p.id }}</span>
+                    </div>
+                  </div>
+                </td>
+                <td class="text-xs text-muted-foreground font-mono whitespace-nowrap">{{ p.dob }}</td>
+                <td class="text-xs text-muted-foreground">{{ getGenderLabel(p.gender) }}</td>
+                <td class="text-xs text-muted-foreground font-mono whitespace-nowrap">{{ p.phone }}</td>
+                <td class="text-xs text-muted-foreground max-w-44">
+                  <span class="truncate-1" [title]="p.email">{{ p.email }}</span>
+                </td>
+                <td class="text-xs text-muted-foreground max-w-40">
+                  <span class="truncate-1" [title]="p.clinicName">{{ p.clinicName }}</span>
+                </td>
+                <td class="text-xs text-muted-foreground max-w-40">
+                  <span class="truncate-1" [title]="p.doctorName">{{ p.doctorName.replace('Dr. ', '') }}</span>
+                </td>
+                <td class="text-center text-xs font-mono font-semibold text-foreground">{{ p.ordersCount }}</td>
+                <td>
+                  <span class="enterprise-status-chip" [class]="getStatusClass(p.status)">
+                    {{ p.status }}
+                  </span>
+                </td>
+                <td class="text-xs font-mono text-muted-foreground whitespace-nowrap">{{ p.lastVisit }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+
+    @if (filtered().length > 0) {
+      <div class="enterprise-pagination">
+        <span class="text-xs text-muted-foreground">{{ ((page() - 1) * pageSize) + 1 }}&ndash;{{ min(page() * pageSize, filtered().length) }} of {{ filtered().length }}</span>
+        <div class="enterprise-pagination-pages">
+          <button
+            (click)="prevPage()"
+            [disabled]="page() === 1"
+            class="enterprise-page-nav"
+          >
+            <span [innerHTML]="getIconSvg('chevron-left') | safeHtml" style="width: 14px; height: 14px;"></span>
+          </button>
+          @for (pg of getPageNumbers(); track pg) {
+            <button
+              (click)="goToPage(pg)"
+              class="enterprise-page-button"
+              [class.enterprise-page-button--active]="page() === pg"
+            >
+              {{ pg }}
+            </button>
           }
-        </tbody>
-      </table>
+          <button
+            (click)="nextPage()"
+            [disabled]="page() === totalPages()"
+            class="enterprise-page-nav"
+          >
+            <span [innerHTML]="getIconSvg('chevron-right') | safeHtml" style="width: 14px; height: 14px;"></span>
+          </button>
+        </div>
+      </div>
     }
   </div>
-
-  <!-- Pagination -->
-  @if (filtered().length > 0) {
-    <div class="px-6 py-3 border-t border-border bg-card flex items-center justify-between shrink-0">
-      <span class="text-xs text-muted-foreground">{{ ((page() - 1) * pageSize) + 1 }}&ndash;{{ min(page() * pageSize, filtered().length) }} of {{ filtered().length }}</span>
-      <div class="flex items-center gap-1">
-        <button
-          (click)="prevPage()"
-          [disabled]="page() === 1"
-          class="p-1.5 rounded border border-border hover:bg-muted disabled:opacity-40 text-muted-foreground"
-        >
-          <span [innerHTML]="getIconSvg('chevron-left') | safeHtml" style="width: 14px; height: 14px;"></span>
-        </button>
-        @for (pg of getPageNumbers(); track pg) {
-          <button
-            (click)="goToPage(pg)"
-            [class]="page() === pg ? 'bg-primary text-primary-foreground' : 'hover:bg-muted text-muted-foreground'"
-            class="w-7 h-7 rounded text-xs font-medium"
-          >
-            {{ pg }}
-          </button>
-        }
-        <button
-          (click)="nextPage()"
-          [disabled]="page() === totalPages()"
-          class="p-1.5 rounded border border-border hover:bg-muted disabled:opacity-40 text-muted-foreground"
-        >
-          <span [innerHTML]="getIconSvg('chevron-right') | safeHtml" style="width: 14px; height: 14px;"></span>
-        </button>
-      </div>
-    </div>
-  }
 
   @if (showAddDialog()) {
     <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4" (click)="closeAddDialog()">

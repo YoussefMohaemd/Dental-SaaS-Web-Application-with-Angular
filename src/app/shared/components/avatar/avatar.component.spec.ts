@@ -45,8 +45,8 @@ describe('AvatarComponent', () => {
   });
 
   it('should display image when provided', () => {
-    // Data URI on purpose: a relative file name would make the test browser
-    // request /avatar.jpg from the karma server and log a 404.
+    
+    
     const dataUri = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
     fixture.componentRef.setInput('name', 'John Doe');
     fixture.componentRef.setInput('image', dataUri);

@@ -16,23 +16,14 @@ import { SafeHtmlPipe } from '../../shared/pipes/safe-html.pipe';
 import { lucideSvg } from '@shared/icons/lucide-icons';
 import { filterTableRows } from '@shared/utils/table-state';
 
-/**
- * TreeTable row payload — single source for the Order → Service hierarchy.
- * `kind: 'order'` renders the parent Order row; `kind: 'service'` renders a
- * child Service / Sub Order row. Transformation is strictly derived from the
- * existing Order + SubOrder services; no backend/API contract changes.
- *
- * Real business relationship: `SubOrder.orderId` → `Order.id`.
- * Only sub-orders whose `orderId` matches the parent are attached. Orders
- * without matches stay leaf rows (no expander, no fake children).
- */
+
 export interface OrderTreeRowData {
   kind: 'order' | 'service';
   order: Order;
   subOrder?: SubOrder;
 }
 
-/** Leaf child node for one real Sub Order belonging to `order`. */
+
 export function mapSubOrderToTreeNode(order: Order, subOrder: SubOrder): TreeNode<OrderTreeRowData> {
   return {
     key: `${order.id}-${subOrder.id}`,
@@ -41,7 +32,7 @@ export function mapSubOrderToTreeNode(order: Order, subOrder: SubOrder): TreeNod
   };
 }
 
-/** Parent node for one Order with its real children (possibly none). */
+
 export function mapOrderToTreeNode(
   order: Order,
   children: SubOrder[],
@@ -61,7 +52,7 @@ export type OrdersViewState = 'normal' | 'loading' | 'empty' | 'error';
 
 const PAGE_SIZES = [10, 20, 30, 40, 50];
 
-/** Must match the `treetable-row-out` CSS exit animation duration. */
+
 const COLLAPSE_ANIMATION_MS = 220;
 const STATUS_OPTIONS: OrderStatus[] = ['New', 'Review', 'Design', 'Production', 'Quality Check', 'Ready', 'Completed', 'Cancelled'];
 const PRIORITY_OPTIONS: Priority[] = ['Low', 'Normal', 'High', 'Urgent'];
@@ -84,7 +75,7 @@ const SUB_ORDER_STATUS_BLOCK_STYLES: Record<SubOrder['status'], { bg: string; fg
   'done': { bg: '#D1FAE5', fg: '#065F46' },
 };
 
-/** Human-readable column names for sort-button accessible labels. */
+
 const SORT_COLUMN_LABELS: Partial<Record<keyof Order, string>> = {
   orderNumber: 'Order number',
   patientName: 'Patient',
@@ -102,11 +93,7 @@ const SORT_COLUMN_LABELS: Partial<Record<keyof Order, string>> = {
   chargedAt: 'Charged date',
 };
 
-/**
- * Type-aware comparator matching React locale behavior:
- * numbers compare numerically, ISO dates compare chronologically,
- * everything else falls back to localeCompare.
- */
+
 export function compareOrderValues(a: unknown, b: unknown): number {
   if (a == null && b == null) return 0;
   if (a == null) return -1;
@@ -176,18 +163,10 @@ export class OrdersComponent {
     return this.filtered().slice((this.page() - 1) * this.pageSize(), this.page() * this.pageSize());
   });
 
-  /**
-   * Expanded Order ids — the only TreeTable expansion state. Survives
-   * filter/sort/page recomputations because treeNodes are rebuilt from it.
-   */
+  
   readonly expandedIds = signal<Set<string>>(new Set());
 
-  /**
-   * Orders currently playing their collapse (exit) animation. The id stays in
-   * `expandedIds` until the animation finishes, so child rows remain rendered
-   * with the `is-leaving` class instead of vanishing instantly (PrimeNG
-   * removes collapsed rows from the DOM with no close transition of its own).
-   */
+  
   readonly collapsingIds = signal<Set<string>>(new Set());
   private readonly collapseTimers = new Map<string, number>();
 
@@ -199,14 +178,7 @@ export class OrdersComponent {
     return this.collapsingIds().has(orderId);
   }
 
-  /**
-   * Animated expand/collapse toggle (owns the TreeTable hierarchy motion).
-   * Expand is instant (child rows play the CSS entrance animation on insert).
-   * Collapse first flags the order as collapsing — child rows play the CSS
-   * exit animation — then removes the id after COLLAPSE_ANIMATION_MS so the
-   * rows unmount. Re-toggling mid-collapse cancels the pending collapse.
-   * Honors prefers-reduced-motion by collapsing instantly.
-   */
+  
   toggleNodeExpand(orderId: string): void {
     if (!orderId) return;
     const pending = this.collapseTimers.get(orderId);
@@ -249,15 +221,10 @@ export class OrdersComponent {
     }
   }
 
-  /**
-   * PrimeNG TreeTable value: Order (parent) → Services / Sub Orders (children).
-   * Strict mapping — only sub-orders whose `orderId` matches the parent are
-   * attached. Orders without children get `leaf: true` and no `children`, so
-   * the toggler is hidden and no fake/empty level is created.
-   */
+  
   readonly treeNodes = computed<TreeNode<OrderTreeRowData>[]>(() => {
     const expanded = this.expandedIds();
-    // Touch subOrders signal so nodes rebuild once async JSON arrives.
+    
     const allSubs = this.subOrders();
     void allSubs;
     return this.pageData().map(order =>
@@ -283,11 +250,7 @@ export class OrdersComponent {
     }
   }
 
-  /**
-   * React-parity sort indicator: inline SVG (Lucide ArrowUpDown / ArrowUp /
-   * ArrowDown equivalents). Decorative only — always rendered with
-   * aria-hidden="true"; the accessible name comes from sortAriaLabel().
-   */
+  
   sortIconSvg(column: keyof Order): string {
     const active = this.sortColumn() === column;
     const dir = this.sortDirection();
@@ -318,16 +281,14 @@ export class OrdersComponent {
     this.page.set(1);
   }
 
-  /** Immediate path (React parity: filter on each keystroke). Accepts the
-   * emitted string or a native input Event (language-service may infer $event
-   * as Event for signal outputs). */
+  
   onSearchInput(value: string | Event): void {
     const next = typeof value === 'string' ? value : ((value.target as HTMLInputElement | null)?.value ?? '');
     this.search.set(next);
     this.page.set(1);
   }
 
-  /** RxJS path: shared search-input emits debouncedSearch after 250ms of quiet. */
+  
   onDebouncedSearch(value: string | Event): void {
     const next = typeof value === 'string' ? value : ((value.target as HTMLInputElement | null)?.value ?? '');
     this.search.set(next);
@@ -454,7 +415,6 @@ export class OrdersComponent {
   }
 
   visiblePageNumbers(): number[] {
-    // React parity: always the first 7 page numbers (OrdersPage.tsx).
     const total = this.totalPages();
     const count = Math.min(total, 7);
     return Array.from({ length: count }, (_, index) => index + 1);
@@ -488,11 +448,6 @@ export class OrdersComponent {
     this.navigationService.navigate('createOrder');
   }
 
-  /**
-   * Strict child lookup — no fallback. Returns [] when the Order has no
-   * Services / Sub Orders so the TreeTable renders a plain leaf row with no
-   * expander and no fake children.
-   */
   subOrdersFor(orderId: string): SubOrder[] {
     return this.subOrders().filter(s => s.orderId === orderId);
   }
@@ -591,12 +546,6 @@ export class OrdersComponent {
     return 'bg-emerald-50 text-emerald-700';
   }
 
-  /**
-   * Exact React parity (OrdersPage.tsx lucide-react v1.47.0):
-   * Plus 13, Download 15, RefreshCw 15, SlidersHorizontal, X 12,
-   * ChevronLeft/Right 14, ChevronDown 10, Lock/Unlock 12, FileText 12,
-   * ArrowUpDown 10, CheckSquare/Square 14/13, Search 13.
-   */
   getIconSvg(name: string): string {
     const sizes: Record<string, { icon: string; size: number }> = {
       plus: { icon: 'plus', size: 13 },

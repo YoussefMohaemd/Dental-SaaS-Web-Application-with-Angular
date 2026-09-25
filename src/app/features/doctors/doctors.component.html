@@ -1,96 +1,106 @@
-<div class="flex flex-col h-full">
-  <!-- Page header -->
-  <div class="px-6 py-4 border-b border-border bg-card shrink-0">
-    <div class="flex items-center gap-3">
-      <div>
-        <h1 class="font-display font-bold text-lg text-foreground">Doctors</h1>
-        <p class="text-xs text-muted-foreground">{{ filtered().length }} referring dentists</p>
-      </div>
-      <div class="ml-auto flex items-center gap-3">
-        <div class="relative">
-          <span [innerHTML]="getIconSvg('search') | safeHtml" class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"></span>
-          <input
-            class="pl-8 pr-4 py-1.5 text-xs bg-muted rounded-lg border border-border placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 w-56"
-            placeholder="Search doctors..."
-            [value]="search()"
-            (input)="onSearchChange($event)"
-          />
-        </div>
-        <select
-          class="px-2 py-1.5 text-xs border border-border rounded-lg bg-card text-foreground focus:outline-none cursor-pointer"
-          [value]="statusFilter()"
-          (change)="onStatusFilterChange($event)"
-        >
-          <option value="">All Status</option>
-          <option value="Active">Active</option>
-          <option value="Inactive">Inactive</option>
-        </select>
-        <app-button variant="primary" size="md" (onClick)="openAddDialog()" class="flex items-center gap-2">
-          <span [innerHTML]="getIconSvg('plus') | safeHtml"></span>
-          Add Doctor
-        </app-button>
-      </div>
+<div class="enterprise-table-page">
+  <div class="enterprise-page-header shrink-0">
+    <div class="enterprise-header-copy">
+      <h1 class="font-display text-lg font-bold text-foreground">Doctors</h1>
+      <p class="text-xs text-muted-foreground">{{ filtered().length }} referring dentists</p>
     </div>
   </div>
 
-  <!-- Table -->
-  <div class="flex-1 overflow-auto">
-    @if (loading()) {
-      <div class="flex flex-col items-center justify-center h-48 text-center">
-        <span [innerHTML]="getIconSvg('loader') | safeHtml" class="text-muted-foreground mb-3 animate-spin" style="width: 28px; height: 28px;"></span>
-        <p class="font-semibold text-foreground">Loading doctors...</p>
+  <div class="enterprise-toolbar shrink-0">
+    <div class="enterprise-toolbar-group enterprise-toolbar-group--grow">
+      <div class="enterprise-toolbar-search">
+        <span [innerHTML]="getIconSvg('search') | safeHtml" class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"></span>
+        <input
+          class="enterprise-toolbar-input"
+          placeholder="Search doctors..."
+          [value]="search()"
+          (input)="onSearchChange($event)"
+        />
       </div>
-    } @else if (filtered().length === 0) {
-      <div class="flex flex-col items-center justify-center h-48 text-center">
-        <span [innerHTML]="getIconSvg('user-cog') | safeHtml" class="text-muted-foreground mb-3" style="width: 32px; height: 32px;"></span>
-        <p class="font-semibold text-foreground">No doctors found</p>
-      </div>
-    } @else {
-      <table class="w-full text-sm">
-        <thead class="sticky top-0 bg-muted/80 backdrop-blur-sm border-b border-border">
-          <tr>
-            @for (config of sortConfigs; track config.col) {
-              <th
-                class="px-4 py-2.5 text-left text-xs font-semibold text-muted-foreground cursor-pointer hover:text-foreground select-none"
-                (click)="toggleSort(config.col)"
-              >
-                {{ config.label }}
-                <span
-                  [innerHTML]="getIconSvg('arrow-up-down') | safeHtml"
-                  class="inline"
-                  [class.text-primary]="sortCol() === config.col"
-                  [class.text-muted-foreground/40]="sortCol() !== config.col"
-                  style="width: 10px; height: 10px;"
-                ></span>
-              </th>
-            }
-          </tr>
-        </thead>
-        <tbody>
-          @for (d of filtered(); track d.id) {
-            <tr class="border-b border-border hover:bg-muted/20 cursor-pointer" (click)="navigationService.navigate('doctorDetails', { doctorId: d.id })">
-              <td class="px-4 py-3">
-                <div class="flex items-center gap-2.5">
-                  <app-avatar class="doctor-avatar" [name]="d.name" [size]="'md'" [variant]="'violet'" />
-                  <span class="text-sm font-medium text-foreground">{{ d.name }}</span>
-                </div>
-              </td>
-              <td class="px-4 py-3 text-xs text-muted-foreground">{{ d.specialty }}</td>
-              <td class="px-4 py-3 text-xs text-muted-foreground truncate max-w-40">{{ d.clinicName }}</td>
-              <td class="px-4 py-3 text-xs text-muted-foreground">{{ d.email }}</td>
-              <td class="px-4 py-3 text-xs font-mono text-muted-foreground">{{ d.phone }}</td>
-              <td class="px-4 py-3 text-xs font-mono font-semibold text-center">{{ d.ordersCount }}</td>
-              <td class="px-4 py-3 text-xs font-mono text-muted-foreground">{{ d.joinedDate }}</td>
-              <td class="px-4 py-3">
-                <span class="px-2 py-0.5 rounded text-[10px] font-semibold" [class]="getStatusClass(d.status)">
-                  {{ d.status }}
-                </span>
-              </td>
+      <select
+        class="enterprise-toolbar-select cursor-pointer focus:outline-none"
+        [value]="statusFilter()"
+        (change)="onStatusFilterChange($event)"
+      >
+        <option value="">All Status</option>
+        <option value="Active">Active</option>
+        <option value="Inactive">Inactive</option>
+      </select>
+    </div>
+    <div class="enterprise-toolbar-group">
+      <app-button variant="primary" size="md" (onClick)="openAddDialog()" class="flex items-center gap-2">
+        <span [innerHTML]="getIconSvg('plus') | safeHtml"></span>
+        Add Doctor
+      </app-button>
+    </div>
+  </div>
+
+  <div class="enterprise-table-panel">
+    <div class="enterprise-table-scroll">
+      @if (loading()) {
+        <div class="enterprise-empty-state flex flex-col items-center justify-center text-center">
+          <span [innerHTML]="getIconSvg('loader') | safeHtml" class="text-muted-foreground mb-3 animate-spin" style="width: 28px; height: 28px;"></span>
+          <p class="font-semibold text-foreground">Loading doctors...</p>
+        </div>
+      } @else if (filtered().length === 0) {
+        <div class="enterprise-empty-state flex flex-col items-center justify-center text-center">
+          <span [innerHTML]="getIconSvg('user-cog') | safeHtml" class="text-muted-foreground mb-3" style="width: 32px; height: 32px;"></span>
+          <p class="font-semibold text-foreground">No doctors found</p>
+        </div>
+      } @else {
+        <table class="enterprise-data-table">
+          <thead>
+            <tr>
+              @for (config of sortConfigs; track config.col) {
+                <th class="enterprise-th-sort" (click)="toggleSort(config.col)">
+                  <span class="enterprise-th-label">{{ config.label }}
+                    <span
+                      [innerHTML]="getIconSvg('arrow-up-down') | safeHtml"
+                      class="inline"
+                      [class.text-primary]="sortCol() === config.col"
+                      [class.text-muted-foreground/40]="sortCol() !== config.col"
+                      style="width: 10px; height: 10px;"
+                    ></span>
+                  </span>
+                </th>
+              }
             </tr>
-          }
-        </tbody>
-      </table>
-    }
+          </thead>
+          <tbody>
+            @for (d of filtered(); track d.id) {
+              <tr class="cursor-pointer" (click)="navigationService.navigate('doctorDetails', { doctorId: d.id })">
+                <td>
+                  <div class="flex min-w-0 items-center gap-3">
+                    <app-avatar class="doctor-avatar" [name]="d.name" [size]="'md'" [variant]="'violet'" />
+                    <div class="enterprise-cell-stack">
+                      <span class="enterprise-cell-primary truncate-1" [title]="d.name">{{ d.name }}</span>
+                      <span class="enterprise-cell-secondary font-mono">ID: {{ d.id }}</span>
+                    </div>
+                  </div>
+                </td>
+                <td class="text-xs text-muted-foreground max-w-40">
+                  <span class="truncate-1" [title]="d.specialty">{{ d.specialty }}</span>
+                </td>
+                <td class="text-xs text-muted-foreground max-w-44">
+                  <span class="truncate-1" [title]="d.clinicName">{{ d.clinicName }}</span>
+                </td>
+                <td class="text-xs text-muted-foreground max-w-44">
+                  <span class="truncate-1" [title]="d.email">{{ d.email }}</span>
+                </td>
+                <td class="text-xs font-mono text-muted-foreground whitespace-nowrap">{{ d.phone }}</td>
+                <td class="text-xs font-mono font-semibold text-center text-foreground">{{ d.ordersCount }}</td>
+                <td class="text-xs font-mono text-muted-foreground whitespace-nowrap">{{ d.joinedDate }}</td>
+                <td>
+                  <span class="enterprise-status-chip" [class]="getStatusClass(d.status)">
+                    {{ d.status }}
+                  </span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
   </div>
 
   @if (showAddDialog()) {

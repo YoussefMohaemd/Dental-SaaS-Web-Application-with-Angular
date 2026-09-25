@@ -1,13 +1,13 @@
-// Main Styles Entry Point
-// Order matters: tokens -> theme -> utilities -> component styles
-// Tailwind utilities are generated separately by the Tailwind v4 CLI
-// (see src/tailwind.input.css) and bundled via angular.json styles.
+
+
+
+
 
 @use 'styles/tokens' as *;
 @use 'styles/theme';
 @use 'styles/utilities';
 
-// Global base styles
+
 @layer base {
   * {
     box-sizing: border-box;
@@ -26,23 +26,23 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  // Ensure full height for app shell
+  
   html,
   body,
   app-root {
     height: 100%;
   }
 
-  // Selection styles
+  
   ::selection {
     background-color: color-mix(in srgb, var(--primary) 30%, transparent);
     color: var(--foreground);
   }
 }
 
-// Component layer - for component-specific global styles
+
 @layer components {
-  // PrimeNG overrides for consistent theming
+  
   :host ::ng-deep {
     .p-component {
       font-family: var(--font-sans) !important;
@@ -245,9 +245,9 @@
   }
 }
 
-// Utility layer - Tailwind utilities and custom utilities
+
 @layer utilities {
-  // Custom scrollbar for webkit
+  
   .scrollbar-thin {
     scrollbar-width: thin;
     scrollbar-color: var(--border) transparent;
@@ -271,7 +271,7 @@
     background: var(--muted-foreground);
   }
 
-  // Sidebar scrollbar
+  
   .sidebar-scrollbar::-webkit-scrollbar {
     width: 3px;
   }

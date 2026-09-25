@@ -109,18 +109,18 @@ export class CreateOrderComponent {
     format: 'STL',
   });
 
-  /** Per-service fabrication details (Step 4, React parity). */
+  
   readonly serviceDetails = signal<Record<string, ServiceDetail>>({});
-  /** Per-service clinical forms (Step 5, React parity). */
+  
   readonly serviceForms = signal<Record<string, ServiceClinicalForm>>({});
 
   readonly selectedPatient = computed(() => this.patients().find(p => p.id === this.form().patientId));
   readonly selectedDoctor = computed(() => this.doctors().find(d => d.id === this.form().doctorId));
   readonly selectedClinic = computed(() => this.clinics().find(c => c.id === this.form().clinicId));
   readonly selectedServiceObjects = computed(() => AVAILABLE_SERVICES.filter(s => this.selectedServices().includes(s.id)));
-  /** Service names for the tooth chart legend (React parity). */
+  
   readonly serviceNames = computed(() => this.selectedServiceObjects().map(s => s.name));
-  /** serviceTeeth keyed by service NAME for the chart (React maps id -> name). */
+  
   readonly serviceTeethByName = computed(() => {
     const byId = this.serviceTeeth();
     const out: Record<string, number[]> = {};
@@ -139,7 +139,7 @@ export class CreateOrderComponent {
   readonly marginTypes = MARGIN_TYPES;
   readonly materials = MATERIALS;
 
-  /** React parity: only Active clinics are offered in Step 1. */
+  
   readonly activeClinics = computed(() => this.clinics().filter(c => c.status === 'Active'));
 
   readonly doctorsForClinic = computed(() => {
@@ -148,7 +148,7 @@ export class CreateOrderComponent {
     return this.doctors().filter(d => d.clinicId === clinicId);
   });
 
-  /** All teeth across general + per-service assignment (Review summary). */
+  
   readonly allTeethCombined = computed(() => {
     const set = new Set<number>(this.selectedTeeth());
     for (const teeth of Object.values(this.serviceTeeth())) {
@@ -174,8 +174,8 @@ export class CreateOrderComponent {
     this.selectedServices.update(prev =>
       prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]
     );
-    // Lazily seed per-service detail + clinical form records (React parity:
-    // each selected service gets dedicated Details/Forms/Files sections).
+    
+    
     if (!this.serviceDetails()[id]) {
       this.serviceDetails.update(prev => ({ ...prev, [id]: defaultDetail() }));
     }
@@ -206,7 +206,7 @@ export class CreateOrderComponent {
     return this.serviceForms()[serviceId] ?? defaultClinicalForm();
   }
 
-  /** Whether a restoration service shows Shade/Arch fields (React parity). */
+  
   needsShadeArch(serviceId: string): boolean {
     return serviceId === 'fmb' || serviceId === 'final-restoration' || serviceId === 'temp-restoration';
   }
@@ -227,12 +227,7 @@ export class CreateOrderComponent {
     return this.visibleSelectedTeeth();
   }
 
-  /**
-   * Teeth visible in the step-3 chart (root cause fix: this was a plain method
-   * reading signals during template evaluation, so change detection could not
-   * track the dependency and the chart sometimes rendered a stale selection.
-   * As a computed, the chart input updates reliably on every toggle).
-   */
+  
   readonly visibleSelectedTeeth = computed(() => {
     const active = this.activeServiceForTeeth();
     return active ? [...(this.serviceTeeth()[active] || [])] : [...this.selectedTeeth()];
@@ -259,13 +254,7 @@ export class CreateOrderComponent {
     return '';
   }
 
-  /**
-   * Guarded step navigation (root cause fix: the stepper previously allowed
-   * jumping to any step via step.set(), bypassing validation).
-   * - Completed steps are always clickable (React-style sequential + back-nav).
-   * - The immediate next step requires the current step to be valid.
-   * - Future steps beyond next are blocked until prerequisites are met.
-   */
+  
   goToStep(target: number): void {
     const current = this.step();
     if (target === current) return;

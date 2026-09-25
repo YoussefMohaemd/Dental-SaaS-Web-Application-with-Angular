@@ -1,5 +1,5 @@
 <div class="rounded-xl border border-border bg-card p-5" role="group" aria-label="FDI tooth chart">
-  <!-- Controls -->
+  
   @if (!readOnly()) {
     <div class="mb-4 flex items-center justify-between gap-2">
       <div class="flex items-center gap-1 rounded-lg border border-border p-0.5" role="group" aria-label="Jaw filter">
@@ -24,7 +24,7 @@
     </div>
   }
 
-  <!-- Dental chart -->
+  
   <div class="space-y-2">
     @if (activeJaw() === 'both' || activeJaw() === 'upper') {
       <div>
@@ -83,7 +83,7 @@
     }
   </div>
 
-  <!-- Legend -->
+  
   <div class="mt-4 flex flex-wrap items-center gap-4 border-t border-border pt-3">
     @for (l of legend; track l.label) {
       <div class="flex items-center gap-1.5">
@@ -101,7 +101,7 @@
     </div>
   </div>
 
-  <!-- Service legend -->
+  
   @if (services().length > 0 && hasServiceColors()) {
     <div class="mt-3 flex flex-wrap items-center gap-3">
       @for (svc of services(); track svc; let i = $index) {
@@ -116,7 +116,7 @@
   }
 </div>
 
-<!-- Single-tooth template: anatomical crown shape (React parity: ToothShape) -->
+
 <ng-template #toothTpl let-num let-isUpper="isUpper">
   <div
     (click)="onToggle(num)"

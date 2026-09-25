@@ -47,8 +47,8 @@ export class SidebarComponent {
   }
 
   getIconSvg(name: string): string {
-    // Exact React parity: lucide-react v1.47.0 shapes (see shared/icons/lucide-icons.ts).
-    // Sidebar nav icons render at 16px like React `<Icon size={16}>`.
+    
+    
     return lucideSvg(name, 16);
   }
 }

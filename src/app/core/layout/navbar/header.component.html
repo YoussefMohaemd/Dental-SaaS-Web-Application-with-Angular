@@ -1,5 +1,5 @@
 <header class="h-14 bg-card border-b border-border flex items-center gap-4 px-4 shrink-0 z-20">
-  <!-- Menu button -->
+  
   <button
     (click)="toggleSidebar()"
     class="p-1.5 rounded-md hover:bg-muted text-muted-foreground"
@@ -8,7 +8,7 @@
     <span [innerHTML]="getIconSvg('menu') | safeHtml"></span>
   </button>
 
-  <!-- Breadcrumbs -->
+  
   <nav class="flex items-center gap-1 text-sm min-w-0">
     @for (crumb of breadcrumbs(); track $index) {
       <span class="flex items-center gap-1">
@@ -31,7 +31,7 @@
 
   <div class="flex-1"></div>
 
-  <!-- Search (React parity: w-56, icon 14px at left-3, ⌘K hint, bg-muted) -->
+  
   <div class="hidden md:block w-56 shrink-0">
     <app-search-input
       placeholder="Search orders, patients..."
@@ -40,7 +40,7 @@
     />
   </div>
 
-  <!-- Theme toggle -->
+  
   <button
     (click)="toggleTheme()"
     class="p-1.5 rounded-md hover:bg-muted text-muted-foreground"
@@ -53,7 +53,7 @@
     }
   </button>
 
-  <!-- Notifications -->
+  
   <div class="relative">
     <button
       (click)="toggleNotifications()"
@@ -88,7 +88,7 @@
     }
   </div>
 
-  <!-- Profile -->
+  
   <div class="relative">
     <button
       (click)="toggleProfile()"
@@ -120,7 +120,7 @@
   </div>
 </header>
 
-<!-- Overlay for dropdowns -->
+
 @if (notificationsOpen() || profileOpen()) {
   <div class="fixed inset-0 z-40" (click)="closeDropdowns()"></div>
 }

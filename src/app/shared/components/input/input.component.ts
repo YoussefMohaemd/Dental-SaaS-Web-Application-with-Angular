@@ -19,12 +19,7 @@ export class InputComponent {
   readonly value = model<string>('');
   readonly hint = input<string>('');
   readonly error = input<string>('');
-  /**
-   * React parity: login inputs render a 15px leading icon at `left-3` and (for
-   * password) a trailing visibility toggle at `right-3`. When set, the input
-   * reserves horizontal space (`pl-9` / `pr-10`) so the icon never overlaps
-   * the text, placeholder, or value.
-   */
+  
   readonly iconStart = input<boolean>(false);
   readonly iconEnd = input<boolean>(false);
   readonly autocomplete = input<string>('');

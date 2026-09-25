@@ -1,5 +1,5 @@
 <aside [class]="sidebarClasses()">
-  <!-- Logo -->
+  
   <div class="flex items-center gap-3 px-4 h-14 border-b border-border shrink-0">
     <div class="w-7 h-7 rounded-lg bg-primary flex items-center justify-center shrink-0">
       <span class="text-white text-xs font-bold font-display">DL</span>
@@ -11,7 +11,7 @@
     }
   </div>
 
-  <!-- Nav -->
+  
   <nav class="flex-1 py-3 overflow-y-auto sidebar-scrollbar">
     @for (item of navItems; track item.id) {
       <button
@@ -34,7 +34,7 @@
     }
   </nav>
 
-  <!-- User -->
+  
   <div class="border-t border-border p-3 shrink-0">
     <div class="flex items-center gap-2.5">
       <app-avatar

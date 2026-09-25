@@ -37,7 +37,7 @@ interface QuickStatData {
   color: string;
 }
 
-/** Order statuses mapped onto the six React workflow stages. */
+
 const WORKFLOW_STAGES: { name: string; color: string; statuses: string[] }[] = [
   { name: 'New', color: '#94A3B8', statuses: ['New'] },
   { name: 'Review', color: '#F59E0B', statuses: ['Review'] },
@@ -47,7 +47,7 @@ const WORKFLOW_STAGES: { name: string; color: string; statuses: string[] }[] = [
   { name: 'Ready', color: '#10B981', statuses: ['Ready', 'Completed'] },
 ];
 
-/** React DashboardPage workflowData — fallback while orders load. */
+
 const FALLBACK_WORKFLOW: WorkflowDataPoint[] = [
   { name: 'New', count: 8, color: '#94A3B8' },
   { name: 'Review', count: 5, color: '#F59E0B' },
@@ -97,13 +97,13 @@ export class DashboardComponent implements OnInit {
     [...this.orders()].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()).slice(0, 7)
   );
 
-  /** Activity feed is driven by the shared notification store (React parity). */
+  
   readonly activity = computed(() => this.notificationService.notifications().slice(0, 10));
 
-  /** Order Volume chart data comes from dashboard-volume.json (no hardcoded arrays). */
+  
   readonly weeklyData = this.volumeService.currentDays;
 
-  /** Nice-rounded axis maximum for the volume chart (recharts-style ticks). */
+  
   readonly volumeNiceMax = computed(() => {
     const max = this.volumeService.weekMax();
     if (max <= 0) return 5;
@@ -118,7 +118,7 @@ export class DashboardComponent implements OnInit {
     return [nice, nice * 0.75, nice * 0.5, nice * 0.25, 0].map((v) => Math.round(v));
   });
 
-  /** Workflow distribution is derived live from order statuses (React stages). */
+  
   readonly workflowData = computed<WorkflowDataPoint[]>(() => {
     if (this.orders().length === 0) return FALLBACK_WORKFLOW;
     return WORKFLOW_STAGES.map((stage) => ({
@@ -161,15 +161,15 @@ export class DashboardComponent implements OnInit {
     { label: 'Completed Today', value: 0, sub: 'Orders delivered', icon: 'check-circle-2', color: 'bg-success', route: 'orders' }
   ];
 
-  /** Hovered day for the volume-chart tooltip (recharts Tooltip parity). */
+  
   readonly hoveredDay = signal<string | null>(null);
 
   readonly today = new Date();
 
   constructor() {
-    // Root cause fix: stat cards were only computed once in ngOnInit, so they
-    // stayed at 0 when orders/cases arrived asynchronously after first render.
-    // This effect re-syncs the card values whenever the underlying signals change.
+    
+    
+    
     effect(() => {
       this.statCards[0].value = this.totalOrders();
       this.statCards[1].value = this.activeCases();
@@ -196,9 +196,9 @@ export class DashboardComponent implements OnInit {
   }
 
   getIconSvg(name: string): string {
-    // Exact React parity (DashboardPage lucide-react v1.47.0):
-    // stat icons 18, Plus 15, AlertTriangle 16, ArrowRight 12,
-    // ChevronRight 16/12, Activity 16, TrendingUp/Clock 20/18.
+    
+    
+    
     const sizes: Record<string, { icon: string; size: number }> = {
       'clipboard-list': { icon: 'clipboard-list', size: 18 },
       'folder-open': { icon: 'folder-open', size: 18 },
@@ -219,8 +219,8 @@ export class DashboardComponent implements OnInit {
   }
 
   getWorkflowBarWidth(count: number): number {
-    // Root cause fix: bars were scaled against a hardcoded 20 while the real
-    // max count is 12, capping every bar at 60%. Scale against the data max.
+    
+    
     const max = Math.max(...this.workflowData().map(w => w.count), 1);
     return Math.max(0, Math.min(100, (count / max) * 100));
   }

@@ -49,7 +49,7 @@ export class LoginComponent {
   }
 
   getEyeIconSvg(): string {
-    // Exact React parity: Eye / EyeOff size 15 from lucide-react.
+    
     return lucideSvg(this.showPassword() ? 'eye-off' : 'eye', 15);
   }
 

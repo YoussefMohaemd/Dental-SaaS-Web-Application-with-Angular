@@ -6,10 +6,10 @@ import { Notification } from '../models';
 @Injectable({ providedIn: 'root' })
 export class NotificationDataService {
   private readonly http = inject(HttpClient);
-  // `public/` is served at the app root by the application builder,
-  // so `public/data/notifications.json` is available at `/data/notifications.json`.
-  // Use a base-href-safe relative URL plus an in-memory fallback so a 404
-  // (e.g. stale `ng serve` needing a restart) never breaks the header.
+  
+  
+  
+  
   private readonly API_URL = 'data/notifications.json';
 
   private static readonly FALLBACK_NOTIFICATIONS: Notification[] = [

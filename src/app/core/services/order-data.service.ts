@@ -4,7 +4,7 @@ import { Observable, of, delay, map, catchError } from 'rxjs';
 import { Order, OrderFilters, OrderStatus, Priority } from '../models';
 import { filterTableRows } from '@shared/utils/table-state';
 
-/** Shared type-aware comparator (numbers, ISO dates, then locale string). */
+
 export function compareValues(a: unknown, b: unknown): number {
   if (a == null && b == null) return 0;
   if (a == null) return -1;

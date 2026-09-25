@@ -14,19 +14,14 @@ export interface VolumeWeek {
   days: VolumeDay[];
 }
 
-/**
- * Dashboard chart data flow (React parity for the Order Volume chart):
- *   dashboard-volume.json → HttpClient Observable → signals → component.
- * No chart data is hardcoded in UI components; the JSON holds 12 weeks and
- * the component renders the current week.
- */
+
 @Injectable({ providedIn: 'root' })
 export class DashboardDataService {
   private readonly http = inject(HttpClient);
-  // Base-href-safe relative URL (same convention as NotificationDataService).
+  
   private readonly API_URL = 'data/dashboard-volume.json';
 
-  /** React DashboardPage weeklyData — fallback when the JSON is unavailable. */
+  
   private static readonly FALLBACK_WEEKS: VolumeWeek[] = [
     {
       weekStart: '2024-12-16',
@@ -51,7 +46,7 @@ export class DashboardDataService {
   readonly loading = this._loading.asReadonly();
   readonly error = this._error.asReadonly();
 
-  /** Current week drives the Order Volume chart. */
+  
   readonly currentWeek = computed<VolumeWeek>(() => {
     const weeks = this._weeks();
     return weeks.length > 0 ? weeks[weeks.length - 1] : DashboardDataService.FALLBACK_WEEKS[0];
@@ -59,7 +54,7 @@ export class DashboardDataService {
 
   readonly currentDays = computed<VolumeDay[]>(() => this.currentWeek().days);
 
-  /** Data maximum across the current week (both series). */
+  
   readonly weekMax = computed<number>(() =>
     Math.max(...this.currentDays().map((d) => Math.max(d.orders, d.completed)), 1)
   );

@@ -94,7 +94,7 @@ describe('SearchInputComponent', () => {
   });
 
   it('should emit debounced search via RxJS after quiet period', async () => {
-    // Zoneless setup: real timers with the default 250ms debounce window.
+    
     const emitted: string[] = [];
     component.debouncedSearch.subscribe(v => emitted.push(v));
     const input = fixture.debugElement.query(By.css('input'));

@@ -145,7 +145,7 @@ export class OrderFilesComponent {
   }
 
   downloadAll(): void {
-    // Static prototype: no backend — kept as explicit no-op for parity with React Export affordance.
+    
   }
 
   fileIcon(fileType: string): string {

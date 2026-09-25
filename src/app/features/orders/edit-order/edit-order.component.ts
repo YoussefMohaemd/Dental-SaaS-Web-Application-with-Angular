@@ -134,10 +134,7 @@ export class EditOrderComponent {
     this.discard();
   }
 
-  /**
-   * Lucide-equivalent inline SVGs (React parity: lucide `X` + `Save`
-   * at size 13 on the Discard / Save Changes actions).
-   */
+  
   getIconSvg(name: string): string {
     const icons: Record<string, string> = {
       x: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>',

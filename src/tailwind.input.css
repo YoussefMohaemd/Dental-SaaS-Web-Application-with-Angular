@@ -1,16 +1,9 @@
 @import "tailwindcss";
 
-/* Dark-mode variant driven by the app theme attribute (React parity). */
+
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
-/*
- * Design-token bridge (React parity — see react/src/index.css).
- * Maps every semantic utility (bg-background, text-foreground, bg-card,
- * border-border, bg-primary, text-muted-foreground, bg-sidebar, …)
- * to the runtime CSS variables owned by src/styles/tokens.scss, so Tallwind
- * utilities — including opacity modifiers such as bg-primary/10 — follow
- * the active light/dark theme automatically.
- */
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

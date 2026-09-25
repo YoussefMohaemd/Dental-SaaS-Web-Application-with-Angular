@@ -42,7 +42,7 @@ describe('LoginComponent', () => {
     expect(component.passwordType).toBe('password');
   });
 
-  // Note: zoneless app — real timers instead of fakeAsync (zone-testing unavailable).
+  
   it('should call router.navigate on successful login', async () => {
     const form = fixture.debugElement.query(By.css('form'));
     form.triggerEventHandler('ngSubmit', new Event('submit'));

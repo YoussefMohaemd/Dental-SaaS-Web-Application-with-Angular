@@ -32,14 +32,14 @@ describe('StatusBadgeComponent', () => {
     fixture.componentRef.setInput('status', 'Completed');
     fixture.detectChanges();
     const badge = fixture.debugElement.query(By.css('span'));
-    expect(badge.nativeElement.style.backgroundColor).toBe('rgb(236, 253, 245)'); // #ECFDF5
+    expect(badge.nativeElement.style.backgroundColor).toBe('rgb(236, 253, 245)'); 
   });
 
   it('should apply correct text color for Cancelled status', () => {
     fixture.componentRef.setInput('status', 'Cancelled');
     fixture.detectChanges();
     const badge = fixture.debugElement.query(By.css('span'));
-    expect(badge.nativeElement.style.color).toBe('rgb(185, 28, 28)'); // #B91C1C
+    expect(badge.nativeElement.style.color).toBe('rgb(185, 28, 28)'); 
   });
 
   it('should apply size classes', () => {
@@ -53,6 +53,6 @@ describe('StatusBadgeComponent', () => {
     fixture.componentRef.setInput('status', 'Unknown');
     fixture.detectChanges();
     const badge = fixture.debugElement.query(By.css('span'));
-    expect(badge.nativeElement.style.backgroundColor).toBe('rgb(241, 245, 249)'); // #F1F5F9
+    expect(badge.nativeElement.style.backgroundColor).toBe('rgb(241, 245, 249)'); 
   });
 });

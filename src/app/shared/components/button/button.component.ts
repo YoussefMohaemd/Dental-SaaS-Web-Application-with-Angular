@@ -5,18 +5,18 @@ export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'dan
 export type ButtonSize = 'sm' | 'md' | 'lg' | 'icon' | 'icon-sm';
 
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
-  // React parity: primary = px-3.5 py-2 bg-primary text-white rounded-lg text-xs semibold hover bg-primary/90
+  
   primary:
     'bg-primary text-primary-foreground hover:bg-primary/90 active:bg-[#1D4ED8] dark:active:bg-[#2563EB] ' +
     'disabled:bg-primary/60 disabled:text-primary-foreground/80 shadow-xs',
   secondary:
     'bg-secondary text-secondary-foreground hover:bg-muted active:bg-muted ' +
     'border border-border',
-  // React outline: border border-border rounded-lg hover:bg-muted text-foreground
+  
   outline:
     'border border-border bg-card dark:bg-card text-foreground hover:bg-muted dark:hover:bg-muted ' +
     'active:bg-muted disabled:bg-muted/50 disabled:text-muted-foreground',
-  // React ghost / quick-action: transparent -> muted on hover
+  
   ghost:
     'bg-transparent text-foreground hover:bg-muted dark:hover:bg-muted active:bg-muted ' +
     'disabled:text-muted-foreground',
@@ -27,7 +27,7 @@ const VARIANT_CLASSES: Record<ButtonVariant, string> = {
 };
 
 const SIZE_CLASSES: Record<ButtonSize, string> = {
-  // React: primary sm header button uses px-3 py-1.5 text-xs; view-order outline uses px-3 py-1.5 text-sm
+  
   sm: 'px-3 py-1.5 text-xs min-h-8',
   md: 'px-3.5 py-2 text-xs min-h-9',
   lg: 'px-4 py-2.5 text-sm min-h-10',
@@ -63,11 +63,7 @@ export class ButtonComponent {
 
   readonly isDisabled = computed(() => this.disabled() || this.loading());
 
-  /**
-   * Guarded click emitter: the native <button> is already blocked by the
-   * browser when disabled, but the guard additionally covers the loading
-   * state (also reflected via [disabled]) for programmatic callers.
-   */
+  
   handleClick(event: MouseEvent): void {
     if (this.isDisabled()) {
       event.preventDefault();

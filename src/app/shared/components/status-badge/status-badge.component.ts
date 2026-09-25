@@ -2,8 +2,7 @@ import { Component, input, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { statusDisplayLabel } from '@shared/utils/status-label';
 
-/** Status -> badge colors. Kept local so this presentational component never
- *  depends on injectable services (React parity: StatusBadge is pure UI). */
+
 const STATUS_STYLES: Record<string, { bg: string; fg: string }> = {
   'New': { bg: '#F1F5F9', fg: '#475569' },
   'Review': { bg: '#FFFBEB', fg: '#B45309' },

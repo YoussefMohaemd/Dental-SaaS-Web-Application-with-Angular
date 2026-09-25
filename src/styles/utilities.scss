@@ -1,11 +1,11 @@
-// Utility Classes - Custom utilities not covered by Tailwind
-// These complement Tailwind's utility classes
+
+
 
 @use 'tokens' as *;
 
-// ============================================================================
-// LAYOUT UTILITIES
-// ============================================================================
+
+
+
 .flex-center {
   display: flex;
   align-items: center;
@@ -37,9 +37,9 @@
   gap: $space-4;
 }
 
-// ============================================================================
-// TEXT UTILITIES
-// ============================================================================
+
+
+
 .text-balance {
   text-wrap: balance;
 }
@@ -69,9 +69,9 @@
   overflow: hidden;
 }
 
-// ============================================================================
-// SPACING UTILITIES
-// ============================================================================
+
+
+
 .space-y-reverse > * + * {
   margin-top: 0;
   margin-bottom: $space-4;
@@ -82,16 +82,16 @@
   margin-right: $space-4;
 }
 
-// ============================================================================
-// BORDER UTILITIES
-// ============================================================================
+
+
+
 .border-gradient {
   border-image: linear-gradient(to right, var(--primary), var(--accent)) 1;
 }
 
-// ============================================================================
-// SHADOW UTILITIES
-// ============================================================================
+
+
+
 .shadow-inner-light {
   box-shadow: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
 }
@@ -108,9 +108,9 @@
   box-shadow: 0 0 20px color-mix(in srgb, var(--danger) 30%, transparent);
 }
 
-// ============================================================================
-// INTERACTION UTILITIES
-// ============================================================================
+
+
+
 .hover-lift {
   transition: transform $transition-fast, box-shadow $transition-fast;
 }
@@ -132,17 +132,17 @@
   transform: scale(0.98);
 }
 
-// ============================================================================
-// FORM UTILITIES
-// ============================================================================
-// NOTE: input-base intentionally carries no horizontal/vertical padding.
-// Padding is supplied by the consumer (InputComponent adds pl-9/pr-10 when
-// leading/trailing icons are present) so icons can never overlap the text.
-// React parity: login inputs use pl-9 pr-4/pr-10 py-2.5.
-//
-// IMPORTANT: plain CSS only — this file is compiled by Angular Sass, NOT the
-// Tailwind CLI, so `@apply` here would be emitted literally and ignored by
-// browsers (root cause of the borderless-input regression).
+
+
+
+
+
+
+
+
+
+
+
 .input-base {
   width: 100%;
   font-size: 0.875rem;
@@ -216,9 +216,9 @@
   margin-top: 0.25rem;
 }
 
-// ============================================================================
-// BUTTON UTILITIES
-// ============================================================================
+
+
+
 .btn-base {
   display: inline-flex;
   align-items: center;
@@ -329,9 +329,9 @@
   padding: 0.375rem;
 }
 
-// ============================================================================
-// CARD UTILITIES
-// ============================================================================
+
+
+
 .card-base {
   background-color: var(--card);
   border: 1px solid var(--border);
@@ -354,9 +354,9 @@
   background-color: color-mix(in srgb, var(--muted) 30%, transparent);
 }
 
-// ============================================================================
-// TABLE UTILITIES
-// ============================================================================
+
+
+
 .table-base {
   width: 100%;
   font-size: 0.875rem;
@@ -403,9 +403,420 @@
   background-color: color-mix(in srgb, var(--primary) 5%, transparent);
 }
 
-// ============================================================================
-// BADGE UTILITIES
-// ============================================================================
+
+.enterprise-table-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  padding: 1rem;
+  gap: 0.875rem;
+  overflow: hidden;
+}
+
+.enterprise-page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.875rem;
+  padding: 1rem 1.125rem;
+  background-color: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+}
+
+.enterprise-header-copy {
+  min-width: 0;
+}
+
+.enterprise-header-copy h1 {
+  margin: 0;
+}
+
+.enterprise-header-copy p {
+  margin: 0.25rem 0 0;
+}
+
+.enterprise-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background-color: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 0.875rem;
+}
+
+.enterprise-toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  flex-wrap: wrap;
+}
+
+.enterprise-toolbar-group--grow {
+  flex: 1;
+}
+
+.enterprise-toolbar-search {
+  position: relative;
+  min-width: 14rem;
+}
+
+.enterprise-toolbar-search > span {
+  pointer-events: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.enterprise-toolbar-input {
+  width: 100%;
+  border-radius: 0.625rem;
+  border: 1px solid var(--border);
+  background-color: color-mix(in srgb, var(--muted) 55%, transparent);
+  color: var(--foreground);
+  font-size: 0.75rem;
+  line-height: 1.25;
+  padding: 0.5rem 0.875rem 0.5rem 2.125rem;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.enterprise-toolbar-input::placeholder {
+  color: var(--muted-foreground);
+}
+
+.enterprise-toolbar-input:focus {
+  outline: none;
+  border-color: var(--ring);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ring) 28%, transparent);
+}
+
+.enterprise-toolbar-select {
+  min-width: 8.25rem;
+  border-radius: 0.625rem;
+  border: 1px solid var(--border);
+  background-color: var(--card);
+  color: var(--foreground);
+  font-size: 0.75rem;
+  line-height: 1.25;
+  padding: 0.5rem 2rem 0.5rem 0.75rem;
+}
+
+.enterprise-table-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background-color: var(--card);
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgb(2 6 23 / 0.05);
+}
+
+.enterprise-table-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.enterprise-data-table {
+  width: 100%;
+  min-width: 70rem;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.enterprise-data-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 0.875rem 1rem;
+  text-align: left;
+  font-size: 0.6875rem;
+  line-height: 1.25;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+  background-color: color-mix(in srgb, var(--muted) 88%, transparent);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.enterprise-data-table tbody tr {
+  transition: background-color 150ms ease;
+}
+
+.enterprise-data-table tbody tr:hover {
+  background-color: color-mix(in srgb, var(--primary) 3%, var(--card));
+}
+
+.enterprise-data-table tbody td {
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+  vertical-align: middle;
+}
+
+.enterprise-data-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.enterprise-th-sort {
+  cursor: pointer;
+  user-select: none;
+  transition: color 150ms ease;
+}
+
+.enterprise-th-sort:hover {
+  color: var(--foreground);
+}
+
+.enterprise-th-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.enterprise-cell-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.enterprise-cell-primary {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--foreground);
+}
+
+.enterprise-cell-secondary {
+  font-size: 0.6875rem;
+  line-height: 1.25;
+  color: var(--muted-foreground);
+}
+
+.enterprise-status-chip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  padding: 0.25rem 0.625rem;
+  font-size: 0.625rem;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.enterprise-status-active,
+.enterprise-status-approved,
+.enterprise-status-completed {
+  background-color: color-mix(in srgb, var(--success) 18%, transparent);
+  color: color-mix(in srgb, var(--success) 86%, var(--foreground));
+}
+
+.enterprise-status-inactive {
+  background-color: color-mix(in srgb, var(--muted) 88%, transparent);
+  color: var(--muted-foreground);
+}
+
+.enterprise-status-pending {
+  background-color: color-mix(in srgb, var(--warning) 20%, transparent);
+  color: color-mix(in srgb, var(--warning) 86%, var(--foreground));
+}
+
+.enterprise-status-in-review {
+  background-color: color-mix(in srgb, var(--primary) 17%, transparent);
+  color: color-mix(in srgb, var(--primary) 82%, var(--foreground));
+}
+
+.enterprise-status-invoiced {
+  background-color: color-mix(in srgb, var(--primary) 17%, transparent);
+  color: color-mix(in srgb, var(--primary) 82%, var(--foreground));
+}
+
+.enterprise-status-rejected {
+  background-color: color-mix(in srgb, var(--danger) 16%, transparent);
+  color: color-mix(in srgb, var(--danger) 86%, var(--foreground));
+}
+
+.enterprise-status-cancelled {
+  background-color: color-mix(in srgb, var(--muted) 88%, transparent);
+  color: var(--muted-foreground);
+}
+
+.enterprise-action-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.enterprise-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 0.5rem;
+  color: var(--muted-foreground);
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.enterprise-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--border);
+  background-color: color-mix(in srgb, var(--muted) 36%, var(--card));
+}
+
+.enterprise-pagination-pages {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.enterprise-page-button {
+  width: 1.875rem;
+  height: 1.875rem;
+  border-radius: 0.5rem;
+  border: 1px solid transparent;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted-foreground);
+  transition: all 150ms ease;
+}
+
+.enterprise-page-button:hover {
+  background-color: color-mix(in srgb, var(--muted) 72%, transparent);
+}
+
+.enterprise-page-button--active {
+  background-color: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.enterprise-page-nav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.875rem;
+  height: 1.875rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border);
+  color: var(--muted-foreground);
+  transition: all 150ms ease;
+}
+
+.enterprise-page-nav:hover {
+  background-color: color-mix(in srgb, var(--muted) 70%, transparent);
+}
+
+.enterprise-page-nav:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.enterprise-empty-state {
+  min-height: 17.5rem;
+}
+
+
+.enterprise-prime-table.p-datatable .p-datatable-table {
+  min-width: 70rem;
+}
+
+.enterprise-prime-table.p-datatable .p-datatable-thead > tr > th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  font-size: 0.6875rem !important;
+  line-height: 1.25;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-weight: 600 !important;
+  color: var(--muted-foreground) !important;
+  background: color-mix(in srgb, var(--muted) 88%, transparent) !important;
+  border-bottom: 1px solid var(--border) !important;
+  padding: 0.875rem 1rem !important;
+  white-space: nowrap;
+}
+
+.enterprise-prime-table.p-datatable .p-datatable-tbody > tr > td {
+  padding: 0.875rem 1rem !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 80%, transparent) !important;
+  vertical-align: middle;
+}
+
+.enterprise-prime-table.p-datatable .p-datatable-tbody > tr:hover > td {
+  background: color-mix(in srgb, var(--primary) 3%, var(--card)) !important;
+}
+
+.enterprise-prime-table.p-datatable .p-datatable-tbody > tr:last-child > td {
+  border-bottom: 0 !important;
+}
+
+@media (max-width: 1024px) {
+  .enterprise-table-page {
+    padding: 0.875rem;
+  }
+
+  .enterprise-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .enterprise-toolbar-group--grow,
+  .enterprise-toolbar-group {
+    width: 100%;
+  }
+
+  .enterprise-toolbar-search {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .enterprise-pagination {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .enterprise-pagination-pages {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 640px) {
+  .enterprise-table-page {
+    padding: 0.75rem;
+    gap: 0.75rem;
+  }
+
+  .enterprise-page-header,
+  .enterprise-toolbar,
+  .enterprise-pagination {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  .enterprise-toolbar-input,
+  .enterprise-toolbar-select {
+    font-size: 0.75rem;
+  }
+}
+
+
+
+
 .badge-base {
   display: inline-flex;
   align-items: center;
@@ -422,9 +833,9 @@
   border-radius: 9999px;
 }
 
-// ============================================================================
-// AVATAR UTILITIES
-// ============================================================================
+
+
+
 .avatar-base {
   display: inline-flex;
   align-items: center;
@@ -471,9 +882,9 @@
   font-size: 1.125rem;
 }
 
-// ============================================================================
-// TOOLTIP UTILITIES
-// ============================================================================
+
+
+
 .tooltip-trigger {
   position: relative;
 }
@@ -501,9 +912,9 @@
   visibility: visible;
 }
 
-// ============================================================================
-// DROPDOWN UTILITIES
-// ============================================================================
+
+
+
 .dropdown-menu {
   position: absolute;
   right: 0;
@@ -539,9 +950,9 @@
   margin-bottom: 0.25rem;
 }
 
-// ============================================================================
-// MODAL/DIALOG UTILITIES
-// ============================================================================
+
+
+
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -564,9 +975,9 @@
   overflow: hidden;
 }
 
-// ============================================================================
-// EMPTY STATE UTILITIES
-// ============================================================================
+
+
+
 .empty-state {
   display: flex;
   flex-direction: column;
@@ -601,9 +1012,9 @@
   margin-bottom: 1rem;
 }
 
-// ============================================================================
-// LOADING STATE UTILITIES
-// ============================================================================
+
+
+
 .loading-spinner {
   display: inline-block;
   animation: spin 1s linear infinite;
@@ -630,9 +1041,9 @@
   100% { width: 0%; margin-left: 100%; }
 }
 
-// ============================================================================
-// RESPONSIVE UTILITIES
-// ============================================================================
+
+
+
 @media (max-width: #{$breakpoint-sm}) {
   .mobile-hidden {
     display: none !important;
@@ -673,9 +1084,9 @@
   }
 }
 
-// ============================================================================
-// PRINT UTILITIES
-// ============================================================================
+
+
+
 @media print {
   .no-print {
     display: none !important;

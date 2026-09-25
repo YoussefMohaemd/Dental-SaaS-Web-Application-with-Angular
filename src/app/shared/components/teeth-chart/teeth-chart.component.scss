@@ -1,6 +1,6 @@
-// Visual integration only — geometry comes from the component class.
-// Keep the chart horizontally scrollable on narrow screens without
-// breaking the jaw layout (React parity: overflow-x-auto on StepBar side).
+
+
+
 :host {
   display: block;
 }

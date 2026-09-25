@@ -1,9 +1,4 @@
-<!-- Single catch-all <ng-content> by design. A previous two-outlet version
-  (button + router-link anchor) compiled to ngContentSelectors ["*","*"],
-  and Angular's matcher keeps the LAST "*" match: every projected node
-  landed in the unreachable anchor slot, leaving all button labels empty
-  with zero console errors. If a link variant is ever needed, add a
-  dedicated component instead of a second catch-all outlet. -->
+
 <button
   [type]="type()"
   [disabled]="isDisabled()"

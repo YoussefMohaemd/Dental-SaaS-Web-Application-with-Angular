@@ -6,7 +6,7 @@
       <button type="button" (click)="goBack()" class="mt-4 text-sm text-primary hover:underline">Back to order</button>
     </div>
   } @else {
-  <!-- Header -->
+  
   <div class="flex items-start gap-3 mb-6">
     <button
       type="button"
@@ -34,7 +34,7 @@
     </div>
   </div>
 
-  <!-- Progress card -->
+  
   <div class="bg-card border border-border rounded-xl p-4 mb-5 flex items-center gap-6 flex-wrap">
     <div>
       <div class="flex items-center gap-2 mb-1">
@@ -63,7 +63,7 @@
     </div>
   </div>
 
-  <!-- Tabs -->
+  
   <div class="flex gap-1 border-b border-border mb-5" role="tablist" aria-label="Sub-order sections">
     @for (t of tabs; track t) {
       <button
@@ -85,7 +85,7 @@
     }
   </div>
 
-  <!-- Overview -->
+  
   @if (tab() === 'overview') {
     <div class="space-y-5" role="tabpanel">
       <div class="bg-card border border-border rounded-xl p-4">
@@ -152,7 +152,7 @@
     </div>
   }
 
-  <!-- Forms -->
+  
   @if (tab() === 'forms') {
     <div class="space-y-3" role="tabpanel" aria-label="Sub-order forms list">
       @for (f of detail().forms; track f.id) {
@@ -332,7 +332,7 @@
     </div>
   }
 
-  <!-- Scans -->
+  
   @if (tab() === 'scans') {
     <div class="space-y-3" role="tabpanel">
       <input #scanPicker type="file" class="hidden" multiple (change)="onFileInputChange($event)" />
@@ -425,7 +425,7 @@
     </div>
   }
 
-  <!-- Activity -->
+  
   @if (tab() === 'activity') {
     <div role="tabpanel">
       <div class="space-y-3 mb-5">

@@ -3,11 +3,11 @@
   height: 100%;
 }
 
-// PrimeNG TreeTable layer: sticky header + zebra (React parity).
-// Visual tokens come from CSS vars so light/dark stay in sync with React.
-// The table is intentionally wide (164rem min) with per-column min-widths so
-// content breathes; narrow viewports get a clean horizontal scroll from the
-// outer overflow-auto container instead of squeezed columns.
+
+
+
+
+
 ::ng-deep .orders-treetable.p-treetable .p-treetable-thead > tr > th {
   font-size: 10px;
   font-weight: 600;
@@ -42,7 +42,7 @@
   border-radius: 4px;
 }
 
-// Sort indicator icon: fixed size, vertically centered with the label.
+
 ::ng-deep .orders-treetable.p-treetable .p-treetable-thead > tr > th button .sort-icon {
   display: inline-flex;
   align-items: center;
@@ -54,7 +54,7 @@
   display: block;
 }
 
-// Roomier enterprise rows: taller parent rows, comfortable cell padding.
+
 ::ng-deep .orders-treetable.p-treetable .p-treetable-tbody > tr > td {
   font-size: 12px;
   padding: 0.875rem;
@@ -71,7 +71,7 @@
   background: color-mix(in srgb, var(--color-muted) 55%, transparent);
 }
 
-// Selected parent row with a clear active edge.
+
 ::ng-deep .orders-treetable.p-treetable .p-treetable-tbody > tr.is-selected > td {
   background: color-mix(in srgb, var(--color-primary) 7%, var(--color-card));
 }
@@ -80,8 +80,8 @@
   box-shadow: inset 2px 0 0 var(--color-primary);
 }
 
-// Child Service / Sub Order rows: distinct hierarchy band + accent edge.
-// Slightly smaller type, cooler background, clear separation from parents.
+
+
 ::ng-deep .orders-treetable.p-treetable .p-treetable-tbody > tr.order-child-row > td {
   background: color-mix(in srgb, var(--color-muted) 26%, var(--color-card));
   font-size: 11px;
@@ -98,16 +98,16 @@
   background: color-mix(in srgb, var(--color-muted) 45%, var(--color-card));
 }
 
-// Expand/collapse motion for child rows.
-// Use max-height + opacity for a smoother, less janky transition when
-// rows mount/unmount. Child rows are wrapped by PrimeNG but we control
-// the visual collapse via `is-leaving` and `is-expanded` classes.
+
+
+
+
 @media (prefers-reduced-motion: no-preference) {
   ::ng-deep .orders-treetable.p-treetable .p-treetable-tbody > tr.order-child-row {
     opacity: 1;
     transform: translateY(0);
     transition: opacity 200ms ease-out, transform 200ms ease-out, max-height 220ms ease-out, padding 200ms ease-out;
-    max-height: 108px; /* allows compact two-line service metadata without clipping */
+    max-height: 108px; 
     overflow: hidden;
   }
 
@@ -125,7 +125,7 @@
   ::ng-deep .orders-treetable.p-treetable .p-treetable-tbody > tr.order-child-row.is-leaving {
     transition: none !important;
     transform: none !important;
-    max-height: 108px; /* supports compact two-line service metadata without clipping */
+    max-height: 108px; 
     max-height: none !important;
     padding-top: 0.75rem !important;
     padding-bottom: 0.75rem !important;
@@ -143,9 +143,9 @@
   }
 }
 
-// Dedicated expander column: fixed narrow width, centered arrow, never
-// overlaps Order content. Header shows a subtle affordance icon; body cells
-// are empty for leaf rows (no children) so sibling columns never shift.
+
+
+
 ::ng-deep .orders-treetable .treetable-expander-head {
   text-align: center;
   vertical-align: middle;
@@ -169,8 +169,8 @@
   padding-right: 0.25rem;
 }
 
-// Order content column: completely independent from the expander —
-// no toggler slot, no reserved arrow space, no overlap.
+
+
 ::ng-deep .orders-treetable .treetable-order-cell {
   min-width: 0;
 }
@@ -182,9 +182,9 @@
   min-width: 0;
 }
 
-// Custom expander button: chevron-right that rotates 90° (points down) when
-// the order is expanded. The rotation transition animates on BOTH open and
-// close since the button itself stays mounted.
+
+
+
 ::ng-deep .orders-treetable .treetable-expander-btn {
   width: 1.5rem;
   height: 1.5rem;
@@ -217,15 +217,15 @@
   transform: rotate(90deg);
 }
 
-// While collapsing, slightly fade & scale the chevron for a smoother feel.
+
 ::ng-deep .orders-treetable .treetable-expander-btn.is-collapsing svg {
   opacity: 0.9;
   transform: rotate(0deg) scale(0.98);
   transition: transform 160ms cubic-bezier(.22,.9,.3,1), opacity 160ms ease-out;
 }
 
-// Child hierarchy connector: small ↳ marker that makes the parent →
-// child relationship instantly scannable without visual noise.
+
+
 ::ng-deep .orders-treetable .child-connector {
   flex-shrink: 0;
   color: color-mix(in srgb, var(--color-primary) 55%, var(--color-muted-foreground));
@@ -234,7 +234,7 @@
   margin-right: -0.25rem;
 }
 
-// Parent order number: clear primary link.
+
 ::ng-deep .orders-treetable .order-number-link {
   font-family: ui-monospace, monospace;
   font-size: 11px;
@@ -254,7 +254,7 @@
   border-radius: 4px;
 }
 
-// Child service identity: icon + stacked name/id, open affordance on hover.
+
 ::ng-deep .orders-treetable .service-icon {
   flex-shrink: 0;
   font-size: 13px;
@@ -306,9 +306,9 @@
   color: var(--color-primary);
 }
 
-// Child secondary line: indented under the service name to reinforce the
-// parent → child hierarchy (the toggler now lives in its own column,
-// so no toggler-slot offset is needed here).
+
+
+
 ::ng-deep .orders-treetable .service-sub {
   margin-top: 0.25rem;
   margin-left: 1.5rem;

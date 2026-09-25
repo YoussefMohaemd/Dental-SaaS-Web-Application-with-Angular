@@ -1,11 +1,11 @@
-// Theme System - CSS Custom Properties for Light/Dark Mode
-// This mirrors the React application's index.css exactly
+
+
 
 @use 'tokens' as *;
 
-// ============================================================================
-// MIXINS (must be defined before use)
-// ============================================================================
+
+
+
 @mixin badge-style($bg, $fg) {
   @include inline-flex;
   @include px(1.5);
@@ -45,59 +45,59 @@
   font-weight: $font-weight-semibold;
 }
 
-// ============================================================================
-// LIGHT THEME (Default)
-// ============================================================================
+
+
+
 :root {
-  // Base colors
+  
   --background: #{$color-background};
   --foreground: #{$color-foreground};
 
-  // Card colors
+  
   --card: #{$color-card};
   --card-foreground: #{$color-card-foreground};
 
-  // Sidebar colors
+  
   --sidebar: #{$color-sidebar};
   --sidebar-foreground: #{$color-sidebar-foreground};
   --sidebar-active: #{$color-sidebar-active};
   --sidebar-muted: #{$color-sidebar-muted};
 
-  // Primary brand colors
+  
   --primary: #{$color-primary};
   --primary-foreground: #{$color-primary-foreground};
 
-  // Secondary colors
+  
   --secondary: #{$color-secondary};
   --secondary-foreground: #{$color-secondary-foreground};
 
-  // Muted colors
+  
   --muted: #{$color-muted};
   --muted-foreground: #{$color-muted-foreground};
 
-  // Accent colors
+  
   --accent: #{$color-accent};
   --accent-foreground: #{$color-accent-foreground};
 
-  // Status colors
+  
   --success: #{$color-success};
   --success-foreground: #FFFFFF;
   --warning: #{$color-warning};
   --danger: #{$color-danger};
   --danger-foreground: #FFFFFF;
 
-  // Border & Input
+  
   --border: #{$color-border};
   --input: #{$color-input};
   --ring: #{$color-ring};
 
-  // Radius
+  
   --radius: #{$radius-md};
 }
 
-// ============================================================================
-// DARK THEME
-// ============================================================================
+
+
+
 [data-theme="dark"] {
   --background: #{$color-background-dark};
   --foreground: #{$color-foreground-dark};
@@ -133,11 +133,11 @@
   --ring: #{$color-ring-dark};
 }
 
-// ============================================================================
-// TAILWIND CSS V4 THEME INTEGRATION
-// ============================================================================
+
+
+
 @theme inline {
-  // Colors mapped to Tailwind utilities
+  
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -161,18 +161,18 @@
   --color-sidebar-muted: var(--sidebar-muted);
   --color-sidebar-active: var(--sidebar-active);
 
-  // Radius
+  
   --radius-default: var(--radius);
 
-  // Fonts
+  
   --font-sans: #{$font-family-sans};
   --font-display: #{$font-family-display};
   --font-mono: #{$font-family-mono};
 }
 
-// ============================================================================
-// STATUS & PRIORITY UTILITY CLASSES
-// ============================================================================
+
+
+
 @each $status, $colors in $status-colors {
   .badge-#{$status} {
     @include badge-style(map-get($colors, bg), map-get($colors, fg));
@@ -205,9 +205,9 @@
   }
 }
 
-// ============================================================================
-// FONT UTILITY CLASSES
-// ============================================================================
+
+
+
 .font-display {
   font-family: var(--font-display);
 }
@@ -216,9 +216,9 @@
   font-family: var(--font-mono);
 }
 
-// ============================================================================
-// SCROLLBAR STYLING
-// ============================================================================
+
+
+
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
@@ -251,9 +251,9 @@
   border-radius: 2px;
 }
 
-// ============================================================================
-// SKELETON LOADING ANIMATION
-// ============================================================================
+
+
+
 @keyframes shimmer {
   0% {
     background-position: -1000px 0;
@@ -275,9 +275,9 @@
   border-radius: var(--radius);
 }
 
-// ============================================================================
-// DRAG AND DROP STATES
-// ============================================================================
+
+
+
 .drag-over {
   border-color: var(--primary) !important;
   background-color: color-mix(in srgb, var(--primary) 5%, transparent) !important;
@@ -288,9 +288,9 @@
   transform: rotate(1deg);
 }
 
-// ============================================================================
-// PAGE TRANSITIONS
-// ============================================================================
+
+
+
 .page-transition {
   animation: fadeIn 0.15s ease-out;
 }
@@ -306,26 +306,26 @@
   }
 }
 
-// ============================================================================
-// FOCUS STYLES
-// ============================================================================
+
+
+
 :focus-visible {
   outline: none;
   ring: 2px solid var(--ring);
   ring-offset: 2px;
 }
 
-// ============================================================================
-// SELECTION STYLES
-// ============================================================================
+
+
+
 ::selection {
   background-color: color-mix(in srgb, var(--primary) 30%, transparent);
   color: var(--foreground);
 }
 
-// ============================================================================
-// REDUCED MOTION
-// ============================================================================
+
+
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -337,9 +337,9 @@
   }
 }
 
-// ============================================================================
-// HIGH CONTRAST MODE SUPPORT
-// ============================================================================
+
+
+
 @media (prefers-contrast: high) {
   :root {
     --border: var(--foreground);

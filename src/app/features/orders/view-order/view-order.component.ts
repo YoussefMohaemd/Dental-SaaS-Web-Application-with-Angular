@@ -19,25 +19,11 @@ import { lucideSvg } from '@shared/icons/lucide-icons';
 import { SubOrderDataService } from '@core/services/sub-order-data.service';
 import { statusDisplayLabel } from '@shared/utils/status-label';
 
-/**
- * Single source of truth for the Order → Sub Order relationship.
- *
- * The TreeTable (`OrdersComponent`) and this Order View both read
- * `SubOrderDataService.getByOrderId(orderId)`, which filters
- * `public/data/sub-orders.json` by the exact `orderId` field.
- * No hardcoded service → children assumptions, no fake children.
- * Orders without matching sub-orders render as childless (no expander
- * in the table, empty state here).
- */
+
 
 const STAGES = ['Received', 'Scanning', 'Design', 'Fabrication', 'QC', 'Dispatch', 'Delivered'];
 
-/**
- * Scale an inline icon SVG to an explicit pixel size (React parity: lucide
- * icons take a `size` prop). Replaces the declared width/height so one shape
- * definition serves every usage size without wrapper-span hacks (which do
- * not scale inner SVGs).
- */
+
 function withIconSize(svg: string, size?: number): string {
   if (!svg || size == null) return svg;
   return svg
@@ -74,7 +60,7 @@ export class ViewOrderComponent implements OnInit {
   private readonly paramMap = toSignal(this.route.paramMap, { initialValue: null });
   private readonly orderId = computed(() => this.paramMap()?.get('orderId') ?? '');
 
-  // Dialog / menu / note state (Signals)
+  
   readonly moreMenuOpen = signal(false);
   readonly noteDialogVisible = signal(false);
   readonly noteText = signal('');
@@ -108,12 +94,7 @@ export class ViewOrderComponent implements OnInit {
     return this.clinicService.getClinicById(order.clinicId);
   });
 
-  /**
-   * Data-driven sub-orders: the SAME source the TreeTable uses
-   * (`SubOrderDataService.getByOrderId` → `sub-orders.json` filtered by
-   * `orderId`). Count, list and progress all derive from this — no
-   * hardcoded children, no fake rows.
-   */
+  
   readonly subOrders = computed<SubOrder[]>(() => {
     const order = this.order();
     if (!order) return [];
@@ -140,7 +121,7 @@ export class ViewOrderComponent implements OnInit {
     this.moreMenuOpen.set(false);
   }
 
-  /** React parity: clicking outside the overflow menu dismisses it. */
+  
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
     if (!this.moreMenuOpen()) return;
@@ -150,7 +131,7 @@ export class ViewOrderComponent implements OnInit {
     }
   }
 
-  /** Dismiss the overflow menu with Escape for keyboard users. */
+  
   @HostListener('document:keydown.escape')
   onEscape(): void {
     this.moreMenuOpen.set(false);
@@ -167,8 +148,7 @@ export class ViewOrderComponent implements OnInit {
     this.noteDialogVisible.set(false);
   }
 
-  /** ngModelChange may be inferred as Event by the template type-checker;
-   * normalize to string before writing the signal. */
+  
   onNoteTextChange(value: string | Event): void {
     const next = typeof value === 'string' ? value : ((value.target as HTMLTextAreaElement | null)?.value ?? '');
     this.noteText.set(next);
@@ -298,8 +278,8 @@ export class ViewOrderComponent implements OnInit {
   }
 
   getStatusIconSvg(name: string, size = 12): string {
-    // Exact React parity: done=CheckCircle2(12 white), in-progress=Clock,
-    // pending=Circle, blocked=AlertTriangle. Sub-order badges use 9px.
+    
+    
     const map: Record<string, string> = {
       'check-circle-2': 'circle-check',
       clock: 'clock',
@@ -310,9 +290,9 @@ export class ViewOrderComponent implements OnInit {
   }
 
   getStageSvg(name: string, size?: number): string {
-    // Exact React parity (ViewOrderPage.tsx): ArrowLeft 18, Edit2(pen) 13,
-    // Download 13, MoreHorizontal(ellipsis) 16, Layers/FileText/ScanLine 11,
-    // ChevronRight 14/12, MessageSquare 13.
+    
+    
+    
     const defaults: Record<string, { icon: string; size: number }> = {
       'chevron-right': { icon: 'chevron-right', size: 14 },
       'chevron-left': { icon: 'chevron-left', size: 18 },

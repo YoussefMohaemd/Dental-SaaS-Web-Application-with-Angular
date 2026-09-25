@@ -70,11 +70,11 @@ export class CaseDetailsComponent implements OnInit {
     const c = this.caseService.getCaseById(this.caseId);
     if (c) {
       this.case.set(c);
-      // Get orders for this patient
+      
       const patientOrders = this.orderService.getOrdersByPatient(c.patientId).slice(0, c.ordersCount);
       this.caseOrders.set(patientOrders);
 
-      // Set activity items
+      
       this.activityItems.set([
         { user: 'K. Patel', action: 'uploaded 4 scan files', time: c.updatedAt },
         { user: 'T. Anderson', action: 'reviewed case details', time: c.createdAt },

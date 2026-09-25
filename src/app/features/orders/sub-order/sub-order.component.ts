@@ -64,7 +64,7 @@ export class SubOrderComponent {
     return this.subOrderService.getDetailByContext(this.orderId(), this.subOrderId()) ?? EMPTY_DETAIL;
   });
 
-  /** Initial tab honors ?tab= (React parity: params.subOrderTab). */
+  
   readonly tab = signal<SubOrderTab>(
     (this.queryParamMap()?.get('tab') as SubOrderTab | null) ?? 'overview',
   );
@@ -105,7 +105,7 @@ export class SubOrderComponent {
     return scan?.label ?? 'Select a requirement';
   });
 
-  /** React parity: progress = done / required over required forms + scans. */
+  
   readonly progress = computed(() => {
     const d = this.detail();
     const totalRequired =
@@ -116,7 +116,7 @@ export class SubOrderComponent {
     return totalRequired > 0 ? Math.round((totalDone / totalRequired) * 100) : 0;
   });
 
-  /** `#ORD-1`-style parent order tag (React parity: param slice). */
+  
   readonly orderTag = computed(() => {
     const id = this.orderId();
     return `#${id ? id.slice(-6).toUpperCase() : 'ORDER'}`;
@@ -130,8 +130,7 @@ export class SubOrderComponent {
     }
   }
 
-  /** ngModelChange may be inferred as Event by the template type-checker;
-   * normalize to string before writing the signal. */
+  
   onNoteChange(value: string | Event): void {
     const next = typeof value === 'string' ? value : ((value.target as HTMLTextAreaElement | null)?.value ?? '');
     this.note.set(next);

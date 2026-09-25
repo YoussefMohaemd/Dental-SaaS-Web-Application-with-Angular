@@ -163,10 +163,10 @@ export class BillingComponent {
   }
 
   statusClasses(status: BillingRecord['status']): string {
-    if (status === 'Paid') return 'bg-emerald-50 text-emerald-700';
-    if (status === 'Overdue') return 'bg-red-50 text-red-700';
-    if (status === 'Invoiced') return 'bg-blue-50 text-blue-700';
-    if (status === 'Cancelled') return 'bg-muted text-muted-foreground';
-    return 'bg-amber-50 text-amber-700';
+    if (status === 'Paid') return 'enterprise-status-approved';
+    if (status === 'Overdue') return 'enterprise-status-rejected';
+    if (status === 'Invoiced') return 'enterprise-status-invoiced';
+    if (status === 'Cancelled') return 'enterprise-status-cancelled';
+    return 'enterprise-status-pending';
   }
 }

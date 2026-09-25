@@ -1,24 +1,7 @@
 :host {
   display: block;
   height: 100%;
-}
-
-::ng-deep .p-datatable-sm .p-datatable-thead > tr > th {
-  font-size: 12px;
-  background: var(--color-muted);
-  color: var(--color-muted-foreground);
-  padding: 0.625rem 1rem;
-  white-space: nowrap;
-}
-
-::ng-deep .p-datatable-sm .p-datatable-tbody > tr > td {
-  font-size: 12px;
-  padding: 0.625rem 1rem;
-  border-bottom: 1px solid var(--color-border);
-}
-
-:host ::ng-deep .p-datatable-sm .p-datatable-tbody > tr:last-child > td {
-  border-bottom: 0;
+  min-height: 0;
 }
 
 .line-clamp-2 {

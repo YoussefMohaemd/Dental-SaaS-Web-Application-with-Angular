@@ -10,10 +10,10 @@ export class AuthGuard implements CanActivate {
   private readonly platformId = inject(PLATFORM_ID);
 
   canActivate(): boolean {
-    // Root cause fix: guard previously read localStorage directly, which throws
-    // during SSR/prerender and bypassed the centralized auth check. Gate on
-    // browser platform and keep the single 'dentalab-auth' source of truth so
-    // unauthenticated startup always lands on /login (React parity).
+    
+    
+    
+    
     if (!isPlatformBrowser(this.platformId)) return false;
     let isAuthenticated = false;
     try {

@@ -76,7 +76,7 @@ describe('OrdersComponent', () => {
   });
 
   it('should window pagination around the current page', () => {
-    // Force many pages via small page size path: stub filtered length through pageSize
+    
     component.pageSize.set(10);
     component.page.set(1);
     const first = component.visiblePageNumbers();

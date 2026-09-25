@@ -1,5 +1,5 @@
 <div class="flex flex-col h-full">
-  <!-- Page header -->
+  
   <div class="px-6 py-4 border-b border-border bg-card shrink-0">
     <div class="flex items-center gap-3">
       <div class="flex-1">
@@ -13,7 +13,7 @@
     </div>
   </div>
 
-  <!-- Toolbar -->
+  
   <div class="px-6 py-3 border-b border-border bg-card shrink-0 flex items-center gap-3">
     <div class="relative flex-1 max-w-72">
       <span [innerHTML]="getIconSvg('search') | safeHtml" class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"></span>
@@ -52,7 +52,7 @@
     </div>
   </div>
 
-  <!-- Content -->
+  
   <div class="flex-1 overflow-auto p-6">
     @if (filtered().length === 0) {
       <div class="flex flex-col items-center justify-center h-48 text-center">
@@ -123,7 +123,7 @@
     }
   </div>
 
-  <!-- Pagination -->
+  
   @if (filtered().length > 0) {
     <div class="px-6 py-3 border-t border-border bg-card flex items-center justify-between shrink-0">
       <span class="text-xs text-muted-foreground">

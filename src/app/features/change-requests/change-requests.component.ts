@@ -104,10 +104,10 @@ export class ChangeRequestsComponent {
   }
 
   statusClasses(status: ChangeRequest['status']): string {
-    if (status === 'Pending') return 'bg-amber-50 text-amber-700';
-    if (status === 'In Review') return 'bg-blue-50 text-blue-700';
-    if (status === 'Approved') return 'bg-emerald-50 text-emerald-700';
-    if (status === 'Rejected') return 'bg-red-50 text-red-700';
-    return 'bg-emerald-100 text-emerald-800';
+    if (status === 'Pending') return 'enterprise-status-pending';
+    if (status === 'In Review') return 'enterprise-status-in-review';
+    if (status === 'Approved') return 'enterprise-status-approved';
+    if (status === 'Rejected') return 'enterprise-status-rejected';
+    return 'enterprise-status-completed';
   }
 }

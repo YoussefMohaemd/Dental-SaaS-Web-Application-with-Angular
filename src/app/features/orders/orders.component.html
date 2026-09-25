@@ -184,10 +184,7 @@
                     <span [innerHTML]="getIconSvg(allPageSelected() ? 'check-square' : 'square') | safeHtml" [class]="allPageSelected() ? 'text-primary' : ''"></span>
                   </button>
                 </th>
-                <!-- Dedicated TreeTable expander column: reserves fixed space for the
-                     expand/collapse arrow so it NEVER overlaps Order content and
-                     never pushes Order → Patient → Doctor → Scan Center together.
-                     Leaf rows (orders without sub-orders) render this cell empty. -->
+                
                 <th scope="col" class="treetable-expander-head" style="width: 2.75rem; min-width: 2.75rem;" aria-label="Expand or collapse sub-orders">
                   <span class="treetable-expander-head-icon" aria-hidden="true">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
@@ -292,13 +289,7 @@
                     <span class="text-muted-foreground/30" aria-hidden="true">—</span>
                   }
                 </td>
-                <!-- Dedicated expander cell: the ONLY place the expand/collapse
-                     control lives. Custom animated button (chevron rotates on
-                     both open and close); child rows play a CSS exit animation
-                     before unmounting. Rendered only for parent Order rows that
-                     actually have children (data-driven via rowNode.leaf).
-                     Leaf orders and child service rows render an empty cell so
-                     alignment never shifts. -->
+                
                 <td class="treetable-expander-cell">
                   @if (rowData.kind === 'order' && !rowNode.leaf) {
                     <button

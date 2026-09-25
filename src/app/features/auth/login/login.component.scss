@@ -3,9 +3,9 @@
   height: 100%;
 }
 
-// NOTE: plain CSS only — component styles are compiled by Angular Sass, NOT
-// the Tailwind CLI, so `@apply` would be emitted literally and ignored by
-// browsers. These classes mirror the Tailwind utilities used in the template.
+
+
+
 
 .login-form > * + * {
   margin-top: 1rem;
@@ -66,15 +66,15 @@
   color: var(--foreground);
 }
 
-// Leading login icons (email + lock): Lucide SVGs from the project's
-// existing icon system (lucide-icons.ts) rendered via SafeHtmlPipe.
-// Positioning comes from the Tailwind classes in the template; these rules
-// guarantee the icons stay visible and correctly sized in both themes:
-// currentColor inherits text-muted-foreground (light/dark aware), z-index
-// keeps them above the input background, and the 15px size matches the
-// InputComponent's reserved pl-9 gutter so text never overlaps the icon.
-// The password visibility toggle lives on the opposite side (right-3 with
-// pr-10 reserved), so there is no collision.
+
+
+
+
+
+
+
+
+
 .login-leading-icon {
   color: var(--color-muted-foreground, var(--muted-foreground, #64748b));
 }

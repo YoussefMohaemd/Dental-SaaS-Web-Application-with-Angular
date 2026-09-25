@@ -11,29 +11,28 @@ export class ThemeService {
 
   constructor() {
     effect(() => {
-      // Reactive mirror of applyTheme() for signal-driven updates.
+      
       this.applyTheme(this.isDark() ? 'dark' : 'light');
     });
   }
 
-  /** Synchronously applies the theme to the DOM and storage. Called directly
-   *  (not only via effect) so toggles persist deterministically. */
+  
   private applyTheme(theme: 'light' | 'dark'): void {
     if (!isPlatformBrowser(this.platformId)) return;
     document.documentElement.setAttribute('data-theme', theme);
     try {
       localStorage.setItem(this.STORAGE_KEY, theme);
     } catch {
-      // storage unavailable — theme still applies to the document
+      
     }
   }
 
   init(): void {
     if (!isPlatformBrowser(this.platformId)) return;
 
-    // React parity: the React app always starts in light mode (isDark=false).
-    // Respect an explicit stored preference, otherwise default to light so
-    // initial startup matches React instead of following the OS setting.
+    
+    
+    
     const stored = localStorage.getItem(this.STORAGE_KEY) as 'light' | 'dark' | null;
     const initialTheme = stored ?? 'light';
 

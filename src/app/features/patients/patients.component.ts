@@ -102,7 +102,7 @@ export class PatientsComponent {
   }
 
   getStatusClass(status: string): string {
-    return status === 'Active' ? 'bg-emerald-50 text-emerald-700' : 'bg-muted text-muted-foreground';
+    return status === 'Active' ? 'enterprise-status-active' : 'enterprise-status-inactive';
   }
 
   navigateToAddPatient(): void {

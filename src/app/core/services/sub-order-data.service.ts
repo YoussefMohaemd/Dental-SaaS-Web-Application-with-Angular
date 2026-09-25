@@ -79,11 +79,7 @@ const FALLBACK_SUB_ORDERS: SubOrder[] = [
   { id: 'so-4', orderId: 'ord-1', service: 'Treatment Plan', icon: '📋', status: 'pending', formsComplete: 1, formsTotal: 2, scansComplete: 0, scansTotal: 1, teeth: [], priority: 'Normal', dueDate: '2024-03-10', notes: 'Full treatment plan document to be reviewed by lab and clinic team jointly before proceeding.' },
 ];
 
-/**
- * React parity (SubOrderPage.tsx SUB_ORDERS_MAP): per-sub-order clinical
- * detail — forms, scans and activity feed. Lives in the data service (not
- * the component) so JSON/service loading stays the single data path.
- */
+
 const SUB_ORDER_DETAILS: Record<string, SubOrderDetail> = {
   'so-1': {
     id: 'so-1',
@@ -178,10 +174,7 @@ export interface CreateSubOrderInput {
   creationData: SubOrderCreationData;
 }
 
-/**
- * Sub-order data flow: RxJS (HttpClient + delay/catchError) feeds
- * Signals state. Falls back to sanitized local data when JSON is missing.
- */
+
 @Injectable({ providedIn: 'root' })
 export class SubOrderDataService {
   private readonly http = inject(HttpClient);
@@ -391,15 +384,7 @@ export class SubOrderDataService {
     }));
   }
 
-  /**
-   * Strict data-driven child lookup — the JSON `orderId` field is the single
-   * source of truth for the Order → Sub Order relationship.
-   *
-   * - Returns only sub-orders whose `orderId` exactly matches `orderId`.
-   * - Returns `[]` when the Order has no children (leaf row: no expander,
-   *   no fake children, no fallback to unrelated records).
-   * - Never assumes a service type always/never has children.
-   */
+  
   getByOrderId(orderId: string): SubOrder[] {
     if (!orderId) return [];
     return this._subOrders().filter(s => s.orderId === orderId);

@@ -1,9 +1,4 @@
-/**
- * Canonical Lucide icon inner SVG data — exact parity with React lucide-react v1.47.0.
- * Generated from react/node_modules/lucide-react/dist/esm/icons. Do not hand-edit.
- * Outer wrapper must be: <svg width=size height=size viewBox="0 0 24 24" fill="none"
- * stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">.
- */
+
 export const LUCIDE_INNERS: Record<string, string> = {
   'layout-dashboard': '<rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/>',
   'clipboard-list': '<rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/>',
