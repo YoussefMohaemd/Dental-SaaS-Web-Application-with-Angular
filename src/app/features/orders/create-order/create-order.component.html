@@ -100,20 +100,16 @@
             >
               Patient<span class="ml-0.5 text-danger">*</span>
             </label>
-            <select
+            <app-select
               id="co-patient"
-              class="w-full cursor-pointer rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+              [unstyled]="true"
+              selectClass="w-full cursor-pointer rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+              placeholder="Select patient"
+              [options]="patientOptions()"
               [value]="form().patientId"
-              (change)="setField('patientId', $any($event.target).value)"
-              required
-            >
-              <option value="">Select patient</option>
-              @for (p of patients(); track p.id) {
-                <option [value]="p.id">
-                  {{ p.name }} · {{ p.clinicName }}
-                </option>
-              }
-            </select>
+              (valueChange)="setField('patientId', $event)"
+              [required]="true"
+            ></app-select>
           </div>
         </div>
         @if (selectedPatient(); as sp) {
@@ -152,18 +148,16 @@
             >
               Clinic<span class="ml-0.5 text-danger">*</span>
             </label>
-            <select
+            <app-select
               id="co-clinic"
-              class="w-full cursor-pointer rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+              [unstyled]="true"
+              selectClass="w-full cursor-pointer rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+              placeholder="Select clinic"
+              [options]="clinicOptions()"
               [value]="form().clinicId"
-              (change)="setClinicAndResetDoctor($any($event.target).value)"
-              required
-            >
-              <option value="">Select clinic</option>
-              @for (c of activeClinics(); track c.id) {
-                <option [value]="c.id">{{ c.name }}</option>
-              }
-            </select>
+              (valueChange)="setClinicAndResetDoctor($event)"
+              [required]="true"
+            ></app-select>
           </div>
           <div>
             <label
@@ -172,18 +166,16 @@
             >
               Referring Doctor<span class="ml-0.5 text-danger">*</span>
             </label>
-            <select
+            <app-select
               id="co-doctor"
-              class="w-full cursor-pointer rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+              [unstyled]="true"
+              selectClass="w-full cursor-pointer rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+              placeholder="Select doctor"
+              [options]="doctorOptions()"
               [value]="form().doctorId"
-              (change)="setField('doctorId', $any($event.target).value)"
-              required
-            >
-              <option value="">Select doctor</option>
-              @for (d of doctorsForClinic(); track d.id) {
-                <option [value]="d.id">{{ d.name }}</option>
-              }
-            </select>
+              (valueChange)="setField('doctorId', $event)"
+              [required]="true"
+            ></app-select>
           </div>
           <div>
             <label
@@ -191,17 +183,14 @@
               for="co-priority"
               >Priority</label
             >
-            <select
+            <app-select
               id="co-priority"
-              class="w-full cursor-pointer rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+              [unstyled]="true"
+              selectClass="w-full cursor-pointer rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+              [options]="priorityOptions"
               [value]="form().priority"
-              (change)="setField('priority', $any($event.target).value)"
-            >
-              <option value="Low">Low</option>
-              <option value="Normal">Normal</option>
-              <option value="High">High</option>
-              <option value="Urgent">Urgent</option>
-            </select>
+              (valueChange)="setField('priority', $event)"
+            ></app-select>
           </div>
           <div>
             <label
@@ -210,13 +199,14 @@
             >
               Due Date<span class="ml-0.5 text-danger">*</span>
             </label>
-            <input
+            <app-input
               id="co-due"
               type="date"
-              class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+              [unstyled]="true"
+              inputClass="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
               [value]="form().dueDate"
-              (input)="setField('dueDate', $any($event.target).value)"
-            />
+              (valueChange)="setField('dueDate', $event)"
+            ></app-input>
           </div>
         </div>
       </div>
@@ -425,18 +415,14 @@
                 [for]="'shade-' + svc.id"
                 >Shade</label
               >
-              <select
+              <app-select
                 [id]="'shade-' + svc.id"
-                class="w-full cursor-pointer rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+                [unstyled]="true"
+                selectClass="w-full cursor-pointer rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+                [options]="shades"
                 [value]="getServiceDetail(svc.id).shade"
-                (change)="
-                  setServiceDetail(svc.id, 'shade', $any($event.target).value)
-                "
-              >
-                @for (sh of shades; track sh) {
-                  <option [value]="sh">{{ sh }}</option>
-                }
-              </select>
+                (valueChange)="setServiceDetail(svc.id, 'shade', $event)"
+              ></app-select>
             </div>
             <div>
               <label
@@ -444,18 +430,14 @@
                 [for]="'arch-' + svc.id"
                 >Arch</label
               >
-              <select
+              <app-select
                 [id]="'arch-' + svc.id"
-                class="w-full cursor-pointer rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+                [unstyled]="true"
+                selectClass="w-full cursor-pointer rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+                [options]="serviceArchOptions"
                 [value]="getServiceDetail(svc.id).arch"
-                (change)="
-                  setServiceDetail(svc.id, 'arch', $any($event.target).value)
-                "
-              >
-                <option value="Maxilla (Upper)">Maxilla (Upper)</option>
-                <option value="Mandible (Lower)">Mandible (Lower)</option>
-                <option value="Both">Both</option>
-              </select>
+                (valueChange)="setServiceDetail(svc.id, 'arch', $event)"
+              ></app-select>
             </div>
           }
           @if (svc.id === "gfmr" || svc.id === "full-guide") {
@@ -465,22 +447,14 @@
                 [for]="'occ-' + svc.id"
                 >Occlusal Concept</label
               >
-              <select
+              <app-select
                 [id]="'occ-' + svc.id"
-                class="w-full cursor-pointer rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+                [unstyled]="true"
+                selectClass="w-full cursor-pointer rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+                [options]="occlusalConcepts"
                 [value]="getServiceDetail(svc.id).occlusalConcept"
-                (change)="
-                  setServiceDetail(
-                    svc.id,
-                    'occlusalConcept',
-                    $any($event.target).value
-                  )
-                "
-              >
-                @for (o of occlusalConcepts; track o) {
-                  <option [value]="o">{{ o }}</option>
-                }
-              </select>
+                (valueChange)="setServiceDetail(svc.id, 'occlusalConcept', $event)"
+              ></app-select>
             </div>
           }
           @if (svc.id === "surgical-guide") {
@@ -490,22 +464,14 @@
                 [for]="'impl-' + svc.id"
                 >Implant System</label
               >
-              <select
+              <app-select
                 [id]="'impl-' + svc.id"
-                class="w-full cursor-pointer rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+                [unstyled]="true"
+                selectClass="w-full cursor-pointer rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+                [options]="implantSystems"
                 [value]="getServiceDetail(svc.id).implantSystem"
-                (change)="
-                  setServiceDetail(
-                    svc.id,
-                    'implantSystem',
-                    $any($event.target).value
-                  )
-                "
-              >
-                @for (impl of implantSystems; track impl) {
-                  <option [value]="impl">{{ impl }}</option>
-                }
-              </select>
+                (valueChange)="setServiceDetail(svc.id, 'implantSystem', $event)"
+              ></app-select>
             </div>
           }
           <div>
@@ -514,22 +480,14 @@
               [for]="'fmt-' + svc.id"
               >File Format</label
             >
-            <select
+            <app-select
               [id]="'fmt-' + svc.id"
-              class="w-full cursor-pointer rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+              [unstyled]="true"
+              selectClass="w-full cursor-pointer rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+              [options]="fileFormats"
               [value]="getServiceDetail(svc.id).fileFormat"
-              (change)="
-                setServiceDetail(
-                  svc.id,
-                  'fileFormat',
-                  $any($event.target).value
-                )
-              "
-            >
-              @for (f of fileFormats; track f) {
-                <option [value]="f">{{ f }}</option>
-              }
-            </select>
+              (valueChange)="setServiceDetail(svc.id, 'fileFormat', $event)"
+            ></app-select>
           </div>
           <div class="col-span-2">
             <label
@@ -597,22 +555,14 @@
               [for]="'oc-' + svc.id"
               >Occlusal Contact</label
             >
-            <select
+            <app-select
               [id]="'oc-' + svc.id"
-              class="w-full cursor-pointer rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+              [unstyled]="true"
+              selectClass="w-full cursor-pointer rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+              [options]="occlusalContacts"
               [value]="getServiceForm(svc.id).occlusalContact"
-              (change)="
-                setServiceForm(
-                  svc.id,
-                  'occlusalContact',
-                  $any($event.target).value
-                )
-              "
-            >
-              @for (o of occlusalContacts; track o) {
-                <option [value]="o">{{ o }}</option>
-              }
-            </select>
+              (valueChange)="setServiceForm(svc.id, 'occlusalContact', $event)"
+            ></app-select>
           </div>
           <div>
             <label
@@ -620,18 +570,14 @@
               [for]="'mg-' + svc.id"
               >Margin Type</label
             >
-            <select
+            <app-select
               [id]="'mg-' + svc.id"
-              class="w-full cursor-pointer rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+              [unstyled]="true"
+              selectClass="w-full cursor-pointer rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+              [options]="marginTypes"
               [value]="getServiceForm(svc.id).marginType"
-              (change)="
-                setServiceForm(svc.id, 'marginType', $any($event.target).value)
-              "
-            >
-              @for (m of marginTypes; track m) {
-                <option [value]="m">{{ m }}</option>
-              }
-            </select>
+              (valueChange)="setServiceForm(svc.id, 'marginType', $event)"
+            ></app-select>
           </div>
           @if (svc.id !== "treatment-plan") {
             <div>
@@ -640,18 +586,14 @@
                 [for]="'mat-' + svc.id"
                 >Material</label
               >
-              <select
+              <app-select
                 [id]="'mat-' + svc.id"
-                class="w-full cursor-pointer rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+                [unstyled]="true"
+                selectClass="w-full cursor-pointer rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+                [options]="materials"
                 [value]="getServiceForm(svc.id).material"
-                (change)="
-                  setServiceForm(svc.id, 'material', $any($event.target).value)
-                "
-              >
-                @for (m of materials; track m) {
-                  <option [value]="m">{{ m }}</option>
-                }
-              </select>
+                (valueChange)="setServiceForm(svc.id, 'material', $event)"
+              ></app-select>
             </div>
           }
           <div class="col-span-2">

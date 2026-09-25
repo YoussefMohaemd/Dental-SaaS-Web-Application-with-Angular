@@ -58,38 +58,35 @@
               </div>
             </div>
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <label class="block"
-                ><span class="mb-1 block text-xs font-semibold">First Name</span
-                ><input
-                  formControlName="firstName"
-                  class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
-              /></label>
-              <label class="block"
-                ><span class="mb-1 block text-xs font-semibold">Last Name</span
-                ><input
-                  formControlName="lastName"
-                  class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
-              /></label>
-              <label class="block sm:col-span-2"
-                ><span class="mb-1 block text-xs font-semibold">Email</span
-                ><input
-                  type="email"
-                  formControlName="email"
-                  class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
-              /></label>
-              <label class="block"
-                ><span class="mb-1 block text-xs font-semibold">Role</span
-                ><input
-                  formControlName="role"
-                  readonly
-                  class="w-full cursor-not-allowed rounded-lg border border-border bg-muted px-3 py-2 text-sm"
-              /></label>
-              <label class="block"
-                ><span class="mb-1 block text-xs font-semibold">Phone</span
-                ><input
-                  formControlName="phone"
-                  class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
-              /></label>
+              <app-input
+                id="profile-first-name"
+                label="First Name"
+                formControlName="firstName"
+              ></app-input>
+              <app-input
+                id="profile-last-name"
+                label="Last Name"
+                formControlName="lastName"
+              ></app-input>
+              <app-input
+                id="profile-email"
+                type="email"
+                label="Email"
+                formControlName="email"
+                containerClass="sm:col-span-2"
+              ></app-input>
+              <app-input
+                id="profile-role"
+                label="Role"
+                formControlName="role"
+                [readOnly]="true"
+              ></app-input>
+              <app-input
+                id="profile-phone"
+                type="tel"
+                label="Phone"
+                formControlName="phone"
+              ></app-input>
             </div>
             <div class="mt-4">
               <app-button
@@ -233,45 +230,24 @@
             aria-label="Language and region"
           >
             <div class="grid grid-cols-1 gap-4">
-              <label class="block"
-                ><span class="mb-1 block text-xs font-semibold"
-                  >Interface Language</span
-                >
-                <select
-                  formControlName="language"
-                  class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
-                >
-                  <option value="en">English</option>
-                  <option value="es">Español</option>
-                  <option value="fr">Français</option>
-                  <option value="de">Deutsch</option>
-                </select>
-              </label>
-              <label class="block"
-                ><span class="mb-1 block text-xs font-semibold">Time Zone</span>
-                <select
-                  formControlName="timeZone"
-                  class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
-                >
-                  <option value="PST">PST</option>
-                  <option value="MST">MST</option>
-                  <option value="CST">CST</option>
-                  <option value="EST">EST</option>
-                </select>
-              </label>
-              <label class="block"
-                ><span class="mb-1 block text-xs font-semibold"
-                  >Date Format</span
-                >
-                <select
-                  formControlName="dateFormat"
-                  class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
-                >
-                  <option value="MM/DD/YYYY">MM/DD/YYYY</option>
-                  <option value="DD/MM/YYYY">DD/MM/YYYY</option>
-                  <option value="YYYY-MM-DD">YYYY-MM-DD</option>
-                </select>
-              </label>
+              <app-select
+                id="language-select"
+                label="Interface Language"
+                formControlName="language"
+                [options]="languageOptions"
+              ></app-select>
+              <app-select
+                id="timezone-select"
+                label="Time Zone"
+                formControlName="timeZone"
+                [options]="timeZoneOptions"
+              ></app-select>
+              <app-select
+                id="date-format-select"
+                label="Date Format"
+                formControlName="dateFormat"
+                [options]="dateFormatOptions"
+              ></app-select>
             </div>
             <div class="mt-4">
               <app-button
@@ -291,33 +267,27 @@
             aria-label="Security settings"
           >
             <div class="grid grid-cols-1 gap-4">
-              <label class="block"
-                ><span class="mb-1 block text-xs font-semibold"
-                  >Current Password</span
-                ><input
-                  type="password"
-                  formControlName="currentPassword"
-                  autocomplete="current-password"
-                  class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
-              /></label>
-              <label class="block"
-                ><span class="mb-1 block text-xs font-semibold"
-                  >New Password</span
-                ><input
-                  type="password"
-                  formControlName="newPassword"
-                  autocomplete="new-password"
-                  class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
-              /></label>
-              <label class="block"
-                ><span class="mb-1 block text-xs font-semibold"
-                  >Confirm Password</span
-                ><input
-                  type="password"
-                  formControlName="confirmPassword"
-                  autocomplete="new-password"
-                  class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
-              /></label>
+              <app-input
+                id="security-current-password"
+                type="password"
+                label="Current Password"
+                formControlName="currentPassword"
+                autocomplete="current-password"
+              ></app-input>
+              <app-input
+                id="security-new-password"
+                type="password"
+                label="New Password"
+                formControlName="newPassword"
+                autocomplete="new-password"
+              ></app-input>
+              <app-input
+                id="security-confirm-password"
+                type="password"
+                label="Confirm Password"
+                formControlName="confirmPassword"
+                autocomplete="new-password"
+              ></app-input>
             </div>
             <div class="mt-4 flex items-center gap-3">
               <button
@@ -357,25 +327,22 @@
             aria-label="Organization settings"
           >
             <div class="grid grid-cols-1 gap-4">
-              <label class="block"
-                ><span class="mb-1 block text-xs font-semibold"
-                  >Laboratory Name</span
-                ><input
-                  formControlName="labName"
-                  class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
-              /></label>
-              <label class="block"
-                ><span class="mb-1 block text-xs font-semibold">Address</span
-                ><input
-                  formControlName="address"
-                  class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
-              /></label>
-              <label class="block"
-                ><span class="mb-1 block text-xs font-semibold">License</span
-                ><input
-                  formControlName="license"
-                  class="w-full rounded-lg border border-border bg-card px-3 py-2 font-mono text-sm"
-              /></label>
+              <app-input
+                id="org-lab-name"
+                label="Laboratory Name"
+                formControlName="labName"
+              ></app-input>
+              <app-input
+                id="org-address"
+                label="Address"
+                formControlName="address"
+              ></app-input>
+              <app-input
+                id="org-license"
+                label="License"
+                formControlName="license"
+                inputClass="font-mono"
+              ></app-input>
             </div>
             <div class="mt-4">
               <app-button

@@ -70,13 +70,14 @@
         class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
         aria-hidden="true"
       ></span>
-      <input
-        class="w-56 rounded-lg border border-border bg-muted py-1.5 pl-8 pr-4 text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+      <app-input
+        id="documents-search"
+        [unstyled]="true"
+        inputClass="w-56 rounded-lg border border-border bg-muted py-1.5 pl-8 pr-4 text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
         placeholder="Search documents..."
         [value]="search()"
-        (input)="onSearchChange($event)"
-        aria-label="Search documents"
-      />
+        (valueChange)="onSearchValueChange($event)"
+      ></app-input>
     </div>
     <div class="flex gap-1.5">
       @for (cat of categories; track cat) {

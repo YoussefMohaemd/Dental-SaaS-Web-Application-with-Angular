@@ -52,27 +52,24 @@
           class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
           aria-hidden="true"
         ></span>
-        <input
-          class="enterprise-toolbar-input"
+        <app-input
+          id="change-requests-search"
+          [unstyled]="true"
+          inputClass="enterprise-toolbar-input"
           placeholder="Search requests..."
           [value]="search()"
-          (input)="onSearchChange($event)"
-          aria-label="Search change requests"
-        />
+          (valueChange)="onSearchValueChange($event)"
+        ></app-input>
       </div>
-      <select
-        class="enterprise-toolbar-select cursor-pointer focus:outline-none"
+      <app-select
+        id="change-requests-status-filter"
+        [unstyled]="true"
+        selectClass="enterprise-toolbar-select cursor-pointer focus:outline-none"
+        placeholder="All Status"
+        [options]="['Pending', 'In Review', 'Approved', 'Rejected', 'Completed']"
         [value]="statusFilter()"
-        (change)="onStatusChange($event)"
-        aria-label="Filter by request status"
-      >
-        <option value="">All Status</option>
-        <option value="Pending">Pending</option>
-        <option value="In Review">In Review</option>
-        <option value="Approved">Approved</option>
-        <option value="Rejected">Rejected</option>
-        <option value="Completed">Completed</option>
-      </select>
+        (valueChange)="onStatusValueChange($event)"
+      ></app-select>
     </div>
   </div>
 

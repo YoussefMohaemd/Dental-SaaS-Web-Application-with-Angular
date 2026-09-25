@@ -77,15 +77,14 @@
             <span class="mb-1 block text-xs font-semibold text-foreground"
               >Patient *</span
             >
-            <select
+            <app-select
+              id="edit-order-patient"
+              [unstyled]="true"
+              selectClass="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
               formControlName="patientId"
-              class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
-            >
-              <option value="">Select patient</option>
-              @for (p of patients(); track p.id) {
-                <option [value]="p.id">{{ p.name }}</option>
-              }
-            </select>
+              placeholder="Select patient"
+              [options]="patientOptions()"
+            ></app-select>
             @if (fieldInvalid("patientId")) {
               <span class="mt-1 block text-[11px] text-danger"
                 >Patient is required.</span
@@ -96,15 +95,14 @@
             <span class="mb-1 block text-xs font-semibold text-foreground"
               >Doctor *</span
             >
-            <select
+            <app-select
+              id="edit-order-doctor"
+              [unstyled]="true"
+              selectClass="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
               formControlName="doctorId"
-              class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
-            >
-              <option value="">Select doctor</option>
-              @for (d of doctors(); track d.id) {
-                <option [value]="d.id">{{ d.name }}</option>
-              }
-            </select>
+              placeholder="Select doctor"
+              [options]="doctorOptions()"
+            ></app-select>
             @if (fieldInvalid("doctorId")) {
               <span class="mt-1 block text-[11px] text-danger"
                 >Doctor is required.</span
@@ -115,15 +113,14 @@
             <span class="mb-1 block text-xs font-semibold text-foreground"
               >Clinic *</span
             >
-            <select
+            <app-select
+              id="edit-order-clinic"
+              [unstyled]="true"
+              selectClass="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
               formControlName="clinicId"
-              class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
-            >
-              <option value="">Select clinic</option>
-              @for (c of clinics(); track c.id) {
-                <option [value]="c.id">{{ c.name }}</option>
-              }
-            </select>
+              placeholder="Select clinic"
+              [options]="clinicOptions()"
+            ></app-select>
             @if (fieldInvalid("clinicId")) {
               <span class="mt-1 block text-[11px] text-danger"
                 >Clinic is required.</span
@@ -145,65 +142,61 @@
             <span class="mb-1 block text-xs font-semibold text-foreground"
               >Restoration Type</span
             >
-            <select
+            <app-select
+              id="edit-order-restoration"
+              [unstyled]="true"
+              selectClass="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
               formControlName="restoration"
-              class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
-            >
-              @for (opt of restorationOptions; track opt) {
-                <option [value]="opt">{{ opt }}</option>
-              }
-            </select>
+              [options]="restorationOptions"
+            ></app-select>
           </label>
           <label class="block">
             <span class="mb-1 block text-xs font-semibold text-foreground"
               >Arch</span
             >
-            <select
+            <app-select
+              id="edit-order-arch"
+              [unstyled]="true"
+              selectClass="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
               formControlName="arch"
-              class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
-            >
-              <option value="Maxilla">Maxilla (Upper)</option>
-              <option value="Mandible">Mandible (Lower)</option>
-              <option value="Both">Both Arches</option>
-            </select>
+              [options]="archSelectOptions"
+            ></app-select>
           </label>
           <label class="block">
             <span class="mb-1 block text-xs font-semibold text-foreground"
               >Shade</span
             >
-            <select
+            <app-select
+              id="edit-order-shade"
+              [unstyled]="true"
+              selectClass="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
               formControlName="shade"
-              class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
-            >
-              @for (opt of shadeOptions; track opt) {
-                <option [value]="opt">{{ opt }}</option>
-              }
-            </select>
+              [options]="shadeOptions"
+            ></app-select>
           </label>
           <label class="block">
             <span class="mb-1 block text-xs font-semibold text-foreground"
               >File Format</span
             >
-            <select
+            <app-select
+              id="edit-order-format"
+              [unstyled]="true"
+              selectClass="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
               formControlName="format"
-              class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
-            >
-              @for (opt of formatOptions; track opt) {
-                <option [value]="opt">{{ opt }}</option>
-              }
-            </select>
+              [options]="formatOptions"
+            ></app-select>
           </label>
           <label class="block">
             <span class="mb-1 block text-xs font-semibold text-foreground"
               >Units</span
             >
-            <input
+            <app-input
+              id="edit-order-units"
               type="number"
+              [unstyled]="true"
+              inputClass="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
               formControlName="units"
-              min="1"
-              max="32"
-              class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
-            />
+            ></app-input>
             @if (fieldInvalid("units")) {
               <span class="mt-1 block text-[11px] text-danger"
                 >Units must be between 1 and 32.</span
@@ -225,48 +218,50 @@
             <span class="mb-1 block text-xs font-semibold text-foreground"
               >Status</span
             >
-            <select
+            <app-select
+              id="edit-order-status"
+              [unstyled]="true"
+              selectClass="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
               formControlName="status"
-              class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
-            >
-              @for (opt of statusOptions; track opt) {
-                <option [value]="opt">{{ statusLabel(opt) }}</option>
-              }
-            </select>
+              [options]="statusSelectOptions()"
+            ></app-select>
           </label>
           <label class="block">
             <span class="mb-1 block text-xs font-semibold text-foreground"
               >Priority</span
             >
-            <select
+            <app-select
+              id="edit-order-priority"
+              [unstyled]="true"
+              selectClass="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
               formControlName="priority"
-              class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
-            >
-              @for (opt of priorityOptions; track opt) {
-                <option [value]="opt">{{ opt }}</option>
-              }
-            </select>
+              [options]="priorityOptions"
+            ></app-select>
           </label>
           <label class="block">
             <span class="mb-1 block text-xs font-semibold text-foreground"
               >Due Date</span
             >
-            <input
+            <app-input
+              id="edit-order-due-date"
               type="date"
+              [unstyled]="true"
+              inputClass="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
               formControlName="dueDate"
-              class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
-            />
+            ></app-input>
           </label>
           <label class="block">
             <span class="mb-1 block text-xs font-semibold text-foreground"
               >Bill To</span
             >
-            <input
+            <app-input
+              id="edit-order-bill-to"
               type="text"
+              [unstyled]="true"
+              inputClass="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
               formControlName="billTo"
               placeholder="Billing contact"
-              class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
-            />
+            ></app-input>
           </label>
         </div>
       </section>

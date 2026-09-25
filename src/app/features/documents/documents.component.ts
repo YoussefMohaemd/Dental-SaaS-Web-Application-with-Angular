@@ -3,6 +3,7 @@ import { CommonModule } from "@angular/common";
 import { TableModule } from "primeng/table";
 import { DialogModule } from "primeng/dialog";
 import { ButtonComponent } from "@shared/components/button/button.component";
+import { InputComponent } from "@shared/components/input/input.component";
 import { DocumentDataService } from "@core/services/document-data.service";
 import {
   DOCUMENT_CATEGORIES,
@@ -21,6 +22,7 @@ export type { DocumentCategory, LabDocument };
     TableModule,
     DialogModule,
     ButtonComponent,
+    InputComponent,
     SafeHtmlPipe,
   ],
   templateUrl: "./documents.component.html",
@@ -58,6 +60,10 @@ export class DocumentsComponent {
 
   onSearchChange(event: Event): void {
     this.search.set((event.target as HTMLInputElement).value);
+  }
+
+  onSearchValueChange(value: string): void {
+    this.search.set(value);
   }
 
   setCategory(next: "All" | DocumentCategory): void {

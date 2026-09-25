@@ -69,12 +69,14 @@
           [innerHTML]="getIconSvg('search') | safeHtml"
           class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
         ></span>
-        <input
-          class="pl-8 pr-4 py-1.5 text-xs bg-muted rounded-lg border border-border placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 w-56"
+        <app-input
+          id="scan-center-search"
+          [unstyled]="true"
+          inputClass="pl-8 pr-4 py-1.5 text-xs bg-muted rounded-lg border border-border placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 w-56"
           placeholder="Search scans..."
           [value]="search()"
-          (input)="onSearchChange($event)"
-        />
+          (valueChange)="onSearchValueChange($event)"
+        ></app-input>
       </div>
     </div>
 

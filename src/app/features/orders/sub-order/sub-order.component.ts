@@ -15,6 +15,8 @@ import {
   SubOrderTab,
   SubOrderDetail,
 } from "@core/models/sub-order.model";
+import { InputComponent } from "@shared/components/input/input.component";
+import { SelectComponent } from "@shared/components/select/select.component";
 import { TeethChartComponent } from "@shared/components/teeth-chart/teeth-chart.component";
 import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
 
@@ -57,7 +59,14 @@ const EMPTY_DETAIL: SubOrderDetail = {
 @Component({
   selector: "app-sub-order",
   standalone: true,
-  imports: [CommonModule, FormsModule, TeethChartComponent, SafeHtmlPipe],
+  imports: [
+    CommonModule,
+    FormsModule,
+    InputComponent,
+    SelectComponent,
+    TeethChartComponent,
+    SafeHtmlPipe,
+  ],
   templateUrl: "./sub-order.component.html",
   styleUrl: "./sub-order.component.scss",
 })
@@ -136,6 +145,10 @@ export class SubOrderComponent {
     const scan = this.detail().scans.find((item) => item.id === targetId);
     return scan?.label ?? "Select a requirement";
   });
+
+  readonly scanTargetOptions = computed(() =>
+    this.detail().scans.map((scan) => ({ value: scan.id, label: scan.label })),
+  );
 
   readonly progress = computed(() => {
     const d = this.detail();

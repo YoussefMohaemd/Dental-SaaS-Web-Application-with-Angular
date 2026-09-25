@@ -1,6 +1,8 @@
 import { Component, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
+import { InputComponent } from "@shared/components/input/input.component";
+import { SelectComponent } from "@shared/components/select/select.component";
 import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
 
 export type FormsSectionId =
@@ -15,7 +17,13 @@ export type FormsSectionId =
 @Component({
   selector: "app-forms",
   standalone: true,
-  imports: [CommonModule, FormsModule, SafeHtmlPipe],
+  imports: [
+    CommonModule,
+    FormsModule,
+    InputComponent,
+    SelectComponent,
+    SafeHtmlPipe,
+  ],
   templateUrl: "./forms.component.html",
   styleUrl: "./forms.component.scss",
 })

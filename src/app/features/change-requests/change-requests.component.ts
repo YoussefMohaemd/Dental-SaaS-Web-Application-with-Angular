@@ -5,12 +5,21 @@ import { ChangeRequestDataService } from "@core/services/change-request-data.ser
 import { NavigationService } from "@core/services/navigation.service";
 import { FormatUtils } from "@core/services/format-utils.service";
 import { ChangeRequest } from "@core/models";
+import { InputComponent } from "@shared/components/input/input.component";
+import { SelectComponent } from "@shared/components/select/select.component";
 import { SafeHtmlPipe } from "../../shared/pipes/safe-html.pipe";
 import { PriorityBadgeComponent } from "@shared/components/priority-badge/priority-badge.component";
 
 @Component({
   selector: "app-change-requests",
-  imports: [CommonModule, TableModule, SafeHtmlPipe, PriorityBadgeComponent],
+  imports: [
+    CommonModule,
+    TableModule,
+    InputComponent,
+    SelectComponent,
+    SafeHtmlPipe,
+    PriorityBadgeComponent,
+  ],
   templateUrl: "./change-requests.component.html",
   styleUrl: "./change-requests.component.scss",
 })
@@ -64,10 +73,20 @@ export class ChangeRequestsComponent {
     this.page.set(1);
   }
 
+  onSearchValueChange(value: string): void {
+    this.search.set(value);
+    this.page.set(1);
+  }
+
   onStatusChange(event: Event): void {
     this.statusFilter.set(
       (event.target as HTMLSelectElement).value as ChangeRequest["status"] | "",
     );
+    this.page.set(1);
+  }
+
+  onStatusValueChange(value: string): void {
+    this.statusFilter.set(value as ChangeRequest["status"] | "");
     this.page.set(1);
   }
 

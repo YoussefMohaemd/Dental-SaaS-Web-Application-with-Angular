@@ -3,6 +3,8 @@ import { CommonModule } from "@angular/common";
 import { ReactiveFormsModule, FormBuilder, Validators } from "@angular/forms";
 import { ThemeService } from "@core/services/theme.service";
 import { ButtonComponent } from "@shared/components/button/button.component";
+import { InputComponent } from "@shared/components/input/input.component";
+import { SelectComponent } from "@shared/components/select/select.component";
 import { SafeHtmlPipe } from "../../shared/pipes/safe-html.pipe";
 
 type SettingsSection =
@@ -16,7 +18,14 @@ type SettingsSection =
 @Component({
   selector: "app-settings",
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ButtonComponent, SafeHtmlPipe],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    ButtonComponent,
+    InputComponent,
+    SelectComponent,
+    SafeHtmlPipe,
+  ],
   templateUrl: "./settings.component.html",
   styleUrl: "./settings.component.scss",
 })
@@ -73,6 +82,26 @@ export class SettingsComponent {
     newPassword: ["", Validators.minLength(8)],
     confirmPassword: [""],
   });
+
+  readonly languageOptions = [
+    { label: "English", value: "en" },
+    { label: "Español", value: "es" },
+    { label: "Français", value: "fr" },
+    { label: "Deutsch", value: "de" },
+  ] as const;
+
+  readonly timeZoneOptions = [
+    { label: "PST", value: "PST" },
+    { label: "MST", value: "MST" },
+    { label: "CST", value: "CST" },
+    { label: "EST", value: "EST" },
+  ] as const;
+
+  readonly dateFormatOptions = [
+    { label: "MM/DD/YYYY", value: "MM/DD/YYYY" },
+    { label: "DD/MM/YYYY", value: "DD/MM/YYYY" },
+    { label: "YYYY-MM-DD", value: "YYYY-MM-DD" },
+  ] as const;
 
   setSection(next: SettingsSection): void {
     this.section.set(next);

@@ -8,13 +8,22 @@ import { DoctorDataService } from "@core/services/doctor-data.service";
 import { ClinicDataService } from "@core/services/clinic-data.service";
 import { NavigationService } from "@core/services/navigation.service";
 import { ButtonComponent } from "@shared/components/button/button.component";
+import { InputComponent } from "@shared/components/input/input.component";
+import { SelectComponent } from "@shared/components/select/select.component";
 import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
 import { statusDisplayLabel } from "@shared/utils/status-label";
 
 @Component({
   selector: "app-edit-order",
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ButtonComponent, SafeHtmlPipe],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    ButtonComponent,
+    InputComponent,
+    SelectComponent,
+    SafeHtmlPipe,
+  ],
   templateUrl: "./edit-order.component.html",
   styleUrl: "./edit-order.component.scss",
 })
@@ -90,6 +99,23 @@ export class EditOrderComponent {
     "Cancelled",
   ];
   readonly priorityOptions = ["Low", "Normal", "High", "Urgent"];
+  readonly patientOptions = computed(() =>
+    this.patients().map((p) => ({ value: p.id, label: p.name })),
+  );
+  readonly doctorOptions = computed(() =>
+    this.doctors().map((d) => ({ value: d.id, label: d.name })),
+  );
+  readonly clinicOptions = computed(() =>
+    this.clinics().map((c) => ({ value: c.id, label: c.name })),
+  );
+  readonly archSelectOptions = [
+    { value: "Maxilla", label: "Maxilla (Upper)" },
+    { value: "Mandible", label: "Mandible (Lower)" },
+    { value: "Both", label: "Both Arches" },
+  ] as const;
+  readonly statusSelectOptions = computed(() =>
+    this.statusOptions.map((opt) => ({ value: opt, label: this.statusLabel(opt) })),
+  );
 
   constructor() {
     const current = this.order();

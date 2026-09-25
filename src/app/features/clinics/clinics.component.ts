@@ -6,6 +6,7 @@ import { NavigationService } from "@core/services/navigation.service";
 import { FormatUtils } from "@core/services/format-utils.service";
 import { Clinic, ClinicStatus } from "@core/models";
 import { ButtonComponent } from "@shared/components/button/button.component";
+import { InputComponent } from "@shared/components/input/input.component";
 import { SafeHtmlPipe } from "../../shared/pipes/safe-html.pipe";
 
 interface StatItem {
@@ -16,7 +17,13 @@ interface StatItem {
 @Component({
   selector: "app-clinics",
   standalone: true,
-  imports: [CommonModule, FormsModule, ButtonComponent, SafeHtmlPipe],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ButtonComponent,
+    InputComponent,
+    SafeHtmlPipe,
+  ],
   templateUrl: "./clinics.component.html",
   styleUrl: "./clinics.component.scss",
 })
@@ -53,6 +60,10 @@ export class ClinicsComponent {
   onSearchChange(event: Event): void {
     const target = event.target as HTMLInputElement;
     this.search.set(target.value);
+  }
+
+  onSearchValueChange(value: string): void {
+    this.search.set(value);
   }
 
   openAddDialog(): void {

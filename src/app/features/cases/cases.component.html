@@ -28,23 +28,24 @@
         [innerHTML]="getIconSvg('search') | safeHtml"
         class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
       ></span>
-      <input
-        class="w-full pl-8 pr-4 py-1.5 text-xs bg-muted rounded-lg border border-border placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+      <app-input
+        id="cases-search"
+        [unstyled]="true"
+        inputClass="w-full pl-8 pr-4 py-1.5 text-xs bg-muted rounded-lg border border-border placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
         placeholder="Search cases..."
         [value]="search()"
-        (input)="onSearchChange($event)"
-      />
+        (valueChange)="onSearchValueChange($event)"
+      ></app-input>
     </div>
-    <select
-      class="px-2 py-1.5 text-xs border border-border rounded-lg bg-card text-foreground focus:outline-none cursor-pointer"
+    <app-select
+      id="cases-status-filter"
+      [unstyled]="true"
+      selectClass="px-2 py-1.5 text-xs border border-border rounded-lg bg-card text-foreground focus:outline-none cursor-pointer"
+      placeholder="All Statuses"
+      [options]="STATUS_OPTIONS"
       [value]="statusFilter()"
-      (change)="onStatusFilterChange($event)"
-    >
-      <option value="">All Statuses</option>
-      @for (status of STATUS_OPTIONS; track status) {
-        <option [value]="status">{{ status }}</option>
-      }
-    </select>
+      (valueChange)="onStatusFilterValueChange($event)"
+    ></app-select>
     <div class="sm:ml-auto flex border border-border rounded-lg overflow-hidden">
       <button
         (click)="setView('table')"

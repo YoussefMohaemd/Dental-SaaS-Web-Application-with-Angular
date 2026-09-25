@@ -73,36 +73,32 @@
         />
       </div>
       <div class="relative">
-        <select
-          class="cursor-pointer appearance-none rounded-lg border border-border bg-card pl-2 pr-6 py-1.5 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
-          (change)="
-            addStatusFilter($any($event.target).value);
-            $any($event.target).value = ''
-          "
-          aria-label="Add status filter"
-        >
-          <option value="">Status</option>
-          @for (status of statusOptions; track status) {
-            <option [value]="status">{{ orderStatusLabel(status) }}</option>
-          }
-        </select>
+        <app-select
+          id="orders-status-picker"
+          [unstyled]="true"
+          selectClass="cursor-pointer appearance-none rounded-lg border border-border bg-card pl-2 pr-6 py-1.5 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+          placeholder="Status"
+          [options]="statusSelectOptions"
+          [value]="''"
+          (valueChange)="onStatusPickerValueChange($event)"
+          ariaLabel="Add status filter"
+        ></app-select>
         <span
           [innerHTML]="getIconSvg('chevron-down') | safeHtml"
           class="absolute right-1.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
         ></span>
       </div>
       <div class="relative">
-        <select
-          class="cursor-pointer appearance-none rounded-lg border border-border bg-card pl-2 pr-6 py-1.5 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+        <app-select
+          id="orders-priority-filter"
+          [unstyled]="true"
+          selectClass="cursor-pointer appearance-none rounded-lg border border-border bg-card pl-2 pr-6 py-1.5 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+          placeholder="Priority"
+          [options]="priorityOptions"
           [value]="priorityFilter()"
-          (change)="onPriorityChange($event)"
-          aria-label="Filter by priority"
-        >
-          <option value="">Priority</option>
-          @for (priority of priorityOptions; track priority) {
-            <option [value]="priority">{{ priority }}</option>
-          }
-        </select>
+          (valueChange)="onPriorityValueChange($event)"
+          ariaLabel="Filter by priority"
+        ></app-select>
         <span
           [innerHTML]="getIconSvg('chevron-down') | safeHtml"
           class="absolute right-1.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
@@ -158,17 +154,15 @@
           class="text-xs text-muted-foreground whitespace-nowrap"
           >Rows per page</label
         >
-        <select
+        <app-select
           id="orders-page-size"
-          class="cursor-pointer appearance-none rounded-lg border border-border bg-card pl-2 pr-6 py-1.5 text-xs text-foreground focus:outline-none"
-          [value]="pageSize()"
-          (change)="onPageSizeChange($event)"
-          aria-label="Rows per page"
-        >
-          @for (size of pageSizes; track size) {
-            <option [value]="size">{{ size }} / page</option>
-          }
-        </select>
+          [unstyled]="true"
+          selectClass="cursor-pointer appearance-none rounded-lg border border-border bg-card pl-2 pr-6 py-1.5 text-xs text-foreground focus:outline-none"
+          [options]="pageSizeSelectOptions"
+          [value]="pageSize().toString()"
+          (valueChange)="onPageSizeValueChange($event)"
+          ariaLabel="Rows per page"
+        ></app-select>
         <span
           [innerHTML]="getIconSvg('chevron-down') | safeHtml"
           class="absolute right-1.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"

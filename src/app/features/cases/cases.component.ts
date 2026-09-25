@@ -7,6 +7,8 @@ import { Case, CaseStatus, Priority } from "@core/models";
 import { StatusBadgeComponent } from "@shared/components/status-badge/status-badge.component";
 import { PriorityBadgeComponent } from "@shared/components/priority-badge/priority-badge.component";
 import { ButtonComponent } from "@shared/components/button/button.component";
+import { InputComponent } from "@shared/components/input/input.component";
+import { SelectComponent } from "@shared/components/select/select.component";
 import { SafeHtmlPipe } from "../../shared/pipes/safe-html.pipe";
 
 type ViewMode = "table" | "grid";
@@ -19,6 +21,8 @@ type ViewMode = "table" | "grid";
     StatusBadgeComponent,
     PriorityBadgeComponent,
     ButtonComponent,
+    InputComponent,
+    SelectComponent,
     SafeHtmlPipe,
   ],
   templateUrl: "./cases.component.html",
@@ -83,9 +87,19 @@ export class CasesComponent {
     this.page.set(1);
   }
 
+  onSearchValueChange(value: string): void {
+    this.search.set(value);
+    this.page.set(1);
+  }
+
   onStatusFilterChange(event: Event): void {
     const target = event.target as HTMLSelectElement;
     this.statusFilter.set(target.value as CaseStatus | "");
+    this.page.set(1);
+  }
+
+  onStatusFilterValueChange(value: string): void {
+    this.statusFilter.set(value as CaseStatus | "");
     this.page.set(1);
   }
 

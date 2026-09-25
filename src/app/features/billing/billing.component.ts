@@ -6,6 +6,8 @@ import { BillingDataService } from "@core/services/billing-data.service";
 import { NavigationService } from "@core/services/navigation.service";
 import { FormatUtils } from "@core/services/format-utils.service";
 import { BillingRecord } from "@core/models";
+import { InputComponent } from "@shared/components/input/input.component";
+import { SelectComponent } from "@shared/components/select/select.component";
 import { SafeHtmlPipe } from "../../shared/pipes/safe-html.pipe";
 
 type BillingSortColumn =
@@ -14,7 +16,14 @@ type BillingSortColumn =
 @Component({
   selector: "app-billing",
   standalone: true,
-  imports: [CommonModule, FormsModule, TableModule, SafeHtmlPipe],
+  imports: [
+    CommonModule,
+    FormsModule,
+    TableModule,
+    InputComponent,
+    SelectComponent,
+    SafeHtmlPipe,
+  ],
   templateUrl: "./billing.component.html",
   styleUrl: "./billing.component.scss",
 })
@@ -142,10 +151,20 @@ export class BillingComponent {
     this.page.set(1);
   }
 
+  onSearchValueChange(value: string): void {
+    this.search.set(value);
+    this.page.set(1);
+  }
+
   onStatusChange(event: Event): void {
     this.statusFilter.set(
       (event.target as HTMLSelectElement).value as BillingRecord["status"] | "",
     );
+    this.page.set(1);
+  }
+
+  onStatusValueChange(value: string): void {
+    this.statusFilter.set(value as BillingRecord["status"] | "");
     this.page.set(1);
   }
 

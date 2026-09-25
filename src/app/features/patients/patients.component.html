@@ -15,22 +15,24 @@
           [innerHTML]="getIconSvg('search') | safeHtml"
           class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
         ></span>
-        <input
-          class="enterprise-toolbar-input"
+        <app-input
+          id="patients-search"
+          [unstyled]="true"
+          inputClass="enterprise-toolbar-input"
           placeholder="Search patients..."
           [value]="search()"
-          (input)="onSearchChange($event)"
-        />
+          (valueChange)="onSearchValueChange($event)"
+        ></app-input>
       </div>
-      <select
-        class="enterprise-toolbar-select cursor-pointer focus:outline-none"
+      <app-select
+        id="patients-status-filter"
+        [unstyled]="true"
+        selectClass="enterprise-toolbar-select cursor-pointer focus:outline-none"
+        placeholder="All Status"
+        [options]="STATUS_OPTIONS"
         [value]="statusFilter()"
-        (change)="onStatusFilterChange($event)"
-      >
-        <option value="">All Status</option>
-        <option value="Active">Active</option>
-        <option value="Inactive">Inactive</option>
-      </select>
+        (valueChange)="onStatusFilterValueChange($event)"
+      ></app-select>
     </div>
     <div class="enterprise-toolbar-group">
       <app-button
@@ -293,38 +295,50 @@
         </p>
         <div class="mt-4 space-y-3">
           <label class="block"
-            ><span class="mb-1 block text-xs font-semibold">Full Name</span
-            ><input
-              class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
+            ><span class="mb-1 block text-xs font-semibold">Full Name</span>
+            <app-input
+              id="patient-new-name"
+              [unstyled]="true"
+              inputClass="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
               placeholder="e.g. Sarah Thompson"
-              [ngModel]="newName()"
-              (ngModelChange)="newName.set($event)"
-          /></label>
+              [value]="newName()"
+              (valueChange)="newName.set($event)"
+            ></app-input
+          ></label>
           <label class="block"
-            ><span class="mb-1 block text-xs font-semibold">Clinic</span
-            ><input
-              class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
-              [ngModel]="newClinic()"
-              (ngModelChange)="newClinic.set($event)"
-          /></label>
+            ><span class="mb-1 block text-xs font-semibold">Clinic</span>
+            <app-input
+              id="patient-new-clinic"
+              [unstyled]="true"
+              inputClass="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
+              [value]="newClinic()"
+              (valueChange)="newClinic.set($event)"
+            ></app-input
+          ></label>
           <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <label class="block"
-              ><span class="mb-1 block text-xs font-semibold">Phone</span
-              ><input
-                class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
+              ><span class="mb-1 block text-xs font-semibold">Phone</span>
+              <app-input
+                id="patient-new-phone"
+                [unstyled]="true"
+                inputClass="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
                 placeholder="+1 (555) 000-0000"
-                [ngModel]="newPhone()"
-                (ngModelChange)="newPhone.set($event)"
-            /></label>
+                [value]="newPhone()"
+                (valueChange)="newPhone.set($event)"
+              ></app-input
+            ></label>
             <label class="block"
-              ><span class="mb-1 block text-xs font-semibold">Email</span
-              ><input
+              ><span class="mb-1 block text-xs font-semibold">Email</span>
+              <app-input
+                id="patient-new-email"
                 type="email"
-                class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
+                [unstyled]="true"
+                inputClass="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
                 placeholder="patient@email.com"
-                [ngModel]="newEmail()"
-                (ngModelChange)="newEmail.set($event)"
-            /></label>
+                [value]="newEmail()"
+                (valueChange)="newEmail.set($event)"
+              ></app-input
+            ></label>
           </div>
         </div>
         <div class="mt-5 flex justify-end gap-2">

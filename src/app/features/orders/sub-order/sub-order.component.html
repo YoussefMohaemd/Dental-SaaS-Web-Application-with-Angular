@@ -485,24 +485,14 @@
                             [for]="'occlusal-contact-' + f.id"
                             >Occlusal Contact</label
                           >
-                          <select
+                          <app-select
                             [id]="'occlusal-contact-' + f.id"
-                            class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                            [unstyled]="true"
+                            selectClass="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                            [options]="occlusalContactOptions"
                             [value]="formDraft().occlusalContact"
-                            (change)="
-                              setFormField(
-                                'occlusalContact',
-                                $any($event.target).value
-                              )
-                            "
-                          >
-                            @for (
-                              option of occlusalContactOptions;
-                              track option
-                            ) {
-                              <option [value]="option">{{ option }}</option>
-                            }
-                          </select>
+                            (valueChange)="setFormField('occlusalContact', $event)"
+                          ></app-select>
                         </div>
                         <div>
                           <label
@@ -510,21 +500,14 @@
                             [for]="'margin-type-' + f.id"
                             >Margin Type</label
                           >
-                          <select
+                          <app-select
                             [id]="'margin-type-' + f.id"
-                            class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                            [unstyled]="true"
+                            selectClass="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                            [options]="marginTypeOptions"
                             [value]="formDraft().marginType"
-                            (change)="
-                              setFormField(
-                                'marginType',
-                                $any($event.target).value
-                              )
-                            "
-                          >
-                            @for (option of marginTypeOptions; track option) {
-                              <option [value]="option">{{ option }}</option>
-                            }
-                          </select>
+                            (valueChange)="setFormField('marginType', $event)"
+                          ></app-select>
                         </div>
                         <div>
                           <label
@@ -532,21 +515,14 @@
                             [for]="'material-' + f.id"
                             >Material</label
                           >
-                          <select
+                          <app-select
                             [id]="'material-' + f.id"
-                            class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                            [unstyled]="true"
+                            selectClass="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                            [options]="materialOptions"
                             [value]="formDraft().material"
-                            (change)="
-                              setFormField(
-                                'material',
-                                $any($event.target).value
-                              )
-                            "
-                          >
-                            @for (option of materialOptions; track option) {
-                              <option [value]="option">{{ option }}</option>
-                            }
-                          </select>
+                            (valueChange)="setFormField('material', $event)"
+                          ></app-select>
                         </div>
                         <div>
                           <label
@@ -554,15 +530,14 @@
                             [for]="'shade-' + f.id"
                             >Shade</label
                           >
-                          <input
+                          <app-input
                             [id]="'shade-' + f.id"
                             type="text"
-                            class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                            [unstyled]="true"
+                            inputClass="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
                             [value]="formDraft().shade"
-                            (input)="
-                              setFormField('shade', $any($event.target).value)
-                            "
-                          />
+                            (valueChange)="setFormField('shade', $event)"
+                          ></app-input>
                         </div>
                       </div>
 
@@ -735,19 +710,15 @@
               for="scan-target"
               >Drop target</label
             >
-            <select
+            <app-select
               id="scan-target"
-              class="rounded-lg border border-border bg-card px-2.5 py-1 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+              [unstyled]="true"
+              selectClass="rounded-lg border border-border bg-card px-2.5 py-1 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+              placeholder="Select requirement"
+              [options]="scanTargetOptions()"
               [value]="selectedScanTarget() ?? ''"
-              (change)="
-                selectedScanTarget.set($any($event.target).value || null)
-              "
-            >
-              <option value="">Select requirement</option>
-              @for (scan of detail().scans; track scan.id) {
-                <option [value]="scan.id">{{ scan.label }}</option>
-              }
-            </select>
+              (valueChange)="selectedScanTarget.set($event || null)"
+            ></app-select>
           </div>
 
           <div

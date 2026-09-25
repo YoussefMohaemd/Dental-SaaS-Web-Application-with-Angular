@@ -1,17 +1,24 @@
-<div class="relative">
-  <label *ngIf="label()" [for]="id()" class="label-base">{{ label() }}</label>
+<div class="relative" [ngClass]="containerClass()">
+  <label
+    *ngIf="label()"
+    [for]="controlId()"
+    class="label-base"
+    [ngClass]="labelClass()"
+    >{{ label() }}</label
+  >
   <div class="relative">
     <ng-content select="[slot=prefix]"></ng-content>
     <input
-      [id]="id()"
+      [id]="controlId()"
       [type]="type()"
       [placeholder]="placeholder()"
-      [disabled]="disabled()"
+      [disabled]="isDisabled()"
+      [readOnly]="readOnly()"
       [required]="required()"
       [value]="value()"
       [attr.autocomplete]="autocomplete() || null"
       (input)="onInput($event)"
-      (blur)="onBlur.emit($event)"
+      (blur)="onNativeBlur($event)"
       (focus)="onFocus.emit($event)"
       [class]="inputClasses()"
       [attr.aria-describedby]="error() ? errorId() : hint() ? hintId() : null"

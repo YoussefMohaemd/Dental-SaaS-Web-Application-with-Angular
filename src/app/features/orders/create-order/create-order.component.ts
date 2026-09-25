@@ -16,6 +16,8 @@ import {
 import { ArchType, RestoType } from "@core/models";
 import { SubOrderCreationData } from "@core/models/sub-order.model";
 import { ButtonComponent } from "@shared/components/button/button.component";
+import { InputComponent } from "@shared/components/input/input.component";
+import { SelectComponent } from "@shared/components/select/select.component";
 import { TeethChartComponent } from "@shared/components/teeth-chart/teeth-chart.component";
 import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
 
@@ -92,6 +94,8 @@ function defaultClinicalForm(): ServiceClinicalForm {
     CommonModule,
     FormsModule,
     ButtonComponent,
+    InputComponent,
+    SelectComponent,
     TeethChartComponent,
     SafeHtmlPipe,
   ],
@@ -136,12 +140,36 @@ export class CreateOrderComponent {
   readonly selectedPatient = computed(() =>
     this.patients().find((p) => p.id === this.form().patientId),
   );
+  readonly patientOptions = computed(() =>
+    this.patients().map((p) => ({
+      value: p.id,
+      label: `${p.name} · ${p.clinicName}`,
+    })),
+  );
   readonly selectedDoctor = computed(() =>
     this.doctors().find((d) => d.id === this.form().doctorId),
   );
+  readonly doctorOptions = computed(() => {
+    const clinicId = this.form().clinicId;
+    const rows = clinicId
+      ? this.doctors().filter((d) => d.clinicId === clinicId)
+      : this.doctors();
+    return rows.map((d) => ({ value: d.id, label: d.name }));
+  });
   readonly selectedClinic = computed(() =>
     this.clinics().find((c) => c.id === this.form().clinicId),
   );
+  readonly clinicOptions = computed(() =>
+    this.clinics()
+      .filter((c) => c.status === "Active")
+      .map((c) => ({ value: c.id, label: c.name })),
+  );
+  readonly priorityOptions = ["Low", "Normal", "High", "Urgent"] as const;
+  readonly serviceArchOptions = [
+    { value: "Maxilla (Upper)", label: "Maxilla (Upper)" },
+    { value: "Mandible (Lower)", label: "Mandible (Lower)" },
+    { value: "Both", label: "Both" },
+  ] as const;
   readonly selectedServiceObjects = computed(() =>
     AVAILABLE_SERVICES.filter((s) => this.selectedServices().includes(s.id)),
   );

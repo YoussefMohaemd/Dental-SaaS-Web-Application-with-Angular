@@ -7,6 +7,8 @@ import { FormatUtils } from "@core/services/format-utils.service";
 import { Patient, PatientStatus } from "@core/models";
 import { ButtonComponent } from "@shared/components/button/button.component";
 import { AvatarComponent } from "@shared/components/avatar/avatar.component";
+import { InputComponent } from "@shared/components/input/input.component";
+import { SelectComponent } from "@shared/components/select/select.component";
 import { SafeHtmlPipe } from "../../shared/pipes/safe-html.pipe";
 import { filterTableRows } from "@shared/utils/table-state";
 import {
@@ -24,6 +26,8 @@ import {
     FormsModule,
     ButtonComponent,
     AvatarComponent,
+    InputComponent,
+    SelectComponent,
     SafeHtmlPipe,
   ],
   templateUrl: "./patients.component.html",
@@ -85,9 +89,19 @@ export class PatientsComponent {
     this.page.set(1);
   }
 
+  onSearchValueChange(value: string): void {
+    this.search.set(value);
+    this.page.set(1);
+  }
+
   onStatusFilterChange(event: Event): void {
     const target = event.target as HTMLSelectElement;
     this.statusFilter.set(target.value as PatientStatus | "");
+    this.page.set(1);
+  }
+
+  onStatusFilterValueChange(value: string): void {
+    this.statusFilter.set(value as PatientStatus | "");
     this.page.set(1);
   }
 

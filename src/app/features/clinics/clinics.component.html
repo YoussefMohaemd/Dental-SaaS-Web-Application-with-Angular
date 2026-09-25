@@ -13,12 +13,14 @@
             [innerHTML]="getIconSvg('search') | safeHtml"
             class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
           ></span>
-          <input
-            class="pl-8 pr-4 py-1.5 text-xs bg-muted rounded-lg border border-border placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 w-56"
+          <app-input
+            id="clinics-search"
+            [unstyled]="true"
+            inputClass="pl-8 pr-4 py-1.5 text-xs bg-muted rounded-lg border border-border placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 w-56"
             placeholder="Search clinics..."
             [value]="search()"
-            (input)="onSearchChange($event)"
-          />
+            (valueChange)="onSearchValueChange($event)"
+          ></app-input>
         </div>
         <app-button
           variant="primary"
@@ -118,30 +120,39 @@
         </p>
         <div class="mt-4 space-y-3">
           <label class="block"
-            ><span class="mb-1 block text-xs font-semibold">Clinic Name</span
-            ><input
-              class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
+            ><span class="mb-1 block text-xs font-semibold">Clinic Name</span>
+            <app-input
+              id="clinic-new-name"
+              [unstyled]="true"
+              inputClass="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
               placeholder="Bright Smile Dental"
-              [ngModel]="newName()"
-              (ngModelChange)="newName.set($event)"
-          /></label>
+              [value]="newName()"
+              (valueChange)="newName.set($event)"
+            ></app-input
+          ></label>
           <label class="block"
-            ><span class="mb-1 block text-xs font-semibold">City</span
-            ><input
-              class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
+            ><span class="mb-1 block text-xs font-semibold">City</span>
+            <app-input
+              id="clinic-new-city"
+              [unstyled]="true"
+              inputClass="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
               placeholder="Los Angeles"
-              [ngModel]="newCity()"
-              (ngModelChange)="newCity.set($event)"
-          /></label>
+              [value]="newCity()"
+              (valueChange)="newCity.set($event)"
+            ></app-input
+          ></label>
           <label class="block"
             ><span class="mb-1 block text-xs font-semibold"
-              >Account Manager</span
-            ><input
-              class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
+              >Account Manager</span>
+            <app-input
+              id="clinic-new-manager"
+              [unstyled]="true"
+              inputClass="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
               placeholder="Lab Manager"
-              [ngModel]="newManager()"
-              (ngModelChange)="newManager.set($event)"
-          /></label>
+              [value]="newManager()"
+              (valueChange)="newManager.set($event)"
+            ></app-input
+          ></label>
         </div>
         <div class="mt-5 flex justify-end gap-2">
           <app-button variant="outline" size="sm" (onClick)="closeAddDialog()"

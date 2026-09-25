@@ -11,6 +11,7 @@ import { Order, OrderStatus, Priority, SubOrder } from "@core/models";
 import { ArchBadgeComponent } from "@shared/components/arch-badge/arch-badge.component";
 import { ButtonComponent } from "@shared/components/button/button.component";
 import { SearchInputComponent } from "@shared/components/search-input/search-input.component";
+import { SelectComponent } from "@shared/components/select/select.component";
 import { SafeHtmlPipe } from "../../shared/pipes/safe-html.pipe";
 import { lucideSvg } from "@shared/icons/lucide-icons";
 import { filterTableRows } from "@shared/utils/table-state";
@@ -131,6 +132,7 @@ export function compareOrderValues(a: unknown, b: unknown): number {
     ArchBadgeComponent,
     ButtonComponent,
     SearchInputComponent,
+    SelectComponent,
     SafeHtmlPipe,
   ],
   templateUrl: "./orders.component.html",
@@ -160,6 +162,14 @@ export class OrdersComponent {
   readonly pageSizes = PAGE_SIZES;
   readonly statusOptions = STATUS_OPTIONS;
   readonly priorityOptions = PRIORITY_OPTIONS;
+  readonly statusSelectOptions = STATUS_OPTIONS.map((status) => ({
+    value: status,
+    label: this.orderStatusLabel(status),
+  }));
+  readonly pageSizeSelectOptions = PAGE_SIZES.map((size) => ({
+    value: String(size),
+    label: `${size} / page`,
+  }));
 
   readonly filtered = computed(() => {
     let result = filterTableRows(this.orders(), this.search().trim(), [
@@ -354,6 +364,10 @@ export class OrdersComponent {
     this.page.set(1);
   }
 
+  onStatusPickerValueChange(value: string): void {
+    this.addStatusFilter(value as OrderStatus);
+  }
+
   onPriorityChange(event: Event): void {
     this.priorityFilter.set(
       (event.target as HTMLSelectElement).value as Priority | "",
@@ -361,8 +375,18 @@ export class OrdersComponent {
     this.page.set(1);
   }
 
+  onPriorityValueChange(value: string): void {
+    this.priorityFilter.set(value as Priority | "");
+    this.page.set(1);
+  }
+
   onPageSizeChange(event: Event): void {
     this.pageSize.set(Number((event.target as HTMLSelectElement).value));
+    this.page.set(1);
+  }
+
+  onPageSizeValueChange(value: string): void {
+    this.pageSize.set(Number(value));
     this.page.set(1);
   }
 

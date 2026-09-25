@@ -8,6 +8,7 @@ import { Order, ScanCenter } from "@core/models";
 import { StatusBadgeComponent } from "@shared/components/status-badge/status-badge.component";
 import { ButtonComponent } from "@shared/components/button/button.component";
 import { AvatarComponent } from "@shared/components/avatar/avatar.component";
+import { InputComponent } from "@shared/components/input/input.component";
 import { SafeHtmlPipe } from "../../shared/pipes/safe-html.pipe";
 
 interface ScanOrderRow extends Order {
@@ -17,7 +18,7 @@ interface ScanOrderRow extends Order {
 @Component({
   selector: "app-scan-center",
   standalone: true,
-  imports: [CommonModule, SafeHtmlPipe],
+  imports: [CommonModule, InputComponent, SafeHtmlPipe],
   templateUrl: "./scan-center.component.html",
   styleUrl: "./scan-center.component.scss",
 })
@@ -74,6 +75,10 @@ export class ScanCenterComponent {
   onSearchChange(event: Event): void {
     const target = event.target as HTMLInputElement;
     this.search.set(target.value);
+  }
+
+  onSearchValueChange(value: string): void {
+    this.search.set(value);
   }
 
   getIconSvg(name: string): string {

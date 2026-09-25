@@ -1,6 +1,15 @@
-import { Component, input, output, model, computed } from "@angular/core";
+import {
+  Component,
+  computed,
+  forwardRef,
+  input,
+  model,
+  output,
+  signal,
+} from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
+import { ControlValueAccessor, NG_VALUE_ACCESSOR } from "@angular/forms";
 
 @Component({
   selector: "app-input",
@@ -8,10 +17,21 @@ import { FormsModule } from "@angular/forms";
   imports: [CommonModule, FormsModule],
   templateUrl: "./input.component.html",
   styleUrl: "./input.component.scss",
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => InputComponent),
+      multi: true,
+    },
+  ],
 })
-export class InputComponent {
-  readonly id = input.required<string>();
-  readonly type = input<"text" | "email" | "password" | "tel" | "number">(
+export class InputComponent implements ControlValueAccessor {
+  private static nextAutoId = 0;
+
+  readonly id = input<string>("");
+  readonly type = input<
+    "text" | "email" | "password" | "tel" | "number" | "date"
+  >(
     "text",
   );
   readonly label = input<string>("");
@@ -21,16 +41,27 @@ export class InputComponent {
   readonly value = model<string>("");
   readonly hint = input<string>("");
   readonly error = input<string>("");
-
+  readonly readOnly = input<boolean>(false);
+  readonly unstyled = input<boolean>(false);
+  readonly inputClass = input<string>("");
+  readonly containerClass = input<string>("");
+  readonly labelClass = input<string>("");
   readonly iconStart = input<boolean>(false);
   readonly iconEnd = input<boolean>(false);
   readonly autocomplete = input<string>("");
-
   readonly onBlur = output<FocusEvent>();
   readonly onFocus = output<FocusEvent>();
 
-  readonly hintId = computed(() => `${this.id()}-hint`);
-  readonly errorId = computed(() => `${this.id()}-error`);
+  private readonly cvaDisabled = signal(false);
+  private onChangeFn: (value: string) => void = () => {};
+  private onTouchedFn: () => void = () => {};
+  private readonly generatedId = `app-input-${InputComponent.nextAutoId++}`;
+
+  readonly isDisabled = computed(() => this.disabled() || this.cvaDisabled());
+  readonly controlId = computed(() => this.id().trim() || this.generatedId);
+
+  readonly hintId = computed(() => `${this.controlId()}-hint`);
+  readonly errorId = computed(() => `${this.controlId()}-error`);
 
   readonly inputClasses = computed(() => {
     const horizontalPadding =
@@ -41,14 +72,42 @@ export class InputComponent {
           : this.iconEnd()
             ? "pl-3 pr-10"
             : "px-3";
+    const readonlyClass = this.readOnly() ? "cursor-not-allowed bg-muted" : "";
+    if (this.unstyled()) {
+      return `${this.inputClass()} ${this.isDisabled() ? "opacity-50 cursor-not-allowed" : ""} ${readonlyClass}`;
+    }
     return `
     input-base ${horizontalPadding} py-2.5
-    ${this.disabled() ? "opacity-50 cursor-not-allowed" : ""}
+    ${this.isDisabled() ? "opacity-50 cursor-not-allowed" : ""}
+    ${readonlyClass}
+    ${this.inputClass()}
   `;
   });
 
   onInput(event: Event): void {
     const target = event.target as HTMLInputElement;
     this.value.set(target.value);
+    this.onChangeFn(target.value);
+  }
+
+  onNativeBlur(event: FocusEvent): void {
+    this.onTouchedFn();
+    this.onBlur.emit(event);
+  }
+
+  writeValue(value: string | null): void {
+    this.value.set(value ?? "");
+  }
+
+  registerOnChange(fn: (value: string) => void): void {
+    this.onChangeFn = fn;
+  }
+
+  registerOnTouched(fn: () => void): void {
+    this.onTouchedFn = fn;
+  }
+
+  setDisabledState(isDisabled: boolean): void {
+    this.cvaDisabled.set(isDisabled);
   }
 }

@@ -7,6 +7,8 @@ import { FormatUtils } from "@core/services/format-utils.service";
 import { Doctor, DoctorStatus } from "@core/models";
 import { ButtonComponent } from "@shared/components/button/button.component";
 import { AvatarComponent } from "@shared/components/avatar/avatar.component";
+import { InputComponent } from "@shared/components/input/input.component";
+import { SelectComponent } from "@shared/components/select/select.component";
 import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
 import { filterTableRows, sortTableRows } from "@shared/utils/table-state";
 
@@ -23,6 +25,8 @@ interface SortConfig {
     FormsModule,
     ButtonComponent,
     AvatarComponent,
+    InputComponent,
+    SelectComponent,
     SafeHtmlPipe,
   ],
   templateUrl: "./doctors.component.html",
@@ -86,9 +90,17 @@ export class DoctorsComponent {
     this.search.set(target.value);
   }
 
+  onSearchValueChange(value: string): void {
+    this.search.set(value);
+  }
+
   onStatusFilterChange(event: Event): void {
     const target = event.target as HTMLSelectElement;
     this.statusFilter.set(target.value as DoctorStatus | "");
+  }
+
+  onStatusFilterValueChange(value: string): void {
+    this.statusFilter.set(value as DoctorStatus | "");
   }
 
   getStatusClass(status: string): string {
