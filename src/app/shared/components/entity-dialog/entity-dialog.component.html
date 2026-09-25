@@ -28,9 +28,11 @@
     <ng-content></ng-content>
   </div>
 
-  <ng-template pTemplate="footer">
-    <div class="flex justify-end gap-2">
-      <ng-content select="[dialog-actions]"></ng-content>
-    </div>
-  </ng-template>
+  @if (showFooter()) {
+    <ng-template pTemplate="footer">
+      <div class="flex justify-end gap-2">
+        <ng-content select="[dialog-actions]"></ng-content>
+      </div>
+    </ng-template>
+  }
 </p-dialog>

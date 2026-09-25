@@ -11,6 +11,7 @@ import { Order, OrderStatus, Priority, SubOrder } from "@core/models";
 import { ArchBadgeComponent } from "@shared/components/arch-badge/arch-badge.component";
 import { ButtonComponent } from "@shared/components/button/button.component";
 import { EnterprisePaginatorComponent } from "@shared/components/enterprise-paginator/enterprise-paginator.component";
+import { IconActionButtonComponent } from "@shared/components/icon-action-button/icon-action-button.component";
 import { SearchInputComponent } from "@shared/components/search-input/search-input.component";
 import { SelectComponent } from "@shared/components/select/select.component";
 import { SafeHtmlPipe } from "../../shared/pipes/safe-html.pipe";
@@ -133,6 +134,7 @@ export function compareOrderValues(a: unknown, b: unknown): number {
     ArchBadgeComponent,
     ButtonComponent,
     EnterprisePaginatorComponent,
+    IconActionButtonComponent,
     SearchInputComponent,
     SelectComponent,
     SafeHtmlPipe,

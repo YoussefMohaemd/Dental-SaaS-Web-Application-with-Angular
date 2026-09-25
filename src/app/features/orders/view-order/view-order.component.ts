@@ -12,7 +12,6 @@ import { ActivatedRoute } from "@angular/router";
 import { toSignal } from "@angular/core/rxjs-interop";
 import { FormsModule } from "@angular/forms";
 import { CdkMenuModule } from "@angular/cdk/menu";
-import { DialogModule } from "primeng/dialog";
 import { OrderDataService } from "@core/services/order-data.service";
 import { PatientDataService } from "@core/services/patient-data.service";
 import { DoctorDataService } from "@core/services/doctor-data.service";
@@ -22,6 +21,7 @@ import { FormatUtils } from "@core/services/format-utils.service";
 import { Order, Patient, Doctor, Clinic, SubOrder } from "@core/models";
 import { AvatarComponent } from "@shared/components/avatar/avatar.component";
 import { ButtonComponent } from "@shared/components/button/button.component";
+import { EntityDialogComponent } from "@shared/components/entity-dialog/entity-dialog.component";
 import { IconActionButtonComponent } from "@shared/components/icon-action-button/icon-action-button.component";
 import { OrderSummaryCardComponent } from "@shared/components/order-summary-card/order-summary-card.component";
 import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
@@ -53,9 +53,9 @@ function withIconSize(svg: string, size?: number): string {
     CommonModule,
     FormsModule,
     CdkMenuModule,
-    DialogModule,
     AvatarComponent,
     ButtonComponent,
+    EntityDialogComponent,
     IconActionButtonComponent,
     OrderSummaryCardComponent,
     SafeHtmlPipe,
@@ -167,6 +167,10 @@ export class ViewOrderComponent implements OnInit {
     this.noteDialogVisible.set(false);
   }
 
+  onNoteDialogVisibleChange(next: boolean): void {
+    this.noteDialogVisible.set(next);
+  }
+
   onNoteTextChange(value: string | Event): void {
     const next =
       typeof value === "string"
@@ -217,6 +221,10 @@ export class ViewOrderComponent implements OnInit {
 
   cancelDelete(): void {
     this.confirmDeleteVisible.set(false);
+  }
+
+  onConfirmDeleteVisibleChange(next: boolean): void {
+    this.confirmDeleteVisible.set(next);
   }
 
   confirmDelete(): void {

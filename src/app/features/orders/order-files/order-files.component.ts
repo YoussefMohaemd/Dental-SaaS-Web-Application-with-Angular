@@ -1,10 +1,11 @@
 import { Component, computed, inject, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { ActivatedRoute } from "@angular/router";
-import { DialogModule } from "primeng/dialog";
 import { OrderDataService } from "@core/services/order-data.service";
 import { NavigationService } from "@core/services/navigation.service";
 import { ButtonComponent } from "@shared/components/button/button.component";
+import { EntityDialogComponent } from "@shared/components/entity-dialog/entity-dialog.component";
+import { IconActionButtonComponent } from "@shared/components/icon-action-button/icon-action-button.component";
 import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
 
 export type FileStatus = "uploaded" | "uploading" | "failed";
@@ -96,7 +97,13 @@ const MAX_FILE_BYTES = 100 * 1024 * 1024;
 @Component({
   selector: "app-order-files",
   standalone: true,
-  imports: [CommonModule, DialogModule, ButtonComponent, SafeHtmlPipe],
+  imports: [
+    CommonModule,
+    ButtonComponent,
+    EntityDialogComponent,
+    IconActionButtonComponent,
+    SafeHtmlPipe,
+  ],
   templateUrl: "./order-files.component.html",
   styleUrl: "./order-files.component.scss",
 })
@@ -219,6 +226,38 @@ export class OrderFilesComponent {
   closePreview(): void {
     this.previewVisible.set(false);
     this.previewFile.set(null);
+  }
+
+  onPreviewVisibleChange(next: boolean): void {
+    this.previewVisible.set(next);
+    if (!next) this.previewFile.set(null);
+  }
+
+  downloadFile(file: OrderFileEntry): void {
+    const content = `File: ${file.name}\nType: ${file.type}\nSize: ${file.size}\nUploaded by: ${file.uploadedBy}\nUploaded at: ${file.uploadedAt}\n`;
+    const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = file.name + ".txt";
+    anchor.click();
+    URL.revokeObjectURL(url);
+  }
+
+  backIconSvg(): string {
+    return '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>';
+  }
+
+  previewActionIconSvg(): string {
+    return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
+  }
+
+  downloadActionIconSvg(): string {
+    return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>';
+  }
+
+  deleteActionIconSvg(): string {
+    return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>';
   }
 
   downloadAll(): void {}

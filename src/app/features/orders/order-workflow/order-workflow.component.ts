@@ -6,6 +6,7 @@ import { NavigationService } from "@core/services/navigation.service";
 import { FormatUtils } from "@core/services/format-utils.service";
 import { OrderStatus } from "@core/models";
 import { ButtonComponent } from "@shared/components/button/button.component";
+import { IconActionButtonComponent } from "@shared/components/icon-action-button/icon-action-button.component";
 import { WorkflowTimelineComponent } from "@shared/components/workflow-timeline/workflow-timeline.component";
 import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
 
@@ -97,6 +98,7 @@ const STAGES: WorkflowStage[] = [
   imports: [
     CommonModule,
     ButtonComponent,
+    IconActionButtonComponent,
     WorkflowTimelineComponent,
     SafeHtmlPipe,
   ],
@@ -159,6 +161,8 @@ export class OrderWorkflowComponent {
 
   getIconSvg(name: string): string {
     const icons: Record<string, string> = {
+      "arrow-left":
+        '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>',
       "chevron-right":
         '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>',
     };

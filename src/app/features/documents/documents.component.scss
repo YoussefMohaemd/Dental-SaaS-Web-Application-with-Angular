@@ -3,7 +3,7 @@
   height: 100%;
 }
 
-::ng-deep .p-datatable-sm .p-datatable-thead > tr > th {
+:host ::ng-deep .enterprise-prime-table.p-datatable-sm .p-datatable-thead > tr > th {
   font-size: 11px;
   background: var(--color-muted);
   color: var(--color-muted-foreground);
@@ -11,7 +11,7 @@
   white-space: nowrap;
 }
 
-::ng-deep .p-datatable-sm .p-datatable-tbody > tr > td {
+:host ::ng-deep .enterprise-prime-table.p-datatable-sm .p-datatable-tbody > tr > td {
   font-size: 12px;
   padding: 0.625rem 1rem;
   border-bottom: 1px solid var(--color-border);

@@ -1,12 +1,14 @@
 import { Component, computed, inject, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { ActivatedRoute } from "@angular/router";
+import { TableModule } from "primeng/table";
 import { ClinicDataService } from "@core/services/clinic-data.service";
 import { DoctorDataService } from "@core/services/doctor-data.service";
 import { OrderDataService } from "@core/services/order-data.service";
 import { NavigationService } from "@core/services/navigation.service";
 import { FormatUtils } from "@core/services/format-utils.service";
 import { AvatarComponent } from "@shared/components/avatar/avatar.component";
+import { IconActionButtonComponent } from "@shared/components/icon-action-button/icon-action-button.component";
 import { statusDisplayLabel } from "@shared/utils/status-label";
 
 type ClinicTab = "overview" | "doctors" | "orders" | "activity";
@@ -14,7 +16,7 @@ type ClinicTab = "overview" | "doctors" | "orders" | "activity";
 @Component({
   selector: "app-clinic-details",
   standalone: true,
-  imports: [CommonModule, AvatarComponent],
+  imports: [CommonModule, TableModule, AvatarComponent, IconActionButtonComponent],
   templateUrl: "./clinic-details.component.html",
   styleUrl: "./clinic-details.component.scss",
 })
@@ -82,5 +84,9 @@ export class ClinicDetailsComponent {
 
   statusLabel(status: string): string {
     return statusDisplayLabel(status);
+  }
+
+  backIconSvg(): string {
+    return '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>';
   }
 }

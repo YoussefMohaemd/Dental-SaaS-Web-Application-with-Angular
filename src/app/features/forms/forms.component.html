@@ -12,16 +12,18 @@
         class="flex lg:block gap-1 overflow-x-auto lg:overflow-visible lg:sticky lg:top-4 lg:space-y-0.5"
       >
         @for (s of sections; track s.id) {
-          <button
-            type="button"
-            (click)="setActive(s.id)"
-            class="flex w-auto lg:w-full shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-medium whitespace-nowrap transition-colors"
-            [class]="
-              active() === s.id
-                ? 'bg-primary/10 text-primary'
-                : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+          <app-button
+            variant="ghost"
+            size="sm"
+            (onClick)="setActive(s.id)"
+            [buttonClass]="
+              'flex w-auto lg:!w-full shrink-0 items-center gap-2 !rounded-lg !px-3 !py-2 !text-left !text-xs !font-medium whitespace-nowrap ' +
+              (active() === s.id
+                ? 'bg-primary/10 !bg-primary/10 text-primary !text-primary'
+                : 'text-muted-foreground !text-muted-foreground hover:bg-muted hover:!bg-muted hover:text-foreground')
             "
-            [attr.aria-pressed]="active() === s.id"
+            [ariaPressed]="active() === s.id"
+            [ariaLabel]="s.label"
           >
             <span
               [innerHTML]="getIconSvg(s.icon) | safeHtml"
@@ -29,7 +31,7 @@
               aria-hidden="true"
             ></span>
             {{ s.label }}
-          </button>
+          </app-button>
         }
       </div>
     </div>
@@ -91,18 +93,21 @@
                 >
                 <div class="grid grid-cols-1 gap-2 sm:grid-cols-3">
                   @for (g of ["Male", "Female", "Other"]; track g) {
-                    <button
-                      type="button"
-                      (click)="gender.set(g)"
-                      class="flex-1 rounded-lg border py-2 text-xs font-medium transition-colors"
-                      [class]="
-                        gender() === g
-                          ? 'border-primary bg-primary/5 text-primary'
-                          : 'border-border text-muted-foreground hover:bg-muted'
+                    <app-button
+                      variant="outline"
+                      size="sm"
+                      (onClick)="gender.set(g)"
+                      [buttonClass]="
+                        'w-full !rounded-lg !py-2 !text-xs ' +
+                        (gender() === g
+                          ? 'border-primary !border-primary bg-primary/5 !bg-primary/5 text-primary !text-primary'
+                          : 'border-border !border-border text-muted-foreground !text-muted-foreground hover:bg-muted hover:!bg-muted')
                       "
+                      [ariaPressed]="gender() === g"
+                      [ariaLabel]="'Gender ' + g"
                     >
                       {{ g }}
-                    </button>
+                    </app-button>
                   }
                 </div>
               </div>
@@ -167,18 +172,21 @@
                   class="flex overflow-hidden rounded-lg border border-border"
                 >
                   @for (a of ["Upper", "Lower", "Both"]; track a) {
-                    <button
-                      type="button"
-                      (click)="arch.set(a)"
-                      class="flex-1 py-2 text-xs font-medium transition-colors"
-                      [class]="
-                        arch() === a
-                          ? 'bg-primary text-white'
-                          : 'text-muted-foreground hover:bg-muted'
+                    <app-button
+                      variant="ghost"
+                      size="sm"
+                      (onClick)="arch.set(a)"
+                      [buttonClass]="
+                        'flex-1 !rounded-none !border-0 !py-2 !text-xs ' +
+                        (arch() === a
+                          ? 'bg-primary !bg-primary text-white !text-white'
+                          : 'text-muted-foreground !text-muted-foreground hover:bg-muted hover:!bg-muted')
                       "
+                      [ariaPressed]="arch() === a"
+                      [ariaLabel]="'Arch ' + a"
                     >
                       {{ a }}
-                    </button>
+                    </app-button>
                   }
                 </div>
               </div>
@@ -216,18 +224,21 @@
               >
               <div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
                 @for (m of materials; track m) {
-                  <button
-                    type="button"
-                    (click)="material.set(m)"
-                    class="rounded-lg border p-2.5 text-left text-xs font-medium transition-colors"
-                    [class]="
-                      material() === m
-                        ? 'border-primary bg-primary/5 text-primary'
-                        : 'border-border text-muted-foreground hover:bg-muted'
+                  <app-button
+                    variant="outline"
+                    size="sm"
+                    (onClick)="material.set(m)"
+                    [buttonClass]="
+                      'w-full !justify-start !rounded-lg !p-2.5 !text-left !text-xs ' +
+                      (material() === m
+                        ? 'border-primary !border-primary bg-primary/5 !bg-primary/5 text-primary !text-primary'
+                        : 'border-border !border-border text-muted-foreground !text-muted-foreground hover:bg-muted hover:!bg-muted')
                     "
+                    [ariaPressed]="material() === m"
+                    [ariaLabel]="'Material ' + m"
                   >
                     {{ m }}
-                  </button>
+                  </app-button>
                 }
               </div>
             </div>
@@ -388,22 +399,12 @@
                     [type]="showPassword() ? 'text' : 'password'"
                     inputClass="w-full rounded-lg border border-border bg-card px-3 py-2 pr-10 text-sm"
                     placeholder="Set temporary password"></app-input>
-                  <button
-                    type="button"
-                    (click)="toggleShowPassword()"
-                    class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                    [attr.aria-label]="
-                      showPassword() ? 'Hide password' : 'Show password'
-                    "
-                  >
-                    <span
-                      [innerHTML]="
-                        getIconSvg(showPassword() ? 'eye-off' : 'eye')
-                          | safeHtml
-                      "
-                      aria-hidden="true"
-                    ></span>
-                  </button>
+                  <app-icon-action-button
+                    [iconSvg]="getIconSvg(showPassword() ? 'eye-off' : 'eye')"
+                    [ariaLabel]="showPassword() ? 'Hide password' : 'Show password'"
+                    customClass="!absolute !right-2.5 !top-1/2 !-translate-y-1/2 !rounded-md !border-transparent !bg-transparent !p-1 !text-muted-foreground"
+                    (actionClick)="toggleShowPassword()"
+                  ></app-icon-action-button>
                 </div>
               </div>
             </div>
@@ -594,14 +595,17 @@
               >
               <div class="flex flex-wrap gap-2">
                 @for (s of severities; track s) {
-                  <button
-                    type="button"
-                    (click)="severity.set(s)"
-                    class="rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors"
-                    [class]="severityClasses(s)"
+                  <app-button
+                    variant="outline"
+                    size="sm"
+                    (onClick)="severity.set(s)"
+                    class="inline-flex"
+                    [buttonClass]="'!rounded-lg !px-3 !py-1.5 !text-xs ' + severityClasses(s)"
+                    [ariaPressed]="severity() === s"
+                    [ariaLabel]="'Severity ' + s"
                   >
                     {{ s }}
-                  </button>
+                  </app-button>
                 }
               </div>
             </div>
@@ -759,26 +763,23 @@
                     <span class="text-[9px] font-semibold text-success"
                       >Uploaded</span
                     >
-                    <button
-                      type="button"
-                      (click)="removeScanFile(f)"
-                      class="p-0.5 text-muted-foreground hover:text-danger"
-                      [attr.aria-label]="'Remove ' + f"
-                    >
-                      <span
-                        [innerHTML]="getIconSvg('x') | safeHtml"
-                        aria-hidden="true"
-                      ></span>
-                    </button>
+                    <app-icon-action-button
+                      [iconSvg]="getIconSvg('x')"
+                      [ariaLabel]="'Remove ' + f"
+                      customClass="!rounded-md !border-transparent !bg-transparent !p-0.5 !text-muted-foreground hover:!text-danger"
+                      (actionClick)="removeScanFile(f)"
+                    ></app-icon-action-button>
                   </div>
                 }
               </div>
-              <button
-                type="button"
-                class="mt-2 w-full rounded-lg border-2 border-dashed border-border py-3 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary"
+              <app-button
+                variant="ghost"
+                size="md"
+                buttonClass="mt-2 w-full !rounded-lg !border-2 !border-dashed !border-border !bg-transparent py-3 text-xs text-muted-foreground transition-colors hover:!border-primary/40 hover:!text-primary"
+                ariaLabel="Add more scan files"
               >
                 + Add more files
-              </button>
+              </app-button>
             </div>
           </div>
         </div>

@@ -1,5 +1,6 @@
 import { Component, computed, inject, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
+import { TableModule } from "primeng/table";
 import { ScanCenterDataService } from "@core/services/scan-center-data.service";
 import { OrderDataService } from "@core/services/order-data.service";
 import { NavigationService } from "@core/services/navigation.service";
@@ -18,7 +19,7 @@ interface ScanOrderRow extends Order {
 @Component({
   selector: "app-scan-center",
   standalone: true,
-  imports: [CommonModule, InputComponent, SafeHtmlPipe],
+  imports: [CommonModule, TableModule, InputComponent, SafeHtmlPipe],
   templateUrl: "./scan-center.component.html",
   styleUrl: "./scan-center.component.scss",
 })

@@ -547,13 +547,13 @@
       </div>
     </div>
 
-    <p-dialog
+    <app-entity-dialog
       [visible]="noteDialogVisible()"
-      (onHide)="closeNoteDialog()"
-      [modal]="true"
+      (visibleChange)="onNoteDialogVisibleChange($event)"
+      (closed)="closeNoteDialog()"
       [dismissableMask]="true"
-      [style]="{ width: '26rem' }"
-      header="Add note"
+      width="26rem"
+      title="Add note"
     >
       <label
         class="mb-1 block text-xs font-semibold text-foreground"
@@ -573,7 +573,7 @@
           Note saved ✓
         </p>
       }
-      <div class="mt-4 flex justify-end gap-2">
+      <div dialog-actions>
         <app-button variant="ghost" size="sm" (onClick)="closeNoteDialog()"
           >Cancel</app-button
         >
@@ -587,21 +587,21 @@
           {{ noteSaving() ? "Saving…" : "Save Note" }}
         </app-button>
       </div>
-    </p-dialog>
+    </app-entity-dialog>
 
-    <p-dialog
+    <app-entity-dialog
       [visible]="confirmDeleteVisible()"
-      (onHide)="cancelDelete()"
-      [modal]="true"
+      (visibleChange)="onConfirmDeleteVisibleChange($event)"
+      (closed)="cancelDelete()"
       [dismissableMask]="true"
-      [style]="{ width: '24rem' }"
-      header="Delete order?"
+      width="24rem"
+      title="Delete order?"
     >
       <p class="text-sm text-muted-foreground">
         This will permanently delete {{ o.orderNumber }}. This action cannot be
         undone.
       </p>
-      <div class="mt-4 flex justify-end gap-2">
+      <div dialog-actions>
         <app-button variant="ghost" size="sm" (onClick)="cancelDelete()"
           >Cancel</app-button
         >
@@ -609,7 +609,7 @@
           >Delete</app-button
         >
       </div>
-    </p-dialog>
+    </app-entity-dialog>
   } @else {
     <div
       class="flex h-64 flex-col items-center justify-center rounded-xl border border-border bg-card text-center"

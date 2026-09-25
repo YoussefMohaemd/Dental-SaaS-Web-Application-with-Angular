@@ -104,27 +104,31 @@
           class="absolute right-1.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
         ></span>
       </div>
-      <button
-        type="button"
-        (click)="toggleAdvancedFilters()"
-        class="flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs transition-colors"
-        [class]="
-          advancedFilters()
-            ? 'border-primary bg-primary/5 text-primary'
-            : 'border-border text-muted-foreground hover:bg-muted'
+      <app-button
+        variant="outline"
+        size="sm"
+        [buttonClass]="
+          'flex items-center gap-1.5 !rounded-lg !px-2.5 !py-1.5 !text-xs ' +
+          (advancedFilters()
+            ? 'border-primary !border-primary bg-primary/5 !bg-primary/5 text-primary !text-primary'
+            : 'border-border !border-border text-muted-foreground !text-muted-foreground hover:bg-muted hover:!bg-muted')
         "
-        [attr.aria-expanded]="advancedFilters()"
+        [ariaExpanded]="advancedFilters()"
+        ariaLabel="Toggle advanced filters"
+        (onClick)="toggleAdvancedFilters()"
       >
         <span [innerHTML]="getIconSvg('sliders') | safeHtml"></span> Advanced
-      </button>
+      </app-button>
       @if (activeFilters().length > 0) {
-        <button
-          type="button"
-          (click)="clearAllFilters()"
-          class="flex items-center gap-1 text-xs text-muted-foreground hover:text-danger transition-colors"
+        <app-button
+          variant="ghost"
+          size="sm"
+          buttonClass="!min-h-0 !rounded-md !p-0 text-xs text-muted-foreground hover:!text-danger"
+          ariaLabel="Clear all filters"
+          (onClick)="clearAllFilters()"
         >
           <span [innerHTML]="getIconSvg('x') | safeHtml"></span> Clear filters
-        </button>
+        </app-button>
       }
       <div class="hidden lg:block flex-1"></div>
       @if (selectedIds().size > 0) {
@@ -134,18 +138,22 @@
           <span class="text-xs font-semibold text-primary"
             >{{ selectedIds().size }} selected</span
           >
-          <button
-            type="button"
-            class="text-xs text-muted-foreground hover:text-foreground"
+          <app-button
+            variant="ghost"
+            size="sm"
+            buttonClass="!min-h-0 !rounded-md !px-1.5 !py-0 text-xs text-muted-foreground"
+            ariaLabel="Archive selected orders"
           >
             Archive
-          </button>
-          <button
-            type="button"
-            class="text-xs text-danger hover:text-danger/80"
+          </app-button>
+          <app-button
+            variant="ghost"
+            size="sm"
+            buttonClass="!min-h-0 !rounded-md !px-1.5 !py-0 text-xs text-danger hover:!text-danger/80"
+            ariaLabel="Delete selected orders"
           >
             Delete
-          </button>
+          </app-button>
         </div>
       }
       <div class="relative flex w-full sm:w-auto items-center justify-end gap-2">
@@ -184,20 +192,19 @@
                 ? orderStatusLabel($any(filter.label))
                 : filter.label
             }}
-            <button
-              type="button"
-              (click)="removeFilter(filter.type, filter.label)"
-              class="hover:text-danger transition-colors"
-              [attr.aria-label]="
+            <app-icon-action-button
+              [iconSvg]="getIconSvg('x')"
+              [ariaLabel]="
                 'Remove ' +
                 (filter.type === 'status'
                   ? orderStatusLabel($any(filter.label))
                   : filter.label) +
                 ' filter'
               "
-            >
-              <span [innerHTML]="getIconSvg('x') | safeHtml"></span>
-            </button>
+              size="icon-sm"
+              customClass="!h-4 !min-h-0 !w-4 !min-w-0 !rounded-full !border-transparent !bg-transparent !p-0 hover:!text-danger"
+              (actionClick)="removeFilter(filter.type, filter.label)"
+            ></app-icon-action-button>
           </span>
         }
       </div>
@@ -277,13 +284,15 @@
             <p class="mb-4 text-sm text-muted-foreground">
               Try adjusting your search or filters.
             </p>
-            <button
-              type="button"
-              (click)="clearAllFilters()"
-              class="text-sm text-primary hover:underline"
+            <app-button
+              variant="ghost"
+              size="sm"
+              buttonClass="!min-h-0 !p-0 text-sm text-primary hover:underline"
+              ariaLabel="Clear all filters"
+              (onClick)="clearAllFilters()"
             >
               Clear all filters
-            </button>
+            </app-button>
           </div>
         } @else {
           <div class="orders-table-scroll">

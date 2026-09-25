@@ -10,6 +10,7 @@ import {
 import { CaseDataService } from "@core/services/case-data.service";
 import { ChangeRequestDataService } from "@core/services/change-request-data.service";
 import { DashboardDataService } from "@core/services/dashboard-data.service";
+import { TableModule } from "primeng/table";
 import { FormatUtils } from "@core/services/format-utils.service";
 import { NavigationService } from "@core/services/navigation.service";
 import { NotificationDataService } from "@core/services/notification-data.service";
@@ -67,6 +68,7 @@ const FALLBACK_WORKFLOW: WorkflowDataPoint[] = [
   standalone: true,
   imports: [
     CommonModule,
+    TableModule,
     StatusBadgeComponent,
     PriorityBadgeComponent,
     LoadingStateComponent,

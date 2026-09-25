@@ -69,6 +69,14 @@ Use custom SCSS only for:
 - PrimeNG/Taiga style integration and overrides
 - Component-specific logic that should not be utility-driven
 
+Approved native exceptions (must remain explicit and limited):
+
+- Sortable table-header controls that carry custom `aria-sort` semantics and column-specific interactions
+- `role="switch"` controls requiring `aria-checked` behavior not yet covered by a shared wrapper
+- Link-like row text actions inside dense data tables where wrapper sizing would alter visual alignment
+- File upload/dropzone trigger surfaces using keyboard-enabled `role="button"` containers
+- CDK menu trigger/content patterns where replacing with visual wrappers would alter overlay/focus behavior
+
 ## Duplication Rules
 
 Avoid maintaining multiple competing systems for the same responsibility:

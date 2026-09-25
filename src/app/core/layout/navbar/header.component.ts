@@ -6,6 +6,7 @@ import { ThemeService } from "../../../core/services/theme.service";
 import { NotificationDataService } from "../../../core/services/notification-data.service";
 import { SearchInputComponent } from "../../../shared/components/search-input/search-input.component";
 import { AvatarComponent } from "../../../shared/components/avatar/avatar.component";
+import { IconActionButtonComponent } from "@shared/components/icon-action-button/icon-action-button.component";
 import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
 import { lucideSvg } from "../../../shared/icons/lucide-icons";
 
@@ -17,6 +18,7 @@ import { lucideSvg } from "../../../shared/icons/lucide-icons";
     RouterModule,
     SearchInputComponent,
     AvatarComponent,
+    IconActionButtonComponent,
     SafeHtmlPipe,
   ],
   templateUrl: "./header.component.html",

@@ -16,6 +16,7 @@ export class EntityDialogComponent {
   readonly subtitle = input<string>("");
   readonly width = input<string>("32rem");
   readonly dismissableMask = input<boolean>(true);
+  readonly showFooter = input<boolean>(true);
 
   readonly visibleChange = output<boolean>();
   readonly closed = output<void>();

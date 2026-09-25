@@ -1,7 +1,8 @@
 import { Component, computed, inject, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
-import { DialogModule } from "primeng/dialog";
+import { TableModule } from "primeng/table";
 import { ButtonComponent } from "@shared/components/button/button.component";
+import { EntityDialogComponent } from "@shared/components/entity-dialog/entity-dialog.component";
 import { InputComponent } from "@shared/components/input/input.component";
 import { TableFeedbackComponent } from "@shared/components/table-feedback/table-feedback.component";
 import { IconActionButtonComponent } from "@shared/components/icon-action-button/icon-action-button.component";
@@ -20,8 +21,9 @@ export type { DocumentCategory, LabDocument };
   standalone: true,
   imports: [
     CommonModule,
-    DialogModule,
+    TableModule,
     ButtonComponent,
+    EntityDialogComponent,
     InputComponent,
     TableFeedbackComponent,
     IconActionButtonComponent,
@@ -125,6 +127,11 @@ export class DocumentsComponent {
   closePreview(): void {
     this.previewVisible.set(false);
     this.preview.set(null);
+  }
+
+  onPreviewVisibleChange(next: boolean): void {
+    this.previewVisible.set(next);
+    if (!next) this.preview.set(null);
   }
 
   typeIconSvg(documentType: string): string {

@@ -8,6 +8,7 @@ import { DoctorDataService } from "@core/services/doctor-data.service";
 import { ClinicDataService } from "@core/services/clinic-data.service";
 import { NavigationService } from "@core/services/navigation.service";
 import { ButtonComponent } from "@shared/components/button/button.component";
+import { IconActionButtonComponent } from "@shared/components/icon-action-button/icon-action-button.component";
 import { InputComponent } from "@shared/components/input/input.component";
 import { SelectComponent } from "@shared/components/select/select.component";
 import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
@@ -20,6 +21,7 @@ import { statusDisplayLabel } from "@shared/utils/status-label";
     CommonModule,
     ReactiveFormsModule,
     ButtonComponent,
+    IconActionButtonComponent,
     InputComponent,
     SelectComponent,
     SafeHtmlPipe,
@@ -193,6 +195,8 @@ export class EditOrderComponent {
 
   getIconSvg(name: string): string {
     const icons: Record<string, string> = {
+      "arrow-left":
+        '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>',
       x: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>',
       save: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>',
     };
