@@ -1,7 +1,14 @@
 <div class="flex items-center justify-center" [style.height]="height()">
-  <div *ngIf="type() === 'spinner'" class="loading-spinner w-8 h-8 border-3 border-border border-t-primary rounded-full animate-spin"></div>
+  <div
+    *ngIf="type() === 'spinner'"
+    class="loading-spinner w-8 h-8 border-3 border-border border-t-primary rounded-full animate-spin"
+  ></div>
   <div *ngIf="type() === 'bars'" class="flex gap-1">
-    <div *ngFor="let bar of bars" class="w-1 h-8 bg-muted rounded-full animate-bounce" [style.animation-delay]="bar.delay"></div>
+    <div
+      *ngFor="let bar of bars"
+      class="w-1 h-8 bg-muted rounded-full animate-bounce"
+      [style.animation-delay]="bar.delay"
+    ></div>
   </div>
   <div *ngIf="type() === 'skeleton'" [class]="skeletonClass()"></div>
 </div>

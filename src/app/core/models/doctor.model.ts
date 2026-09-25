@@ -1,4 +1,4 @@
-export type DoctorStatus = 'Active' | 'Inactive';
+export type DoctorStatus = "Active" | "Inactive";
 
 export interface Doctor {
   id: string;
@@ -19,7 +19,7 @@ export interface DoctorFilters {
   statusFilter?: DoctorStatus;
   clinicId?: string;
   sortColumn?: keyof Doctor;
-  sortDirection?: 'asc' | 'desc';
+  sortDirection?: "asc" | "desc";
   page?: number;
   pageSize?: number;
 }

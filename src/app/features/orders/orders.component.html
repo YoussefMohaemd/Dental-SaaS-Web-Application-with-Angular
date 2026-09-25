@@ -1,8 +1,12 @@
 <div class="flex h-full flex-col">
-  <div class="flex shrink-0 items-center gap-3 border-b border-border bg-card px-6 py-4">
+  <div
+    class="flex shrink-0 items-center gap-3 border-b border-border bg-card px-6 py-4"
+  >
     <div class="min-w-0 flex-1">
       <h1 class="font-display text-lg font-bold text-foreground">Orders</h1>
-      <p class="text-xs text-muted-foreground">{{ filtered().length }} orders total</p>
+      <p class="text-xs text-muted-foreground">
+        {{ filtered().length }} orders total
+      </p>
     </div>
     <app-button variant="primary" size="md" (onClick)="createOrder()">
       <span class="flex items-center gap-2">
@@ -10,19 +14,39 @@
         New Order
       </span>
     </app-button>
-    <button type="button" (click)="exportCsv()" class="rounded-lg border border-border p-2 text-muted-foreground hover:bg-muted transition-colors" aria-label="Export orders" title="Export">
+    <button
+      type="button"
+      (click)="exportCsv()"
+      class="rounded-lg border border-border p-2 text-muted-foreground hover:bg-muted transition-colors"
+      aria-label="Export orders"
+      title="Export"
+    >
       <span [innerHTML]="getIconSvg('download') | safeHtml"></span>
     </button>
-    <button type="button" (click)="simulateRefresh()" class="rounded-lg border border-border p-2 text-muted-foreground hover:bg-muted transition-colors" aria-label="Refresh orders" title="Refresh">
+    <button
+      type="button"
+      (click)="simulateRefresh()"
+      class="rounded-lg border border-border p-2 text-muted-foreground hover:bg-muted transition-colors"
+      aria-label="Refresh orders"
+      title="Refresh"
+    >
       <span [innerHTML]="getIconSvg('refresh') | safeHtml"></span>
     </button>
-    <div class="flex overflow-hidden rounded-lg border border-border" role="group" aria-label="Preview table states">
-      @for (state of ['normal', 'loading', 'empty', 'error']; track state) {
+    <div
+      class="flex overflow-hidden rounded-lg border border-border"
+      role="group"
+      aria-label="Preview table states"
+    >
+      @for (state of ["normal", "loading", "empty", "error"]; track state) {
         <button
           type="button"
           (click)="setViewState($any(state))"
           class="px-2 py-1.5 text-[10px] font-medium transition-colors"
-          [class]="viewState() === state ? 'bg-primary text-white' : 'text-muted-foreground hover:bg-muted'"
+          [class]="
+            viewState() === state
+              ? 'bg-primary text-white'
+              : 'text-muted-foreground hover:bg-muted'
+          "
           [attr.aria-pressed]="viewState() === state"
         >
           {{ state }}
@@ -46,7 +70,10 @@
       <div class="relative">
         <select
           class="cursor-pointer appearance-none rounded-lg border border-border bg-card pl-2 pr-6 py-1.5 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
-          (change)="addStatusFilter($any($event.target).value); $any($event.target).value = ''"
+          (change)="
+            addStatusFilter($any($event.target).value);
+            $any($event.target).value = ''
+          "
           aria-label="Add status filter"
         >
           <option value="">Status</option>
@@ -54,7 +81,10 @@
             <option [value]="status">{{ orderStatusLabel(status) }}</option>
           }
         </select>
-        <span [innerHTML]="getIconSvg('chevron-down') | safeHtml" class="absolute right-1.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"></span>
+        <span
+          [innerHTML]="getIconSvg('chevron-down') | safeHtml"
+          class="absolute right-1.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+        ></span>
       </div>
       <div class="relative">
         <select
@@ -68,32 +98,61 @@
             <option [value]="priority">{{ priority }}</option>
           }
         </select>
-        <span [innerHTML]="getIconSvg('chevron-down') | safeHtml" class="absolute right-1.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"></span>
+        <span
+          [innerHTML]="getIconSvg('chevron-down') | safeHtml"
+          class="absolute right-1.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+        ></span>
       </div>
       <button
         type="button"
         (click)="toggleAdvancedFilters()"
         class="flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs transition-colors"
-        [class]="advancedFilters() ? 'border-primary bg-primary/5 text-primary' : 'border-border text-muted-foreground hover:bg-muted'"
+        [class]="
+          advancedFilters()
+            ? 'border-primary bg-primary/5 text-primary'
+            : 'border-border text-muted-foreground hover:bg-muted'
+        "
         [attr.aria-expanded]="advancedFilters()"
       >
         <span [innerHTML]="getIconSvg('sliders') | safeHtml"></span> Advanced
       </button>
       @if (activeFilters().length > 0) {
-        <button type="button" (click)="clearAllFilters()" class="flex items-center gap-1 text-xs text-muted-foreground hover:text-danger transition-colors">
+        <button
+          type="button"
+          (click)="clearAllFilters()"
+          class="flex items-center gap-1 text-xs text-muted-foreground hover:text-danger transition-colors"
+        >
           <span [innerHTML]="getIconSvg('x') | safeHtml"></span> Clear filters
         </button>
       }
       <div class="flex-1"></div>
       @if (selectedIds().size > 0) {
-        <div class="flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/10 px-3 py-1.5">
-          <span class="text-xs font-semibold text-primary">{{ selectedIds().size }} selected</span>
-          <button type="button" class="text-xs text-muted-foreground hover:text-foreground">Archive</button>
-          <button type="button" class="text-xs text-danger hover:text-danger/80">Delete</button>
+        <div
+          class="flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/10 px-3 py-1.5"
+        >
+          <span class="text-xs font-semibold text-primary"
+            >{{ selectedIds().size }} selected</span
+          >
+          <button
+            type="button"
+            class="text-xs text-muted-foreground hover:text-foreground"
+          >
+            Archive
+          </button>
+          <button
+            type="button"
+            class="text-xs text-danger hover:text-danger/80"
+          >
+            Delete
+          </button>
         </div>
       }
       <div class="relative flex items-center gap-2">
-        <label for="orders-page-size" class="text-xs text-muted-foreground whitespace-nowrap">Rows per page</label>
+        <label
+          for="orders-page-size"
+          class="text-xs text-muted-foreground whitespace-nowrap"
+          >Rows per page</label
+        >
         <select
           id="orders-page-size"
           class="cursor-pointer appearance-none rounded-lg border border-border bg-card pl-2 pr-6 py-1.5 text-xs text-foreground focus:outline-none"
@@ -105,16 +164,39 @@
             <option [value]="size">{{ size }} / page</option>
           }
         </select>
-        <span [innerHTML]="getIconSvg('chevron-down') | safeHtml" class="absolute right-1.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"></span>
+        <span
+          [innerHTML]="getIconSvg('chevron-down') | safeHtml"
+          class="absolute right-1.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+        ></span>
       </div>
     </div>
     @if (activeFilters().length > 0) {
       <div class="flex flex-wrap items-center gap-2">
         <span class="text-xs text-muted-foreground">Active filters:</span>
-        @for (filter of activeFilters(); track filter.type + '-' + filter.label) {
-          <span class="flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-            {{ filter.type === 'status' ? orderStatusLabel($any(filter.label)) : filter.label }}
-            <button type="button" (click)="removeFilter(filter.type, filter.label)" class="hover:text-danger transition-colors" [attr.aria-label]="'Remove ' + (filter.type === 'status' ? orderStatusLabel($any(filter.label)) : filter.label) + ' filter'">
+        @for (
+          filter of activeFilters();
+          track filter.type + "-" + filter.label
+        ) {
+          <span
+            class="flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"
+          >
+            {{
+              filter.type === "status"
+                ? orderStatusLabel($any(filter.label))
+                : filter.label
+            }}
+            <button
+              type="button"
+              (click)="removeFilter(filter.type, filter.label)"
+              class="hover:text-danger transition-colors"
+              [attr.aria-label]="
+                'Remove ' +
+                (filter.type === 'status'
+                  ? orderStatusLabel($any(filter.label))
+                  : filter.label) +
+                ' filter'
+              "
+            >
               <span [innerHTML]="getIconSvg('x') | safeHtml"></span>
             </button>
           </span>
@@ -122,26 +204,36 @@
       </div>
     }
     @if (advancedFilters()) {
-      <p class="text-xs text-muted-foreground" role="status">Advanced filters: combine status chips with priority and search. Sorting is available on every sortable column header.</p>
+      <p class="text-xs text-muted-foreground" role="status">
+        Advanced filters: combine status chips with priority and search. Sorting
+        is available on every sortable column header.
+      </p>
     }
   </div>
 
   <div class="flex-1 overflow-auto">
     @switch (viewState()) {
-      @case ('loading') {
+      @case ("loading") {
         <div class="space-y-2 p-6" aria-label="Loading orders" role="status">
-          @for (row of [1,2,3,4,5,6,7,8,9,10]; track row) {
+          @for (row of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; track row) {
             <div class="skeleton h-10 animate-pulse rounded-lg bg-muted"></div>
           }
         </div>
       }
-      @case ('empty') {
+      @case ("empty") {
         <div class="flex h-64 flex-col items-center justify-center text-center">
-          <div class="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-muted text-muted-foreground" aria-hidden="true">
+          <div
+            class="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-muted text-muted-foreground"
+            aria-hidden="true"
+          >
             <span [innerHTML]="getIconSvg('file-text') | safeHtml"></span>
           </div>
-          <h3 class="font-display font-semibold text-foreground">No orders yet</h3>
-          <p class="mb-4 text-sm text-muted-foreground">Start by creating your first dental order.</p>
+          <h3 class="font-display font-semibold text-foreground">
+            No orders yet
+          </h3>
+          <p class="mb-4 text-sm text-muted-foreground">
+            Start by creating your first dental order.
+          </p>
           <app-button variant="primary" size="md" (onClick)="createOrder()">
             <span class="flex items-center gap-2">
               <span [innerHTML]="getIconSvg('plus') | safeHtml"></span>
@@ -150,25 +242,49 @@
           </app-button>
         </div>
       }
-      @case ('error') {
+      @case ("error") {
         <div class="flex h-64 flex-col items-center justify-center text-center">
-          <div class="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-red-50 text-danger" aria-hidden="true">
+          <div
+            class="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-red-50 text-danger"
+            aria-hidden="true"
+          >
             <span [innerHTML]="getIconSvg('refresh') | safeHtml"></span>
           </div>
-          <h3 class="font-display font-semibold text-foreground">Failed to load orders</h3>
-          <p class="mb-4 text-sm text-muted-foreground">An error occurred while loading the order list.</p>
-          <app-button variant="primary" size="md" (onClick)="retryLoad()">Try Again</app-button>
+          <h3 class="font-display font-semibold text-foreground">
+            Failed to load orders
+          </h3>
+          <p class="mb-4 text-sm text-muted-foreground">
+            An error occurred while loading the order list.
+          </p>
+          <app-button variant="primary" size="md" (onClick)="retryLoad()"
+            >Try Again</app-button
+          >
         </div>
       }
       @default {
         @if (filtered().length === 0) {
-          <div class="flex h-64 flex-col items-center justify-center text-center">
-            <div class="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-muted text-muted-foreground" aria-hidden="true">
+          <div
+            class="flex h-64 flex-col items-center justify-center text-center"
+          >
+            <div
+              class="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-muted text-muted-foreground"
+              aria-hidden="true"
+            >
               <span [innerHTML]="getIconSvg('search') | safeHtml"></span>
             </div>
-            <h3 class="font-display font-semibold text-foreground">No matching orders</h3>
-            <p class="mb-4 text-sm text-muted-foreground">Try adjusting your search or filters.</p>
-            <button type="button" (click)="clearAllFilters()" class="text-sm text-primary hover:underline">Clear all filters</button>
+            <h3 class="font-display font-semibold text-foreground">
+              No matching orders
+            </h3>
+            <p class="mb-4 text-sm text-muted-foreground">
+              Try adjusting your search or filters.
+            </p>
+            <button
+              type="button"
+              (click)="clearAllFilters()"
+              class="text-sm text-primary hover:underline"
+            >
+              Clear all filters
+            </button>
           </div>
         } @else {
           <p-treetable
@@ -179,68 +295,388 @@
           >
             <ng-template #header>
               <tr>
-                <th scope="col" style="width: 3rem; min-width: 3rem;">
-                  <button type="button" (click)="toggleSelectAll()" class="text-muted-foreground hover:text-foreground transition-colors" aria-label="Select all orders on page" [attr.aria-pressed]="allPageSelected()">
-                    <span [innerHTML]="getIconSvg(allPageSelected() ? 'check-square' : 'square') | safeHtml" [class]="allPageSelected() ? 'text-primary' : ''"></span>
+                <th scope="col" style="width: 3rem; min-width: 3rem">
+                  <button
+                    type="button"
+                    (click)="toggleSelectAll()"
+                    class="text-muted-foreground hover:text-foreground transition-colors"
+                    aria-label="Select all orders on page"
+                    [attr.aria-pressed]="allPageSelected()"
+                  >
+                    <span
+                      [innerHTML]="
+                        getIconSvg(
+                          allPageSelected() ? 'check-square' : 'square'
+                        ) | safeHtml
+                      "
+                      [class]="allPageSelected() ? 'text-primary' : ''"
+                    ></span>
                   </button>
                 </th>
-                
-                <th scope="col" class="treetable-expander-head" style="width: 2.75rem; min-width: 2.75rem;" aria-label="Expand or collapse sub-orders">
+
+                <th
+                  scope="col"
+                  class="treetable-expander-head"
+                  style="width: 2.75rem; min-width: 2.75rem"
+                  aria-label="Expand or collapse sub-orders"
+                >
                   <span class="treetable-expander-head-icon" aria-hidden="true">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="m7 15 5 5 5-5" />
+                      <path d="m7 9 5-5 5 5" />
+                    </svg>
                   </span>
                 </th>
-                <th scope="col" style="min-width: 18rem;" [attr.aria-sort]="sortAriaSort('orderNumber')"><button type="button" (click)="toggleSort('orderNumber')" [attr.aria-label]="sortAriaLabel('orderNumber')">Order # <span aria-hidden="true" class="sort-icon" [innerHTML]="sortIconSvg('orderNumber') | safeHtml"></span></button></th>
-                <th scope="col" style="min-width: 12rem;" [attr.aria-sort]="sortAriaSort('patientName')"><button type="button" (click)="toggleSort('patientName')" [attr.aria-label]="sortAriaLabel('patientName')">Patient <span aria-hidden="true" class="sort-icon" [innerHTML]="sortIconSvg('patientName') | safeHtml"></span></button></th>
-                <th scope="col" style="min-width: 12rem;" [attr.aria-sort]="sortAriaSort('doctorName')"><button type="button" (click)="toggleSort('doctorName')" [attr.aria-label]="sortAriaLabel('doctorName')">Doctor <span aria-hidden="true" class="sort-icon" [innerHTML]="sortIconSvg('doctorName') | safeHtml"></span></button></th>
-                <th scope="col" style="min-width: 11rem;" [attr.aria-sort]="sortAriaSort('scanCenterName')"><button type="button" (click)="toggleSort('scanCenterName')" [attr.aria-label]="sortAriaLabel('scanCenterName')">Scan Center <span aria-hidden="true" class="sort-icon" [innerHTML]="sortIconSvg('scanCenterName') | safeHtml"></span></button></th>
-                <th scope="col" style="min-width: 9rem;" [attr.aria-sort]="sortAriaSort('billTo')"><button type="button" (click)="toggleSort('billTo')" [attr.aria-label]="sortAriaLabel('billTo')">Bill To <span aria-hidden="true" class="sort-icon" [innerHTML]="sortIconSvg('billTo') | safeHtml"></span></button></th>
-                <th scope="col" style="min-width: 7rem;" [attr.aria-sort]="sortAriaSort('arch')"><button type="button" (click)="toggleSort('arch')" [attr.aria-label]="sortAriaLabel('arch')">Max/Mand <span aria-hidden="true" class="sort-icon" [innerHTML]="sortIconSvg('arch') | safeHtml"></span></button></th>
-                <th scope="col" style="min-width: 11rem;" [attr.aria-sort]="sortAriaSort('restoration')"><button type="button" (click)="toggleSort('restoration')" [attr.aria-label]="sortAriaLabel('restoration')">Format / Rest. <span aria-hidden="true" class="sort-icon" [innerHTML]="sortIconSvg('restoration') | safeHtml"></span></button></th>
-                <th scope="col" class="text-right" style="min-width: 7rem;" [attr.aria-sort]="sortAriaSort('amount')"><button type="button" (click)="toggleSort('amount')" [attr.aria-label]="sortAriaLabel('amount')">Amount <span aria-hidden="true" class="sort-icon" [innerHTML]="sortIconSvg('amount') | safeHtml"></span></button></th>
-                <th scope="col" style="min-width: 5rem;">Billed</th>
-                <th scope="col" class="text-center" style="min-width: 5rem;">Vouchers</th>
-                <th scope="col" style="min-width: 8.5rem;" [attr.aria-sort]="sortAriaSort('status')"><button type="button" (click)="toggleSort('status')" [attr.aria-label]="sortAriaLabel('status')">Status <span aria-hidden="true" class="sort-icon" [innerHTML]="sortIconSvg('status') | safeHtml"></span></button></th>
-                <th scope="col" class="text-center" style="min-width: 3.75rem;">Lock</th>
-                <th scope="col" class="text-center" style="min-width: 3.75rem;">Notes</th>
-                <th scope="col" style="min-width: 7rem;" [attr.aria-sort]="sortAriaSort('archiveDate')"><button type="button" (click)="toggleSort('archiveDate')" [attr.aria-label]="sortAriaLabel('archiveDate')">Archive <span aria-hidden="true" class="sort-icon" [innerHTML]="sortIconSvg('archiveDate') | safeHtml"></span></button></th>
-                <th scope="col" style="min-width: 7rem;" [attr.aria-sort]="sortAriaSort('receivedAt')"><button type="button" (click)="toggleSort('receivedAt')" [attr.aria-label]="sortAriaLabel('receivedAt')">Received <span aria-hidden="true" class="sort-icon" [innerHTML]="sortIconSvg('receivedAt') | safeHtml"></span></button></th>
-                <th scope="col" style="min-width: 7rem;" [attr.aria-sort]="sortAriaSort('sentAt')"><button type="button" (click)="toggleSort('sentAt')" [attr.aria-label]="sortAriaLabel('sentAt')">Sent <span aria-hidden="true" class="sort-icon" [innerHTML]="sortIconSvg('sentAt') | safeHtml"></span></button></th>
-                <th scope="col" style="min-width: 7rem;" [attr.aria-sort]="sortAriaSort('updatedAt')"><button type="button" (click)="toggleSort('updatedAt')" [attr.aria-label]="sortAriaLabel('updatedAt')">Updated <span aria-hidden="true" class="sort-icon" [innerHTML]="sortIconSvg('updatedAt') | safeHtml"></span></button></th>
-                <th scope="col" style="min-width: 7rem;" [attr.aria-sort]="sortAriaSort('chargedAt')"><button type="button" (click)="toggleSort('chargedAt')" [attr.aria-label]="sortAriaLabel('chargedAt')">Charged <span aria-hidden="true" class="sort-icon" [innerHTML]="sortIconSvg('chargedAt') | safeHtml"></span></button></th>
-                <th scope="col" style="min-width: 7rem;">Change Req.</th>
-                <th scope="col" style="min-width: 7rem;">CS Task</th>
+                <th
+                  scope="col"
+                  style="min-width: 18rem"
+                  [attr.aria-sort]="sortAriaSort('orderNumber')"
+                >
+                  <button
+                    type="button"
+                    (click)="toggleSort('orderNumber')"
+                    [attr.aria-label]="sortAriaLabel('orderNumber')"
+                  >
+                    Order #
+                    <span
+                      aria-hidden="true"
+                      class="sort-icon"
+                      [innerHTML]="sortIconSvg('orderNumber') | safeHtml"
+                    ></span>
+                  </button>
+                </th>
+                <th
+                  scope="col"
+                  style="min-width: 12rem"
+                  [attr.aria-sort]="sortAriaSort('patientName')"
+                >
+                  <button
+                    type="button"
+                    (click)="toggleSort('patientName')"
+                    [attr.aria-label]="sortAriaLabel('patientName')"
+                  >
+                    Patient
+                    <span
+                      aria-hidden="true"
+                      class="sort-icon"
+                      [innerHTML]="sortIconSvg('patientName') | safeHtml"
+                    ></span>
+                  </button>
+                </th>
+                <th
+                  scope="col"
+                  style="min-width: 12rem"
+                  [attr.aria-sort]="sortAriaSort('doctorName')"
+                >
+                  <button
+                    type="button"
+                    (click)="toggleSort('doctorName')"
+                    [attr.aria-label]="sortAriaLabel('doctorName')"
+                  >
+                    Doctor
+                    <span
+                      aria-hidden="true"
+                      class="sort-icon"
+                      [innerHTML]="sortIconSvg('doctorName') | safeHtml"
+                    ></span>
+                  </button>
+                </th>
+                <th
+                  scope="col"
+                  style="min-width: 11rem"
+                  [attr.aria-sort]="sortAriaSort('scanCenterName')"
+                >
+                  <button
+                    type="button"
+                    (click)="toggleSort('scanCenterName')"
+                    [attr.aria-label]="sortAriaLabel('scanCenterName')"
+                  >
+                    Scan Center
+                    <span
+                      aria-hidden="true"
+                      class="sort-icon"
+                      [innerHTML]="sortIconSvg('scanCenterName') | safeHtml"
+                    ></span>
+                  </button>
+                </th>
+                <th
+                  scope="col"
+                  style="min-width: 9rem"
+                  [attr.aria-sort]="sortAriaSort('billTo')"
+                >
+                  <button
+                    type="button"
+                    (click)="toggleSort('billTo')"
+                    [attr.aria-label]="sortAriaLabel('billTo')"
+                  >
+                    Bill To
+                    <span
+                      aria-hidden="true"
+                      class="sort-icon"
+                      [innerHTML]="sortIconSvg('billTo') | safeHtml"
+                    ></span>
+                  </button>
+                </th>
+                <th
+                  scope="col"
+                  style="min-width: 7rem"
+                  [attr.aria-sort]="sortAriaSort('arch')"
+                >
+                  <button
+                    type="button"
+                    (click)="toggleSort('arch')"
+                    [attr.aria-label]="sortAriaLabel('arch')"
+                  >
+                    Max/Mand
+                    <span
+                      aria-hidden="true"
+                      class="sort-icon"
+                      [innerHTML]="sortIconSvg('arch') | safeHtml"
+                    ></span>
+                  </button>
+                </th>
+                <th
+                  scope="col"
+                  style="min-width: 11rem"
+                  [attr.aria-sort]="sortAriaSort('restoration')"
+                >
+                  <button
+                    type="button"
+                    (click)="toggleSort('restoration')"
+                    [attr.aria-label]="sortAriaLabel('restoration')"
+                  >
+                    Format / Rest.
+                    <span
+                      aria-hidden="true"
+                      class="sort-icon"
+                      [innerHTML]="sortIconSvg('restoration') | safeHtml"
+                    ></span>
+                  </button>
+                </th>
+                <th
+                  scope="col"
+                  class="text-right"
+                  style="min-width: 7rem"
+                  [attr.aria-sort]="sortAriaSort('amount')"
+                >
+                  <button
+                    type="button"
+                    (click)="toggleSort('amount')"
+                    [attr.aria-label]="sortAriaLabel('amount')"
+                  >
+                    Amount
+                    <span
+                      aria-hidden="true"
+                      class="sort-icon"
+                      [innerHTML]="sortIconSvg('amount') | safeHtml"
+                    ></span>
+                  </button>
+                </th>
+                <th scope="col" style="min-width: 5rem">Billed</th>
+                <th scope="col" class="text-center" style="min-width: 5rem">
+                  Vouchers
+                </th>
+                <th
+                  scope="col"
+                  style="min-width: 8.5rem"
+                  [attr.aria-sort]="sortAriaSort('status')"
+                >
+                  <button
+                    type="button"
+                    (click)="toggleSort('status')"
+                    [attr.aria-label]="sortAriaLabel('status')"
+                  >
+                    Status
+                    <span
+                      aria-hidden="true"
+                      class="sort-icon"
+                      [innerHTML]="sortIconSvg('status') | safeHtml"
+                    ></span>
+                  </button>
+                </th>
+                <th scope="col" class="text-center" style="min-width: 3.75rem">
+                  Lock
+                </th>
+                <th scope="col" class="text-center" style="min-width: 3.75rem">
+                  Notes
+                </th>
+                <th
+                  scope="col"
+                  style="min-width: 7rem"
+                  [attr.aria-sort]="sortAriaSort('archiveDate')"
+                >
+                  <button
+                    type="button"
+                    (click)="toggleSort('archiveDate')"
+                    [attr.aria-label]="sortAriaLabel('archiveDate')"
+                  >
+                    Archive
+                    <span
+                      aria-hidden="true"
+                      class="sort-icon"
+                      [innerHTML]="sortIconSvg('archiveDate') | safeHtml"
+                    ></span>
+                  </button>
+                </th>
+                <th
+                  scope="col"
+                  style="min-width: 7rem"
+                  [attr.aria-sort]="sortAriaSort('receivedAt')"
+                >
+                  <button
+                    type="button"
+                    (click)="toggleSort('receivedAt')"
+                    [attr.aria-label]="sortAriaLabel('receivedAt')"
+                  >
+                    Received
+                    <span
+                      aria-hidden="true"
+                      class="sort-icon"
+                      [innerHTML]="sortIconSvg('receivedAt') | safeHtml"
+                    ></span>
+                  </button>
+                </th>
+                <th
+                  scope="col"
+                  style="min-width: 7rem"
+                  [attr.aria-sort]="sortAriaSort('sentAt')"
+                >
+                  <button
+                    type="button"
+                    (click)="toggleSort('sentAt')"
+                    [attr.aria-label]="sortAriaLabel('sentAt')"
+                  >
+                    Sent
+                    <span
+                      aria-hidden="true"
+                      class="sort-icon"
+                      [innerHTML]="sortIconSvg('sentAt') | safeHtml"
+                    ></span>
+                  </button>
+                </th>
+                <th
+                  scope="col"
+                  style="min-width: 7rem"
+                  [attr.aria-sort]="sortAriaSort('updatedAt')"
+                >
+                  <button
+                    type="button"
+                    (click)="toggleSort('updatedAt')"
+                    [attr.aria-label]="sortAriaLabel('updatedAt')"
+                  >
+                    Updated
+                    <span
+                      aria-hidden="true"
+                      class="sort-icon"
+                      [innerHTML]="sortIconSvg('updatedAt') | safeHtml"
+                    ></span>
+                  </button>
+                </th>
+                <th
+                  scope="col"
+                  style="min-width: 7rem"
+                  [attr.aria-sort]="sortAriaSort('chargedAt')"
+                >
+                  <button
+                    type="button"
+                    (click)="toggleSort('chargedAt')"
+                    [attr.aria-label]="sortAriaLabel('chargedAt')"
+                  >
+                    Charged
+                    <span
+                      aria-hidden="true"
+                      class="sort-icon"
+                      [innerHTML]="sortIconSvg('chargedAt') | safeHtml"
+                    ></span>
+                  </button>
+                </th>
+                <th scope="col" style="min-width: 7rem">Change Req.</th>
+                <th scope="col" style="min-width: 7rem">CS Task</th>
               </tr>
             </ng-template>
             <ng-template #body let-rowNode let-rowData="rowData">
               <tr
                 [ttRow]="rowNode"
                 [ngClass]="{
-                  'is-selected': rowData.kind === 'order' && isSelected(rowData.order.id),
-                  'order-child-row': rowData.kind === 'service'
+                  'is-selected':
+                    rowData.kind === 'order' && isSelected(rowData.order.id),
+                  'order-child-row': rowData.kind === 'service',
                 }"
-                [class.is-leaving]="rowData.kind === 'service' && isCollapsing(rowData.order.id)"
+                [class.is-leaving]="
+                  rowData.kind === 'service' && isCollapsing(rowData.order.id)
+                "
               >
-                @if (rowData.kind === 'service' && rowData.subOrder) {
+                @if (rowData.kind === "service" && rowData.subOrder) {
                   <td class="sub-order-empty-cell" aria-hidden="true"></td>
-                  <td class="treetable-expander-cell sub-order-empty-cell" aria-hidden="true"></td>
+                  <td
+                    class="treetable-expander-cell sub-order-empty-cell"
+                    aria-hidden="true"
+                  ></td>
                   <td class="sub-order-service-cell" colspan="5">
-                    <div class="sub-order-service" role="group" [attr.aria-label]="'Sub-order ' + rowData.subOrder.service + ' details'">
-                      <div class="sub-order-service-block" [ngStyle]="subOrderServiceBlockStyle(rowData.subOrder)">
-                        <span class="child-connector" aria-hidden="true">↳</span>
-                        <span class="service-icon" aria-hidden="true">{{ rowData.subOrder.icon }}</span>
+                    <div
+                      class="sub-order-service"
+                      role="group"
+                      [attr.aria-label]="
+                        'Sub-order ' + rowData.subOrder.service + ' details'
+                      "
+                    >
+                      <div
+                        class="sub-order-service-block"
+                        [ngStyle]="subOrderServiceBlockStyle(rowData.subOrder)"
+                      >
+                        <span class="child-connector" aria-hidden="true"
+                          >↳</span
+                        >
+                        <span class="service-icon" aria-hidden="true">{{
+                          rowData.subOrder.icon
+                        }}</span>
                         <span class="sub-order-service-text">
                           <span class="sub-order-service-topline">
                             <button
                               type="button"
-                              (click)="openSubOrder(rowData.order.id, rowData.subOrder.id)"
+                              (click)="
+                                openSubOrder(
+                                  rowData.order.id,
+                                  rowData.subOrder.id
+                                )
+                              "
                               class="service-name"
-                              [title]="'Open sub-order ' + rowData.subOrder.service + ' — details, forms, scans and files'"
-                              [attr.aria-label]="'Open sub-order ' + rowData.subOrder.service + ' of order ' + rowData.order.orderNumber + ' — details, forms, scans and files'"
-                            >{{ rowData.subOrder.service }}</button>
-                            <span class="service-id" title="Sub-order ID">{{ rowData.subOrder.id }}</span>
+                              [title]="
+                                'Open sub-order ' +
+                                rowData.subOrder.service +
+                                ' — details, forms, scans and files'
+                              "
+                              [attr.aria-label]="
+                                'Open sub-order ' +
+                                rowData.subOrder.service +
+                                ' of order ' +
+                                rowData.order.orderNumber +
+                                ' — details, forms, scans and files'
+                              "
+                            >
+                              {{ rowData.subOrder.service }}
+                            </button>
+                            <span class="service-id" title="Sub-order ID">{{
+                              rowData.subOrder.id
+                            }}</span>
                           </span>
-                          <span class="sub-order-service-meta">Due {{ formatUtils.formatDate(rowData.subOrder.dueDate) }} · {{ subOrderProgress(rowData.subOrder) }}% ready</span>
+                          <span class="sub-order-service-meta"
+                            >Due
+                            {{
+                              formatUtils.formatDate(rowData.subOrder.dueDate)
+                            }}
+                            · {{ subOrderProgress(rowData.subOrder) }}%
+                            ready</span
+                          >
                         </span>
                       </div>
                     </div>
@@ -248,7 +684,13 @@
                   <td class="sub-order-teeth-cell">
                     <div class="sub-order-teeth">
                       @if (rowData.subOrder.teeth.length > 0) {
-                        <span class="font-mono text-[10px] text-muted-foreground" [title]="'Teeth: ' + rowData.subOrder.teeth.join(', ')">{{ rowData.subOrder.teeth.join(', ') }}</span>
+                        <span
+                          class="font-mono text-[10px] text-muted-foreground"
+                          [title]="
+                            'Teeth: ' + rowData.subOrder.teeth.join(', ')
+                          "
+                          >{{ rowData.subOrder.teeth.join(", ") }}</span
+                        >
                       } @else {
                         <span class="text-muted-foreground/40">—</span>
                       }
@@ -256,12 +698,35 @@
                   </td>
                   <td class="sub-order-forms-cell" colspan="4">
                     <div class="sub-order-forms">
-                      <span class="whitespace-nowrap text-[10px] text-muted-foreground" [title]="'Forms ' + rowData.subOrder.formsComplete + '/' + rowData.subOrder.formsTotal + ', scans ' + rowData.subOrder.scansComplete + '/' + rowData.subOrder.scansTotal">Forms {{ rowData.subOrder.formsComplete }}/{{ rowData.subOrder.formsTotal }} · Scans {{ rowData.subOrder.scansComplete }}/{{ rowData.subOrder.scansTotal }}</span>
+                      <span
+                        class="whitespace-nowrap text-[10px] text-muted-foreground"
+                        [title]="
+                          'Forms ' +
+                          rowData.subOrder.formsComplete +
+                          '/' +
+                          rowData.subOrder.formsTotal +
+                          ', scans ' +
+                          rowData.subOrder.scansComplete +
+                          '/' +
+                          rowData.subOrder.scansTotal
+                        "
+                        >Forms {{ rowData.subOrder.formsComplete }}/{{
+                          rowData.subOrder.formsTotal
+                        }}
+                        · Scans {{ rowData.subOrder.scansComplete }}/{{
+                          rowData.subOrder.scansTotal
+                        }}</span
+                      >
                     </div>
                   </td>
                   <td class="sub-order-status-cell" colspan="2">
                     <div class="sub-order-status">
-                      <span class="sub-order-status-surface" [ngStyle]="subOrderStatusBlockStyle(rowData.subOrder.status)">
+                      <span
+                        class="sub-order-status-surface"
+                        [ngStyle]="
+                          subOrderStatusBlockStyle(rowData.subOrder.status)
+                        "
+                      >
                         <span class="sub-order-status-block">
                           {{ subOrderStatusLabel(rowData.subOrder.status) }}
                         </span>
@@ -271,240 +736,450 @@
                   <td class="sub-order-note-cell">
                     <div class="sub-order-note">
                       @if (rowData.subOrder.notes) {
-                        <span class="inline-flex" aria-hidden="true" [innerHTML]="getIconSvg('file-text') | safeHtml"></span>
-                        <span [title]="rowData.subOrder.notes">{{ shorten(rowData.subOrder.notes, 48) }}</span>
+                        <span
+                          class="inline-flex"
+                          aria-hidden="true"
+                          [innerHTML]="getIconSvg('file-text') | safeHtml"
+                        ></span>
+                        <span [title]="rowData.subOrder.notes">{{
+                          shorten(rowData.subOrder.notes, 48)
+                        }}</span>
                       } @else {
                         <span class="text-muted-foreground/40">—</span>
                       }
                     </div>
                   </td>
-                  <td class="sub-order-trailing-cell" colspan="7" aria-hidden="true"></td>
+                  <td
+                    class="sub-order-trailing-cell"
+                    colspan="7"
+                    aria-hidden="true"
+                  ></td>
                 } @else {
-                <td>
-                  @if (rowData.kind === 'order') {
-                    <button type="button" (click)="toggleSelect(rowData.order.id)" class="hover:text-primary transition-colors" [class]="isSelected(rowData.order.id) ? 'text-primary' : 'text-muted-foreground'" [attr.aria-label]="'Select order ' + rowData.order.orderNumber" [attr.aria-pressed]="isSelected(rowData.order.id)">
-                      <span [innerHTML]="getIconSvg(isSelected(rowData.order.id) ? 'check-square-sm' : 'square-sm') | safeHtml"></span>
-                    </button>
-                  } @else {
-                    <span class="text-muted-foreground/30" aria-hidden="true">—</span>
-                  }
-                </td>
-                
-                <td class="treetable-expander-cell">
-                  @if (rowData.kind === 'order' && !rowNode.leaf) {
-                    <button
-                      type="button"
-                      class="treetable-expander-btn"
-                      [class.is-expanded]="isExpanded(rowData.order.id)"
-                      [class.is-collapsing]="isCollapsing(rowData.order.id)"
-                      (click)="toggleNodeExpand(rowData.order.id)"
-                      [attr.aria-expanded]="isExpanded(rowData.order.id)"
-                      [attr.aria-label]="(isExpanded(rowData.order.id) ? 'Collapse' : 'Expand') + ' sub-orders of order ' + rowData.order.orderNumber"
-                    >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
-                    </button>
-                  }
-                </td>
-                <td class="treetable-order-cell">
-                  <div class="treetable-main-cell">
-                    @if (rowData.kind === 'order') {
+                  <td>
+                    @if (rowData.kind === "order") {
                       <button
                         type="button"
-                        (click)="openOrder(rowData.order.id)"
-                        class="order-number-link"
-                        [title]="'Open order ' + rowData.order.orderNumber"
-                        [attr.aria-label]="'Open order ' + rowData.order.orderNumber"
-                      >{{ rowData.order.orderNumber }}</button>
-                    } @else if (rowData.subOrder) {
-                      <span class="child-connector" aria-hidden="true">↳</span>
-                      <span class="service-icon" aria-hidden="true">{{ rowData.subOrder.icon }}</span>
-                      <span class="service-text">
+                        (click)="toggleSelect(rowData.order.id)"
+                        class="hover:text-primary transition-colors"
+                        [class]="
+                          isSelected(rowData.order.id)
+                            ? 'text-primary'
+                            : 'text-muted-foreground'
+                        "
+                        [attr.aria-label]="
+                          'Select order ' + rowData.order.orderNumber
+                        "
+                        [attr.aria-pressed]="isSelected(rowData.order.id)"
+                      >
+                        <span
+                          [innerHTML]="
+                            getIconSvg(
+                              isSelected(rowData.order.id)
+                                ? 'check-square-sm'
+                                : 'square-sm'
+                            ) | safeHtml
+                          "
+                        ></span>
+                      </button>
+                    } @else {
+                      <span class="text-muted-foreground/30" aria-hidden="true"
+                        >—</span
+                      >
+                    }
+                  </td>
+
+                  <td class="treetable-expander-cell">
+                    @if (rowData.kind === "order" && !rowNode.leaf) {
+                      <button
+                        type="button"
+                        class="treetable-expander-btn"
+                        [class.is-expanded]="isExpanded(rowData.order.id)"
+                        [class.is-collapsing]="isCollapsing(rowData.order.id)"
+                        (click)="toggleNodeExpand(rowData.order.id)"
+                        [attr.aria-expanded]="isExpanded(rowData.order.id)"
+                        [attr.aria-label]="
+                          (isExpanded(rowData.order.id)
+                            ? 'Collapse'
+                            : 'Expand') +
+                          ' sub-orders of order ' +
+                          rowData.order.orderNumber
+                        "
+                      >
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <path d="m9 18 6-6-6-6" />
+                        </svg>
+                      </button>
+                    }
+                  </td>
+                  <td class="treetable-order-cell">
+                    <div class="treetable-main-cell">
+                      @if (rowData.kind === "order") {
                         <button
                           type="button"
-                          (click)="openSubOrder(rowData.order.id, rowData.subOrder.id)"
-                          class="service-name"
-                          [title]="'Open sub-order ' + rowData.subOrder.service + ' — details, forms, scans and files'"
-                          [attr.aria-label]="'Open sub-order ' + rowData.subOrder.service + ' of order ' + rowData.order.orderNumber + ' — details, forms, scans and files'"
-                        >{{ rowData.subOrder.service }}</button>
-                        <span class="service-id" title="Sub-order ID">{{ rowData.subOrder.id }}</span>
+                          (click)="openOrder(rowData.order.id)"
+                          class="order-number-link"
+                          [title]="'Open order ' + rowData.order.orderNumber"
+                          [attr.aria-label]="
+                            'Open order ' + rowData.order.orderNumber
+                          "
+                        >
+                          {{ rowData.order.orderNumber }}
+                        </button>
+                      } @else if (rowData.subOrder) {
+                        <span class="child-connector" aria-hidden="true"
+                          >↳</span
+                        >
+                        <span class="service-icon" aria-hidden="true">{{
+                          rowData.subOrder.icon
+                        }}</span>
+                        <span class="service-text">
+                          <button
+                            type="button"
+                            (click)="
+                              openSubOrder(
+                                rowData.order.id,
+                                rowData.subOrder.id
+                              )
+                            "
+                            class="service-name"
+                            [title]="
+                              'Open sub-order ' +
+                              rowData.subOrder.service +
+                              ' — details, forms, scans and files'
+                            "
+                            [attr.aria-label]="
+                              'Open sub-order ' +
+                              rowData.subOrder.service +
+                              ' of order ' +
+                              rowData.order.orderNumber +
+                              ' — details, forms, scans and files'
+                            "
+                          >
+                            {{ rowData.subOrder.service }}
+                          </button>
+                          <span class="service-id" title="Sub-order ID">{{
+                            rowData.subOrder.id
+                          }}</span>
+                        </span>
+                      }
+                    </div>
+                    @if (rowData.kind === "service" && rowData.subOrder) {
+                      <div class="service-sub">
+                        Due
+                        {{ formatUtils.formatDate(rowData.subOrder.dueDate) }} ·
+                        {{ subOrderProgress(rowData.subOrder) }}% ready
+                      </div>
+                    }
+                  </td>
+                  <td>
+                    @if (rowData.kind === "order") {
+                      <button
+                        type="button"
+                        (click)="openPatient(rowData.order.patientId)"
+                        class="block max-w-36 truncate font-medium hover:text-primary"
+                        [title]="rowData.order.patientName"
+                      >
+                        {{ rowData.order.patientName }}
+                      </button>
+                    } @else {
+                      <span class="text-muted-foreground/30">—</span>
+                    }
+                  </td>
+                  <td>
+                    @if (rowData.kind === "order") {
+                      <button
+                        type="button"
+                        (click)="openDoctor(rowData.order.doctorId)"
+                        class="block max-w-36 truncate text-muted-foreground hover:text-foreground"
+                        [title]="rowData.order.doctorName"
+                      >
+                        {{ rowData.order.doctorName.replace("Dr. ", "") }}
+                      </button>
+                    } @else {
+                      <span class="text-muted-foreground/30">—</span>
+                    }
+                  </td>
+                  <td>
+                    @if (rowData.kind === "order") {
+                      <span
+                        class="block max-w-32 truncate text-muted-foreground"
+                        [title]="rowData.order.scanCenterName"
+                        >{{
+                          rowData.order.scanCenterName.replace("SC-", "")
+                        }}</span
+                      >
+                    } @else {
+                      <span class="text-muted-foreground/30">—</span>
+                    }
+                  </td>
+                  <td>
+                    @if (rowData.kind === "order") {
+                      <span
+                        class="block max-w-36 truncate text-muted-foreground"
+                        [title]="rowData.order.billTo"
+                        >{{ shorten(rowData.order.billTo, 18) }}</span
+                      >
+                    } @else {
+                      <span class="text-muted-foreground/30">—</span>
+                    }
+                  </td>
+                  <td>
+                    @if (rowData.kind === "order") {
+                      <app-arch-badge [arch]="rowData.order.arch" />
+                    } @else if (
+                      rowData.subOrder && rowData.subOrder.teeth.length > 0
+                    ) {
+                      <span
+                        class="font-mono text-[10px] text-muted-foreground"
+                        [title]="'Teeth: ' + rowData.subOrder.teeth.join(', ')"
+                        >{{ rowData.subOrder.teeth.join(", ") }}</span
+                      >
+                    } @else {
+                      <span class="text-muted-foreground/30">—</span>
+                    }
+                  </td>
+                  <td>
+                    @if (rowData.kind === "order") {
+                      <span
+                        class="rounded bg-muted px-1 py-0.5 font-mono text-[9px] text-muted-foreground"
+                        >{{ rowData.order.format }}</span
+                      >
+                      <span
+                        class="ml-1 text-muted-foreground"
+                        [title]="rowData.order.restoration"
+                        >{{ shorten(rowData.order.restoration, 14) }}</span
+                      >
+                    } @else if (rowData.subOrder) {
+                      <span
+                        class="whitespace-nowrap text-[10px] text-muted-foreground"
+                        [title]="
+                          'Forms ' +
+                          rowData.subOrder.formsComplete +
+                          '/' +
+                          rowData.subOrder.formsTotal +
+                          ', scans ' +
+                          rowData.subOrder.scansComplete +
+                          '/' +
+                          rowData.subOrder.scansTotal
+                        "
+                        >Forms {{ rowData.subOrder.formsComplete }}/{{
+                          rowData.subOrder.formsTotal
+                        }}
+                        · Scans {{ rowData.subOrder.scansComplete }}/{{
+                          rowData.subOrder.scansTotal
+                        }}</span
+                      >
+                    } @else {
+                      <span class="text-muted-foreground/30">—</span>
+                    }
+                  </td>
+                  <td class="text-right">
+                    @if (rowData.kind === "order") {
+                      <span class="font-mono font-semibold">{{
+                        formatUtils.formatCurrency(rowData.order.amount)
+                      }}</span>
+                    } @else {
+                      <span class="text-muted-foreground/30">—</span>
+                    }
+                  </td>
+                  <td class="text-center">
+                    @if (rowData.kind === "order") {
+                      @if (rowData.order.billed) {
+                        <span
+                          class="rounded bg-emerald-50 px-1 py-0.5 text-[9px] font-semibold text-emerald-700"
+                          >BILLED</span
+                        >
+                      } @else {
+                        <span
+                          class="rounded bg-muted px-1 py-0.5 text-[9px] text-muted-foreground"
+                          >–</span
+                        >
+                      }
+                    } @else {
+                      <span class="text-muted-foreground/30">—</span>
+                    }
+                  </td>
+                  <td
+                    class="text-center font-mono font-semibold text-muted-foreground"
+                  >
+                    @if (rowData.kind === "order") {
+                      {{
+                        rowData.order.vouchers > 0
+                          ? rowData.order.vouchers
+                          : "–"
+                      }}
+                    } @else {
+                      <span class="text-muted-foreground/30">—</span>
+                    }
+                  </td>
+                  <td>
+                    @if (rowData.kind === "order") {
+                      <span
+                        class="treetable-status-surface"
+                        [ngStyle]="orderStatusBlockStyle(rowData.order.status)"
+                      >
+                        <span class="treetable-status-block">{{
+                          orderStatusLabel(rowData.order.status)
+                        }}</span>
                       </span>
-                      
-                    }
-                  </div>
-                  @if (rowData.kind === 'service' && rowData.subOrder) {
-                    <div class="service-sub">Due {{ formatUtils.formatDate(rowData.subOrder.dueDate) }} · {{ subOrderProgress(rowData.subOrder) }}% ready</div>
-                  }
-                </td>
-                <td>
-                  @if (rowData.kind === 'order') {
-                    <button type="button" (click)="openPatient(rowData.order.patientId)" class="block max-w-36 truncate font-medium hover:text-primary" [title]="rowData.order.patientName">{{ rowData.order.patientName }}</button>
-                  } @else {
-                    <span class="text-muted-foreground/30">—</span>
-                  }
-                </td>
-                <td>
-                  @if (rowData.kind === 'order') {
-                    <button type="button" (click)="openDoctor(rowData.order.doctorId)" class="block max-w-36 truncate text-muted-foreground hover:text-foreground" [title]="rowData.order.doctorName">{{ rowData.order.doctorName.replace('Dr. ', '') }}</button>
-                  } @else {
-                    <span class="text-muted-foreground/30">—</span>
-                  }
-                </td>
-                <td>
-                  @if (rowData.kind === 'order') {
-                    <span class="block max-w-32 truncate text-muted-foreground" [title]="rowData.order.scanCenterName">{{ rowData.order.scanCenterName.replace('SC-', '') }}</span>
-                  } @else {
-                    <span class="text-muted-foreground/30">—</span>
-                  }
-                </td>
-                <td>
-                  @if (rowData.kind === 'order') {
-                    <span class="block max-w-36 truncate text-muted-foreground" [title]="rowData.order.billTo">{{ shorten(rowData.order.billTo, 18) }}</span>
-                  } @else {
-                    <span class="text-muted-foreground/30">—</span>
-                  }
-                </td>
-                <td>
-                  @if (rowData.kind === 'order') {
-                    <app-arch-badge [arch]="rowData.order.arch" />
-                  }                   @else if (rowData.subOrder && rowData.subOrder.teeth.length > 0) {
-                    <span class="font-mono text-[10px] text-muted-foreground" [title]="'Teeth: ' + rowData.subOrder.teeth.join(', ')">{{ rowData.subOrder.teeth.join(', ') }}</span>
-                  } @else {
-                    <span class="text-muted-foreground/30">—</span>
-                  }
-                </td>
-                <td>
-                  @if (rowData.kind === 'order') {
-                    <span class="rounded bg-muted px-1 py-0.5 font-mono text-[9px] text-muted-foreground">{{ rowData.order.format }}</span>
-                    <span class="ml-1 text-muted-foreground" [title]="rowData.order.restoration">{{ shorten(rowData.order.restoration, 14) }}</span>
-                  } @else if (rowData.subOrder) {
-                    <span class="whitespace-nowrap text-[10px] text-muted-foreground" [title]="'Forms ' + rowData.subOrder.formsComplete + '/' + rowData.subOrder.formsTotal + ', scans ' + rowData.subOrder.scansComplete + '/' + rowData.subOrder.scansTotal">Forms {{ rowData.subOrder.formsComplete }}/{{ rowData.subOrder.formsTotal }} · Scans {{ rowData.subOrder.scansComplete }}/{{ rowData.subOrder.scansTotal }}</span>
-                  } @else {
-                    <span class="text-muted-foreground/30">—</span>
-                  }
-                </td>
-                <td class="text-right">
-                  @if (rowData.kind === 'order') {
-                    <span class="font-mono font-semibold">{{ formatUtils.formatCurrency(rowData.order.amount) }}</span>
-                  } @else {
-                    <span class="text-muted-foreground/30">—</span>
-                  }
-                </td>
-                <td class="text-center">
-                  @if (rowData.kind === 'order') {
-                    @if (rowData.order.billed) {
-                      <span class="rounded bg-emerald-50 px-1 py-0.5 text-[9px] font-semibold text-emerald-700">BILLED</span>
+                    } @else if (rowData.subOrder) {
+                      <span
+                        class="treetable-status-surface"
+                        [ngStyle]="
+                          subOrderStatusBlockStyle(rowData.subOrder.status)
+                        "
+                      >
+                        <span class="treetable-status-block">{{
+                          subOrderStatusLabel(rowData.subOrder.status)
+                        }}</span>
+                      </span>
                     } @else {
-                      <span class="rounded bg-muted px-1 py-0.5 text-[9px] text-muted-foreground">–</span>
+                      <span class="text-muted-foreground/30">—</span>
                     }
-                  } @else {
-                    <span class="text-muted-foreground/30">—</span>
-                  }
-                </td>
-                <td class="text-center font-mono font-semibold text-muted-foreground">
-                  @if (rowData.kind === 'order') {
-                    {{ rowData.order.vouchers > 0 ? rowData.order.vouchers : '–' }}
-                  } @else {
-                    <span class="text-muted-foreground/30">—</span>
-                  }
-                </td>
-                <td>
-                  @if (rowData.kind === 'order') {
-                    <app-status-badge [status]="rowData.order.status" [label]="orderStatusLabel(rowData.order.status)" size="sm" />
-                  } @else if (rowData.subOrder) {
-                    <span class="treetable-status-surface" [ngStyle]="subOrderStatusBlockStyle(rowData.subOrder.status)">
-                      <span class="treetable-status-block">{{ subOrderStatusLabel(rowData.subOrder.status) }}</span>
-                    </span>
-                  } @else {
-                    <span class="text-muted-foreground/30">—</span>
-                  }
-                </td>
-                <td class="text-center">
-                  @if (rowData.kind === 'order') {
-                    @if (rowData.order.isLocked) {
-                      <span class="inline-flex text-amber-500" title="Locked" aria-label="Locked" [innerHTML]="getIconSvg('lock') | safeHtml"></span>
+                  </td>
+                  <td class="text-center">
+                    @if (rowData.kind === "order") {
+                      @if (rowData.order.isLocked) {
+                        <span
+                          class="inline-flex text-amber-500"
+                          title="Locked"
+                          aria-label="Locked"
+                          [innerHTML]="getIconSvg('lock') | safeHtml"
+                        ></span>
+                      } @else {
+                        <span
+                          class="inline-flex text-muted-foreground/40"
+                          title="Unlocked"
+                          aria-label="Unlocked"
+                          [innerHTML]="getIconSvg('unlock') | safeHtml"
+                        ></span>
+                      }
                     } @else {
-                      <span class="inline-flex text-muted-foreground/40" title="Unlocked" aria-label="Unlocked" [innerHTML]="getIconSvg('unlock') | safeHtml"></span>
+                      <span class="text-muted-foreground/30">—</span>
                     }
-                  } @else {
-                    <span class="text-muted-foreground/30">—</span>
-                  }
-                </td>
-                <td class="text-center">
-                  @if (rowData.kind === 'order') {
-                    @if (rowData.order.hasNotes) {
-                      <span class="inline-flex text-primary" title="Has notes" aria-label="Has notes" [innerHTML]="getIconSvg('file-text') | safeHtml"></span>
+                  </td>
+                  <td class="text-center">
+                    @if (rowData.kind === "order") {
+                      @if (rowData.order.hasNotes) {
+                        <span
+                          class="inline-flex text-primary"
+                          title="Has notes"
+                          aria-label="Has notes"
+                          [innerHTML]="getIconSvg('file-text') | safeHtml"
+                        ></span>
+                      } @else {
+                        <span class="text-muted-foreground/30">–</span>
+                      }
+                    } @else if (rowData.subOrder?.notes) {
+                      <span
+                        class="inline-flex text-primary"
+                        [title]="rowData.subOrder?.notes"
+                        aria-label="Service has notes"
+                        [innerHTML]="getIconSvg('file-text') | safeHtml"
+                      ></span>
                     } @else {
-                      <span class="text-muted-foreground/30">–</span>
+                      <span class="text-muted-foreground/30">—</span>
                     }
-                  } @else if (rowData.subOrder?.notes) {
-                    <span class="inline-flex text-primary" [title]="rowData.subOrder?.notes" aria-label="Service has notes" [innerHTML]="getIconSvg('file-text') | safeHtml"></span>
-                  } @else {
-                    <span class="text-muted-foreground/30">—</span>
-                  }
-                </td>
-                <td class="font-mono text-muted-foreground">
-                  @if (rowData.kind === 'order') {
-                    {{ rowData.order.archiveDate ? formatUtils.formatDate(rowData.order.archiveDate) : '–' }}
-                  } @else {
-                    <span class="text-muted-foreground/30">—</span>
-                  }
-                </td>
-                <td class="font-mono text-[10px] text-muted-foreground">
-                  @if (rowData.kind === 'order') {
-                    {{ formatUtils.formatDate(rowData.order.receivedAt) }}
-                  } @else {
-                    <span class="text-muted-foreground/30">—</span>
-                  }
-                </td>
-                <td class="font-mono text-[10px] text-muted-foreground">
-                  @if (rowData.kind === 'order') {
-                    {{ rowData.order.sentAt ? formatUtils.formatDate(rowData.order.sentAt) : '–' }}
-                  } @else {
-                    <span class="text-muted-foreground/30">—</span>
-                  }
-                </td>
-                <td class="font-mono text-[10px] text-muted-foreground">
-                  @if (rowData.kind === 'order') {
-                    {{ formatUtils.formatDate(rowData.order.updatedAt) }}
-                  } @else {
-                    <span class="text-muted-foreground/30">—</span>
-                  }
-                </td>
-                <td class="font-mono text-[10px] text-muted-foreground">
-                  @if (rowData.kind === 'order') {
-                    {{ rowData.order.chargedAt ? formatUtils.formatDate(rowData.order.chargedAt) : '–' }}
-                  } @else {
-                    <span class="text-muted-foreground/30">—</span>
-                  }
-                </td>
-                <td>
-                  @if (rowData.kind === 'order') {
-                    @if (rowData.order.changeRequest) {
-                      <span class="rounded px-1.5 py-0.5 text-[9px] font-semibold" [class]="changeRequestClasses(rowData.order.changeRequest)">{{ rowData.order.changeRequest }}</span>
+                  </td>
+                  <td class="font-mono text-muted-foreground">
+                    @if (rowData.kind === "order") {
+                      {{
+                        rowData.order.archiveDate
+                          ? formatUtils.formatDate(rowData.order.archiveDate)
+                          : "–"
+                      }}
                     } @else {
-                      <span class="text-muted-foreground/30">–</span>
+                      <span class="text-muted-foreground/30">—</span>
                     }
-                  } @else {
-                    <span class="text-muted-foreground/30">—</span>
-                  }
-                </td>
-                <td>
-                  @if (rowData.kind === 'order') {
-                    @if (rowData.order.csTask) {
-                      <span class="rounded bg-violet-50 px-1.5 py-0.5 text-[9px] font-semibold text-violet-700">{{ rowData.order.csTask }}</span>
+                  </td>
+                  <td class="font-mono text-[10px] text-muted-foreground">
+                    @if (rowData.kind === "order") {
+                      {{ formatUtils.formatDate(rowData.order.receivedAt) }}
                     } @else {
-                      <span class="text-muted-foreground/30">–</span>
+                      <span class="text-muted-foreground/30">—</span>
                     }
-                  } @else {
-                    <span class="text-muted-foreground/30">—</span>
-                  }
-                </td>
+                  </td>
+                  <td class="font-mono text-[10px] text-muted-foreground">
+                    @if (rowData.kind === "order") {
+                      {{
+                        rowData.order.sentAt
+                          ? formatUtils.formatDate(rowData.order.sentAt)
+                          : "–"
+                      }}
+                    } @else {
+                      <span class="text-muted-foreground/30">—</span>
+                    }
+                  </td>
+                  <td class="font-mono text-[10px] text-muted-foreground">
+                    @if (rowData.kind === "order") {
+                      {{ formatUtils.formatDate(rowData.order.updatedAt) }}
+                    } @else {
+                      <span class="text-muted-foreground/30">—</span>
+                    }
+                  </td>
+                  <td class="font-mono text-[10px] text-muted-foreground">
+                    @if (rowData.kind === "order") {
+                      {{
+                        rowData.order.chargedAt
+                          ? formatUtils.formatDate(rowData.order.chargedAt)
+                          : "–"
+                      }}
+                    } @else {
+                      <span class="text-muted-foreground/30">—</span>
+                    }
+                  </td>
+                  <td>
+                    @if (rowData.kind === "order") {
+                      @if (rowData.order.changeRequest) {
+                        <span
+                          class="rounded px-1.5 py-0.5 text-[9px] font-semibold"
+                          [class]="
+                            changeRequestClasses(rowData.order.changeRequest)
+                          "
+                          >{{ rowData.order.changeRequest }}</span
+                        >
+                      } @else {
+                        <span class="text-muted-foreground/30">–</span>
+                      }
+                    } @else {
+                      <span class="text-muted-foreground/30">—</span>
+                    }
+                  </td>
+                  <td>
+                    @if (rowData.kind === "order") {
+                      @if (rowData.order.csTask) {
+                        <span
+                          class="rounded bg-violet-50 px-1.5 py-0.5 text-[9px] font-semibold text-violet-700"
+                          >{{ rowData.order.csTask }}</span
+                        >
+                      } @else {
+                        <span class="text-muted-foreground/30">–</span>
+                      }
+                    } @else {
+                      <span class="text-muted-foreground/30">—</span>
+                    }
+                  </td>
                 }
               </tr>
             </ng-template>
             <ng-template #emptymessage>
               <tr>
-                <td colspan="22" class="py-10! text-center text-sm text-muted-foreground">No orders match the current filters.</td>
+                <td
+                  colspan="22"
+                  class="py-10! text-center text-sm text-muted-foreground"
+                >
+                  No orders match the current filters.
+                </td>
               </tr>
             </ng-template>
           </p-treetable>
@@ -513,14 +1188,44 @@
     }
   </div>
 
-  @if (viewState() === 'normal' && filtered().length > 0) {
-    <div class="flex shrink-0 flex-wrap items-center justify-between gap-2 border-t border-border bg-card px-6 py-3">
-      <span class="text-xs text-muted-foreground" role="status">Showing {{ rangeStart() }}–{{ rangeEnd() }} of {{ filtered().length }} orders</span>
+  @if (viewState() === "normal" && filtered().length > 0) {
+    <div
+      class="flex shrink-0 flex-wrap items-center justify-between gap-2 border-t border-border bg-card px-6 py-3"
+    >
+      <span class="text-xs text-muted-foreground" role="status"
+        >Showing {{ rangeStart() }}–{{ rangeEnd() }} of
+        {{ filtered().length }} orders</span
+      >
       <nav class="flex items-center gap-1" aria-label="Orders pagination">
-        <button type="button" (click)="firstPage()" [disabled]="page() === 1" class="rounded border border-border p-1.5 text-muted-foreground hover:bg-muted disabled:opacity-40 transition-colors" aria-label="First page">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="11 17 6 12 11 7"/><polyline points="18 17 13 12 18 7"/></svg>
+        <button
+          type="button"
+          (click)="firstPage()"
+          [disabled]="page() === 1"
+          class="rounded border border-border p-1.5 text-muted-foreground hover:bg-muted disabled:opacity-40 transition-colors"
+          aria-label="First page"
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <polyline points="11 17 6 12 11 7" />
+            <polyline points="18 17 13 12 18 7" />
+          </svg>
         </button>
-        <button type="button" (click)="prevPage()" [disabled]="page() === 1" class="rounded border border-border p-1.5 text-muted-foreground hover:bg-muted disabled:opacity-40 transition-colors" aria-label="Previous page">
+        <button
+          type="button"
+          (click)="prevPage()"
+          [disabled]="page() === 1"
+          class="rounded border border-border p-1.5 text-muted-foreground hover:bg-muted disabled:opacity-40 transition-colors"
+          aria-label="Previous page"
+        >
           <span [innerHTML]="getIconSvg('chevron-left') | safeHtml"></span>
         </button>
         @for (pg of visiblePageNumbers(); track pg) {
@@ -528,7 +1233,11 @@
             type="button"
             (click)="goToPage(pg)"
             class="h-7 w-7 rounded text-xs font-medium transition-colors"
-            [class]="page() === pg ? 'bg-primary text-white' : 'text-muted-foreground hover:bg-muted'"
+            [class]="
+              page() === pg
+                ? 'bg-primary text-white'
+                : 'text-muted-foreground hover:bg-muted'
+            "
             [attr.aria-current]="page() === pg ? 'page' : null"
             [attr.aria-label]="'Go to page ' + pg"
           >
@@ -538,11 +1247,36 @@
         @if (totalPages() > 7) {
           <span class="px-1 text-muted-foreground" aria-hidden="true">…</span>
         }
-        <button type="button" (click)="nextPage()" [disabled]="page() === totalPages()" class="rounded border border-border p-1.5 text-muted-foreground hover:bg-muted disabled:opacity-40 transition-colors" aria-label="Next page">
+        <button
+          type="button"
+          (click)="nextPage()"
+          [disabled]="page() === totalPages()"
+          class="rounded border border-border p-1.5 text-muted-foreground hover:bg-muted disabled:opacity-40 transition-colors"
+          aria-label="Next page"
+        >
           <span [innerHTML]="getIconSvg('chevron-right') | safeHtml"></span>
         </button>
-        <button type="button" (click)="lastPage()" [disabled]="page() === totalPages()" class="rounded border border-border p-1.5 text-muted-foreground hover:bg-muted disabled:opacity-40 transition-colors" aria-label="Last page">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>
+        <button
+          type="button"
+          (click)="lastPage()"
+          [disabled]="page() === totalPages()"
+          class="rounded border border-border p-1.5 text-muted-foreground hover:bg-muted disabled:opacity-40 transition-colors"
+          aria-label="Last page"
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <polyline points="13 17 18 12 13 7" />
+            <polyline points="6 17 11 12 6 7" />
+          </svg>
         </button>
       </nav>
     </div>

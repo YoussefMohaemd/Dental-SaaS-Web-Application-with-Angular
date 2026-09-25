@@ -1,13 +1,13 @@
-import { CommonModule } from '@angular/common';
-import { Component, input } from '@angular/core';
-import { Order, Patient, Doctor, Clinic, SubOrder } from '@core/models';
+import { CommonModule } from "@angular/common";
+import { Component, input } from "@angular/core";
+import { Order, Patient, Doctor, Clinic, SubOrder } from "@core/models";
 
 @Component({
-  selector: 'app-order-summary-card',
+  selector: "app-order-summary-card",
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './order-summary-card.component.html',
-  styleUrl: './order-summary-card.component.scss',
+  templateUrl: "./order-summary-card.component.html",
+  styleUrl: "./order-summary-card.component.scss",
 })
 export class OrderSummaryCardComponent {
   readonly order = input.required<Order>();

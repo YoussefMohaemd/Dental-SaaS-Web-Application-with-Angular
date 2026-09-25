@@ -1,10 +1,10 @@
-export type PatientStatus = 'Active' | 'Inactive';
+export type PatientStatus = "Active" | "Inactive";
 
 export interface Patient {
   id: string;
   name: string;
   dob: string;
-  gender: 'M' | 'F';
+  gender: "M" | "F";
   phone: string;
   email: string;
   clinicId: string;
@@ -20,7 +20,7 @@ export interface PatientFilters {
   search?: string;
   statusFilter?: PatientStatus;
   sortColumn?: keyof Patient;
-  sortDirection?: 'asc' | 'desc';
+  sortDirection?: "asc" | "desc";
   page?: number;
   pageSize?: number;
 }

@@ -1,4 +1,5 @@
-export type DocumentCategory = 'Prescriptions' | 'Scan Files' | 'Patient Photos' | 'Invoices' | 'Reports';
+export type DocumentCategory =
+  "Prescriptions" | "Scan Files" | "Patient Photos" | "Invoices" | "Reports";
 
 export interface LabDocument {
   id: string;
@@ -10,11 +11,11 @@ export interface LabDocument {
   doctor: string;
 }
 
-export const DOCUMENT_CATEGORIES: ReadonlyArray<'All' | DocumentCategory> = [
-  'All',
-  'Prescriptions',
-  'Scan Files',
-  'Patient Photos',
-  'Invoices',
-  'Reports'
+export const DOCUMENT_CATEGORIES: ReadonlyArray<"All" | DocumentCategory> = [
+  "All",
+  "Prescriptions",
+  "Scan Files",
+  "Patient Photos",
+  "Invoices",
+  "Reports",
 ];

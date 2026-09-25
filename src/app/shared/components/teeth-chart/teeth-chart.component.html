@@ -1,48 +1,79 @@
-<div class="rounded-xl border border-border bg-card p-5" role="group" aria-label="FDI tooth chart">
-  
+<div
+  class="rounded-xl border border-border bg-card p-5"
+  role="group"
+  aria-label="FDI tooth chart"
+>
   @if (!readOnly()) {
     <div class="mb-4 flex items-center justify-between gap-2">
-      <div class="flex items-center gap-1 rounded-lg border border-border p-0.5" role="group" aria-label="Jaw filter">
+      <div
+        class="flex items-center gap-1 rounded-lg border border-border p-0.5"
+        role="group"
+        aria-label="Jaw filter"
+      >
         @for (jaw of jaws; track jaw) {
           <button
             type="button"
             (click)="setJaw(jaw)"
             class="rounded-md px-3 py-1 text-xs font-medium transition-colors"
-            [class]="activeJaw() === jaw ? 'bg-primary text-white' : 'text-muted-foreground hover:text-foreground'"
+            [class]="
+              activeJaw() === jaw
+                ? 'bg-primary text-white'
+                : 'text-muted-foreground hover:text-foreground'
+            "
             [attr.aria-pressed]="activeJaw() === jaw"
           >
-            {{ jaw === 'both' ? 'Both Jaws' : jaw === 'upper' ? 'Upper' : 'Lower' }}
+            {{
+              jaw === "both" ? "Both Jaws" : jaw === "upper" ? "Upper" : "Lower"
+            }}
           </button>
         }
       </div>
       @if (selected().length > 0) {
         <p class="text-xs text-muted-foreground">
-          <span class="font-semibold text-primary">{{ selected().length }}</span> selected:
-          <span class="font-mono">{{ selected().join(', ') }}</span>
+          <span class="font-semibold text-primary">{{
+            selected().length
+          }}</span>
+          selected:
+          <span class="font-mono">{{ selected().join(", ") }}</span>
         </p>
       }
     </div>
   }
 
-  
   <div class="space-y-2">
-    @if (activeJaw() === 'both' || activeJaw() === 'upper') {
+    @if (activeJaw() === "both" || activeJaw() === "upper") {
       <div>
         <div class="mb-2 flex items-center gap-2">
-          <span class="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Upper Jaw</span>
+          <span
+            class="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground"
+            >Upper Jaw</span
+          >
           <div class="h-px flex-1 bg-border"></div>
         </div>
         <div class="flex justify-center overflow-x-auto py-2">
           <div class="flex items-end justify-center gap-0.5">
             <div class="flex items-end gap-0.5">
               @for (n of upperTeeth.slice(0, 8); track n) {
-                <ng-container *ngTemplateOutlet="toothTpl; context: { $implicit: n, isUpper: true }"></ng-container>
+                <ng-container
+                  *ngTemplateOutlet="
+                    toothTpl;
+                    context: { $implicit: n, isUpper: true }
+                  "
+                ></ng-container>
               }
             </div>
-            <div class="mx-1 w-px self-center" style="height: 20px; background: #e2e8f0"></div>
+            <div
+              class="mx-1 w-px self-center"
+              style="height: 20px; background: #e2e8f0"
+            ></div>
             <div class="flex items-end gap-0.5">
               @for (n of upperTeeth.slice(8); track n) {
-                <ng-container *ngTemplateOutlet="toothTpl; context: { $implicit: n, isUpper: true }"></ng-container>
+                <ng-container
+                  *ngTemplateOutlet="
+                    toothTpl;
+                    context: { $implicit: n, isUpper: true }
+                  "
+                ></ng-container>
               }
             </div>
           </div>
@@ -50,64 +81,96 @@
       </div>
     }
 
-    @if (activeJaw() === 'both') {
+    @if (activeJaw() === "both") {
       <div class="flex items-center justify-center gap-3 py-1">
         <div class="h-px max-w-16 flex-1 bg-border"></div>
-        <span class="text-[9px] uppercase tracking-widest text-muted-foreground/60">Gum Line</span>
+        <span
+          class="text-[9px] uppercase tracking-widest text-muted-foreground/60"
+          >Gum Line</span
+        >
         <div class="h-px max-w-16 flex-1 bg-border"></div>
       </div>
     }
 
-    @if (activeJaw() === 'both' || activeJaw() === 'lower') {
+    @if (activeJaw() === "both" || activeJaw() === "lower") {
       <div>
         <div class="flex justify-center overflow-x-auto py-2">
           <div class="flex items-end justify-center gap-0.5">
             <div class="flex items-end gap-0.5">
               @for (n of lowerTeeth.slice(0, 8); track n) {
-                <ng-container *ngTemplateOutlet="toothTpl; context: { $implicit: n, isUpper: false }"></ng-container>
+                <ng-container
+                  *ngTemplateOutlet="
+                    toothTpl;
+                    context: { $implicit: n, isUpper: false }
+                  "
+                ></ng-container>
               }
             </div>
-            <div class="mx-1 w-px self-center" style="height: 20px; background: #e2e8f0"></div>
+            <div
+              class="mx-1 w-px self-center"
+              style="height: 20px; background: #e2e8f0"
+            ></div>
             <div class="flex items-end gap-0.5">
               @for (n of lowerTeeth.slice(8); track n) {
-                <ng-container *ngTemplateOutlet="toothTpl; context: { $implicit: n, isUpper: false }"></ng-container>
+                <ng-container
+                  *ngTemplateOutlet="
+                    toothTpl;
+                    context: { $implicit: n, isUpper: false }
+                  "
+                ></ng-container>
               }
             </div>
           </div>
         </div>
         <div class="mt-2 flex items-center gap-2">
-          <span class="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Lower Jaw</span>
+          <span
+            class="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground"
+            >Lower Jaw</span
+          >
           <div class="h-px flex-1 bg-border"></div>
         </div>
       </div>
     }
   </div>
 
-  
-  <div class="mt-4 flex flex-wrap items-center gap-4 border-t border-border pt-3">
+  <div
+    class="mt-4 flex flex-wrap items-center gap-4 border-t border-border pt-3"
+  >
     @for (l of legend; track l.label) {
       <div class="flex items-center gap-1.5">
         <div
-          style="width: 12px; height: 12px; border-radius: 2px; flex-shrink: 0;"
+          style="width: 12px; height: 12px; border-radius: 2px; flex-shrink: 0"
           [style.background]="l.fill"
-          [style.border]="'2px ' + (l.dashed ? 'dashed' : 'solid') + ' ' + l.border"
+          [style.border]="
+            '2px ' + (l.dashed ? 'dashed' : 'solid') + ' ' + l.border
+          "
         ></div>
         <span class="text-[10px] text-muted-foreground">{{ l.label }}</span>
       </div>
     }
     <div class="ml-auto flex items-center gap-1.5">
-      <div style="width: 12px; height: 12px; border-radius: 2px; background: #2563EB; flex-shrink: 0;"></div>
+      <div
+        style="
+          width: 12px;
+          height: 12px;
+          border-radius: 2px;
+          background: #2563eb;
+          flex-shrink: 0;
+        "
+      ></div>
       <span class="text-[10px] text-muted-foreground">Selected</span>
     </div>
   </div>
 
-  
   @if (services().length > 0 && hasServiceColors()) {
     <div class="mt-3 flex flex-wrap items-center gap-3">
       @for (svc of services(); track svc; let i = $index) {
         @if (serviceTeethCount(svc) > 0) {
           <div class="flex items-center gap-1.5">
-            <div style="width: 10px; height: 10px; border-radius: 2px;" [style.background]="serviceColorAt(i)"></div>
+            <div
+              style="width: 10px; height: 10px; border-radius: 2px"
+              [style.background]="serviceColorAt(i)"
+            ></div>
             <span class="text-[10px] text-muted-foreground">{{ svc }}</span>
           </div>
         }
@@ -115,7 +178,6 @@
     </div>
   }
 </div>
-
 
 <ng-template #toothTpl let-num let-isUpper="isUpper">
   <div
@@ -129,7 +191,7 @@
     [attr.aria-checked]="readOnly() ? null : isSelected(num)"
     [attr.aria-label]="'Tooth ' + num"
     [style.transform]="'rotate(' + getRotation(num) + 'deg)'"
-    style="transform-origin: center bottom;"
+    style="transform-origin: center bottom"
     class="relative flex select-none flex-col items-center"
     [class.cursor-pointer]="!readOnly()"
   >
@@ -137,38 +199,71 @@
       <span
         class="mb-0.5 font-mono text-[9px] font-semibold transition-colors"
         [class]="isSelected(num) ? 'text-primary' : 'text-muted-foreground'"
-      >{{ num }}</span>
+        >{{ num }}</span
+      >
     }
     <div
       class="relative overflow-hidden"
       [style.width.px]="getToothWidth(num)"
       [style.height.px]="getToothHeight(num, isUpper)"
       [style.background]="fillOf(num)"
-      [style.border]="(statusOf(num) === 'missing' ? '2px dashed ' : '2px solid ') + borderOf(num)"
+      [style.border]="
+        (statusOf(num) === 'missing' ? '2px dashed ' : '2px solid ') +
+        borderOf(num)
+      "
       [style.borderRadius]="crownRadius(num, isUpper)"
       [style.boxShadow]="glowOf(num)"
-      style="transition: all 0.15s ease;"
+      style="transition: all 0.15s ease"
     >
-      @if (num % 10 >= 6 && statusOf(num) !== 'missing') {
+      @if (num % 10 >= 6 && statusOf(num) !== "missing") {
         <div
-          style="position: absolute; left: 50%; top: 30%; height: 40%; width: 1px; opacity: 0.4;"
+          style="
+            position: absolute;
+            left: 50%;
+            top: 30%;
+            height: 40%;
+            width: 1px;
+            opacity: 0.4;
+          "
           [style.background]="borderOf(num)"
         ></div>
       }
-      @if (statusOf(num) === 'extract') {
+      @if (statusOf(num) === "extract") {
         <div class="absolute inset-0 flex items-center justify-center">
-          <span style="font-size: 10px; color: #ef4444; font-weight: 700; line-height: 1;">×</span>
+          <span
+            style="
+              font-size: 10px;
+              color: #ef4444;
+              font-weight: 700;
+              line-height: 1;
+            "
+            >×</span
+          >
         </div>
       }
-      @if (statusOf(num) === 'implant' && !isSelected(num)) {
+      @if (statusOf(num) === "implant" && !isSelected(num)) {
         <div class="absolute inset-0 flex items-center justify-center">
-          <div style="width: 6px; height: 6px; border-radius: 50%; background: #10B981;"></div>
+          <div
+            style="
+              width: 6px;
+              height: 6px;
+              border-radius: 50%;
+              background: #10b981;
+            "
+          ></div>
         </div>
       }
       @if (isSelected(num)) {
         <div class="absolute inset-0 flex items-center justify-center">
           <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true">
-            <polyline points="2,5 4,7.5 8,2.5" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+            <polyline
+              points="2,5 4,7.5 8,2.5"
+              stroke="white"
+              stroke-width="1.5"
+              fill="none"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
           </svg>
         </div>
       }
@@ -177,7 +272,8 @@
       <span
         class="mt-0.5 font-mono text-[9px] font-semibold transition-colors"
         [class]="isSelected(num) ? 'text-primary' : 'text-muted-foreground'"
-      >{{ num }}</span>
+        >{{ num }}</span
+      >
     }
   </div>
 </ng-template>

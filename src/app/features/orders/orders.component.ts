@@ -1,37 +1,36 @@
-import { Component, computed, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { TreeTableModule } from 'primeng/treetable';
-import { TreeNode } from 'primeng/api';
-import { OrderDataService } from '@core/services/order-data.service';
-import { SubOrderDataService } from '@core/services/sub-order-data.service';
-import { SubOrderColorService } from '@core/services/sub-order-color.service';
-import { NavigationService } from '@core/services/navigation.service';
-import { FormatUtils } from '@core/services/format-utils.service';
-import { Order, OrderStatus, Priority, SubOrder } from '@core/models';
-import { ArchBadgeComponent } from '@shared/components/arch-badge/arch-badge.component';
-import { ButtonComponent } from '@shared/components/button/button.component';
-import { SearchInputComponent } from '@shared/components/search-input/search-input.component';
-import { StatusBadgeComponent } from '@shared/components/status-badge/status-badge.component';
-import { SafeHtmlPipe } from '../../shared/pipes/safe-html.pipe';
-import { lucideSvg } from '@shared/icons/lucide-icons';
-import { filterTableRows } from '@shared/utils/table-state';
-
+import { Component, computed, inject, signal } from "@angular/core";
+import { CommonModule } from "@angular/common";
+import { TreeTableModule } from "primeng/treetable";
+import { TreeNode } from "primeng/api";
+import { OrderDataService } from "@core/services/order-data.service";
+import { SubOrderDataService } from "@core/services/sub-order-data.service";
+import { SubOrderColorService } from "@core/services/sub-order-color.service";
+import { NavigationService } from "@core/services/navigation.service";
+import { FormatUtils } from "@core/services/format-utils.service";
+import { Order, OrderStatus, Priority, SubOrder } from "@core/models";
+import { ArchBadgeComponent } from "@shared/components/arch-badge/arch-badge.component";
+import { ButtonComponent } from "@shared/components/button/button.component";
+import { SearchInputComponent } from "@shared/components/search-input/search-input.component";
+import { SafeHtmlPipe } from "../../shared/pipes/safe-html.pipe";
+import { lucideSvg } from "@shared/icons/lucide-icons";
+import { filterTableRows } from "@shared/utils/table-state";
 
 export interface OrderTreeRowData {
-  kind: 'order' | 'service';
+  kind: "order" | "service";
   order: Order;
   subOrder?: SubOrder;
 }
 
-
-export function mapSubOrderToTreeNode(order: Order, subOrder: SubOrder): TreeNode<OrderTreeRowData> {
+export function mapSubOrderToTreeNode(
+  order: Order,
+  subOrder: SubOrder,
+): TreeNode<OrderTreeRowData> {
   return {
     key: `${order.id}-${subOrder.id}`,
-    data: { kind: 'service', order, subOrder },
+    data: { kind: "service", order, subOrder },
     leaf: true,
   };
 }
-
 
 export function mapOrderToTreeNode(
   order: Order,
@@ -41,67 +40,82 @@ export function mapOrderToTreeNode(
   const hasKids = children.length > 0;
   return {
     key: order.id,
-    data: { kind: 'order', order },
+    data: { kind: "order", order },
     leaf: !hasKids,
     expanded: hasKids && expanded,
-    children: hasKids ? children.map(so => mapSubOrderToTreeNode(order, so)) : undefined,
+    children: hasKids
+      ? children.map((so) => mapSubOrderToTreeNode(order, so))
+      : undefined,
   };
 }
 
-export type OrdersViewState = 'normal' | 'loading' | 'empty' | 'error';
+export type OrdersViewState = "normal" | "loading" | "empty" | "error";
 
 const PAGE_SIZES = [10, 20, 30, 40, 50];
 
-
 const COLLAPSE_ANIMATION_MS = 220;
-const STATUS_OPTIONS: OrderStatus[] = ['New', 'Review', 'Design', 'Production', 'Quality Check', 'Ready', 'Completed', 'Cancelled'];
-const PRIORITY_OPTIONS: Priority[] = ['Low', 'Normal', 'High', 'Urgent'];
+const STATUS_OPTIONS: OrderStatus[] = [
+  "New",
+  "Review",
+  "Design",
+  "Production",
+  "Quality Check",
+  "Ready",
+  "Completed",
+  "Cancelled",
+];
+const PRIORITY_OPTIONS: Priority[] = ["Low", "Normal", "High", "Urgent"];
 
-const ORDER_STATUS_BLOCK_STYLES: Record<OrderStatus, { bg: string; fg: string }> = {
-  'New': { bg: '#F1F5F9', fg: '#475569' },
-  'Review': { bg: '#FFFBEB', fg: '#B45309' },
-  'Design': { bg: '#ECFEFF', fg: '#164E63' },
-  'Production': { bg: '#EFF6FF', fg: '#1E40AF' },
-  'Quality Check': { bg: '#F5F3FF', fg: '#5B21B6' },
-  'Ready': { bg: '#ECFDF5', fg: '#065F46' },
-  'Completed': { bg: '#ECFDF5', fg: '#065F46' },
-  'Cancelled': { bg: '#FEF2F2', fg: '#B91C1C' },
+const ORDER_STATUS_BLOCK_STYLES: Record<
+  OrderStatus,
+  { bg: string; fg: string }
+> = {
+  New: { bg: "#F1F5F9", fg: "#475569" },
+  Review: { bg: "#FFFBEB", fg: "#B45309" },
+  Design: { bg: "#ECFEFF", fg: "#164E63" },
+  Production: { bg: "#EFF6FF", fg: "#1E40AF" },
+  "Quality Check": { bg: "#F5F3FF", fg: "#5B21B6" },
+  Ready: { bg: "#ECFDF5", fg: "#065F46" },
+  Completed: { bg: "#ECFDF5", fg: "#065F46" },
+  Cancelled: { bg: "#FEF2F2", fg: "#B91C1C" },
 };
 
-const SUB_ORDER_STATUS_BLOCK_STYLES: Record<SubOrder['status'], { bg: string; fg: string }> = {
-  'pending': { bg: '#E2E8F0', fg: '#475569' },
-  'in-progress': { bg: '#DBEAFE', fg: '#1E40AF' },
-  'blocked': { bg: '#FECACA', fg: '#991B1B' },
-  'done': { bg: '#D1FAE5', fg: '#065F46' },
+const SUB_ORDER_STATUS_BLOCK_STYLES: Record<
+  SubOrder["status"],
+  { bg: string; fg: string }
+> = {
+  pending: { bg: "#E2E8F0", fg: "#475569" },
+  "in-progress": { bg: "#DBEAFE", fg: "#1E40AF" },
+  blocked: { bg: "#FECACA", fg: "#991B1B" },
+  done: { bg: "#D1FAE5", fg: "#065F46" },
 };
-
 
 const SORT_COLUMN_LABELS: Partial<Record<keyof Order, string>> = {
-  orderNumber: 'Order number',
-  patientName: 'Patient',
-  doctorName: 'Doctor',
-  scanCenterName: 'Scan center',
-  billTo: 'Bill to',
-  arch: 'Maxilla/Mandible',
-  restoration: 'Format and restoration',
-  amount: 'Amount',
-  status: 'Status',
-  archiveDate: 'Archive date',
-  receivedAt: 'Received date',
-  sentAt: 'Sent date',
-  updatedAt: 'Updated date',
-  chargedAt: 'Charged date',
+  orderNumber: "Order number",
+  patientName: "Patient",
+  doctorName: "Doctor",
+  scanCenterName: "Scan center",
+  billTo: "Bill to",
+  arch: "Maxilla/Mandible",
+  restoration: "Format and restoration",
+  amount: "Amount",
+  status: "Status",
+  archiveDate: "Archive date",
+  receivedAt: "Received date",
+  sentAt: "Sent date",
+  updatedAt: "Updated date",
+  chargedAt: "Charged date",
 };
-
 
 export function compareOrderValues(a: unknown, b: unknown): number {
   if (a == null && b == null) return 0;
   if (a == null) return -1;
   if (b == null) return 1;
-  if (typeof a === 'number' && typeof b === 'number') return a - b;
-  const aNum = typeof a === 'string' && a.trim() !== '' ? Number(a) : NaN;
-  const bNum = typeof b === 'string' && b.trim() !== '' ? Number(b) : NaN;
-  if (!Number.isNaN(aNum) && !Number.isNaN(bNum) && typeof a === typeof b) return aNum - bNum;
+  if (typeof a === "number" && typeof b === "number") return a - b;
+  const aNum = typeof a === "string" && a.trim() !== "" ? Number(a) : NaN;
+  const bNum = typeof b === "string" && b.trim() !== "" ? Number(b) : NaN;
+  if (!Number.isNaN(aNum) && !Number.isNaN(bNum) && typeof a === typeof b)
+    return aNum - bNum;
   const aTime = Date.parse(String(a));
   const bTime = Date.parse(String(b));
   if (!Number.isNaN(aTime) && !Number.isNaN(bTime)) return aTime - bTime;
@@ -109,11 +123,18 @@ export function compareOrderValues(a: unknown, b: unknown): number {
 }
 
 @Component({
-  selector: 'app-orders',
+  selector: "app-orders",
   standalone: true,
-  imports: [CommonModule, TreeTableModule, ArchBadgeComponent, ButtonComponent, SearchInputComponent, StatusBadgeComponent, SafeHtmlPipe],
-  templateUrl: './orders.component.html',
-  styleUrl: './orders.component.scss'
+  imports: [
+    CommonModule,
+    TreeTableModule,
+    ArchBadgeComponent,
+    ButtonComponent,
+    SearchInputComponent,
+    SafeHtmlPipe,
+  ],
+  templateUrl: "./orders.component.html",
+  styleUrl: "./orders.component.scss",
 })
 export class OrdersComponent {
   private readonly orderService = inject(OrderDataService);
@@ -125,15 +146,15 @@ export class OrdersComponent {
   readonly orders = this.orderService.orders;
   readonly subOrders = this.subOrderService.subOrders;
 
-  readonly search = signal('');
+  readonly search = signal("");
   readonly statusFilter = signal<OrderStatus[]>([]);
-  readonly priorityFilter = signal<Priority | ''>('');
+  readonly priorityFilter = signal<Priority | "">("");
   readonly selectedIds = signal<Set<string>>(new Set());
   readonly page = signal(1);
   readonly pageSize = signal(10);
-  readonly sortColumn = signal<keyof Order | ''>('receivedAt');
-  readonly sortDirection = signal<'asc' | 'desc'>('desc');
-  readonly viewState = signal<OrdersViewState>('normal');
+  readonly sortColumn = signal<keyof Order | "">("receivedAt");
+  readonly sortDirection = signal<"asc" | "desc">("desc");
+  readonly viewState = signal<OrdersViewState>("normal");
   readonly advancedFilters = signal(false);
 
   readonly pageSizes = PAGE_SIZES;
@@ -142,31 +163,42 @@ export class OrdersComponent {
 
   readonly filtered = computed(() => {
     let result = filterTableRows(this.orders(), this.search().trim(), [
-      order => order.orderNumber,
-      order => order.patientName,
-      order => order.doctorName,
-      order => order.clinicName,
+      (order) => order.orderNumber,
+      (order) => order.patientName,
+      (order) => order.doctorName,
+      (order) => order.clinicName,
     ]);
-    if (this.statusFilter().length > 0) result = result.filter(order => this.statusFilter().includes(order.status));
-    if (this.priorityFilter()) result = result.filter(order => order.priority === this.priorityFilter());
+    if (this.statusFilter().length > 0)
+      result = result.filter((order) =>
+        this.statusFilter().includes(order.status),
+      );
+    if (this.priorityFilter())
+      result = result.filter(
+        (order) => order.priority === this.priorityFilter(),
+      );
     const column = this.sortColumn();
     if (column) {
-      const direction = this.sortDirection() === 'asc' ? 1 : -1;
-      result.sort((a, b) => compareOrderValues(a[column], b[column]) * direction);
+      const direction = this.sortDirection() === "asc" ? 1 : -1;
+      result.sort(
+        (a, b) => compareOrderValues(a[column], b[column]) * direction,
+      );
     }
     return result;
   });
 
-  readonly totalPages = computed(() => Math.max(1, Math.ceil(this.filtered().length / this.pageSize())));
+  readonly totalPages = computed(() =>
+    Math.max(1, Math.ceil(this.filtered().length / this.pageSize())),
+  );
   readonly pageData = computed(() => {
-    if (this.viewState() !== 'normal') return [];
-    return this.filtered().slice((this.page() - 1) * this.pageSize(), this.page() * this.pageSize());
+    if (this.viewState() !== "normal") return [];
+    return this.filtered().slice(
+      (this.page() - 1) * this.pageSize(),
+      this.page() * this.pageSize(),
+    );
   });
 
-  
   readonly expandedIds = signal<Set<string>>(new Set());
 
-  
   readonly collapsingIds = signal<Set<string>>(new Set());
   private readonly collapseTimers = new Map<string, number>();
 
@@ -178,14 +210,13 @@ export class OrdersComponent {
     return this.collapsingIds().has(orderId);
   }
 
-  
   toggleNodeExpand(orderId: string): void {
     if (!orderId) return;
     const pending = this.collapseTimers.get(orderId);
     if (pending !== undefined) {
       window.clearTimeout(pending);
       this.collapseTimers.delete(orderId);
-      this.collapsingIds.update(current => {
+      this.collapsingIds.update((current) => {
         const next = new Set(current);
         next.delete(orderId);
         return next;
@@ -193,23 +224,23 @@ export class OrdersComponent {
       return;
     }
     if (this.expandedIds().has(orderId)) {
-      if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
-        this.expandedIds.update(current => {
+      if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
+        this.expandedIds.update((current) => {
           const next = new Set(current);
           next.delete(orderId);
           return next;
         });
         return;
       }
-      this.collapsingIds.update(current => new Set(current).add(orderId));
+      this.collapsingIds.update((current) => new Set(current).add(orderId));
       const timer = window.setTimeout(() => {
         this.collapseTimers.delete(orderId);
-        this.collapsingIds.update(current => {
+        this.collapsingIds.update((current) => {
           const next = new Set(current);
           next.delete(orderId);
           return next;
         });
-        this.expandedIds.update(current => {
+        this.expandedIds.update((current) => {
           const next = new Set(current);
           next.delete(orderId);
           return next;
@@ -217,62 +248,75 @@ export class OrdersComponent {
       }, COLLAPSE_ANIMATION_MS);
       this.collapseTimers.set(orderId, timer);
     } else {
-      this.expandedIds.update(current => new Set(current).add(orderId));
+      this.expandedIds.update((current) => new Set(current).add(orderId));
     }
   }
 
-  
   readonly treeNodes = computed<TreeNode<OrderTreeRowData>[]>(() => {
     const expanded = this.expandedIds();
-    
+
     const allSubs = this.subOrders();
     void allSubs;
-    return this.pageData().map(order =>
-      mapOrderToTreeNode(order, this.subOrdersFor(order.id), expanded.has(order.id)),
+    return this.pageData().map((order) =>
+      mapOrderToTreeNode(
+        order,
+        this.subOrdersFor(order.id),
+        expanded.has(order.id),
+      ),
     );
   });
 
   readonly activeFilters = computed(() => [
-    ...this.statusFilter().map(status => ({ type: 'status' as const, label: status })),
-    ...(this.priorityFilter() ? [{ type: 'priority' as const, label: this.priorityFilter() as string }] : [])
+    ...this.statusFilter().map((status) => ({
+      type: "status" as const,
+      label: status,
+    })),
+    ...(this.priorityFilter()
+      ? [{ type: "priority" as const, label: this.priorityFilter() as string }]
+      : []),
   ]);
 
   readonly allPageSelected = computed(() => {
-    const pageIds = this.pageData().map(order => order.id);
-    return pageIds.length > 0 && pageIds.every(id => this.selectedIds().has(id));
+    const pageIds = this.pageData().map((order) => order.id);
+    return (
+      pageIds.length > 0 && pageIds.every((id) => this.selectedIds().has(id))
+    );
   });
 
   toggleSort(column: keyof Order): void {
-    if (this.sortColumn() === column) this.sortDirection.update(direction => (direction === 'asc' ? 'desc' : 'asc'));
+    if (this.sortColumn() === column)
+      this.sortDirection.update((direction) =>
+        direction === "asc" ? "desc" : "asc",
+      );
     else {
       this.sortColumn.set(column);
-      this.sortDirection.set('asc');
+      this.sortDirection.set("asc");
     }
   }
 
-  
   sortIconSvg(column: keyof Order): string {
     const active = this.sortColumn() === column;
     const dir = this.sortDirection();
-    const common = 'width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"';
+    const common =
+      'width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"';
     if (!active) {
       return `<svg ${common}><path d="m21 16-4 4-4-4"/><path d="M17 20V4"/><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/></svg>`;
     }
-    if (dir === 'asc') {
+    if (dir === "asc") {
       return `<svg ${common}><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg>`;
     }
     return `<svg ${common}><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>`;
   }
 
-  sortAriaSort(column: keyof Order): 'ascending' | 'descending' | 'none' {
-    if (this.sortColumn() !== column) return 'none';
-    return this.sortDirection() === 'asc' ? 'ascending' : 'descending';
+  sortAriaSort(column: keyof Order): "ascending" | "descending" | "none" {
+    if (this.sortColumn() !== column) return "none";
+    return this.sortDirection() === "asc" ? "ascending" : "descending";
   }
 
   sortAriaLabel(column: keyof Order): string {
     const label = SORT_COLUMN_LABELS[column] ?? column;
     const state = this.sortAriaSort(column);
-    if (state === 'none') return `Sort by ${label}, currently unsorted`;
+    if (state === "none") return `Sort by ${label}, currently unsorted`;
     return `Sort by ${label}, currently ${state}`;
   }
 
@@ -281,33 +325,39 @@ export class OrdersComponent {
     this.page.set(1);
   }
 
-  
   onSearchInput(value: string | Event): void {
-    const next = typeof value === 'string' ? value : ((value.target as HTMLInputElement | null)?.value ?? '');
+    const next =
+      typeof value === "string"
+        ? value
+        : ((value.target as HTMLInputElement | null)?.value ?? "");
     this.search.set(next);
     this.page.set(1);
   }
 
-  
   onDebouncedSearch(value: string | Event): void {
-    const next = typeof value === 'string' ? value : ((value.target as HTMLInputElement | null)?.value ?? '');
+    const next =
+      typeof value === "string"
+        ? value
+        : ((value.target as HTMLInputElement | null)?.value ?? "");
     this.search.set(next);
     this.page.set(1);
   }
 
   clearSearch(): void {
-    this.search.set('');
+    this.search.set("");
     this.page.set(1);
   }
 
   addStatusFilter(status: OrderStatus): void {
     if (!status || this.statusFilter().includes(status)) return;
-    this.statusFilter.update(current => [...current, status]);
+    this.statusFilter.update((current) => [...current, status]);
     this.page.set(1);
   }
 
   onPriorityChange(event: Event): void {
-    this.priorityFilter.set((event.target as HTMLSelectElement).value as Priority | '');
+    this.priorityFilter.set(
+      (event.target as HTMLSelectElement).value as Priority | "",
+    );
     this.page.set(1);
   }
 
@@ -316,21 +366,24 @@ export class OrdersComponent {
     this.page.set(1);
   }
 
-  removeFilter(type: 'status' | 'priority', label?: string): void {
-    if (type === 'status' && label) this.statusFilter.update(current => current.filter(status => status !== label));
-    if (type === 'priority') this.priorityFilter.set('');
+  removeFilter(type: "status" | "priority", label?: string): void {
+    if (type === "status" && label)
+      this.statusFilter.update((current) =>
+        current.filter((status) => status !== label),
+      );
+    if (type === "priority") this.priorityFilter.set("");
     this.page.set(1);
   }
 
   clearAllFilters(): void {
-    this.search.set('');
+    this.search.set("");
     this.statusFilter.set([]);
-    this.priorityFilter.set('');
+    this.priorityFilter.set("");
     this.page.set(1);
   }
 
   toggleSelect(orderId: string): void {
-    this.selectedIds.update(current => {
+    this.selectedIds.update((current) => {
       const next = new Set(current);
       if (next.has(orderId)) next.delete(orderId);
       else next.add(orderId);
@@ -339,12 +392,12 @@ export class OrdersComponent {
   }
 
   toggleSelectAll(): void {
-    const pageIds = this.pageData().map(order => order.id);
-    const allSelected = pageIds.every(id => this.selectedIds().has(id));
-    this.selectedIds.update(current => {
+    const pageIds = this.pageData().map((order) => order.id);
+    const allSelected = pageIds.every((id) => this.selectedIds().has(id));
+    this.selectedIds.update((current) => {
       const next = new Set(current);
-      if (allSelected) pageIds.forEach(id => next.delete(id));
-      else pageIds.forEach(id => next.add(id));
+      if (allSelected) pageIds.forEach((id) => next.delete(id));
+      else pageIds.forEach((id) => next.add(id));
       return next;
     });
   }
@@ -354,7 +407,7 @@ export class OrdersComponent {
   }
 
   toggleAdvancedFilters(): void {
-    this.advancedFilters.update(value => !value);
+    this.advancedFilters.update((value) => !value);
   }
 
   setViewState(state: OrdersViewState): void {
@@ -362,34 +415,54 @@ export class OrdersComponent {
   }
 
   simulateRefresh(): void {
-    this.viewState.set('loading');
-    window.setTimeout(() => this.viewState.set('normal'), 1200);
+    this.viewState.set("loading");
+    window.setTimeout(() => this.viewState.set("normal"), 1200);
   }
 
   retryLoad(): void {
-    this.viewState.set('normal');
+    this.viewState.set("normal");
   }
 
   exportCsv(): void {
     const rows = this.filtered();
-    const header = ['Order #', 'Patient', 'Doctor', 'Clinic', 'Status', 'Priority', 'Restoration', 'Amount', 'Received'];
+    const header = [
+      "Order #",
+      "Patient",
+      "Doctor",
+      "Clinic",
+      "Status",
+      "Priority",
+      "Restoration",
+      "Amount",
+      "Received",
+    ];
     const escape = (value: unknown): string => {
-      const text = String(value ?? '');
+      const text = String(value ?? "");
       return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
     };
     const lines = [
-      header.join(','),
-      ...rows.map(o => [
-        escape(o.orderNumber), escape(o.patientName), escape(o.doctorName),
-        escape(o.clinicName), escape(o.status), escape(o.priority),
-        escape(o.restoration), escape(o.amount), escape(o.receivedAt)
-      ].join(','))
+      header.join(","),
+      ...rows.map((o) =>
+        [
+          escape(o.orderNumber),
+          escape(o.patientName),
+          escape(o.doctorName),
+          escape(o.clinicName),
+          escape(o.status),
+          escape(o.priority),
+          escape(o.restoration),
+          escape(o.amount),
+          escape(o.receivedAt),
+        ].join(","),
+      ),
     ];
-    const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8' });
+    const blob = new Blob([lines.join("\n")], {
+      type: "text/csv;charset=utf-8",
+    });
     const url = URL.createObjectURL(blob);
-    const anchor = document.createElement('a');
+    const anchor = document.createElement("a");
     anchor.href = url;
-    anchor.download = 'orders.csv';
+    anchor.download = "orders.csv";
     anchor.click();
     URL.revokeObjectURL(url);
   }
@@ -403,11 +476,11 @@ export class OrdersComponent {
   }
 
   prevPage(): void {
-    this.page.update(current => Math.max(1, current - 1));
+    this.page.update((current) => Math.max(1, current - 1));
   }
 
   nextPage(): void {
-    this.page.update(current => Math.min(this.totalPages(), current + 1));
+    this.page.update((current) => Math.min(this.totalPages(), current + 1));
   }
 
   goToPage(target: number): void {
@@ -421,7 +494,9 @@ export class OrdersComponent {
   }
 
   rangeStart(): number {
-    return this.filtered().length === 0 ? 0 : (this.page() - 1) * this.pageSize() + 1;
+    return this.filtered().length === 0
+      ? 0
+      : (this.page() - 1) * this.pageSize() + 1;
   }
 
   rangeEnd(): number {
@@ -429,27 +504,27 @@ export class OrdersComponent {
   }
 
   openOrder(orderId: string): void {
-    this.navigationService.navigate('viewOrder', { orderId });
+    this.navigationService.navigate("viewOrder", { orderId });
   }
 
   openSubOrder(orderId: string, subOrderId: string): void {
-    this.navigationService.navigate('subOrder', { orderId, subOrderId });
+    this.navigationService.navigate("subOrder", { orderId, subOrderId });
   }
 
   openPatient(patientId: string): void {
-    this.navigationService.navigate('patientDetails', { patientId });
+    this.navigationService.navigate("patientDetails", { patientId });
   }
 
   openDoctor(doctorId: string): void {
-    this.navigationService.navigate('doctorDetails', { doctorId });
+    this.navigationService.navigate("doctorDetails", { doctorId });
   }
 
   createOrder(): void {
-    this.navigationService.navigate('createOrder');
+    this.navigationService.navigate("createOrder");
   }
 
   subOrdersFor(orderId: string): SubOrder[] {
-    return this.subOrders().filter(s => s.orderId === orderId);
+    return this.subOrders().filter((s) => s.orderId === orderId);
   }
 
   hasChildren(orderId: string): boolean {
@@ -459,7 +534,7 @@ export class OrdersComponent {
   onNodeExpand(event: { node: TreeNode<OrderTreeRowData> }): void {
     const id = event.node?.data?.order?.id ?? event.node?.key;
     if (!id) return;
-    this.expandedIds.update(current => {
+    this.expandedIds.update((current) => {
       const next = new Set(current);
       next.add(String(id));
       return next;
@@ -469,7 +544,7 @@ export class OrdersComponent {
   onNodeCollapse(event: { node: TreeNode<OrderTreeRowData> }): void {
     const id = event.node?.data?.order?.id ?? event.node?.key;
     if (!id) return;
-    this.expandedIds.update(current => {
+    this.expandedIds.update((current) => {
       const next = new Set(current);
       next.delete(String(id));
       return next;
@@ -477,37 +552,45 @@ export class OrdersComponent {
   }
 
   orderStatusLabel(status: OrderStatus): string {
-    if (status === 'Completed') return 'Shapped';
+    if (status === "Completed") return "Shapped";
     return status;
   }
 
-  subOrderStatusLabel(status: SubOrder['status']): string {
-    if (status === 'done') return 'done';
-    if (status === 'in-progress') return 'In Progress';
-    if (status === 'blocked') return 'Blocked';
-    return 'Pending';
+  subOrderStatusLabel(status: SubOrder["status"]): string {
+    if (status === "done") return "done";
+    if (status === "in-progress") return "In Progress";
+    if (status === "blocked") return "Blocked";
+    return "Pending";
   }
 
   orderStatusBlockStyle(status: OrderStatus): Record<string, string> {
-    const style = ORDER_STATUS_BLOCK_STYLES[status] ?? { bg: '#F1F5F9', fg: '#64748B' };
+    const style = ORDER_STATUS_BLOCK_STYLES[status] ?? {
+      bg: "#F1F5F9",
+      fg: "#64748B",
+    };
     return {
-      'background-color': style.bg,
+      "background-color": style.bg,
       color: style.fg,
     };
   }
 
-  subOrderStatusBlockStyle(status: SubOrder['status']): Record<string, string> {
-    const style = SUB_ORDER_STATUS_BLOCK_STYLES[status] ?? { bg: '#F1F5F9', fg: '#64748B' };
+  subOrderStatusBlockStyle(status: SubOrder["status"]): Record<string, string> {
+    const style = SUB_ORDER_STATUS_BLOCK_STYLES[status] ?? {
+      bg: "#F1F5F9",
+      fg: "#64748B",
+    };
     return {
-      'background-color': style.bg,
+      "background-color": style.bg,
       color: style.fg,
     };
   }
 
   subOrderServiceBlockStyle(subOrder: SubOrder): Record<string, string> {
-    const background = this.subOrderColorService.colorForServiceLabel(subOrder.service);
+    const background = this.subOrderColorService.colorForServiceLabel(
+      subOrder.service,
+    );
     return {
-      'background-color': background,
+      "background-color": background,
       color: this.contrastText(background),
     };
   }
@@ -524,14 +607,14 @@ export class OrdersComponent {
 
   private contrastText(hex: string): string {
     const parsed = this.parseHex(hex);
-    if (!parsed) return '#0F172A';
+    if (!parsed) return "#0F172A";
     const { r, g, b } = parsed;
     const luminance = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
-    return luminance > 0.62 ? '#0F172A' : '#FFFFFF';
+    return luminance > 0.62 ? "#0F172A" : "#FFFFFF";
   }
 
   private parseHex(hex: string): { r: number; g: number; b: number } | null {
-    const raw = hex.replace('#', '').trim();
+    const raw = hex.replace("#", "").trim();
     if (raw.length !== 6) return null;
     const r = Number.parseInt(raw.slice(0, 2), 16);
     const g = Number.parseInt(raw.slice(2, 4), 16);
@@ -541,33 +624,32 @@ export class OrdersComponent {
   }
 
   changeRequestClasses(changeRequest: string): string {
-    if (changeRequest === 'Pending Review') return 'bg-amber-50 text-amber-700';
-    if (changeRequest === 'In Progress') return 'bg-blue-50 text-blue-700';
-    return 'bg-emerald-50 text-emerald-700';
+    if (changeRequest === "Pending Review") return "bg-amber-50 text-amber-700";
+    if (changeRequest === "In Progress") return "bg-blue-50 text-blue-700";
+    return "bg-emerald-50 text-emerald-700";
   }
 
   getIconSvg(name: string): string {
     const sizes: Record<string, { icon: string; size: number }> = {
-      plus: { icon: 'plus', size: 13 },
-      download: { icon: 'download', size: 15 },
-      refresh: { icon: 'refresh-cw', size: 15 },
-      sliders: { icon: 'sliders-horizontal', size: 12 },
-      x: { icon: 'x', size: 12 },
-      'chevron-left': { icon: 'chevron-left', size: 14 },
-      'chevron-right': { icon: 'chevron-right', size: 14 },
-      'chevron-down': { icon: 'chevron-down', size: 10 },
-      lock: { icon: 'lock', size: 12 },
-      unlock: { icon: 'lock-open', size: 12 },
-      'file-text': { icon: 'file-text', size: 12 },
-      search: { icon: 'search', size: 13 },
-      'check-square': { icon: 'square-check-big', size: 14 },
-      square: { icon: 'square', size: 14 },
-      'check-square-sm': { icon: 'square-check-big', size: 13 },
-      'square-sm': { icon: 'square', size: 13 },
+      plus: { icon: "plus", size: 13 },
+      download: { icon: "download", size: 15 },
+      refresh: { icon: "refresh-cw", size: 15 },
+      sliders: { icon: "sliders-horizontal", size: 12 },
+      x: { icon: "x", size: 12 },
+      "chevron-left": { icon: "chevron-left", size: 14 },
+      "chevron-right": { icon: "chevron-right", size: 14 },
+      "chevron-down": { icon: "chevron-down", size: 10 },
+      lock: { icon: "lock", size: 12 },
+      unlock: { icon: "lock-open", size: 12 },
+      "file-text": { icon: "file-text", size: 12 },
+      search: { icon: "search", size: 13 },
+      "check-square": { icon: "square-check-big", size: 14 },
+      square: { icon: "square", size: 14 },
+      "check-square-sm": { icon: "square-check-big", size: 13 },
+      "square-sm": { icon: "square", size: 13 },
     };
     const entry = sizes[name];
-    if (!entry) return '';
+    if (!entry) return "";
     return lucideSvg(entry.icon, entry.size);
   }
 }
-

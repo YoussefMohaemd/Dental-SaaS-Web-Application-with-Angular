@@ -19,6 +19,8 @@
     />
     <ng-content select="[slot=suffix]"></ng-content>
   </div>
-  <p *ngIf="hint() && !error()" [id]="hintId()" class="field-hint">{{ hint() }}</p>
+  <p *ngIf="hint() && !error()" [id]="hintId()" class="field-hint">
+    {{ hint() }}
+  </p>
   <p *ngIf="error()" [id]="errorId()" class="field-error">{{ error() }}</p>
 </div>

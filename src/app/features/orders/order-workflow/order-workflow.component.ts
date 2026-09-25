@@ -1,13 +1,13 @@
-import { Component, computed, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
-import { OrderDataService } from '@core/services/order-data.service';
-import { NavigationService } from '@core/services/navigation.service';
-import { FormatUtils } from '@core/services/format-utils.service';
-import { OrderStatus } from '@core/models';
-import { ButtonComponent } from '@shared/components/button/button.component';
-import { WorkflowTimelineComponent } from '@shared/components/workflow-timeline/workflow-timeline.component';
-import { SafeHtmlPipe } from '@shared/pipes/safe-html.pipe';
+import { Component, computed, inject, signal } from "@angular/core";
+import { CommonModule } from "@angular/common";
+import { ActivatedRoute } from "@angular/router";
+import { OrderDataService } from "@core/services/order-data.service";
+import { NavigationService } from "@core/services/navigation.service";
+import { FormatUtils } from "@core/services/format-utils.service";
+import { OrderStatus } from "@core/models";
+import { ButtonComponent } from "@shared/components/button/button.component";
+import { WorkflowTimelineComponent } from "@shared/components/workflow-timeline/workflow-timeline.component";
+import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
 
 interface WorkflowStage {
   status: OrderStatus;
@@ -17,24 +17,91 @@ interface WorkflowStage {
   actions: string[];
 }
 
-const STAGE_ORDER: OrderStatus[] = ['New', 'Review', 'Design', 'Production', 'Quality Check', 'Ready', 'Completed'];
+const STAGE_ORDER: OrderStatus[] = [
+  "New",
+  "Review",
+  "Design",
+  "Production",
+  "Quality Check",
+  "Ready",
+  "Completed",
+];
 
 const STAGES: WorkflowStage[] = [
-  { status: 'New', label: 'Order Received', owner: 'Reception', description: 'Order intake and initial verification.', actions: ['Verify scan files', 'Confirm patient details', 'Set priority'] },
-  { status: 'Review', label: 'Technical Review', owner: 'Lead Technician', description: 'Validate scan quality and prescription.', actions: ['Review STL quality', 'Validate occlusal data', 'Confirm shade selection'] },
-  { status: 'Design', label: 'CAD Design', owner: 'T. Anderson', description: 'Digital design and margin placement.', actions: ['Create initial design', 'Margin placement', 'Patient approval (if needed)'] },
-  { status: 'Production', label: 'Milling / Fabrication', owner: 'M. Rivera', description: 'Manufacturing and post-processing.', actions: ['Queue milling job', 'Monitor production', 'Post-process'] },
-  { status: 'Quality Check', label: 'Quality Control', owner: 'QC Team', description: 'Final inspection before dispatch.', actions: ['Occlusal check', 'Shade verification', 'Surface finish inspection'] },
-  { status: 'Ready', label: 'Ready for Pickup', owner: 'Dispatch', description: 'Packaging and clinic notification.', actions: ['Package order', 'Notify clinic', 'Arrange delivery'] },
-  { status: 'Completed', label: 'Delivered', owner: 'Completed', description: 'Order delivered and closed.', actions: [] }
+  {
+    status: "New",
+    label: "Order Received",
+    owner: "Reception",
+    description: "Order intake and initial verification.",
+    actions: ["Verify scan files", "Confirm patient details", "Set priority"],
+  },
+  {
+    status: "Review",
+    label: "Technical Review",
+    owner: "Lead Technician",
+    description: "Validate scan quality and prescription.",
+    actions: [
+      "Review STL quality",
+      "Validate occlusal data",
+      "Confirm shade selection",
+    ],
+  },
+  {
+    status: "Design",
+    label: "CAD Design",
+    owner: "T. Anderson",
+    description: "Digital design and margin placement.",
+    actions: [
+      "Create initial design",
+      "Margin placement",
+      "Patient approval (if needed)",
+    ],
+  },
+  {
+    status: "Production",
+    label: "Milling / Fabrication",
+    owner: "M. Rivera",
+    description: "Manufacturing and post-processing.",
+    actions: ["Queue milling job", "Monitor production", "Post-process"],
+  },
+  {
+    status: "Quality Check",
+    label: "Quality Control",
+    owner: "QC Team",
+    description: "Final inspection before dispatch.",
+    actions: [
+      "Occlusal check",
+      "Shade verification",
+      "Surface finish inspection",
+    ],
+  },
+  {
+    status: "Ready",
+    label: "Ready for Pickup",
+    owner: "Dispatch",
+    description: "Packaging and clinic notification.",
+    actions: ["Package order", "Notify clinic", "Arrange delivery"],
+  },
+  {
+    status: "Completed",
+    label: "Delivered",
+    owner: "Completed",
+    description: "Order delivered and closed.",
+    actions: [],
+  },
 ];
 
 @Component({
-  selector: 'app-order-workflow',
+  selector: "app-order-workflow",
   standalone: true,
-  imports: [CommonModule, ButtonComponent, WorkflowTimelineComponent, SafeHtmlPipe],
-  templateUrl: './order-workflow.component.html',
-  styleUrl: './order-workflow.component.scss'
+  imports: [
+    CommonModule,
+    ButtonComponent,
+    WorkflowTimelineComponent,
+    SafeHtmlPipe,
+  ],
+  templateUrl: "./order-workflow.component.html",
+  styleUrl: "./order-workflow.component.scss",
 })
 export class OrderWorkflowComponent {
   private readonly route = inject(ActivatedRoute);
@@ -46,8 +113,8 @@ export class OrderWorkflowComponent {
   readonly stages: WorkflowStage[] = STAGES;
 
   readonly order = computed(() => {
-    const orderId = this.route.snapshot.paramMap.get('orderId');
-    return this.orderService.getOrderById(orderId ?? '');
+    const orderId = this.route.snapshot.paramMap.get("orderId");
+    return this.orderService.getOrderById(orderId ?? "");
   });
 
   readonly currentIndex = computed(() => {
@@ -66,8 +133,9 @@ export class OrderWorkflowComponent {
 
   goBack(): void {
     const current = this.order();
-    if (current) this.navigationService.navigate('viewOrder', { orderId: current.id });
-    else this.navigationService.navigate('orders');
+    if (current)
+      this.navigationService.navigate("viewOrder", { orderId: current.id });
+    else this.navigationService.navigate("orders");
   }
 
   isStageDone(index: number): boolean {
@@ -89,11 +157,11 @@ export class OrderWorkflowComponent {
     }, 600);
   }
 
-  
   getIconSvg(name: string): string {
     const icons: Record<string, string> = {
-      'chevron-right': '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>'
+      "chevron-right":
+        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>',
     };
-    return icons[name] || '';
+    return icons[name] || "";
   }
 }

@@ -3,10 +3,6 @@
   height: 100%;
 }
 
-
-
-
-
 .login-form > * + * {
   margin-top: 1rem;
 }
@@ -65,15 +61,6 @@
 .form-field .toggle-password:hover {
   color: var(--foreground);
 }
-
-
-
-
-
-
-
-
-
 
 .login-leading-icon {
   color: var(--color-muted-foreground, var(--muted-foreground, #64748b));

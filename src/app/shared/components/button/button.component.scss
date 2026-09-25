@@ -1,8 +1,5 @@
 :host {
   display: inline-flex;
-  
-  
-  
 }
 
 :host(.w-full) {
@@ -12,10 +9,6 @@
 :host(.w-full) button {
   width: 100%;
 }
-
-
-
-
 
 :host(.justify-start) button,
 :host(.justify-start) a {
@@ -37,18 +30,11 @@
   gap: 0.5rem;
 }
 
-
-
-
 :host(.text-sm) button,
 :host(.text-sm) a {
   font-size: 0.875rem;
   line-height: 1.25rem;
 }
-
-
-
-
 
 button > span,
 a > span {
@@ -79,8 +65,7 @@ a > span > span {
   }
 }
 
-
-:host-context([data-theme='dark']) {
+:host-context([data-theme="dark"]) {
   .loading-spinner {
     border-top-color: currentColor;
   }

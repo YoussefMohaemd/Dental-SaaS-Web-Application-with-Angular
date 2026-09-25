@@ -1,33 +1,60 @@
 <div class="grid-showcase-page">
-  <header class="rounded-2xl border border-border bg-[linear-gradient(135deg,var(--color-card),color-mix(in_srgb,var(--color-primary)_5%,var(--color-card)))] p-5">
+  <header
+    class="rounded-2xl border border-border bg-[linear-gradient(135deg,var(--color-card),color-mix(in_srgb,var(--color-primary)_5%,var(--color-card)))] p-5"
+  >
     <h1 class="font-display text-xl font-bold text-foreground">Grid</h1>
     <p class="mt-1 text-sm text-muted-foreground max-w-3xl">
-      Real data grid patterns used across the Dental SaaS workspace, including filters, selection,
-      actions, statuses, and responsive behavior.
+      Real data grid patterns used across the Dental SaaS workspace, including
+      filters, selection, actions, statuses, and responsive behavior.
     </p>
     <div class="mt-3 flex flex-wrap gap-2">
-      <span class="rounded-full border border-border bg-card px-2.5 py-1 text-[11px] font-medium text-muted-foreground">Production-ready patterns</span>
-      <span class="rounded-full border border-border bg-card px-2.5 py-1 text-[11px] font-medium text-muted-foreground">Light & dark compatible</span>
-      <span class="rounded-full border border-border bg-card px-2.5 py-1 text-[11px] font-medium text-muted-foreground">Responsive behavior</span>
+      <span
+        class="rounded-full border border-border bg-card px-2.5 py-1 text-[11px] font-medium text-muted-foreground"
+        >Production-ready patterns</span
+      >
+      <span
+        class="rounded-full border border-border bg-card px-2.5 py-1 text-[11px] font-medium text-muted-foreground"
+        >Light & dark compatible</span
+      >
+      <span
+        class="rounded-full border border-border bg-card px-2.5 py-1 text-[11px] font-medium text-muted-foreground"
+        >Responsive behavior</span
+      >
     </div>
   </header>
 
-  <section class="showcase-card shadow-[0_14px_34px_-30px_rgba(37,99,235,0.65)]">
+  <section
+    class="showcase-card shadow-[0_14px_34px_-30px_rgba(37,99,235,0.65)]"
+  >
     <div class="showcase-header">
-      <span class="w-fit rounded-full border border-border bg-card px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-primary">Visual Grid</span>
+      <span
+        class="w-fit rounded-full border border-border bg-card px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-primary"
+        >Visual Grid</span
+      >
       <h2 class="showcase-title">Service Operations Cards</h2>
-      <p class="showcase-description">Card-based production grid for quick service health scanning.</p>
+      <p class="showcase-description">
+        Card-based production grid for quick service health scanning.
+      </p>
     </div>
 
     <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
       @for (card of serviceShowcaseCards; track card.id) {
-        <article class="rounded-xl border border-border bg-[linear-gradient(160deg,color-mix(in_srgb,var(--color-card)_88%,var(--color-primary)_12%),var(--color-card))] p-3 shadow-[0_8px_24px_-22px_rgba(15,23,42,0.8)] transition-transform duration-200 hover:-translate-y-0.5">
+        <article
+          class="rounded-xl border border-border bg-[linear-gradient(160deg,color-mix(in_srgb,var(--color-card)_88%,var(--color-primary)_12%),var(--color-card))] p-3 shadow-[0_8px_24px_-22px_rgba(15,23,42,0.8)] transition-transform duration-200 hover:-translate-y-0.5"
+        >
           <div class="flex items-start justify-between gap-3">
             <div>
-              <p class="text-sm font-semibold text-foreground">{{ card.serviceName }}</p>
-              <p class="text-xs text-muted-foreground">{{ card.category }} · Owner: {{ card.owner }}</p>
+              <p class="text-sm font-semibold text-foreground">
+                {{ card.serviceName }}
+              </p>
+              <p class="text-xs text-muted-foreground">
+                {{ card.category }} · Owner: {{ card.owner }}
+              </p>
             </div>
-            <span class="rounded px-2 py-0.5 text-[10px] font-semibold" [class]="serviceCardStatusClass(card.status)">
+            <span
+              class="rounded px-2 py-0.5 text-[10px] font-semibold"
+              [class]="serviceCardStatusClass(card.status)"
+            >
               {{ card.status }}
             </span>
           </div>
@@ -35,15 +62,21 @@
           <div class="mt-3 grid grid-cols-3 gap-2">
             <div class="rounded-lg border border-border/80 bg-card px-2 py-1.5">
               <p class="text-[10px] text-muted-foreground">Open</p>
-              <p class="font-mono text-xs font-semibold text-foreground">{{ card.openOrders }}</p>
+              <p class="font-mono text-xs font-semibold text-foreground">
+                {{ card.openOrders }}
+              </p>
             </div>
             <div class="rounded-lg border border-border/80 bg-card px-2 py-1.5">
               <p class="text-[10px] text-muted-foreground">Completed</p>
-              <p class="font-mono text-xs font-semibold text-foreground">{{ card.completedToday }}</p>
+              <p class="font-mono text-xs font-semibold text-foreground">
+                {{ card.completedToday }}
+              </p>
             </div>
             <div class="rounded-lg border border-border/80 bg-card px-2 py-1.5">
               <p class="text-[10px] text-muted-foreground">Utilization</p>
-              <p class="font-mono text-xs font-semibold text-foreground">{{ card.utilization }}</p>
+              <p class="font-mono text-xs font-semibold text-foreground">
+                {{ card.utilization }}
+              </p>
             </div>
           </div>
         </article>
@@ -51,31 +84,57 @@
     </div>
   </section>
 
-  <section class="showcase-card shadow-[0_14px_34px_-30px_rgba(6,182,212,0.65)]">
+  <section
+    class="showcase-card shadow-[0_14px_34px_-30px_rgba(6,182,212,0.65)]"
+  >
     <div class="showcase-header">
-      <span class="w-fit rounded-full border border-border bg-card px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-accent">Operational Board</span>
+      <span
+        class="w-fit rounded-full border border-border bg-card px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-accent"
+        >Operational Board</span
+      >
       <h2 class="showcase-title">Workflow Board Grid</h2>
-      <p class="showcase-description">Kanban-like grid for stage-by-stage order flow without table rows.</p>
+      <p class="showcase-description">
+        Kanban-like grid for stage-by-stage order flow without table rows.
+      </p>
     </div>
 
     <div class="grid grid-cols-1 gap-3 lg:grid-cols-5">
       @for (column of workflowBoardColumns(); track column.stage) {
-        <div class="rounded-xl border border-border bg-[linear-gradient(180deg,color-mix(in_srgb,var(--color-muted)_42%,transparent),transparent)] p-2.5">
+        <div
+          class="rounded-xl border border-border bg-[linear-gradient(180deg,color-mix(in_srgb,var(--color-muted)_42%,transparent),transparent)] p-2.5"
+        >
           <div class="mb-2 flex items-center justify-between">
-            <p class="text-xs font-semibold text-foreground">{{ column.stage }}</p>
-            <span class="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">{{ column.items.length }}</span>
+            <p class="text-xs font-semibold text-foreground">
+              {{ column.stage }}
+            </p>
+            <span
+              class="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground"
+              >{{ column.items.length }}</span
+            >
           </div>
 
           <div class="space-y-2">
             @for (item of column.items; track item.id) {
-              <article class="rounded-lg border border-border bg-card p-2.5 shadow-[0_6px_20px_-18px_rgba(37,99,235,0.9)]">
-                <p class="font-mono text-[11px] font-semibold text-primary">{{ item.orderNumber }}</p>
-                <p class="mt-0.5 text-xs font-medium text-foreground">{{ item.patient }}</p>
-                <p class="mt-1 text-[11px] text-muted-foreground">{{ item.service }}</p>
-                <p class="mt-1 text-[10px] text-muted-foreground">Due: <span class="font-mono">{{ item.dueDate }}</span></p>
+              <article
+                class="rounded-lg border border-border bg-card p-2.5 shadow-[0_6px_20px_-18px_rgba(37,99,235,0.9)]"
+              >
+                <p class="font-mono text-[11px] font-semibold text-primary">
+                  {{ item.orderNumber }}
+                </p>
+                <p class="mt-0.5 text-xs font-medium text-foreground">
+                  {{ item.patient }}
+                </p>
+                <p class="mt-1 text-[11px] text-muted-foreground">
+                  {{ item.service }}
+                </p>
+                <p class="mt-1 text-[10px] text-muted-foreground">
+                  Due: <span class="font-mono">{{ item.dueDate }}</span>
+                </p>
               </article>
             } @empty {
-              <div class="rounded-lg border border-dashed border-border bg-card p-2 text-center text-[11px] text-muted-foreground">
+              <div
+                class="rounded-lg border border-dashed border-border bg-card p-2 text-center text-[11px] text-muted-foreground"
+              >
                 No items
               </div>
             }
@@ -85,27 +144,48 @@
     </div>
   </section>
 
-  <section class="showcase-card shadow-[0_14px_34px_-30px_rgba(16,185,129,0.6)]">
+  <section
+    class="showcase-card shadow-[0_14px_34px_-30px_rgba(16,185,129,0.6)]"
+  >
     <div class="showcase-header">
-      <span class="w-fit rounded-full border border-border bg-card px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-success">Quick Context</span>
+      <span
+        class="w-fit rounded-full border border-border bg-card px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-success"
+        >Quick Context</span
+      >
       <h2 class="showcase-title">Patient Snapshot Tiles</h2>
-      <p class="showcase-description">Tile grid for quick patient/order context before opening details.</p>
+      <p class="showcase-description">
+        Tile grid for quick patient/order context before opening details.
+      </p>
     </div>
 
     <div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
       @for (snapshot of patientSnapshots; track snapshot.id) {
-        <article class="rounded-xl border border-border bg-[linear-gradient(160deg,var(--color-card),color-mix(in_srgb,var(--color-accent)_7%,var(--color-card)))] p-3 shadow-[0_8px_20px_-20px_rgba(15,23,42,0.9)]">
+        <article
+          class="rounded-xl border border-border bg-[linear-gradient(160deg,var(--color-card),color-mix(in_srgb,var(--color-accent)_7%,var(--color-card)))] p-3 shadow-[0_8px_20px_-20px_rgba(15,23,42,0.9)]"
+        >
           <div class="flex items-start justify-between gap-2">
             <div>
-              <p class="text-sm font-semibold text-foreground">{{ snapshot.patient }}</p>
-              <p class="font-mono text-[11px] text-muted-foreground">{{ snapshot.patientId }}</p>
+              <p class="text-sm font-semibold text-foreground">
+                {{ snapshot.patient }}
+              </p>
+              <p class="font-mono text-[11px] text-muted-foreground">
+                {{ snapshot.patientId }}
+              </p>
             </div>
-            <app-status-badge [status]="stageToStatus(snapshot.stage)" [label]="statusLabel(snapshot.stage)" size="xs" />
+            <app-status-badge
+              [status]="stageToStatus(snapshot.stage)"
+              [label]="statusLabel(snapshot.stage)"
+              size="xs"
+            />
           </div>
 
-          <p class="mt-2 text-[11px] text-muted-foreground">{{ snapshot.doctor }}</p>
+          <p class="mt-2 text-[11px] text-muted-foreground">
+            {{ snapshot.doctor }}
+          </p>
           <p class="mt-2 text-xs text-foreground">{{ snapshot.nextStep }}</p>
-          <p class="mt-2 text-[11px] text-muted-foreground">Due: <span class="font-mono">{{ snapshot.dueDate }}</span></p>
+          <p class="mt-2 text-[11px] text-muted-foreground">
+            Due: <span class="font-mono">{{ snapshot.dueDate }}</span>
+          </p>
 
           <div class="mt-3 flex gap-2">
             <app-button variant="ghost" size="sm">View</app-button>
@@ -118,11 +198,18 @@
 
   <section class="showcase-card shadow-[0_12px_28px_-28px_rgba(15,23,42,0.9)]">
     <div class="showcase-header">
-      <span class="w-fit rounded-full border border-border bg-card px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Data Grid</span>
+      <span
+        class="w-fit rounded-full border border-border bg-card px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground"
+        >Data Grid</span
+      >
       <h2 class="showcase-title">Orders Overview Grid</h2>
-      <p class="showcase-description">Sortable and paginated order data for daily production coordination.</p>
+      <p class="showcase-description">
+        Sortable and paginated order data for daily production coordination.
+      </p>
     </div>
-    <div class="overflow-hidden rounded-xl border border-border bg-card/80 shadow-[0_12px_26px_-24px_rgba(15,23,42,0.95)]">
+    <div
+      class="overflow-hidden rounded-xl border border-border bg-card/80 shadow-[0_12px_26px_-24px_rgba(15,23,42,0.95)]"
+    >
       <p-table
         [value]="orders"
         [paginator]="true"
@@ -133,46 +220,75 @@
         dataKey="id"
         styleClass="p-datatable-sm p-datatable-striped-rows showcase-table"
       >
-      <ng-template pTemplate="header">
-        <tr>
-          <th pSortableColumn="orderNumber">Order ID <p-sortIcon field="orderNumber"></p-sortIcon></th>
-          <th pSortableColumn="patient">Patient <p-sortIcon field="patient"></p-sortIcon></th>
-          <th pSortableColumn="doctor">Doctor <p-sortIcon field="doctor"></p-sortIcon></th>
-          <th pSortableColumn="service">Service <p-sortIcon field="service"></p-sortIcon></th>
-          <th pSortableColumn="stage">Status <p-sortIcon field="stage"></p-sortIcon></th>
-          <th pSortableColumn="createdDate">Created <p-sortIcon field="createdDate"></p-sortIcon></th>
-          <th pSortableColumn="dueDate">Due Date <p-sortIcon field="dueDate"></p-sortIcon></th>
-          <th>Actions</th>
-        </tr>
-      </ng-template>
-      <ng-template pTemplate="body" let-row>
-        <tr class="group">
-          <td class="font-mono text-xs font-semibold text-primary">{{ row.orderNumber }}</td>
-          <td>{{ row.patient }}</td>
-          <td class="text-muted-foreground">{{ row.doctor }}</td>
-          <td>{{ row.service }}</td>
-          <td>
-            <app-status-badge [status]="stageToStatus(row.stage)" [label]="statusLabel(row.stage)" size="xs" />
-          </td>
-          <td class="font-mono text-xs text-muted-foreground">{{ row.createdDate }}</td>
-          <td class="font-mono text-xs text-muted-foreground">{{ row.dueDate }}</td>
-          <td>
-            <div class="row-actions">
-              <app-button variant="ghost" size="sm">View</app-button>
-              <app-button variant="outline" size="sm">Edit</app-button>
-            </div>
-          </td>
-        </tr>
-      </ng-template>
+        <ng-template pTemplate="header">
+          <tr>
+            <th pSortableColumn="orderNumber">
+              Order ID <p-sortIcon field="orderNumber"></p-sortIcon>
+            </th>
+            <th pSortableColumn="patient">
+              Patient <p-sortIcon field="patient"></p-sortIcon>
+            </th>
+            <th pSortableColumn="doctor">
+              Doctor <p-sortIcon field="doctor"></p-sortIcon>
+            </th>
+            <th pSortableColumn="service">
+              Service <p-sortIcon field="service"></p-sortIcon>
+            </th>
+            <th pSortableColumn="stage">
+              Status <p-sortIcon field="stage"></p-sortIcon>
+            </th>
+            <th pSortableColumn="createdDate">
+              Created <p-sortIcon field="createdDate"></p-sortIcon>
+            </th>
+            <th pSortableColumn="dueDate">
+              Due Date <p-sortIcon field="dueDate"></p-sortIcon>
+            </th>
+            <th>Actions</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-row>
+          <tr class="group">
+            <td class="font-mono text-xs font-semibold text-primary">
+              {{ row.orderNumber }}
+            </td>
+            <td>{{ row.patient }}</td>
+            <td class="text-muted-foreground">{{ row.doctor }}</td>
+            <td>{{ row.service }}</td>
+            <td>
+              <app-status-badge
+                [status]="stageToStatus(row.stage)"
+                [label]="statusLabel(row.stage)"
+                size="sm"
+              />
+            </td>
+            <td class="font-mono text-xs text-muted-foreground">
+              {{ row.createdDate }}
+            </td>
+            <td class="font-mono text-xs text-muted-foreground">
+              {{ row.dueDate }}
+            </td>
+            <td>
+              <div class="row-actions">
+                <app-button variant="ghost" size="sm">View</app-button>
+                <app-button variant="outline" size="sm">Edit</app-button>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
       </p-table>
     </div>
   </section>
 
   <section class="showcase-card shadow-[0_12px_28px_-28px_rgba(15,23,42,0.9)]">
     <div class="showcase-header">
-      <span class="w-fit rounded-full border border-border bg-card px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Searchable Grid</span>
+      <span
+        class="w-fit rounded-full border border-border bg-card px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground"
+        >Searchable Grid</span
+      >
       <h2 class="showcase-title">Patient Follow-up Grid</h2>
-      <p class="showcase-description">Search and filter patient records by status and visit recency.</p>
+      <p class="showcase-description">
+        Search and filter patient records by status and visit recency.
+      </p>
     </div>
 
     <div class="showcase-toolbar">
@@ -202,8 +318,12 @@
           ariaLabel="Filter patients by last visit window"
         />
       </div>
-      <app-button variant="outline" size="sm" (onClick)="toggleLoadingExample()">
-        {{ showLoadingExample() ? 'Hide Loading' : 'Show Loading' }}
+      <app-button
+        variant="outline"
+        size="sm"
+        (onClick)="toggleLoadingExample()"
+      >
+        {{ showLoadingExample() ? "Hide Loading" : "Show Loading" }}
       </app-button>
     </div>
 
@@ -215,9 +335,13 @@
         description="Try broadening the status or visit window to see matching records."
       />
     } @else {
-      <div class="table-scroll-wrap rounded-xl border border-border bg-card/80 shadow-[0_12px_26px_-24px_rgba(15,23,42,0.95)]">
+      <div
+        class="table-scroll-wrap rounded-xl border border-border bg-card/80 shadow-[0_12px_26px_-24px_rgba(15,23,42,0.95)]"
+      >
         <table class="showcase-native-table">
-          <thead class="bg-[linear-gradient(180deg,color-mix(in_srgb,var(--color-muted)_70%,transparent),transparent)]">
+          <thead
+            class="bg-[linear-gradient(180deg,color-mix(in_srgb,var(--color-muted)_70%,transparent),transparent)]"
+          >
             <tr>
               <th>Patient</th>
               <th>Patient ID</th>
@@ -232,18 +356,30 @@
             @for (row of filteredPatients(); track row.id) {
               <tr class="transition-colors even:bg-muted/20 hover:bg-primary/5">
                 <td class="font-semibold text-foreground">{{ row.patient }}</td>
-                <td class="font-mono text-xs text-muted-foreground">{{ row.patientId }}</td>
+                <td class="font-mono text-xs text-muted-foreground">
+                  {{ row.patientId }}
+                </td>
                 <td class="text-muted-foreground">{{ row.doctor }}</td>
                 <td>{{ row.age }}</td>
-                <td class="font-mono text-xs text-muted-foreground">{{ row.lastVisit }}</td>
+                <td class="font-mono text-xs text-muted-foreground">
+                  {{ row.lastVisit }}
+                </td>
                 <td>
-                  <span class="rounded px-2 py-0.5 text-[10px] font-semibold" [class]="patientStatusClass(row.status)">
+                  <span
+                    class="rounded px-2 py-0.5 text-[10px] font-semibold"
+                    [class]="patientStatusClass(row.status)"
+                  >
                     {{ row.status }}
                   </span>
                 </td>
                 <td>
                   <div class="row-actions">
-                    <app-button variant="ghost" size="sm" (onClick)="openPatientProfile(row.patientId)">View</app-button>
+                    <app-button
+                      variant="ghost"
+                      size="sm"
+                      (onClick)="openPatientProfile(row.patientId)"
+                      >View</app-button
+                    >
                     <app-button variant="outline" size="sm">Edit</app-button>
                   </div>
                 </td>
@@ -255,44 +391,62 @@
     }
   </section>
 
-  <section class="showcase-card grid-two-col shadow-[0_12px_28px_-28px_rgba(15,23,42,0.9)]">
+  <section
+    class="showcase-card grid-two-col shadow-[0_12px_28px_-28px_rgba(15,23,42,0.9)]"
+  >
     <div>
       <div class="showcase-header">
-        <span class="w-fit rounded-full border border-border bg-card px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Selectable Grid</span>
+        <span
+          class="w-fit rounded-full border border-border bg-card px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground"
+          >Selectable Grid</span
+        >
         <h2 class="showcase-title">Selectable Services Grid</h2>
-        <p class="showcase-description">Bulk-select service lines for status update or assignment.</p>
+        <p class="showcase-description">
+          Bulk-select service lines for status update or assignment.
+        </p>
       </div>
-      <div class="overflow-hidden rounded-xl border border-border bg-card/80 shadow-[0_12px_26px_-24px_rgba(15,23,42,0.95)]">
+      <div
+        class="overflow-hidden rounded-xl border border-border bg-card/80 shadow-[0_12px_26px_-24px_rgba(15,23,42,0.95)]"
+      >
         <p-table
           [value]="services"
           [(selection)]="selectedServiceRows"
           dataKey="id"
           styleClass="p-datatable-sm p-datatable-striped-rows showcase-table"
         >
-        <ng-template pTemplate="header">
-          <tr>
-            <th style="width: 2.5rem"><p-tableHeaderCheckbox></p-tableHeaderCheckbox></th>
-            <th>Service Name</th>
-            <th>Category</th>
-            <th>Orders</th>
-            <th>Status</th>
-            <th>Updated</th>
-          </tr>
-        </ng-template>
-        <ng-template pTemplate="body" let-row>
-          <tr [pSelectableRow]="row" class="group">
-            <td><p-tableCheckbox [value]="row"></p-tableCheckbox></td>
-            <td class="font-semibold text-foreground">{{ row.serviceName }}</td>
-            <td class="text-muted-foreground">{{ row.category }}</td>
-            <td class="font-mono text-xs">{{ row.orders }}</td>
-            <td>
-              <span class="rounded px-2 py-0.5 text-[10px] font-semibold" [class]="serviceStatusClass(row.status)">
-                {{ row.status }}
-              </span>
-            </td>
-            <td class="font-mono text-xs text-muted-foreground">{{ row.updated }}</td>
-          </tr>
-        </ng-template>
+          <ng-template pTemplate="header">
+            <tr>
+              <th style="width: 2.5rem">
+                <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+              </th>
+              <th>Service Name</th>
+              <th>Category</th>
+              <th>Orders</th>
+              <th>Status</th>
+              <th>Updated</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-row>
+            <tr [pSelectableRow]="row" class="group">
+              <td><p-tableCheckbox [value]="row"></p-tableCheckbox></td>
+              <td class="font-semibold text-foreground">
+                {{ row.serviceName }}
+              </td>
+              <td class="text-muted-foreground">{{ row.category }}</td>
+              <td class="font-mono text-xs">{{ row.orders }}</td>
+              <td>
+                <span
+                  class="rounded px-2 py-0.5 text-[10px] font-semibold"
+                  [class]="serviceStatusClass(row.status)"
+                >
+                  {{ row.status }}
+                </span>
+              </td>
+              <td class="font-mono text-xs text-muted-foreground">
+                {{ row.updated }}
+              </td>
+            </tr>
+          </ng-template>
         </p-table>
       </div>
     </div>
@@ -314,72 +468,99 @@
 
   <section class="showcase-card shadow-[0_12px_28px_-28px_rgba(15,23,42,0.9)]">
     <div class="showcase-header">
-      <span class="w-fit rounded-full border border-border bg-card px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Detail Grid</span>
+      <span
+        class="w-fit rounded-full border border-border bg-card px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground"
+        >Detail Grid</span
+      >
       <h2 class="showcase-title">Expandable Workflow Grid</h2>
-      <p class="showcase-description">Open each order row to review sub-orders, forms progress, and ETA details.</p>
+      <p class="showcase-description">
+        Open each order row to review sub-orders, forms progress, and ETA
+        details.
+      </p>
     </div>
-    <div class="overflow-hidden rounded-xl border border-border bg-card/80 shadow-[0_12px_26px_-24px_rgba(15,23,42,0.95)]">
+    <div
+      class="overflow-hidden rounded-xl border border-border bg-card/80 shadow-[0_12px_26px_-24px_rgba(15,23,42,0.95)]"
+    >
       <p-table
         [value]="workflowRows"
         dataKey="id"
         styleClass="p-datatable-sm p-datatable-striped-rows showcase-table"
       >
-      <ng-template pTemplate="header">
-        <tr>
-          <th style="width: 2.5rem"></th>
-          <th>Order</th>
-          <th>Patient</th>
-          <th>Assigned To</th>
-          <th>Current Stage</th>
-          <th>Priority</th>
-          <th>Due Date</th>
-          <th>Status</th>
-        </tr>
-      </ng-template>
-      <ng-template pTemplate="body" let-row let-expanded="expanded">
-        <tr class="group">
-          <td>
-            <button
-              type="button"
-              pRowToggler
-              [pRowToggler]="row"
-              class="toggle-row"
-              [attr.aria-label]="expanded ? 'Collapse details' : 'Expand details'"
-            >
-              {{ expanded ? '−' : '+' }}
-            </button>
-          </td>
-          <td class="font-mono text-xs font-semibold text-primary">{{ row.orderNumber }}</td>
-          <td class="font-semibold text-foreground">{{ row.patient }}</td>
-          <td>{{ row.assignedTo }}</td>
-          <td>
-            <app-status-badge [status]="stageToStatus(row.currentStage)" [label]="statusLabel(row.currentStage)" size="xs" />
-          </td>
-          <td><app-priority-badge [priority]="row.priority" /></td>
-          <td class="font-mono text-xs text-muted-foreground">{{ row.dueDate }}</td>
-          <td>
-            <span class="rounded px-2 py-0.5 text-[10px] font-semibold" [class]="workflowStateClass(row.status)">
-              {{ row.status }}
-            </span>
-          </td>
-        </tr>
-      </ng-template>
-      <ng-template pTemplate="rowexpansion" let-row>
-        <tr>
-          <td colspan="8" class="expansion-cell">
-            <div class="expansion-grid">
-              @for (sub of row.subOrders; track sub.id) {
-                <div class="expansion-item">
-                  <p class="text-xs font-semibold text-foreground">{{ sub.service }}</p>
-                  <p class="text-[11px] text-muted-foreground">Forms: {{ sub.forms }}</p>
-                  <p class="text-[11px] text-muted-foreground">ETA: {{ sub.eta }}</p>
-                  <span class="expansion-status">{{ sub.status }}</span>
-                </div>
-              }
-            </div>
-          </td>
-        </tr>
-      </ng-template>
+        <ng-template pTemplate="header">
+          <tr>
+            <th style="width: 2.5rem"></th>
+            <th>Order</th>
+            <th>Patient</th>
+            <th>Assigned To</th>
+            <th>Current Stage</th>
+            <th>Priority</th>
+            <th>Due Date</th>
+            <th>Status</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-row let-expanded="expanded">
+          <tr class="group">
+            <td>
+              <button
+                type="button"
+                pRowToggler
+                [pRowToggler]="row"
+                class="toggle-row"
+                [attr.aria-label]="
+                  expanded ? 'Collapse details' : 'Expand details'
+                "
+              >
+                {{ expanded ? "−" : "+" }}
+              </button>
+            </td>
+            <td class="font-mono text-xs font-semibold text-primary">
+              {{ row.orderNumber }}
+            </td>
+            <td class="font-semibold text-foreground">{{ row.patient }}</td>
+            <td>{{ row.assignedTo }}</td>
+            <td>
+              <app-status-badge
+                [status]="stageToStatus(row.currentStage)"
+                [label]="statusLabel(row.currentStage)"
+                size="xs"
+              />
+            </td>
+            <td><app-priority-badge [priority]="row.priority" /></td>
+            <td class="font-mono text-xs text-muted-foreground">
+              {{ row.dueDate }}
+            </td>
+            <td>
+              <span
+                class="rounded px-2 py-0.5 text-[10px] font-semibold"
+                [class]="workflowStateClass(row.status)"
+              >
+                {{ row.status }}
+              </span>
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="rowexpansion" let-row>
+          <tr>
+            <td colspan="8" class="expansion-cell">
+              <div class="expansion-grid">
+                @for (sub of row.subOrders; track sub.id) {
+                  <div class="expansion-item">
+                    <p class="text-xs font-semibold text-foreground">
+                      {{ sub.service }}
+                    </p>
+                    <p class="text-[11px] text-muted-foreground">
+                      Forms: {{ sub.forms }}
+                    </p>
+                    <p class="text-[11px] text-muted-foreground">
+                      ETA: {{ sub.eta }}
+                    </p>
+                    <span class="expansion-status">{{ sub.status }}</span>
+                  </div>
+                }
+              </div>
+            </td>
+          </tr>
+        </ng-template>
       </p-table>
     </div>
   </section>
@@ -387,9 +568,14 @@
   <section class="showcase-card shadow-[0_12px_28px_-28px_rgba(15,23,42,0.9)]">
     <div class="showcase-header compact-head">
       <div>
-        <span class="w-fit rounded-full border border-border bg-card px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Compact Grid</span>
+        <span
+          class="w-fit rounded-full border border-border bg-card px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground"
+          >Compact Grid</span
+        >
         <h2 class="showcase-title">Compact Enterprise Queue</h2>
-        <p class="showcase-description">Dense review mode for users auditing many rows quickly.</p>
+        <p class="showcase-description">
+          Dense review mode for users auditing many rows quickly.
+        </p>
       </div>
       <div class="compact-filter">
         <app-select
@@ -402,9 +588,13 @@
       </div>
     </div>
 
-    <div class="table-scroll-wrap rounded-xl border border-border bg-card/80 shadow-[0_12px_26px_-24px_rgba(15,23,42,0.95)]">
+    <div
+      class="table-scroll-wrap rounded-xl border border-border bg-card/80 shadow-[0_12px_26px_-24px_rgba(15,23,42,0.95)]"
+    >
       <table class="compact-table">
-        <thead class="bg-[linear-gradient(180deg,color-mix(in_srgb,var(--color-muted)_70%,transparent),transparent)]">
+        <thead
+          class="bg-[linear-gradient(180deg,color-mix(in_srgb,var(--color-muted)_70%,transparent),transparent)]"
+        >
           <tr>
             <th>Order</th>
             <th>Patient</th>
@@ -418,15 +608,29 @@
         <tbody class="divide-y divide-border/70">
           @for (row of filteredCompactRows(); track row.id) {
             <tr class="transition-colors even:bg-muted/20 hover:bg-primary/5">
-              <td class="font-mono text-[11px] font-semibold text-primary">{{ row.orderNumber }}</td>
-              <td class="text-[12px] text-foreground">{{ row.patient }}</td>
-              <td class="text-[11px] text-muted-foreground">{{ row.doctor }}</td>
-              <td class="text-[11px] text-muted-foreground">{{ row.service }}</td>
-              <td>
-                <app-status-badge [status]="stageToStatus(row.stage)" [label]="statusLabel(row.stage)" size="xs" />
+              <td class="font-mono text-[11px] font-semibold text-primary">
+                {{ row.orderNumber }}
               </td>
-              <td class="font-mono text-[11px] text-muted-foreground">{{ row.createdDate }}</td>
-              <td class="font-mono text-[11px] text-muted-foreground">{{ row.dueDate }}</td>
+              <td class="text-[12px] text-foreground">{{ row.patient }}</td>
+              <td class="text-[11px] text-muted-foreground">
+                {{ row.doctor }}
+              </td>
+              <td class="text-[11px] text-muted-foreground">
+                {{ row.service }}
+              </td>
+              <td>
+                <app-status-badge
+                  [status]="stageToStatus(row.stage)"
+                  [label]="statusLabel(row.stage)"
+                  size="xs"
+                />
+              </td>
+              <td class="font-mono text-[11px] text-muted-foreground">
+                {{ row.createdDate }}
+              </td>
+              <td class="font-mono text-[11px] text-muted-foreground">
+                {{ row.dueDate }}
+              </td>
             </tr>
           }
         </tbody>
@@ -436,13 +640,22 @@
 
   <section class="showcase-card shadow-[0_12px_28px_-28px_rgba(15,23,42,0.9)]">
     <div class="showcase-header">
-      <span class="w-fit rounded-full border border-border bg-card px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Action Grid</span>
+      <span
+        class="w-fit rounded-full border border-border bg-card px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground"
+        >Action Grid</span
+      >
       <h2 class="showcase-title">Grid With Actions</h2>
-      <p class="showcase-description">Common row actions for day-to-day lab operations.</p>
+      <p class="showcase-description">
+        Common row actions for day-to-day lab operations.
+      </p>
     </div>
-    <div class="table-scroll-wrap rounded-xl border border-border bg-card/80 shadow-[0_12px_26px_-24px_rgba(15,23,42,0.95)]">
+    <div
+      class="table-scroll-wrap rounded-xl border border-border bg-card/80 shadow-[0_12px_26px_-24px_rgba(15,23,42,0.95)]"
+    >
       <table class="showcase-native-table">
-        <thead class="bg-[linear-gradient(180deg,color-mix(in_srgb,var(--color-muted)_70%,transparent),transparent)]">
+        <thead
+          class="bg-[linear-gradient(180deg,color-mix(in_srgb,var(--color-muted)_70%,transparent),transparent)]"
+        >
           <tr>
             <th>Order</th>
             <th>Patient</th>
@@ -457,16 +670,27 @@
         <tbody class="divide-y divide-border/70">
           @for (row of workflowRows; track row.id) {
             <tr class="transition-colors even:bg-muted/20 hover:bg-primary/5">
-              <td class="font-mono text-xs font-semibold text-primary">{{ row.orderNumber }}</td>
+              <td class="font-mono text-xs font-semibold text-primary">
+                {{ row.orderNumber }}
+              </td>
               <td class="font-semibold text-foreground">{{ row.patient }}</td>
               <td>{{ row.assignedTo }}</td>
               <td>
-                <app-status-badge [status]="stageToStatus(row.currentStage)" [label]="statusLabel(row.currentStage)" size="xs" />
+                <app-status-badge
+                  [status]="stageToStatus(row.currentStage)"
+                  [label]="statusLabel(row.currentStage)"
+                  size="xs"
+                />
               </td>
               <td><app-priority-badge [priority]="row.priority" /></td>
-              <td class="font-mono text-xs text-muted-foreground">{{ row.dueDate }}</td>
+              <td class="font-mono text-xs text-muted-foreground">
+                {{ row.dueDate }}
+              </td>
               <td>
-                <span class="rounded px-2 py-0.5 text-[10px] font-semibold" [class]="workflowStateClass(row.status)">
+                <span
+                  class="rounded px-2 py-0.5 text-[10px] font-semibold"
+                  [class]="workflowStateClass(row.status)"
+                >
                   {{ row.status }}
                 </span>
               </td>
@@ -486,13 +710,22 @@
 
   <section class="showcase-card shadow-[0_12px_28px_-28px_rgba(15,23,42,0.9)]">
     <div class="showcase-header">
-      <span class="w-fit rounded-full border border-border bg-card px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Status Grid</span>
+      <span
+        class="w-fit rounded-full border border-border bg-card px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground"
+        >Status Grid</span
+      >
       <h2 class="showcase-title">Status Progress Grid</h2>
-      <p class="showcase-description">Business status hierarchy from intake to completion.</p>
+      <p class="showcase-description">
+        Business status hierarchy from intake to completion.
+      </p>
     </div>
-    <div class="table-scroll-wrap rounded-xl border border-border bg-card/80 shadow-[0_12px_26px_-24px_rgba(15,23,42,0.95)]">
+    <div
+      class="table-scroll-wrap rounded-xl border border-border bg-card/80 shadow-[0_12px_26px_-24px_rgba(15,23,42,0.95)]"
+    >
       <table class="showcase-native-table">
-        <thead class="bg-[linear-gradient(180deg,color-mix(in_srgb,var(--color-muted)_70%,transparent),transparent)]">
+        <thead
+          class="bg-[linear-gradient(180deg,color-mix(in_srgb,var(--color-muted)_70%,transparent),transparent)]"
+        >
           <tr>
             <th>Order</th>
             <th>Patient</th>
@@ -504,13 +737,21 @@
         <tbody class="divide-y divide-border/70">
           @for (row of statusShowcaseRows(); track row.id) {
             <tr class="transition-colors even:bg-muted/20 hover:bg-primary/5">
-              <td class="font-mono text-xs font-semibold text-primary">{{ row.orderNumber }}</td>
+              <td class="font-mono text-xs font-semibold text-primary">
+                {{ row.orderNumber }}
+              </td>
               <td>{{ row.patient }}</td>
               <td class="text-muted-foreground">{{ row.service }}</td>
               <td>
-                <app-status-badge [status]="stageToStatus(row.stage)" [label]="row.statusLabel" size="xs" />
+                <app-status-badge
+                  [status]="stageToStatus(row.stage)"
+                  [label]="row.statusLabel"
+                  size="xs"
+                />
               </td>
-              <td class="font-mono text-xs text-muted-foreground">{{ row.dueDate }}</td>
+              <td class="font-mono text-xs text-muted-foreground">
+                {{ row.dueDate }}
+              </td>
             </tr>
           }
         </tbody>
@@ -520,14 +761,23 @@
 
   <section class="showcase-card shadow-[0_12px_28px_-28px_rgba(15,23,42,0.9)]">
     <div class="showcase-header">
-      <span class="w-fit rounded-full border border-border bg-card px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Responsive Grid</span>
+      <span
+        class="w-fit rounded-full border border-border bg-card px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground"
+        >Responsive Grid</span
+      >
       <h2 class="showcase-title">Responsive Orders Grid</h2>
-      <p class="showcase-description">Desktop table automatically shifts to mobile cards with the same data.</p>
+      <p class="showcase-description">
+        Desktop table automatically shifts to mobile cards with the same data.
+      </p>
     </div>
 
-    <div class="responsive-grid-desktop table-scroll-wrap rounded-xl border border-border bg-card/80 shadow-[0_12px_26px_-24px_rgba(15,23,42,0.95)]">
+    <div
+      class="responsive-grid-desktop table-scroll-wrap rounded-xl border border-border bg-card/80 shadow-[0_12px_26px_-24px_rgba(15,23,42,0.95)]"
+    >
       <table class="showcase-native-table">
-        <thead class="bg-[linear-gradient(180deg,color-mix(in_srgb,var(--color-muted)_70%,transparent),transparent)]">
+        <thead
+          class="bg-[linear-gradient(180deg,color-mix(in_srgb,var(--color-muted)_70%,transparent),transparent)]"
+        >
           <tr>
             <th>Order ID</th>
             <th>Patient</th>
@@ -540,14 +790,22 @@
         <tbody class="divide-y divide-border/70">
           @for (row of responsiveOrders; track row.id) {
             <tr class="transition-colors even:bg-muted/20 hover:bg-primary/5">
-              <td class="font-mono text-xs font-semibold text-primary">{{ row.orderNumber }}</td>
+              <td class="font-mono text-xs font-semibold text-primary">
+                {{ row.orderNumber }}
+              </td>
               <td>{{ row.patient }}</td>
               <td class="text-muted-foreground">{{ row.doctor }}</td>
               <td>{{ row.service }}</td>
               <td>
-                <app-status-badge [status]="stageToStatus(row.stage)" [label]="statusLabel(row.stage)" size="xs" />
+                <app-status-badge
+                  [status]="stageToStatus(row.stage)"
+                  [label]="statusLabel(row.stage)"
+                  size="xs"
+                />
               </td>
-              <td class="font-mono text-xs text-muted-foreground">{{ row.dueDate }}</td>
+              <td class="font-mono text-xs text-muted-foreground">
+                {{ row.dueDate }}
+              </td>
             </tr>
           }
         </tbody>
@@ -558,14 +816,27 @@
       @for (row of responsiveOrders; track row.id) {
         <article class="mobile-order-card">
           <div class="mobile-order-head">
-            <p class="font-mono text-xs font-semibold text-primary">{{ row.orderNumber }}</p>
-            <app-status-badge [status]="stageToStatus(row.stage)" [label]="statusLabel(row.stage)" size="xs" />
+            <p class="font-mono text-xs font-semibold text-primary">
+              {{ row.orderNumber }}
+            </p>
+            <app-status-badge
+              [status]="stageToStatus(row.stage)"
+              [label]="statusLabel(row.stage)"
+              size="xs"
+            />
           </div>
           <p class="text-sm font-semibold text-foreground">{{ row.patient }}</p>
-          <p class="text-xs text-muted-foreground">{{ row.service }} · {{ row.doctor }}</p>
+          <p class="text-xs text-muted-foreground">
+            {{ row.service }} · {{ row.doctor }}
+          </p>
           <div class="mobile-order-meta">
-            <span>Created: <span class="font-mono">{{ row.createdDate }}</span></span>
-            <span>Due: <span class="font-mono">{{ row.dueDate }}</span></span>
+            <span
+              >Created:
+              <span class="font-mono">{{ row.createdDate }}</span></span
+            >
+            <span
+              >Due: <span class="font-mono">{{ row.dueDate }}</span></span
+            >
           </div>
         </article>
       }

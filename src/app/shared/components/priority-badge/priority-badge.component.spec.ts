@@ -1,51 +1,51 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { By } from '@angular/platform-browser';
-import { PriorityBadgeComponent } from './priority-badge.component';
+import { ComponentFixture, TestBed } from "@angular/core/testing";
+import { By } from "@angular/platform-browser";
+import { PriorityBadgeComponent } from "./priority-badge.component";
 
-describe('PriorityBadgeComponent', () => {
+describe("PriorityBadgeComponent", () => {
   let component: PriorityBadgeComponent;
   let fixture: ComponentFixture<PriorityBadgeComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [PriorityBadgeComponent]
+      imports: [PriorityBadgeComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(PriorityBadgeComponent);
     component = fixture.componentInstance;
-    fixture.componentRef.setInput('priority', 'Normal');
+    fixture.componentRef.setInput("priority", "Normal");
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 
-  it('should display priority text', () => {
-    fixture.componentRef.setInput('priority', 'High');
+  it("should display priority text", () => {
+    fixture.componentRef.setInput("priority", "High");
     fixture.detectChanges();
-    const badge = fixture.debugElement.query(By.css('span:last-child'));
-    expect(badge.nativeElement.textContent.trim()).toBe('High');
+    const badge = fixture.debugElement.query(By.css("span:last-child"));
+    expect(badge.nativeElement.textContent.trim()).toBe("High");
   });
 
-  it('should apply correct dot class for Urgent priority', () => {
-    fixture.componentRef.setInput('priority', 'Urgent');
+  it("should apply correct dot class for Urgent priority", () => {
+    fixture.componentRef.setInput("priority", "Urgent");
     fixture.detectChanges();
-    const dot = fixture.debugElement.query(By.css('span:first-child'));
-    expect(dot.nativeElement).toHaveClass('bg-red-500');
+    const dot = fixture.debugElement.query(By.css("span:first-child"));
+    expect(dot.nativeElement).toHaveClass("bg-red-500");
   });
 
-  it('should apply correct text color class for Normal priority', () => {
-    fixture.componentRef.setInput('priority', 'Normal');
+  it("should apply correct text color class for Normal priority", () => {
+    fixture.componentRef.setInput("priority", "Normal");
     fixture.detectChanges();
-    const text = fixture.debugElement.query(By.css('span:last-child'));
-    expect(text.nativeElement).toHaveClass('text-muted-foreground');
+    const text = fixture.debugElement.query(By.css("span:last-child"));
+    expect(text.nativeElement).toHaveClass("text-muted-foreground");
   });
 
-  it('should apply default styles for unknown priority', () => {
-    fixture.componentRef.setInput('priority', 'Unknown');
+  it("should apply default styles for unknown priority", () => {
+    fixture.componentRef.setInput("priority", "Unknown");
     fixture.detectChanges();
-    const dot = fixture.debugElement.query(By.css('span:first-child'));
-    expect(dot.nativeElement).toHaveClass('bg-slate-400');
+    const dot = fixture.debugElement.query(By.css("span:first-child"));
+    expect(dot.nativeElement).toHaveClass("bg-slate-400");
   });
 });

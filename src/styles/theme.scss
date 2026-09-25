@@ -1,10 +1,4 @@
-
-
-
-@use 'tokens' as *;
-
-
-
+@use "tokens" as *;
 
 @mixin badge-style($bg, $fg) {
   @include inline-flex;
@@ -45,58 +39,42 @@
   font-weight: $font-weight-semibold;
 }
 
-
-
-
 :root {
-  
   --background: #{$color-background};
   --foreground: #{$color-foreground};
 
-  
   --card: #{$color-card};
   --card-foreground: #{$color-card-foreground};
 
-  
   --sidebar: #{$color-sidebar};
   --sidebar-foreground: #{$color-sidebar-foreground};
   --sidebar-active: #{$color-sidebar-active};
   --sidebar-muted: #{$color-sidebar-muted};
 
-  
   --primary: #{$color-primary};
   --primary-foreground: #{$color-primary-foreground};
 
-  
   --secondary: #{$color-secondary};
   --secondary-foreground: #{$color-secondary-foreground};
 
-  
   --muted: #{$color-muted};
   --muted-foreground: #{$color-muted-foreground};
 
-  
   --accent: #{$color-accent};
   --accent-foreground: #{$color-accent-foreground};
 
-  
   --success: #{$color-success};
-  --success-foreground: #FFFFFF;
+  --success-foreground: #ffffff;
   --warning: #{$color-warning};
   --danger: #{$color-danger};
-  --danger-foreground: #FFFFFF;
+  --danger-foreground: #ffffff;
 
-  
   --border: #{$color-border};
   --input: #{$color-input};
   --ring: #{$color-ring};
 
-  
   --radius: #{$radius-md};
 }
-
-
-
 
 [data-theme="dark"] {
   --background: #{$color-background-dark};
@@ -123,21 +101,17 @@
   --accent-foreground: #{$color-accent-foreground-dark};
 
   --success: #{$color-success-dark};
-  --success-foreground: #FFFFFF;
+  --success-foreground: #ffffff;
   --warning: #{$color-warning-dark};
   --danger: #{$color-danger-dark};
-  --danger-foreground: #FFFFFF;
+  --danger-foreground: #ffffff;
 
   --border: #{$color-border-dark};
   --input: #{$color-input-dark};
   --ring: #{$color-ring-dark};
 }
 
-
-
-
 @theme inline {
-  
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -161,17 +135,12 @@
   --color-sidebar-muted: var(--sidebar-muted);
   --color-sidebar-active: var(--sidebar-active);
 
-  
   --radius-default: var(--radius);
 
-  
   --font-sans: #{$font-family-sans};
   --font-display: #{$font-family-display};
   --font-mono: #{$font-family-mono};
 }
-
-
-
 
 @each $status, $colors in $status-colors {
   .badge-#{$status} {
@@ -205,9 +174,6 @@
   }
 }
 
-
-
-
 .font-display {
   font-family: var(--font-display);
 }
@@ -215,9 +181,6 @@
 .font-mono {
   font-family: var(--font-mono);
 }
-
-
-
 
 * {
   scrollbar-width: thin;
@@ -251,9 +214,6 @@
   border-radius: 2px;
 }
 
-
-
-
 @keyframes shimmer {
   0% {
     background-position: -1000px 0;
@@ -275,21 +235,19 @@
   border-radius: var(--radius);
 }
 
-
-
-
 .drag-over {
   border-color: var(--primary) !important;
-  background-color: color-mix(in srgb, var(--primary) 5%, transparent) !important;
+  background-color: color-mix(
+    in srgb,
+    var(--primary) 5%,
+    transparent
+  ) !important;
 }
 
 .kanban-card-dragging {
   opacity: 0.5;
   transform: rotate(1deg);
 }
-
-
-
 
 .page-transition {
   animation: fadeIn 0.15s ease-out;
@@ -306,25 +264,16 @@
   }
 }
 
-
-
-
 :focus-visible {
   outline: none;
   ring: 2px solid var(--ring);
   ring-offset: 2px;
 }
 
-
-
-
 ::selection {
   background-color: color-mix(in srgb, var(--primary) 30%, transparent);
   color: var(--foreground);
 }
-
-
-
 
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -336,9 +285,6 @@
     scroll-behavior: auto !important;
   }
 }
-
-
-
 
 @media (prefers-contrast: high) {
   :root {

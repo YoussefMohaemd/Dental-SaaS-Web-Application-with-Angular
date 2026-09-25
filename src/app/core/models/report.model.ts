@@ -26,4 +26,11 @@ export interface ReportsData {
   workflowShare: StageShare[];
 }
 
-export const BREAKDOWN_COLORS = ['#2563EB', '#06B6D4', '#10B981', '#F59E0B', '#8B5CF6', '#94A3B8'];
+export const BREAKDOWN_COLORS = [
+  "#2563EB",
+  "#06B6D4",
+  "#10B981",
+  "#F59E0B",
+  "#8B5CF6",
+  "#94A3B8",
+];

@@ -1,7 +1,8 @@
 <div class="search-input-wrap relative w-full">
   <svg
     class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none shrink-0"
-    width="14" height="14"
+    width="14"
+    height="14"
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
@@ -30,13 +31,24 @@
       [class]="showShortcut() ? 'right-10' : 'right-2'"
       aria-label="Clear search"
     >
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+      <svg
+        width="12"
+        height="12"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        aria-hidden="true"
+      >
         <path d="M18 6L6 18M6 6l12 12" />
       </svg>
     </button>
   }
   @if (showShortcut()) {
-    <kbd class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hidden lg:block pointer-events-none">
+    <kbd
+      class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hidden lg:block pointer-events-none"
+    >
       ⌘K
     </kbd>
   }

@@ -1,28 +1,30 @@
-import { Component, input, output, model, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { Component, input, output, model, computed } from "@angular/core";
+import { CommonModule } from "@angular/common";
+import { FormsModule } from "@angular/forms";
 
 @Component({
-  selector: 'app-input',
+  selector: "app-input",
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './input.component.html',
-  styleUrl: './input.component.scss'
+  templateUrl: "./input.component.html",
+  styleUrl: "./input.component.scss",
 })
 export class InputComponent {
   readonly id = input.required<string>();
-  readonly type = input<'text' | 'email' | 'password' | 'tel' | 'number'>('text');
-  readonly label = input<string>('');
-  readonly placeholder = input<string>('');
+  readonly type = input<"text" | "email" | "password" | "tel" | "number">(
+    "text",
+  );
+  readonly label = input<string>("");
+  readonly placeholder = input<string>("");
   readonly disabled = input<boolean>(false);
   readonly required = input<boolean>(false);
-  readonly value = model<string>('');
-  readonly hint = input<string>('');
-  readonly error = input<string>('');
-  
+  readonly value = model<string>("");
+  readonly hint = input<string>("");
+  readonly error = input<string>("");
+
   readonly iconStart = input<boolean>(false);
   readonly iconEnd = input<boolean>(false);
-  readonly autocomplete = input<string>('');
+  readonly autocomplete = input<string>("");
 
   readonly onBlur = output<FocusEvent>();
   readonly onFocus = output<FocusEvent>();
@@ -31,16 +33,17 @@ export class InputComponent {
   readonly errorId = computed(() => `${this.id()}-error`);
 
   readonly inputClasses = computed(() => {
-    const horizontalPadding = this.iconStart() && this.iconEnd()
-      ? 'pl-9 pr-10'
-      : this.iconStart()
-        ? 'pl-9 pr-4'
-        : this.iconEnd()
-          ? 'pl-3 pr-10'
-          : 'px-3';
+    const horizontalPadding =
+      this.iconStart() && this.iconEnd()
+        ? "pl-9 pr-10"
+        : this.iconStart()
+          ? "pl-9 pr-4"
+          : this.iconEnd()
+            ? "pl-3 pr-10"
+            : "px-3";
     return `
     input-base ${horizontalPadding} py-2.5
-    ${this.disabled() ? 'opacity-50 cursor-not-allowed' : ''}
+    ${this.disabled() ? "opacity-50 cursor-not-allowed" : ""}
   `;
   });
 

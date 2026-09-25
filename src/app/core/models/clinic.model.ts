@@ -1,4 +1,4 @@
-export type ClinicStatus = 'Active' | 'Inactive';
+export type ClinicStatus = "Active" | "Inactive";
 
 export interface Clinic {
   id: string;
@@ -18,7 +18,7 @@ export interface ClinicFilters {
   search?: string;
   statusFilter?: ClinicStatus;
   sortColumn?: keyof Clinic;
-  sortDirection?: 'asc' | 'desc';
+  sortDirection?: "asc" | "desc";
   page?: number;
   pageSize?: number;
 }

@@ -1,6 +1,6 @@
-import { Priority } from './order.model';
+import { Priority } from "./order.model";
 
-export type CaseStatus = 'Open' | 'In Progress' | 'Review' | 'Closed';
+export type CaseStatus = "Open" | "In Progress" | "Review" | "Closed";
 
 export interface Case {
   id: string;
@@ -25,7 +25,7 @@ export interface CaseFilters {
   search?: string;
   statusFilter?: CaseStatus;
   sortColumn?: keyof Case;
-  sortDirection?: 'asc' | 'desc';
+  sortDirection?: "asc" | "desc";
   page?: number;
   pageSize?: number;
 }

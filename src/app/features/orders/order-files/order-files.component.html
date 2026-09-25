@@ -2,136 +2,317 @@
   @if (!order()) {
     <div class="rounded-xl border border-border bg-card p-6 text-center">
       <p class="text-sm font-semibold text-foreground">Order not found</p>
-      <p class="mt-1 text-xs text-muted-foreground">The requested order id does not match any available record.</p>
-      <button type="button" (click)="goBack()" class="mt-4 text-sm text-primary hover:underline">Back to order list</button>
+      <p class="mt-1 text-xs text-muted-foreground">
+        The requested order id does not match any available record.
+      </p>
+      <button
+        type="button"
+        (click)="goBack()"
+        class="mt-4 text-sm text-primary hover:underline"
+      >
+        Back to order list
+      </button>
     </div>
   } @else {
-  <div class="mb-5 flex items-start gap-3">
-    <button type="button" (click)="goBack()" class="rounded-lg p-1.5 text-muted-foreground hover:bg-muted" aria-label="Back to order">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
-    </button>
-    <div>
-      <h1 class="font-display text-xl font-bold text-foreground">Order Files</h1>
-      <p class="text-xs text-muted-foreground">{{ order()?.orderNumber }} · {{ order()?.patientName }} · {{ files().length }} files</p>
+    <div class="mb-5 flex items-start gap-3">
+      <button
+        type="button"
+        (click)="goBack()"
+        class="rounded-lg p-1.5 text-muted-foreground hover:bg-muted"
+        aria-label="Back to order"
+      >
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </button>
+      <div>
+        <h1 class="font-display text-xl font-bold text-foreground">
+          Order Files
+        </h1>
+        <p class="text-xs text-muted-foreground">
+          {{ order()?.orderNumber }} · {{ order()?.patientName }} ·
+          {{ files().length }} files
+        </p>
+      </div>
+      <div class="ml-auto">
+        <app-button variant="outline" size="sm" (onClick)="downloadAll()"
+          >Download All</app-button
+        >
+      </div>
     </div>
-    <div class="ml-auto">
-      <app-button variant="outline" size="sm" (onClick)="downloadAll()">Download All</app-button>
+
+    <div
+      role="button"
+      tabindex="0"
+      (click)="fileInput.click()"
+      (keydown.enter)="fileInput.click()"
+      (dragover)="onDragOver($event)"
+      (dragleave)="onDragLeave($event)"
+      (drop)="onDrop($event)"
+      class="mb-5 rounded-xl border-2 border-dashed p-8 cursor-pointer text-center transition-colors"
+      [class]="
+        dragOver() ? 'border-primary bg-primary/5' : 'border-border bg-card'
+      "
+      aria-label="Upload files by browsing or dragging and dropping"
+    >
+      <p class="text-3xl" aria-hidden="true">📤</p>
+      <p class="mt-2 text-sm font-semibold text-foreground">
+        Drag &amp; drop files here, or
+        <span class="text-primary underline">Browse Files</span>
+      </p>
+      <p class="mt-1 font-mono text-[11px] text-muted-foreground">
+        STL · PLY · OBJ · JPG · PNG · PDF · DCM
+      </p>
+      <input
+        #fileInput
+        type="file"
+        multiple
+        accept=".stl,.ply,.obj,.jpg,.png,.pdf,.dcm"
+        class="hidden"
+        (change)="onBrowse($event)"
+      />
     </div>
-  </div>
 
-  <div
-    role="button"
-    tabindex="0"
-    (click)="fileInput.click()"
-    (keydown.enter)="fileInput.click()"
-    (dragover)="onDragOver($event)"
-    (dragleave)="onDragLeave($event)"
-    (drop)="onDrop($event)"
-    class="mb-5 rounded-xl border-2 border-dashed p-8  cursor-pointer text-center transition-colors"
-    [class]="dragOver() ? 'border-primary bg-primary/5' : 'border-border bg-card'"
-    aria-label="Upload files by browsing or dragging and dropping"
-  >
-    <p class="text-3xl" aria-hidden="true">📤</p>
-    <p class="mt-2 text-sm font-semibold text-foreground">Drag &amp; drop files here, or <span class="text-primary underline">Browse Files</span></p>
-    <p class="mt-1 font-mono text-[11px] text-muted-foreground">STL · PLY · OBJ · JPG · PNG · PDF · DCM</p>
-    <input #fileInput type="file" multiple accept=".stl,.ply,.obj,.jpg,.png,.pdf,.dcm" class="hidden" (change)="onBrowse($event)" />
-  </div>
+    @if (uploadMessage(); as message) {
+      <p
+        class="mb-4 rounded-xl border border-danger/40 bg-danger/5 p-3 text-xs text-danger"
+        role="alert"
+      >
+        {{ message }}
+      </p>
+    }
 
-  @if (uploadMessage(); as message) {
-    <p class="mb-4 rounded-xl border border-danger/40 bg-danger/5 p-3 text-xs text-danger" role="alert">{{ message }}</p>
-  }
-
-  @if (uploadingFiles().length > 0) {
-    <section class="mb-4 rounded-xl border border-border bg-card p-4" aria-label="Uploading files">
-      <h2 class="mb-3 text-sm font-semibold text-foreground">Uploading ({{ uploadingFiles().length }})</h2>
-      <ul class="space-y-2.5">
-        @for (file of uploadingFiles(); track file.id) {
-          <li class="flex items-center gap-3">
-            <span aria-hidden="true" [innerHTML]="fileIcon(file.type) | safeHtml"></span>
-            <div class="min-w-0 flex-1">
-              <p class="truncate text-sm font-medium text-foreground">{{ file.name }}</p>
-              <div class="mt-1 h-1.5 overflow-hidden rounded-full bg-muted">
-                <div class="h-full rounded-full bg-primary transition-all" [style.width.%]="file.progress"></div>
+    @if (uploadingFiles().length > 0) {
+      <section
+        class="mb-4 rounded-xl border border-border bg-card p-4"
+        aria-label="Uploading files"
+      >
+        <h2 class="mb-3 text-sm font-semibold text-foreground">
+          Uploading ({{ uploadingFiles().length }})
+        </h2>
+        <ul class="space-y-2.5">
+          @for (file of uploadingFiles(); track file.id) {
+            <li class="flex items-center gap-3">
+              <span
+                aria-hidden="true"
+                [innerHTML]="fileIcon(file.type) | safeHtml"
+              ></span>
+              <div class="min-w-0 flex-1">
+                <p class="truncate text-sm font-medium text-foreground">
+                  {{ file.name }}
+                </p>
+                <div class="mt-1 h-1.5 overflow-hidden rounded-full bg-muted">
+                  <div
+                    class="h-full rounded-full bg-primary transition-all"
+                    [style.width.%]="file.progress"
+                  ></div>
+                </div>
               </div>
-            </div>
-            <span class="font-mono text-[11px] text-muted-foreground">{{ file.progress }}%</span>
-          </li>
-        }
-      </ul>
-    </section>
-  }
-
-  <section class="rounded-xl border border-border bg-card p-4" aria-label="Uploaded files">
-    <h2 class="mb-3 text-sm font-semibold text-foreground">Uploaded Files ({{ uploadedFiles().length }})</h2>
-    @if (uploadedFiles().length === 0) {
-      <div class="flex flex-col items-center py-8 text-center">
-        <span aria-hidden="true" class="text-muted-foreground"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg></span>
-        <p class="mt-2 text-sm font-semibold text-foreground">No files uploaded</p>
-        <p class="text-xs text-muted-foreground">Use the drop zone above to add scan files.</p>
-      </div>
-    } @else {
-      <ul class="divide-y divide-border">
-        @for (file of uploadedFiles(); track file.id) {
-          <li class="group flex items-center gap-3 py-2.5">
-            <span aria-hidden="true" [innerHTML]="fileIcon(file.type) | safeHtml"></span>
-            <div class="min-w-0 flex-1">
-              <p class="truncate text-sm font-medium text-foreground">{{ file.name }}</p>
-              <p class="mt-0.5 text-[11px] text-muted-foreground">{{ file.size }} · {{ file.uploadedBy }} · {{ file.uploadedAt }}</p>
-            </div>
-            <span class="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] font-semibold text-muted-foreground">{{ file.type }}</span>
-            <span class="flex items-center gap-1 text-success" aria-label="Uploaded">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
-            </span>
-            <div class="hidden items-center gap-1 group-hover:flex">
-              <button type="button" (click)="openPreview(file)" class="rounded p-1.5 text-muted-foreground hover:bg-muted" [attr.aria-label]="'Preview ' + file.name">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-              </button>
-              <button type="button" class="rounded p-1.5 text-muted-foreground hover:bg-muted" [attr.aria-label]="'Download ' + file.name">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-              </button>
-              <button type="button" (click)="deleteFile(file.id)" class="rounded p-1.5 text-muted-foreground hover:bg-danger/10 hover:text-danger" [attr.aria-label]="'Delete ' + file.name">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-              </button>
-            </div>
-          </li>
-        }
-      </ul>
+              <span class="font-mono text-[11px] text-muted-foreground"
+                >{{ file.progress }}%</span
+              >
+            </li>
+          }
+        </ul>
+      </section>
     }
-  </section>
 
-  @if (failedFiles().length > 0) {
-    <section class="mt-4 rounded-xl border border-danger/40 bg-danger/5 p-4" aria-label="Failed uploads">
-      <h2 class="mb-3 text-sm font-semibold text-danger">Upload Failed ({{ failedFiles().length }})</h2>
-      <ul class="space-y-2">
-        @for (file of failedFiles(); track file.id) {
-          <li class="flex items-center gap-3">
-            <span aria-hidden="true" [innerHTML]="fileIcon(file.type) | safeHtml"></span>
-            <p class="flex-1 truncate text-sm text-foreground">{{ file.name }}</p>
-            <button type="button" (click)="retryUpload(file.id)" class="rounded-lg border border-border px-2.5 py-1 text-xs font-semibold text-foreground hover:bg-muted">
-              Retry
-            </button>
-          </li>
-        }
-      </ul>
+    <section
+      class="rounded-xl border border-border bg-card p-4"
+      aria-label="Uploaded files"
+    >
+      <h2 class="mb-3 text-sm font-semibold text-foreground">
+        Uploaded Files ({{ uploadedFiles().length }})
+      </h2>
+      @if (uploadedFiles().length === 0) {
+        <div class="flex flex-col items-center py-8 text-center">
+          <span aria-hidden="true" class="text-muted-foreground"
+            ><svg
+              width="32"
+              height="32"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.6"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"
+              /></svg
+          ></span>
+          <p class="mt-2 text-sm font-semibold text-foreground">
+            No files uploaded
+          </p>
+          <p class="text-xs text-muted-foreground">
+            Use the drop zone above to add scan files.
+          </p>
+        </div>
+      } @else {
+        <ul class="divide-y divide-border">
+          @for (file of uploadedFiles(); track file.id) {
+            <li class="group flex items-center gap-3 py-2.5">
+              <span
+                aria-hidden="true"
+                [innerHTML]="fileIcon(file.type) | safeHtml"
+              ></span>
+              <div class="min-w-0 flex-1">
+                <p class="truncate text-sm font-medium text-foreground">
+                  {{ file.name }}
+                </p>
+                <p class="mt-0.5 text-[11px] text-muted-foreground">
+                  {{ file.size }} · {{ file.uploadedBy }} ·
+                  {{ file.uploadedAt }}
+                </p>
+              </div>
+              <span
+                class="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] font-semibold text-muted-foreground"
+                >{{ file.type }}</span
+              >
+              <span
+                class="flex items-center gap-1 text-success"
+                aria-label="Uploaded"
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+              </span>
+              <div class="hidden items-center gap-1 group-hover:flex">
+                <button
+                  type="button"
+                  (click)="openPreview(file)"
+                  class="rounded p-1.5 text-muted-foreground hover:bg-muted"
+                  [attr.aria-label]="'Preview ' + file.name"
+                >
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path
+                      d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"
+                    ></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  class="rounded p-1.5 text-muted-foreground hover:bg-muted"
+                  [attr.aria-label]="'Download ' + file.name"
+                >
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  (click)="deleteFile(file.id)"
+                  class="rounded p-1.5 text-muted-foreground hover:bg-danger/10 hover:text-danger"
+                  [attr.aria-label]="'Delete ' + file.name"
+                >
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path
+                      d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+                    ></path>
+                  </svg>
+                </button>
+              </div>
+            </li>
+          }
+        </ul>
+      }
     </section>
-  }
 
-  <p-dialog
-    [visible]="previewVisible()"
-    (onHide)="closePreview()"
-    [modal]="true"
-    [dismissableMask]="true"
-    [style]="{ width: '26rem' }"
-    [header]="previewFile()?.name ?? 'File preview'"
-  >
-    @if (previewFile(); as selected) {
-      <div class="flex flex-col items-center gap-2 py-4 text-center">
-        <span aria-hidden="true" [innerHTML]="fileIconLarge(selected.type) | safeHtml"></span>
-        <p class="text-sm font-semibold text-foreground">{{ selected.name }}</p>
-        <p class="font-mono text-xs text-muted-foreground">{{ selected.type }} · {{ selected.size }}</p>
-        <p class="text-xs text-muted-foreground">Uploaded by {{ selected.uploadedBy }} on {{ selected.uploadedAt }}</p>
-      </div>
+    @if (failedFiles().length > 0) {
+      <section
+        class="mt-4 rounded-xl border border-danger/40 bg-danger/5 p-4"
+        aria-label="Failed uploads"
+      >
+        <h2 class="mb-3 text-sm font-semibold text-danger">
+          Upload Failed ({{ failedFiles().length }})
+        </h2>
+        <ul class="space-y-2">
+          @for (file of failedFiles(); track file.id) {
+            <li class="flex items-center gap-3">
+              <span
+                aria-hidden="true"
+                [innerHTML]="fileIcon(file.type) | safeHtml"
+              ></span>
+              <p class="flex-1 truncate text-sm text-foreground">
+                {{ file.name }}
+              </p>
+              <button
+                type="button"
+                (click)="retryUpload(file.id)"
+                class="rounded-lg border border-border px-2.5 py-1 text-xs font-semibold text-foreground hover:bg-muted"
+              >
+                Retry
+              </button>
+            </li>
+          }
+        </ul>
+      </section>
     }
-  </p-dialog>
+
+    <p-dialog
+      [visible]="previewVisible()"
+      (onHide)="closePreview()"
+      [modal]="true"
+      [dismissableMask]="true"
+      [style]="{ width: '26rem' }"
+      [header]="previewFile()?.name ?? 'File preview'"
+    >
+      @if (previewFile(); as selected) {
+        <div class="flex flex-col items-center gap-2 py-4 text-center">
+          <span
+            aria-hidden="true"
+            [innerHTML]="fileIconLarge(selected.type) | safeHtml"
+          ></span>
+          <p class="text-sm font-semibold text-foreground">
+            {{ selected.name }}
+          </p>
+          <p class="font-mono text-xs text-muted-foreground">
+            {{ selected.type }} · {{ selected.size }}
+          </p>
+          <p class="text-xs text-muted-foreground">
+            Uploaded by {{ selected.uploadedBy }} on {{ selected.uploadedAt }}
+          </p>
+        </div>
+      }
+    </p-dialog>
   }
 </div>

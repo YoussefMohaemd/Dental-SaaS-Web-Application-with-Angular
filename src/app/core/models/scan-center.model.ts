@@ -6,11 +6,11 @@ export interface ScanCenter {
   devices: number;
   activeOrders: number;
   completedToday: number;
-  status: 'Operational' | 'Maintenance';
+  status: "Operational" | "Maintenance";
 }
 
 export interface ScanCenterFilters {
-  statusFilter?: ScanCenter['status'];
+  statusFilter?: ScanCenter["status"];
   sortColumn?: keyof ScanCenter;
-  sortDirection?: 'asc' | 'desc';
+  sortDirection?: "asc" | "desc";
 }

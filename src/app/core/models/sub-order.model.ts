@@ -1,4 +1,4 @@
-export type SubOrderStatus = 'done' | 'in-progress' | 'pending' | 'blocked';
+export type SubOrderStatus = "done" | "in-progress" | "pending" | "blocked";
 
 export interface SubOrder {
   id: string;
@@ -11,7 +11,7 @@ export interface SubOrder {
   scansComplete: number;
   scansTotal: number;
   teeth: number[];
-  priority: 'Low' | 'Normal' | 'High' | 'Urgent';
+  priority: "Low" | "Normal" | "High" | "Urgent";
   dueDate: string;
   notes: string;
   creationData?: SubOrderCreationData;
@@ -32,7 +32,7 @@ export interface OrderWorkflowStage {
   active: boolean;
 }
 
-export type SubOrderAttachmentStatus = 'uploaded' | 'uploading' | 'failed';
+export type SubOrderAttachmentStatus = "uploaded" | "uploading" | "failed";
 
 export interface SubOrderAttachment {
   id: string;
@@ -59,15 +59,15 @@ export interface SubOrderWorkflowStep {
   name: string;
   description: string;
   assignee: string;
-  state: 'done' | 'current' | 'pending';
+  state: "done" | "current" | "pending";
   requiredActions: string[];
 }
 
-export type SubOrderViewState = 'loading' | 'normal' | 'error';
+export type SubOrderViewState = "loading" | "normal" | "error";
 
-
-export type SubOrderFormItemStatus = 'complete' | 'incomplete' | 'optional';
-export type SubOrderScanItemStatus = 'uploaded' | 'missing' | 'optional' | 'selected-local';
+export type SubOrderFormItemStatus = "complete" | "incomplete" | "optional";
+export type SubOrderScanItemStatus =
+  "uploaded" | "missing" | "optional" | "selected-local";
 
 export interface SubOrderFormItem {
   id: string;
@@ -136,4 +136,4 @@ export interface SubOrderFormItemValue {
   updatedAt: string;
 }
 
-export type SubOrderTab = 'overview' | 'forms' | 'scans' | 'activity';
+export type SubOrderTab = "overview" | "forms" | "scans" | "activity";

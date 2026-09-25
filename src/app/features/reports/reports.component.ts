@@ -1,24 +1,24 @@
-import { Component, computed, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { OrderDataService } from '@core/services/order-data.service';
-import { CaseDataService } from '@core/services/case-data.service';
-import { BillingDataService } from '@core/services/billing-data.service';
-import { ReportsDataService } from '@core/services/reports-data.service';
-import { FormatUtils } from '@core/services/format-utils.service';
+import { Component, computed, inject } from "@angular/core";
+import { CommonModule } from "@angular/common";
+import { OrderDataService } from "@core/services/order-data.service";
+import { CaseDataService } from "@core/services/case-data.service";
+import { BillingDataService } from "@core/services/billing-data.service";
+import { ReportsDataService } from "@core/services/reports-data.service";
+import { FormatUtils } from "@core/services/format-utils.service";
 import {
   BREAKDOWN_COLORS,
   BreakdownSlice,
   RevenuePoint,
   StageShare,
-  TurnaroundPoint
-} from '@core/models/report.model';
+  TurnaroundPoint,
+} from "@core/models/report.model";
 
 @Component({
-  selector: 'app-reports',
+  selector: "app-reports",
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './reports.component.html',
-  styleUrl: './reports.component.scss'
+  templateUrl: "./reports.component.html",
+  styleUrl: "./reports.component.scss",
 })
 export class ReportsComponent {
   private readonly orderService = inject(OrderDataService);
@@ -44,22 +44,32 @@ export class ReportsComponent {
   }
 
   get maxRevenue(): number {
-    return Math.max(...this.monthlyRevenue.map(r => r.revenue));
+    return Math.max(...this.monthlyRevenue.map((r) => r.revenue));
   }
 
   get maxTurnaround(): number {
-    return Math.max(...this.turnaround.map(t => t.days));
+    return Math.max(...this.turnaround.map((t) => t.days));
   }
 
   readonly totalRevenue = computed(() =>
-    this.billingService.records().filter(r => r.status === 'Paid').reduce((sum, r) => sum + r.amount, 0)
+    this.billingService
+      .records()
+      .filter((r) => r.status === "Paid")
+      .reduce((sum, r) => sum + r.amount, 0),
   );
-  readonly completedOrders = computed(() => this.orderService.orders().filter(o => o.status === 'Completed').length);
-  readonly openCases = computed(() => this.caseService.cases().filter(c => c.status !== 'Closed').length);
+  readonly completedOrders = computed(
+    () =>
+      this.orderService.orders().filter((o) => o.status === "Completed").length,
+  );
+  readonly openCases = computed(
+    () => this.caseService.cases().filter((c) => c.status !== "Closed").length,
+  );
   readonly averageOrderValue = computed(() => {
     const records = this.billingService.records();
     if (records.length === 0) return 0;
-    return Math.round(records.reduce((sum, r) => sum + r.amount, 0) / records.length);
+    return Math.round(
+      records.reduce((sum, r) => sum + r.amount, 0) / records.length,
+    );
   });
 
   barHeight(revenue: number): number {
@@ -74,7 +84,6 @@ export class ReportsComponent {
     return BREAKDOWN_COLORS[index % BREAKDOWN_COLORS.length];
   }
 
-  
   readonly barW = 560;
   readonly barH = 240;
   readonly barPadL = 44;
@@ -121,7 +130,7 @@ export class ReportsComponent {
       const seg = {
         dash: `${Math.max(0, frac * C - 4)} ${C}`,
         offset: -(acc * C) + C / 4,
-        color: this.sliceColor(i)
+        color: this.sliceColor(i),
       };
       acc += frac + gap / this.restorationBreakdown.length;
       return seg;
@@ -145,7 +154,9 @@ export class ReportsComponent {
   }
 
   linePoints(): string {
-    return this.turnaround.map((t, i) => `${this.lineX(i)},${this.lineY(t.days)}`).join(' ');
+    return this.turnaround
+      .map((t, i) => `${this.lineX(i)},${this.lineY(t.days)}`)
+      .join(" ");
   }
 
   lineTickY(tick: number): number {

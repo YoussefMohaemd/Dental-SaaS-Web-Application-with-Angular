@@ -1,4 +1,5 @@
-export type NotificationType = 'order' | 'workflow' | 'file' | 'billing' | 'system' | 'request';
+export type NotificationType =
+  "order" | "workflow" | "file" | "billing" | "system" | "request";
 
 export interface Notification {
   id: string;

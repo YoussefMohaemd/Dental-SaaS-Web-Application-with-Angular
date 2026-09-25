@@ -1,22 +1,22 @@
-import { CommonModule } from '@angular/common';
-import { Component, computed, input, model } from '@angular/core';
+import { CommonModule } from "@angular/common";
+import { Component, computed, input, model } from "@angular/core";
 
 @Component({
-  selector: 'app-select',
+  selector: "app-select",
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './select.component.html',
-  styleUrl: './select.component.scss',
+  templateUrl: "./select.component.html",
+  styleUrl: "./select.component.scss",
 })
 export class SelectComponent {
   readonly id = input.required<string>();
-  readonly label = input<string>('');
-  readonly placeholder = input<string>('');
+  readonly label = input<string>("");
+  readonly placeholder = input<string>("");
   readonly options = input<readonly string[]>([]);
-  readonly value = model<string>('');
+  readonly value = model<string>("");
   readonly disabled = input<boolean>(false);
   readonly required = input<boolean>(false);
-  readonly ariaLabel = input<string>('');
+  readonly ariaLabel = input<string>("");
 
   readonly selectId = computed(() => this.id());
 

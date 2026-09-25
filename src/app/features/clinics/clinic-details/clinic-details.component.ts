@@ -1,22 +1,22 @@
-import { Component, computed, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
-import { ClinicDataService } from '@core/services/clinic-data.service';
-import { DoctorDataService } from '@core/services/doctor-data.service';
-import { OrderDataService } from '@core/services/order-data.service';
-import { NavigationService } from '@core/services/navigation.service';
-import { FormatUtils } from '@core/services/format-utils.service';
-import { AvatarComponent } from '@shared/components/avatar/avatar.component';
-import { statusDisplayLabel } from '@shared/utils/status-label';
+import { Component, computed, inject, signal } from "@angular/core";
+import { CommonModule } from "@angular/common";
+import { ActivatedRoute } from "@angular/router";
+import { ClinicDataService } from "@core/services/clinic-data.service";
+import { DoctorDataService } from "@core/services/doctor-data.service";
+import { OrderDataService } from "@core/services/order-data.service";
+import { NavigationService } from "@core/services/navigation.service";
+import { FormatUtils } from "@core/services/format-utils.service";
+import { AvatarComponent } from "@shared/components/avatar/avatar.component";
+import { statusDisplayLabel } from "@shared/utils/status-label";
 
-type ClinicTab = 'overview' | 'doctors' | 'orders' | 'activity';
+type ClinicTab = "overview" | "doctors" | "orders" | "activity";
 
 @Component({
-  selector: 'app-clinic-details',
+  selector: "app-clinic-details",
   standalone: true,
   imports: [CommonModule, AvatarComponent],
-  templateUrl: './clinic-details.component.html',
-  styleUrl: './clinic-details.component.scss'
+  templateUrl: "./clinic-details.component.html",
+  styleUrl: "./clinic-details.component.scss",
 })
 export class ClinicDetailsComponent {
   private readonly route = inject(ActivatedRoute);
@@ -26,23 +26,28 @@ export class ClinicDetailsComponent {
   protected readonly navigationService = inject(NavigationService);
   protected readonly formatUtils = inject(FormatUtils);
 
-  readonly activeTab = signal<ClinicTab>('overview');
+  readonly activeTab = signal<ClinicTab>("overview");
   readonly tabs: { id: ClinicTab; label: string }[] = [
-    { id: 'overview', label: 'Overview' },
-    { id: 'doctors', label: 'Doctors' },
-    { id: 'orders', label: 'Orders' },
-    { id: 'activity', label: 'Activity' }
+    { id: "overview", label: "Overview" },
+    { id: "doctors", label: "Doctors" },
+    { id: "orders", label: "Orders" },
+    { id: "activity", label: "Activity" },
   ];
 
   readonly clinic = computed(() => {
-    const clinicId = this.route.snapshot.paramMap.get('clinicId');
-    return this.clinicService.getClinicById(clinicId ?? '') ?? this.clinicService.clinics()[0];
+    const clinicId = this.route.snapshot.paramMap.get("clinicId");
+    return (
+      this.clinicService.getClinicById(clinicId ?? "") ??
+      this.clinicService.clinics()[0]
+    );
   });
 
   readonly clinicDoctors = computed(() => {
     const current = this.clinic();
     if (!current) return [];
-    return this.doctorService.doctors().filter(d => d.clinicId === current.id);
+    return this.doctorService
+      .doctors()
+      .filter((d) => d.clinicId === current.id);
   });
 
   readonly clinicOrders = computed(() => {
@@ -54,7 +59,7 @@ export class ClinicDetailsComponent {
   readonly recentActivity = computed(() => this.clinicOrders().slice(0, 5));
 
   goBack(): void {
-    this.navigationService.navigate('clinics');
+    this.navigationService.navigate("clinics");
   }
 
   setTab(tab: ClinicTab): void {
@@ -62,15 +67,17 @@ export class ClinicDetailsComponent {
   }
 
   openDoctor(doctorId: string): void {
-    this.navigationService.navigate('doctorDetails', { doctorId });
+    this.navigationService.navigate("doctorDetails", { doctorId });
   }
 
   openOrder(orderId: string): void {
-    this.navigationService.navigate('viewOrder', { orderId });
+    this.navigationService.navigate("viewOrder", { orderId });
   }
 
   statusClasses(status: string): string {
-    return status === 'Active' ? 'bg-emerald-50 text-emerald-700' : 'bg-muted text-muted-foreground';
+    return status === "Active"
+      ? "bg-emerald-50 text-emerald-700"
+      : "bg-muted text-muted-foreground";
   }
 
   statusLabel(status: string): string {

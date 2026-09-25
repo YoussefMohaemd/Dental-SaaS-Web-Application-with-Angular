@@ -2,7 +2,9 @@
   <div class="enterprise-page-header shrink-0">
     <div class="enterprise-header-copy">
       <h1 class="font-display text-lg font-bold text-foreground">Billing</h1>
-      <p class="text-xs text-muted-foreground">{{ filtered().length }} billing records</p>
+      <p class="text-xs text-muted-foreground">
+        {{ filtered().length }} billing records
+      </p>
     </div>
     <button
       type="button"
@@ -10,7 +12,10 @@
       class="inline-flex items-center gap-2 rounded-lg border border-border px-3.5 py-2 text-xs font-medium text-foreground transition-colors hover:bg-muted"
       aria-label="Export billing records"
     >
-      <span [innerHTML]="getIconSvg('download') | safeHtml" aria-hidden="true"></span>
+      <span
+        [innerHTML]="getIconSvg('download') | safeHtml"
+        aria-hidden="true"
+      ></span>
       Export
     </button>
   </div>
@@ -19,19 +24,27 @@
     <div class="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
       <div class="rounded-xl border border-border bg-card p-4">
         <p class="text-xs text-muted-foreground">Total Value</p>
-        <p class="font-display mt-1 text-xl font-bold text-foreground">{{ formatUtils.formatCurrency(totalValue()) }}</p>
+        <p class="font-display mt-1 text-xl font-bold text-foreground">
+          {{ formatUtils.formatCurrency(totalValue()) }}
+        </p>
       </div>
       <div class="rounded-xl border border-border bg-card p-4">
         <p class="text-xs text-muted-foreground">Collected</p>
-        <p class="font-display mt-1 text-xl font-bold text-success">{{ formatUtils.formatCurrency(collectedValue()) }}</p>
+        <p class="font-display mt-1 text-xl font-bold text-success">
+          {{ formatUtils.formatCurrency(collectedValue()) }}
+        </p>
       </div>
       <div class="rounded-xl border border-border bg-card p-4">
         <p class="text-xs text-muted-foreground">Pending</p>
-        <p class="font-display mt-1 text-xl font-bold text-warning">{{ formatUtils.formatCurrency(pendingValue()) }}</p>
+        <p class="font-display mt-1 text-xl font-bold text-warning">
+          {{ formatUtils.formatCurrency(pendingValue()) }}
+        </p>
       </div>
       <div class="rounded-xl border border-border bg-card p-4">
         <p class="text-xs text-muted-foreground">Overdue</p>
-        <p class="font-display mt-1 text-xl font-bold text-danger">{{ overdueCount() }} invoices</p>
+        <p class="font-display mt-1 text-xl font-bold text-danger">
+          {{ overdueCount() }} invoices
+        </p>
       </div>
     </div>
   </div>
@@ -39,7 +52,11 @@
   <div class="enterprise-toolbar shrink-0">
     <div class="enterprise-toolbar-group enterprise-toolbar-group--grow">
       <div class="enterprise-toolbar-search">
-        <span [innerHTML]="getIconSvg('search') | safeHtml" class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden="true"></span>
+        <span
+          [innerHTML]="getIconSvg('search') | safeHtml"
+          class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+          aria-hidden="true"
+        ></span>
         <input
           class="enterprise-toolbar-input"
           placeholder="Search billing..."
@@ -67,51 +84,114 @@
   <div class="enterprise-table-panel">
     <div class="enterprise-table-scroll">
       @if (loading()) {
-        <div class="enterprise-empty-state flex flex-col items-center justify-center text-center">
-          <span [innerHTML]="getIconSvg('loader') | safeHtml" class="mb-3 animate-spin text-muted-foreground" aria-hidden="true"></span>
-          <p class="font-semibold text-foreground">Loading billing records...</p>
+        <div
+          class="enterprise-empty-state flex flex-col items-center justify-center text-center"
+        >
+          <span
+            [innerHTML]="getIconSvg('loader') | safeHtml"
+            class="mb-3 animate-spin text-muted-foreground"
+            aria-hidden="true"
+          ></span>
+          <p class="font-semibold text-foreground">
+            Loading billing records...
+          </p>
         </div>
       } @else if (filtered().length === 0) {
-        <div class="enterprise-empty-state flex flex-col items-center justify-center text-center">
-          <span [innerHTML]="getIconSvg('receipt') | safeHtml" class="mb-3 text-muted-foreground" aria-hidden="true"></span>
+        <div
+          class="enterprise-empty-state flex flex-col items-center justify-center text-center"
+        >
+          <span
+            [innerHTML]="getIconSvg('receipt') | safeHtml"
+            class="mb-3 text-muted-foreground"
+            aria-hidden="true"
+          ></span>
           <p class="font-semibold text-foreground">No billing records found</p>
         </div>
       } @else {
-        <p-table [value]="pageData()" [tableStyle]="{ 'min-width': '70rem' }" styleClass="p-datatable-sm enterprise-prime-table">
+        <p-table
+          [value]="pageData()"
+          [tableStyle]="{ 'min-width': '70rem' }"
+          styleClass="p-datatable-sm enterprise-prime-table"
+        >
           <ng-template pTemplate="header">
             <tr>
               <th>
-                <button type="button" (click)="toggleSort('orderNumber')" class="billing-sort-button">
+                <button
+                  type="button"
+                  (click)="toggleSort('orderNumber')"
+                  class="billing-sort-button"
+                >
                   Order #
-                  <span class="billing-sort-button-icon" aria-hidden="true" [class.text-primary]="sortIconActive('orderNumber')" [innerHTML]="sortIcon('orderNumber') | safeHtml"></span>
+                  <span
+                    class="billing-sort-button-icon"
+                    aria-hidden="true"
+                    [class.text-primary]="sortIconActive('orderNumber')"
+                    [innerHTML]="sortIcon('orderNumber') | safeHtml"
+                  ></span>
                 </button>
               </th>
               <th>
-                <button type="button" (click)="toggleSort('patientName')" class="billing-sort-button">
+                <button
+                  type="button"
+                  (click)="toggleSort('patientName')"
+                  class="billing-sort-button"
+                >
                   Patient
-                  <span class="billing-sort-button-icon" aria-hidden="true" [class.text-primary]="sortIconActive('patientName')" [innerHTML]="sortIcon('patientName') | safeHtml"></span>
+                  <span
+                    class="billing-sort-button-icon"
+                    aria-hidden="true"
+                    [class.text-primary]="sortIconActive('patientName')"
+                    [innerHTML]="sortIcon('patientName') | safeHtml"
+                  ></span>
                 </button>
               </th>
               <th>Doctor</th>
               <th>Clinic</th>
               <th>Invoice #</th>
               <th>
-                <button type="button" (click)="toggleSort('amount')" class="billing-sort-button">
+                <button
+                  type="button"
+                  (click)="toggleSort('amount')"
+                  class="billing-sort-button"
+                >
                   Amount
-                  <span class="billing-sort-button-icon" aria-hidden="true" [class.text-primary]="sortIconActive('amount')" [innerHTML]="sortIcon('amount') | safeHtml"></span>
+                  <span
+                    class="billing-sort-button-icon"
+                    aria-hidden="true"
+                    [class.text-primary]="sortIconActive('amount')"
+                    [innerHTML]="sortIcon('amount') | safeHtml"
+                  ></span>
                 </button>
               </th>
               <th>Status</th>
               <th>
-                <button type="button" (click)="toggleSort('invoiceDate')" class="billing-sort-button">
+                <button
+                  type="button"
+                  (click)="toggleSort('invoiceDate')"
+                  class="billing-sort-button"
+                >
                   Invoice Date
-                  <span class="billing-sort-button-icon" aria-hidden="true" [class.text-primary]="sortIconActive('invoiceDate')" [innerHTML]="sortIcon('invoiceDate') | safeHtml"></span>
+                  <span
+                    class="billing-sort-button-icon"
+                    aria-hidden="true"
+                    [class.text-primary]="sortIconActive('invoiceDate')"
+                    [innerHTML]="sortIcon('invoiceDate') | safeHtml"
+                  ></span>
                 </button>
               </th>
               <th>
-                <button type="button" (click)="toggleSort('dueDate')" class="billing-sort-button">
+                <button
+                  type="button"
+                  (click)="toggleSort('dueDate')"
+                  class="billing-sort-button"
+                >
                   Due Date
-                  <span class="billing-sort-button-icon" aria-hidden="true" [class.text-primary]="sortIconActive('dueDate')" [innerHTML]="sortIcon('dueDate') | safeHtml"></span>
+                  <span
+                    class="billing-sort-button-icon"
+                    aria-hidden="true"
+                    [class.text-primary]="sortIconActive('dueDate')"
+                    [innerHTML]="sortIcon('dueDate') | safeHtml"
+                  ></span>
                 </button>
               </th>
               <th class="text-center">Vouchers</th>
@@ -120,31 +200,73 @@
           <ng-template pTemplate="body" let-record>
             <tr>
               <td>
-                <button type="button" (click)="openOrder(record.orderId)" class="font-mono text-xs font-semibold text-primary hover:underline">
+                <button
+                  type="button"
+                  (click)="openOrder(record.orderId)"
+                  class="font-mono text-xs font-semibold text-primary hover:underline"
+                >
                   {{ record.orderNumber }}
                 </button>
               </td>
               <td class="max-w-40">
-                <span class="truncate-1 text-xs text-foreground" [title]="record.patientName">{{ record.patientName }}</span>
+                <span
+                  class="truncate-1 text-xs text-foreground"
+                  [title]="record.patientName"
+                  >{{ record.patientName }}</span
+                >
               </td>
               <td class="max-w-36">
-                <span class="truncate-1 text-xs text-muted-foreground" [title]="record.doctorName">{{ record.doctorName.replace('Dr. ', '') }}</span>
+                <span
+                  class="truncate-1 text-xs text-muted-foreground"
+                  [title]="record.doctorName"
+                  >{{ record.doctorName.replace("Dr. ", "") }}</span
+                >
               </td>
               <td class="max-w-40">
-                <span class="truncate-1 text-xs text-muted-foreground" [title]="record.clinicName">{{ record.clinicName }}</span>
+                <span
+                  class="truncate-1 text-xs text-muted-foreground"
+                  [title]="record.clinicName"
+                  >{{ record.clinicName }}</span
+                >
               </td>
               <td class="font-mono text-xs">
                 @if (record.invoiceNumber) {
-                  <span class="text-foreground">{{ record.invoiceNumber }}</span>
+                  <span class="text-foreground">{{
+                    record.invoiceNumber
+                  }}</span>
                 } @else {
                   <span class="text-muted-foreground/40">—</span>
                 }
               </td>
-              <td class="text-right font-mono text-xs font-semibold text-foreground">{{ formatUtils.formatCurrency(record.amount) }}</td>
-              <td><span class="enterprise-status-chip" [class]="statusClasses(record.status)">{{ record.status }}</span></td>
-              <td class="font-mono text-xs text-muted-foreground whitespace-nowrap">{{ record.invoiceDate ? formatUtils.formatDate(record.invoiceDate) : '—' }}</td>
-              <td class="font-mono text-xs text-muted-foreground whitespace-nowrap">{{ formatUtils.formatDate(record.dueDate) }}</td>
-              <td class="text-center font-mono text-xs text-muted-foreground">{{ record.vouchers > 0 ? record.vouchers : '—' }}</td>
+              <td
+                class="text-right font-mono text-xs font-semibold text-foreground"
+              >
+                {{ formatUtils.formatCurrency(record.amount) }}
+              </td>
+              <td>
+                <span
+                  class="enterprise-status-chip"
+                  [class]="statusClasses(record.status)"
+                  >{{ record.status }}</span
+                >
+              </td>
+              <td
+                class="font-mono text-xs text-muted-foreground whitespace-nowrap"
+              >
+                {{
+                  record.invoiceDate
+                    ? formatUtils.formatDate(record.invoiceDate)
+                    : "—"
+                }}
+              </td>
+              <td
+                class="font-mono text-xs text-muted-foreground whitespace-nowrap"
+              >
+                {{ formatUtils.formatDate(record.dueDate) }}
+              </td>
+              <td class="text-center font-mono text-xs text-muted-foreground">
+                {{ record.vouchers > 0 ? record.vouchers : "—" }}
+              </td>
             </tr>
           </ng-template>
         </p-table>
@@ -153,9 +275,19 @@
 
     @if (filtered().length > 0) {
       <div class="enterprise-pagination">
-        <span class="text-xs text-muted-foreground">{{ rangeStart() }}–{{ rangeEnd() }} of {{ filtered().length }}</span>
+        <span class="text-xs text-muted-foreground"
+          >{{ rangeStart() }}–{{ rangeEnd() }} of {{ filtered().length }}</span
+        >
         <div class="enterprise-pagination-pages">
-          <button type="button" (click)="prevPage()" [disabled]="page() === 1" class="enterprise-page-nav" aria-label="Previous page"><span [innerHTML]="getIconSvg('chevron-left') | safeHtml"></span></button>
+          <button
+            type="button"
+            (click)="prevPage()"
+            [disabled]="page() === 1"
+            class="enterprise-page-nav"
+            aria-label="Previous page"
+          >
+            <span [innerHTML]="getIconSvg('chevron-left') | safeHtml"></span>
+          </button>
           @for (pg of pageNumbers(); track pg) {
             <button
               type="button"
@@ -166,7 +298,15 @@
               {{ pg }}
             </button>
           }
-          <button type="button" (click)="nextPage()" [disabled]="page() === totalPages()" class="enterprise-page-nav" aria-label="Next page"><span [innerHTML]="getIconSvg('chevron-right') | safeHtml"></span></button>
+          <button
+            type="button"
+            (click)="nextPage()"
+            [disabled]="page() === totalPages()"
+            class="enterprise-page-nav"
+            aria-label="Next page"
+          >
+            <span [innerHTML]="getIconSvg('chevron-right') | safeHtml"></span>
+          </button>
         </div>
       </div>
     }

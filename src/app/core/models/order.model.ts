@@ -1,30 +1,30 @@
 export type OrderStatus =
-  | 'New'
-  | 'Review'
-  | 'Design'
-  | 'Production'
-  | 'Quality Check'
-  | 'Ready'
-  | 'Completed'
-  | 'Cancelled';
+  | "New"
+  | "Review"
+  | "Design"
+  | "Production"
+  | "Quality Check"
+  | "Ready"
+  | "Completed"
+  | "Cancelled";
 
-export type Priority = 'Low' | 'Normal' | 'High' | 'Urgent';
+export type Priority = "Low" | "Normal" | "High" | "Urgent";
 
 export type RestoType =
-  | 'Crown'
-  | 'Bridge'
-  | 'Veneer'
-  | 'Implant Crown'
-  | 'Full Arch'
-  | 'Night Guard'
-  | 'Inlay'
-  | 'Onlay'
-  | 'Partial Denture'
-  | 'Complete Denture';
+  | "Crown"
+  | "Bridge"
+  | "Veneer"
+  | "Implant Crown"
+  | "Full Arch"
+  | "Night Guard"
+  | "Inlay"
+  | "Onlay"
+  | "Partial Denture"
+  | "Complete Denture";
 
-export type ArchType = 'Maxilla' | 'Mandible' | 'Both';
+export type ArchType = "Maxilla" | "Mandible" | "Both";
 
-import type { SubOrderCreationData } from './sub-order.model';
+import type { SubOrderCreationData } from "./sub-order.model";
 
 export interface Order {
   id: string;
@@ -72,7 +72,7 @@ export interface OrderFilters {
   statusFilter?: OrderStatus[];
   priorityFilter?: Priority;
   sortColumn?: keyof Order;
-  sortDirection?: 'asc' | 'desc';
+  sortDirection?: "asc" | "desc";
   page?: number;
   pageSize?: number;
 }
@@ -83,7 +83,7 @@ export interface OrderTableState {
   currentPage: number;
   pageSize: number;
   totalPages: number;
-  sortColumn: keyof Order | '';
-  sortDirection: 'asc' | 'desc';
-  viewState: 'normal' | 'loading' | 'empty' | 'error';
+  sortColumn: keyof Order | "";
+  sortDirection: "asc" | "desc";
+  viewState: "normal" | "loading" | "empty" | "error";
 }

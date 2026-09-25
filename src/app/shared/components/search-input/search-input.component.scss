@@ -4,8 +4,6 @@
 }
 
 .search-input-wrap {
-  
-  
   input {
     height: 2rem;
     line-height: 1.25rem;
@@ -15,7 +13,11 @@
     }
 
     &:hover {
-      border-color: color-mix(in srgb, var(--border) 70%, var(--foreground) 30%);
+      border-color: color-mix(
+        in srgb,
+        var(--border) 70%,
+        var(--foreground) 30%
+      );
     }
   }
 

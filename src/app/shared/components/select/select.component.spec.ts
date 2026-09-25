@@ -1,7 +1,7 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { SelectComponent } from './select.component';
+import { ComponentFixture, TestBed } from "@angular/core/testing";
+import { SelectComponent } from "./select.component";
 
-describe('SelectComponent', () => {
+describe("SelectComponent", () => {
   let fixture: ComponentFixture<SelectComponent>;
   let component: SelectComponent;
 
@@ -12,33 +12,41 @@ describe('SelectComponent', () => {
 
     fixture = TestBed.createComponent(SelectComponent);
     component = fixture.componentInstance;
-    fixture.componentRef.setInput('id', 'status-select');
-    fixture.componentRef.setInput('options', ['New', 'Review', 'Design']);
-    fixture.componentRef.setInput('placeholder', 'Choose status');
+    fixture.componentRef.setInput("id", "status-select");
+    fixture.componentRef.setInput("options", ["New", "Review", "Design"]);
+    fixture.componentRef.setInput("placeholder", "Choose status");
     fixture.detectChanges();
   });
 
-  it('renders the placeholder and options', () => {
-    const select = fixture.nativeElement.querySelector('select') as HTMLSelectElement;
-    const options = Array.from(select.querySelectorAll('option')).map(option => option.textContent?.trim());
+  it("renders the placeholder and options", () => {
+    const select = fixture.nativeElement.querySelector(
+      "select",
+    ) as HTMLSelectElement;
+    const options = Array.from(select.querySelectorAll("option")).map(
+      (option) => option.textContent?.trim(),
+    );
 
-    expect(options).toEqual(['Choose status', 'New', 'Review', 'Design']);
+    expect(options).toEqual(["Choose status", "New", "Review", "Design"]);
   });
 
-  it('updates the model when the selection changes', () => {
-    const select = fixture.nativeElement.querySelector('select') as HTMLSelectElement;
-    select.value = 'Review';
-    select.dispatchEvent(new Event('change'));
+  it("updates the model when the selection changes", () => {
+    const select = fixture.nativeElement.querySelector(
+      "select",
+    ) as HTMLSelectElement;
+    select.value = "Review";
+    select.dispatchEvent(new Event("change"));
     fixture.detectChanges();
 
-    expect(component.value()).toBe('Review');
+    expect(component.value()).toBe("Review");
   });
 
-  it('applies disabled state to the native select', () => {
-    fixture.componentRef.setInput('disabled', true);
+  it("applies disabled state to the native select", () => {
+    fixture.componentRef.setInput("disabled", true);
     fixture.detectChanges();
 
-    const select = fixture.nativeElement.querySelector('select') as HTMLSelectElement;
+    const select = fixture.nativeElement.querySelector(
+      "select",
+    ) as HTMLSelectElement;
     expect(select.disabled).toBeTrue();
   });
 });

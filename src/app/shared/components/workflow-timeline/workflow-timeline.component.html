@@ -1,28 +1,72 @@
 <div>
-  <ol class="relative space-y-3 border-l-2 border-border pl-5" aria-label="Workflow timeline">
+  <ol
+    class="relative space-y-3 border-l-2 border-border pl-5"
+    aria-label="Workflow timeline"
+  >
     @for (stage of stages(); track stage.status; let i = $index) {
       <li
         class="relative rounded-xl border p-4"
-        [class]="i === currentIndex() ? 'border-primary bg-primary/5' : i < currentIndex() ? 'border-success/40 bg-success/5' : 'border-border bg-card'"
+        [class]="
+          i === currentIndex()
+            ? 'border-primary bg-primary/5'
+            : i < currentIndex()
+              ? 'border-success/40 bg-success/5'
+              : 'border-border bg-card'
+        "
       >
         <span
           class="absolute -left-[27px] flex h-5 w-5 items-center justify-center rounded-full border-2 border-white text-[10px] font-bold"
-          [class]="i < currentIndex() ? 'bg-success text-white' : i === currentIndex() ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'"
+          [class]="
+            i < currentIndex()
+              ? 'bg-success text-white'
+              : i === currentIndex()
+                ? 'bg-primary text-white'
+                : 'bg-muted text-muted-foreground'
+          "
           aria-hidden="true"
         >
-          @if (i < currentIndex()) { ✓ } @else { {{ i + 1 }} }
+          @if (i < currentIndex()) {
+            ✓
+          } @else {
+            {{ i + 1 }}
+          }
         </span>
         <div class="flex items-center gap-2">
           <p class="text-sm font-semibold text-foreground">{{ stage.label }}</p>
-          <span class="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">{{ stage.status }}</span>
+          <span
+            class="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground"
+            >{{ stage.status }}</span
+          >
         </div>
-        <p class="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">{{ stage.owner }}</p>
-        <p class="mt-1.5 text-xs text-muted-foreground">{{ stage.description }}</p>
+        <p
+          class="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground"
+        >
+          {{ stage.owner }}
+        </p>
+        <p class="mt-1.5 text-xs text-muted-foreground">
+          {{ stage.description }}
+        </p>
         @if (stage.actions.length > 0) {
           <ul class="mt-2 space-y-1">
             @for (action of stage.actions; track action) {
-              <li class="flex items-center gap-2 text-xs" [class]="i < currentIndex() ? 'text-muted-foreground line-through' : 'text-foreground'">
-                <span class="flex h-3.5 w-3.5 items-center justify-center rounded border text-[9px]" [class]="i < currentIndex() ? 'border-success bg-success text-white' : 'border-border'" aria-hidden="true">•</span>
+              <li
+                class="flex items-center gap-2 text-xs"
+                [class]="
+                  i < currentIndex()
+                    ? 'text-muted-foreground line-through'
+                    : 'text-foreground'
+                "
+              >
+                <span
+                  class="flex h-3.5 w-3.5 items-center justify-center rounded border text-[9px]"
+                  [class]="
+                    i < currentIndex()
+                      ? 'border-success bg-success text-white'
+                      : 'border-border'
+                  "
+                  aria-hidden="true"
+                  >•</span
+                >
                 {{ action }}
               </li>
             }
@@ -34,9 +78,13 @@
 
   <div class="mt-5 rounded-xl border border-border bg-card p-5">
     <h2 class="mb-3 text-sm font-semibold text-foreground">Timeline Summary</h2>
-    <p class="text-xs text-muted-foreground">{{ completedCount() }} of {{ stages().length }} stages complete</p>
+    <p class="text-xs text-muted-foreground">
+      {{ completedCount() }} of {{ stages().length }} stages complete
+    </p>
     @if (currentUpdatedAt()) {
-      <p class="mt-2 text-xs text-muted-foreground">Last updated {{ currentUpdatedAt() }}</p>
+      <p class="mt-2 text-xs text-muted-foreground">
+        Last updated {{ currentUpdatedAt() }}
+      </p>
     }
   </div>
 </div>

@@ -5,8 +5,8 @@ export interface ChangeRequest {
   orderNumber: string;
   patientName: string;
   requester: string;
-  status: 'Pending' | 'In Review' | 'Approved' | 'Rejected' | 'Completed';
-  priority: 'Low' | 'Normal' | 'High' | 'Urgent';
+  status: "Pending" | "In Review" | "Approved" | "Rejected" | "Completed";
+  priority: "Low" | "Normal" | "High" | "Urgent";
   description: string;
   createdAt: string;
   updatedAt: string;
@@ -14,10 +14,10 @@ export interface ChangeRequest {
 
 export interface ChangeRequestFilters {
   search?: string;
-  statusFilter?: ChangeRequest['status'];
-  priorityFilter?: ChangeRequest['priority'];
+  statusFilter?: ChangeRequest["status"];
+  priorityFilter?: ChangeRequest["priority"];
   sortColumn?: keyof ChangeRequest;
-  sortDirection?: 'asc' | 'desc';
+  sortDirection?: "asc" | "desc";
   page?: number;
   pageSize?: number;
 }

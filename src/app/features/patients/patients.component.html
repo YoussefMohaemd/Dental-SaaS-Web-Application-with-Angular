@@ -2,14 +2,19 @@
   <div class="enterprise-page-header shrink-0">
     <div class="enterprise-header-copy">
       <h1 class="font-display text-lg font-bold text-foreground">Patients</h1>
-      <p class="text-xs text-muted-foreground">{{ filtered().length }} registered patients</p>
+      <p class="text-xs text-muted-foreground">
+        {{ filtered().length }} registered patients
+      </p>
     </div>
   </div>
 
   <div class="enterprise-toolbar shrink-0">
     <div class="enterprise-toolbar-group enterprise-toolbar-group--grow">
       <div class="enterprise-toolbar-search">
-        <span [innerHTML]="getIconSvg('search') | safeHtml" class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"></span>
+        <span
+          [innerHTML]="getIconSvg('search') | safeHtml"
+          class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+        ></span>
         <input
           class="enterprise-toolbar-input"
           placeholder="Search patients..."
@@ -28,7 +33,12 @@
       </select>
     </div>
     <div class="enterprise-toolbar-group">
-      <app-button variant="primary" size="md" (onClick)="navigateToAddPatient()" class="flex items-center gap-2">
+      <app-button
+        variant="primary"
+        size="md"
+        (onClick)="navigateToAddPatient()"
+        class="flex items-center gap-2"
+      >
         <span [innerHTML]="getIconSvg('plus') | safeHtml"></span>
         Add Patient
       </app-button>
@@ -38,13 +48,25 @@
   <div class="enterprise-table-panel">
     <div class="enterprise-table-scroll">
       @if (loading()) {
-        <div class="enterprise-empty-state flex flex-col items-center justify-center text-center">
-          <span [innerHTML]="getIconSvg('loader') | safeHtml" class="text-muted-foreground mb-3 animate-spin" style="width: 28px; height: 28px;"></span>
+        <div
+          class="enterprise-empty-state flex flex-col items-center justify-center text-center"
+        >
+          <span
+            [innerHTML]="getIconSvg('loader') | safeHtml"
+            class="text-muted-foreground mb-3 animate-spin"
+            style="width: 28px; height: 28px"
+          ></span>
           <p class="font-semibold text-foreground">Loading patients...</p>
         </div>
       } @else if (filtered().length === 0) {
-        <div class="enterprise-empty-state flex flex-col items-center justify-center text-center">
-          <span [innerHTML]="getIconSvg('users') | safeHtml" class="text-muted-foreground mb-3" style="width: 32px; height: 32px;"></span>
+        <div
+          class="enterprise-empty-state flex flex-col items-center justify-center text-center"
+        >
+          <span
+            [innerHTML]="getIconSvg('users') | safeHtml"
+            class="text-muted-foreground mb-3"
+            style="width: 32px; height: 32px"
+          ></span>
           <p class="font-semibold text-foreground">No patients found</p>
         </div>
       } @else {
@@ -52,68 +74,154 @@
           <thead>
             <tr>
               <th class="enterprise-th-sort" (click)="toggleSort('name')">
-                <span class="enterprise-th-label">Name
-                  <span [innerHTML]="getIconSvg('arrow-up-down') | safeHtml" class="inline" [class.text-primary]="sortCol() === 'name'" [class.text-muted-foreground/40]="sortCol() !== 'name'" style="width: 10px; height: 10px;"></span>
+                <span class="enterprise-th-label"
+                  >Name
+                  <span
+                    [innerHTML]="getIconSvg('arrow-up-down') | safeHtml"
+                    class="inline"
+                    [class.text-primary]="sortCol() === 'name'"
+                    [class.text-muted-foreground/40]="sortCol() !== 'name'"
+                    style="width: 10px; height: 10px"
+                  ></span>
                 </span>
               </th>
               <th class="enterprise-th-sort" (click)="toggleSort('dob')">
-                <span class="enterprise-th-label">Date of Birth
-                  <span [innerHTML]="getIconSvg('arrow-up-down') | safeHtml" class="inline" [class.text-primary]="sortCol() === 'dob'" [class.text-muted-foreground/40]="sortCol() !== 'dob'" style="width: 10px; height: 10px;"></span>
+                <span class="enterprise-th-label"
+                  >Date of Birth
+                  <span
+                    [innerHTML]="getIconSvg('arrow-up-down') | safeHtml"
+                    class="inline"
+                    [class.text-primary]="sortCol() === 'dob'"
+                    [class.text-muted-foreground/40]="sortCol() !== 'dob'"
+                    style="width: 10px; height: 10px"
+                  ></span>
                 </span>
               </th>
               <th>Gender</th>
               <th>Phone</th>
               <th>Email</th>
               <th class="enterprise-th-sort" (click)="toggleSort('clinicName')">
-                <span class="enterprise-th-label">Clinic
-                  <span [innerHTML]="getIconSvg('arrow-up-down') | safeHtml" class="inline" [class.text-primary]="sortCol() === 'clinicName'" [class.text-muted-foreground/40]="sortCol() !== 'clinicName'" style="width: 10px; height: 10px;"></span>
+                <span class="enterprise-th-label"
+                  >Clinic
+                  <span
+                    [innerHTML]="getIconSvg('arrow-up-down') | safeHtml"
+                    class="inline"
+                    [class.text-primary]="sortCol() === 'clinicName'"
+                    [class.text-muted-foreground/40]="
+                      sortCol() !== 'clinicName'
+                    "
+                    style="width: 10px; height: 10px"
+                  ></span>
                 </span>
               </th>
               <th>Doctor</th>
-              <th class="enterprise-th-sort text-center" (click)="toggleSort('ordersCount')">
-                <span class="enterprise-th-label">Orders
-                  <span [innerHTML]="getIconSvg('arrow-up-down') | safeHtml" class="inline" [class.text-primary]="sortCol() === 'ordersCount'" [class.text-muted-foreground/40]="sortCol() !== 'ordersCount'" style="width: 10px; height: 10px;"></span>
+              <th
+                class="enterprise-th-sort text-center"
+                (click)="toggleSort('ordersCount')"
+              >
+                <span class="enterprise-th-label"
+                  >Orders
+                  <span
+                    [innerHTML]="getIconSvg('arrow-up-down') | safeHtml"
+                    class="inline"
+                    [class.text-primary]="sortCol() === 'ordersCount'"
+                    [class.text-muted-foreground/40]="
+                      sortCol() !== 'ordersCount'
+                    "
+                    style="width: 10px; height: 10px"
+                  ></span>
                 </span>
               </th>
               <th>Status</th>
               <th class="enterprise-th-sort" (click)="toggleSort('lastVisit')">
-                <span class="enterprise-th-label">Last Visit
-                  <span [innerHTML]="getIconSvg('arrow-up-down') | safeHtml" class="inline" [class.text-primary]="sortCol() === 'lastVisit'" [class.text-muted-foreground/40]="sortCol() !== 'lastVisit'" style="width: 10px; height: 10px;"></span>
+                <span class="enterprise-th-label"
+                  >Last Visit
+                  <span
+                    [innerHTML]="getIconSvg('arrow-up-down') | safeHtml"
+                    class="inline"
+                    [class.text-primary]="sortCol() === 'lastVisit'"
+                    [class.text-muted-foreground/40]="sortCol() !== 'lastVisit'"
+                    style="width: 10px; height: 10px"
+                  ></span>
                 </span>
               </th>
             </tr>
           </thead>
           <tbody>
             @for (p of pageData(); track p.id) {
-              <tr class="cursor-pointer" (click)="navigationService.navigate('patientDetails', { patientId: p.id })">
+              <tr
+                class="cursor-pointer"
+                (click)="
+                  navigationService.navigate('patientDetails', {
+                    patientId: p.id,
+                  })
+                "
+              >
                 <td>
                   <div class="flex min-w-0 items-center gap-3">
-                    <app-avatar [name]="p.name" [size]="'sm'" [variant]="'primary'" />
+                    <app-avatar
+                      [name]="p.name"
+                      [size]="'sm'"
+                      [variant]="'primary'"
+                    />
                     <div class="enterprise-cell-stack">
-                      <span class="enterprise-cell-primary truncate-1" [title]="p.name">{{ p.name }}</span>
-                      <span class="enterprise-cell-secondary font-mono">ID: {{ p.id }}</span>
+                      <span
+                        class="enterprise-cell-primary truncate-1"
+                        [title]="p.name"
+                        >{{ p.name }}</span
+                      >
+                      <span class="enterprise-cell-secondary font-mono"
+                        >ID: {{ p.id }}</span
+                      >
                     </div>
                   </div>
                 </td>
-                <td class="text-xs text-muted-foreground font-mono whitespace-nowrap">{{ p.dob }}</td>
-                <td class="text-xs text-muted-foreground">{{ getGenderLabel(p.gender) }}</td>
-                <td class="text-xs text-muted-foreground font-mono whitespace-nowrap">{{ p.phone }}</td>
+                <td
+                  class="text-xs text-muted-foreground font-mono whitespace-nowrap"
+                >
+                  {{ p.dob }}
+                </td>
+                <td class="text-xs text-muted-foreground">
+                  {{ getGenderLabel(p.gender) }}
+                </td>
+                <td
+                  class="text-xs text-muted-foreground font-mono whitespace-nowrap"
+                >
+                  {{ p.phone }}
+                </td>
                 <td class="text-xs text-muted-foreground max-w-44">
-                  <span class="truncate-1" [title]="p.email">{{ p.email }}</span>
+                  <span class="truncate-1" [title]="p.email">{{
+                    p.email
+                  }}</span>
                 </td>
                 <td class="text-xs text-muted-foreground max-w-40">
-                  <span class="truncate-1" [title]="p.clinicName">{{ p.clinicName }}</span>
+                  <span class="truncate-1" [title]="p.clinicName">{{
+                    p.clinicName
+                  }}</span>
                 </td>
                 <td class="text-xs text-muted-foreground max-w-40">
-                  <span class="truncate-1" [title]="p.doctorName">{{ p.doctorName.replace('Dr. ', '') }}</span>
+                  <span class="truncate-1" [title]="p.doctorName">{{
+                    p.doctorName.replace("Dr. ", "")
+                  }}</span>
                 </td>
-                <td class="text-center text-xs font-mono font-semibold text-foreground">{{ p.ordersCount }}</td>
+                <td
+                  class="text-center text-xs font-mono font-semibold text-foreground"
+                >
+                  {{ p.ordersCount }}
+                </td>
                 <td>
-                  <span class="enterprise-status-chip" [class]="getStatusClass(p.status)">
+                  <span
+                    class="enterprise-status-chip"
+                    [class]="getStatusClass(p.status)"
+                  >
                     {{ p.status }}
                   </span>
                 </td>
-                <td class="text-xs font-mono text-muted-foreground whitespace-nowrap">{{ p.lastVisit }}</td>
+                <td
+                  class="text-xs font-mono text-muted-foreground whitespace-nowrap"
+                >
+                  {{ p.lastVisit }}
+                </td>
               </tr>
             }
           </tbody>
@@ -123,14 +231,22 @@
 
     @if (filtered().length > 0) {
       <div class="enterprise-pagination">
-        <span class="text-xs text-muted-foreground">{{ ((page() - 1) * pageSize) + 1 }}&ndash;{{ min(page() * pageSize, filtered().length) }} of {{ filtered().length }}</span>
+        <span class="text-xs text-muted-foreground"
+          >{{ (page() - 1) * pageSize + 1 }}&ndash;{{
+            min(page() * pageSize, filtered().length)
+          }}
+          of {{ filtered().length }}</span
+        >
         <div class="enterprise-pagination-pages">
           <button
             (click)="prevPage()"
             [disabled]="page() === 1"
             class="enterprise-page-nav"
           >
-            <span [innerHTML]="getIconSvg('chevron-left') | safeHtml" style="width: 14px; height: 14px;"></span>
+            <span
+              [innerHTML]="getIconSvg('chevron-left') | safeHtml"
+              style="width: 14px; height: 14px"
+            ></span>
           </button>
           @for (pg of getPageNumbers(); track pg) {
             <button
@@ -146,7 +262,10 @@
             [disabled]="page() === totalPages()"
             class="enterprise-page-nav"
           >
-            <span [innerHTML]="getIconSvg('chevron-right') | safeHtml" style="width: 14px; height: 14px;"></span>
+            <span
+              [innerHTML]="getIconSvg('chevron-right') | safeHtml"
+              style="width: 14px; height: 14px"
+            ></span>
           </button>
         </div>
       </div>
@@ -154,21 +273,66 @@
   </div>
 
   @if (showAddDialog()) {
-    <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4" (click)="closeAddDialog()">
-      <div class="w-full max-w-md rounded-xl border border-border bg-card p-5 shadow-xl" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-label="Add patient">
-        <h2 class="font-display text-sm font-semibold text-foreground">Add Patient</h2>
-        <p class="mt-0.5 text-xs text-muted-foreground">Register a new patient.</p>
+    <div
+      class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4"
+      (click)="closeAddDialog()"
+    >
+      <div
+        class="w-full max-w-md rounded-xl border border-border bg-card p-5 shadow-xl"
+        (click)="$event.stopPropagation()"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Add patient"
+      >
+        <h2 class="font-display text-sm font-semibold text-foreground">
+          Add Patient
+        </h2>
+        <p class="mt-0.5 text-xs text-muted-foreground">
+          Register a new patient.
+        </p>
         <div class="mt-4 space-y-3">
-          <label class="block"><span class="mb-1 block text-xs font-semibold">Full Name</span><input class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm" placeholder="e.g. Sarah Thompson" [ngModel]="newName()" (ngModelChange)="newName.set($event)" /></label>
-          <label class="block"><span class="mb-1 block text-xs font-semibold">Clinic</span><input class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm" [ngModel]="newClinic()" (ngModelChange)="newClinic.set($event)" /></label>
+          <label class="block"
+            ><span class="mb-1 block text-xs font-semibold">Full Name</span
+            ><input
+              class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
+              placeholder="e.g. Sarah Thompson"
+              [ngModel]="newName()"
+              (ngModelChange)="newName.set($event)"
+          /></label>
+          <label class="block"
+            ><span class="mb-1 block text-xs font-semibold">Clinic</span
+            ><input
+              class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
+              [ngModel]="newClinic()"
+              (ngModelChange)="newClinic.set($event)"
+          /></label>
           <div class="grid grid-cols-2 gap-3">
-            <label class="block"><span class="mb-1 block text-xs font-semibold">Phone</span><input class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm" placeholder="+1 (555) 000-0000" [ngModel]="newPhone()" (ngModelChange)="newPhone.set($event)" /></label>
-            <label class="block"><span class="mb-1 block text-xs font-semibold">Email</span><input type="email" class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm" placeholder="patient@email.com" [ngModel]="newEmail()" (ngModelChange)="newEmail.set($event)" /></label>
+            <label class="block"
+              ><span class="mb-1 block text-xs font-semibold">Phone</span
+              ><input
+                class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
+                placeholder="+1 (555) 000-0000"
+                [ngModel]="newPhone()"
+                (ngModelChange)="newPhone.set($event)"
+            /></label>
+            <label class="block"
+              ><span class="mb-1 block text-xs font-semibold">Email</span
+              ><input
+                type="email"
+                class="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
+                placeholder="patient@email.com"
+                [ngModel]="newEmail()"
+                (ngModelChange)="newEmail.set($event)"
+            /></label>
           </div>
         </div>
         <div class="mt-5 flex justify-end gap-2">
-          <app-button variant="outline" size="sm" (onClick)="closeAddDialog()">Cancel</app-button>
-          <app-button variant="primary" size="sm" (onClick)="savePatient()">Save Patient</app-button>
+          <app-button variant="outline" size="sm" (onClick)="closeAddDialog()"
+            >Cancel</app-button
+          >
+          <app-button variant="primary" size="sm" (onClick)="savePatient()"
+            >Save Patient</app-button
+          >
         </div>
       </div>
     </div>

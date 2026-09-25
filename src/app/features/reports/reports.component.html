@@ -1,72 +1,163 @@
 <div class="max-w-[1440px] space-y-6 p-6">
   <div>
     <h1 class="font-display text-xl font-bold text-foreground">Reports</h1>
-    <p class="text-sm text-muted-foreground">Operational overview for December 2024</p>
+    <p class="text-sm text-muted-foreground">
+      Operational overview for December 2024
+    </p>
   </div>
 
   <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
     <div class="rounded-xl border border-border bg-card p-4">
       <p class="text-xs text-muted-foreground">Revenue Collected</p>
-      <p class="font-display mt-1 text-2xl font-bold text-success">{{ formatUtils.formatCurrency(totalRevenue()) }}</p>
+      <p class="font-display mt-1 text-2xl font-bold text-success">
+        {{ formatUtils.formatCurrency(totalRevenue()) }}
+      </p>
       <p class="mt-1 text-xs text-muted-foreground">This month</p>
     </div>
     <div class="rounded-xl border border-border bg-card p-4">
       <p class="text-xs text-muted-foreground">Completed Orders</p>
-      <p class="font-display mt-1 text-2xl font-bold text-primary">{{ completedOrders() }}</p>
+      <p class="font-display mt-1 text-2xl font-bold text-primary">
+        {{ completedOrders() }}
+      </p>
       <p class="mt-1 text-xs text-muted-foreground">This month</p>
     </div>
     <div class="rounded-xl border border-border bg-card p-4">
       <p class="text-xs text-muted-foreground">Open Cases</p>
-      <p class="font-display mt-1 text-2xl font-bold text-warning">{{ openCases() }}</p>
+      <p class="font-display mt-1 text-2xl font-bold text-warning">
+        {{ openCases() }}
+      </p>
       <p class="mt-1 text-xs text-muted-foreground">Currently active</p>
     </div>
     <div class="rounded-xl border border-border bg-card p-4">
       <p class="text-xs text-muted-foreground">Avg Order Value</p>
-      <p class="font-display mt-1 text-2xl font-bold text-accent">{{ formatUtils.formatCurrency(averageOrderValue()) }}</p>
+      <p class="font-display mt-1 text-2xl font-bold text-accent">
+        {{ formatUtils.formatCurrency(averageOrderValue()) }}
+      </p>
       <p class="mt-1 text-xs text-muted-foreground">Per order</p>
     </div>
   </div>
 
   <div class="grid grid-cols-1 gap-6 xl:grid-cols-2">
-    <section class="rounded-xl border border-border bg-card p-5" aria-label="Monthly revenue">
+    <section
+      class="rounded-xl border border-border bg-card p-5"
+      aria-label="Monthly revenue"
+    >
       <div class="mb-5">
-        <h2 class="font-display font-semibold text-foreground">Monthly Revenue</h2>
-        <p class="mt-0.5 text-xs text-muted-foreground">Revenue collected over the past 6 months</p>
+        <h2 class="font-display font-semibold text-foreground">
+          Monthly Revenue
+        </h2>
+        <p class="mt-0.5 text-xs text-muted-foreground">
+          Revenue collected over the past 6 months
+        </p>
       </div>
-      <svg [attr.viewBox]="'0 0 ' + barW + ' ' + barH" class="w-full" role="img" aria-label="Bar chart of monthly revenue">
+      <svg
+        [attr.viewBox]="'0 0 ' + barW + ' ' + barH"
+        class="w-full"
+        role="img"
+        aria-label="Bar chart of monthly revenue"
+      >
         @for (tick of [0, 20000, 40000, 60000]; track tick) {
-          <line [attr.x1]="barPadL" [attr.x2]="barW - 8" [attr.y1]="yTickY(tick)" [attr.y2]="yTickY(tick)" stroke="var(--border)" stroke-dasharray="3 3" />
-          <text [attr.x]="barPadL - 6" [attr.y]="yTickY(tick) + 4" text-anchor="end" font-size="11" fill="var(--muted-foreground)">{{ yTickValue(tick) }}</text>
+          <line
+            [attr.x1]="barPadL"
+            [attr.x2]="barW - 8"
+            [attr.y1]="yTickY(tick)"
+            [attr.y2]="yTickY(tick)"
+            stroke="var(--border)"
+            stroke-dasharray="3 3"
+          />
+          <text
+            [attr.x]="barPadL - 6"
+            [attr.y]="yTickY(tick) + 4"
+            text-anchor="end"
+            font-size="11"
+            fill="var(--muted-foreground)"
+          >
+            {{ yTickValue(tick) }}
+          </text>
         }
         @for (point of monthlyRevenue; track point.month; let i = $index) {
-          <rect [attr.x]="barX(i)" [attr.y]="barY(point.revenue)" width="28" [attr.height]="barHt(point.revenue)" rx="4" fill="var(--primary)">
-            <title>{{ point.month }}: {{ formatUtils.formatCurrency(point.revenue) }}</title>
+          <rect
+            [attr.x]="barX(i)"
+            [attr.y]="barY(point.revenue)"
+            width="28"
+            [attr.height]="barHt(point.revenue)"
+            rx="4"
+            fill="var(--primary)"
+          >
+            <title>
+              {{ point.month }}: {{ formatUtils.formatCurrency(point.revenue) }}
+            </title>
           </rect>
-          <text [attr.x]="barLabelX(i)" [attr.y]="barH - 8" text-anchor="middle" font-size="11" fill="var(--muted-foreground)">{{ point.month }}</text>
+          <text
+            [attr.x]="barLabelX(i)"
+            [attr.y]="barH - 8"
+            text-anchor="middle"
+            font-size="11"
+            fill="var(--muted-foreground)"
+          >
+            {{ point.month }}
+          </text>
         }
       </svg>
     </section>
 
-    <section class="rounded-xl border border-border bg-card p-5" aria-label="Restoration breakdown">
+    <section
+      class="rounded-xl border border-border bg-card p-5"
+      aria-label="Restoration breakdown"
+    >
       <div class="mb-5">
-        <h2 class="font-display font-semibold text-foreground">Restoration Breakdown</h2>
-        <p class="mt-0.5 text-xs text-muted-foreground">Orders by restoration type this month</p>
+        <h2 class="font-display font-semibold text-foreground">
+          Restoration Breakdown
+        </h2>
+        <p class="mt-0.5 text-xs text-muted-foreground">
+          Orders by restoration type this month
+        </p>
       </div>
       <div class="flex items-center gap-6">
-        <svg viewBox="0 0 200 200" class="w-full max-w-[260px]" role="img" aria-label="Donut chart of restoration types">
+        <svg
+          viewBox="0 0 200 200"
+          class="w-full max-w-[260px]"
+          role="img"
+          aria-label="Donut chart of restoration types"
+        >
           @for (seg of donutSegments(); track seg.color; let i = $index) {
-            <circle cx="100" cy="100" r="62" fill="none" [attr.stroke]="seg.color" stroke-width="26"
-              [attr.stroke-dasharray]="seg.dash" [attr.stroke-dashoffset]="seg.offset" stroke-linecap="butt">
-              <title>{{ restorationBreakdown[i].name }}: {{ restorationBreakdown[i].value }}%</title>
+            <circle
+              cx="100"
+              cy="100"
+              r="62"
+              fill="none"
+              [attr.stroke]="seg.color"
+              stroke-width="26"
+              [attr.stroke-dasharray]="seg.dash"
+              [attr.stroke-dashoffset]="seg.offset"
+              stroke-linecap="butt"
+            >
+              <title>
+                {{ restorationBreakdown[i].name }}:
+                {{ restorationBreakdown[i].value }}%
+              </title>
             </circle>
           }
         </svg>
         <div class="shrink-0 space-y-2">
-          @for (slice of restorationBreakdown; track slice.name; let i = $index) {
+          @for (
+            slice of restorationBreakdown;
+            track slice.name;
+            let i = $index
+          ) {
             <div class="flex items-center gap-2">
-              <span class="h-2.5 w-2.5 shrink-0 rounded-sm" [style.background]="sliceColor(i)" aria-hidden="true"></span>
-              <span class="text-xs text-muted-foreground">{{ slice.name }}</span>
-              <span class="ml-auto pl-2 font-mono text-xs font-semibold text-foreground">{{ slice.value }}%</span>
+              <span
+                class="h-2.5 w-2.5 shrink-0 rounded-sm"
+                [style.background]="sliceColor(i)"
+                aria-hidden="true"
+              ></span>
+              <span class="text-xs text-muted-foreground">{{
+                slice.name
+              }}</span>
+              <span
+                class="ml-auto pl-2 font-mono text-xs font-semibold text-foreground"
+                >{{ slice.value }}%</span
+              >
             </div>
           }
         </div>
@@ -75,39 +166,108 @@
   </div>
 
   <div class="grid grid-cols-1 gap-6 xl:grid-cols-2">
-    <section class="rounded-xl border border-border bg-card p-5" aria-label="Average turnaround">
+    <section
+      class="rounded-xl border border-border bg-card p-5"
+      aria-label="Average turnaround"
+    >
       <div class="mb-5">
-        <h2 class="font-display font-semibold text-foreground">Average Turnaround</h2>
-        <p class="mt-0.5 text-xs text-muted-foreground">Days from received to ready — this week</p>
+        <h2 class="font-display font-semibold text-foreground">
+          Average Turnaround
+        </h2>
+        <p class="mt-0.5 text-xs text-muted-foreground">
+          Days from received to ready — this week
+        </p>
       </div>
-      <svg [attr.viewBox]="'0 0 ' + lineW + ' ' + lineH" class="w-full" role="img" aria-label="Line chart of average turnaround days">
+      <svg
+        [attr.viewBox]="'0 0 ' + lineW + ' ' + lineH"
+        class="w-full"
+        role="img"
+        aria-label="Line chart of average turnaround days"
+      >
         @for (tick of [0, 1, 2, 3, 4]; track tick) {
-          <line [attr.x1]="linePadL" [attr.x2]="lineW - 8" [attr.y1]="lineTickY(tick)" [attr.y2]="lineTickY(tick)" stroke="var(--border)" stroke-dasharray="3 3" />
-          <text [attr.x]="linePadL - 6" [attr.y]="lineTickY(tick) + 4" text-anchor="end" font-size="11" fill="var(--muted-foreground)">{{ tick }}d</text>
+          <line
+            [attr.x1]="linePadL"
+            [attr.x2]="lineW - 8"
+            [attr.y1]="lineTickY(tick)"
+            [attr.y2]="lineTickY(tick)"
+            stroke="var(--border)"
+            stroke-dasharray="3 3"
+          />
+          <text
+            [attr.x]="linePadL - 6"
+            [attr.y]="lineTickY(tick) + 4"
+            text-anchor="end"
+            font-size="11"
+            fill="var(--muted-foreground)"
+          >
+            {{ tick }}d
+          </text>
         }
-        <polyline [attr.points]="linePoints()" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" />
+        <polyline
+          [attr.points]="linePoints()"
+          fill="none"
+          stroke="var(--accent)"
+          stroke-width="2.5"
+          stroke-linejoin="round"
+          stroke-linecap="round"
+        />
         @for (point of turnaround; track point.day; let i = $index) {
-          <circle [attr.cx]="lineX(i)" [attr.cy]="lineY(point.days)" r="4" fill="var(--accent)">
+          <circle
+            [attr.cx]="lineX(i)"
+            [attr.cy]="lineY(point.days)"
+            r="4"
+            fill="var(--accent)"
+          >
             <title>{{ point.day }}: {{ point.days }} days</title>
           </circle>
-          <text [attr.x]="lineX(i)" [attr.y]="lineH - 8" text-anchor="middle" font-size="11" fill="var(--muted-foreground)">{{ point.day }}</text>
+          <text
+            [attr.x]="lineX(i)"
+            [attr.y]="lineH - 8"
+            text-anchor="middle"
+            font-size="11"
+            fill="var(--muted-foreground)"
+          >
+            {{ point.day }}
+          </text>
         }
       </svg>
     </section>
 
-    <section class="rounded-xl border border-border bg-card p-5" aria-label="Workflow distribution">
+    <section
+      class="rounded-xl border border-border bg-card p-5"
+      aria-label="Workflow distribution"
+    >
       <div class="mb-5">
-        <h2 class="font-display font-semibold text-foreground">Workflow Distribution</h2>
-        <p class="mt-0.5 text-xs text-muted-foreground">Current orders by production stage</p>
+        <h2 class="font-display font-semibold text-foreground">
+          Workflow Distribution
+        </h2>
+        <p class="mt-0.5 text-xs text-muted-foreground">
+          Current orders by production stage
+        </p>
       </div>
       <div class="space-y-3">
         @for (item of workflowShare; track item.stage) {
           <div class="flex items-center gap-3">
-            <span class="w-24 shrink-0 text-xs text-muted-foreground">{{ item.stage }}</span>
-            <div class="h-2 flex-1 rounded-full bg-muted" role="progressbar" [attr.aria-valuenow]="item.percent" aria-valuemin="0" aria-valuemax="100" [attr.aria-label]="item.stage + ' distribution'">
-              <div class="h-2 rounded-full bg-primary" [style.width.%]="item.percent"></div>
+            <span class="w-24 shrink-0 text-xs text-muted-foreground">{{
+              item.stage
+            }}</span>
+            <div
+              class="h-2 flex-1 rounded-full bg-muted"
+              role="progressbar"
+              [attr.aria-valuenow]="item.percent"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              [attr.aria-label]="item.stage + ' distribution'"
+            >
+              <div
+                class="h-2 rounded-full bg-primary"
+                [style.width.%]="item.percent"
+              ></div>
             </div>
-            <span class="w-6 shrink-0 text-right font-mono text-xs font-semibold text-foreground">{{ item.count }}</span>
+            <span
+              class="w-6 shrink-0 text-right font-mono text-xs font-semibold text-foreground"
+              >{{ item.count }}</span
+            >
           </div>
         }
       </div>
