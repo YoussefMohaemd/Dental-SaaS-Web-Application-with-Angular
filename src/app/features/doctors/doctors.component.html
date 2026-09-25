@@ -43,8 +43,12 @@
           iconHeight="32px"
         ></app-table-feedback>
       } @else {
-        <table class="enterprise-data-table">
-          <thead>
+        <p-table
+          [value]="filtered()"
+          [tableStyle]="{ 'min-width': '70rem' }"
+          styleClass="p-datatable-sm enterprise-prime-table enterprise-data-table"
+        >
+          <ng-template pTemplate="header">
             <tr>
               @for (config of sortConfigs; track config.col) {
                 <th class="enterprise-th-sort" (click)="toggleSort(config.col)">
@@ -63,74 +67,65 @@
                 </th>
               }
             </tr>
-          </thead>
-          <tbody>
-            @for (d of filtered(); track d.id) {
-              <tr
-                class="cursor-pointer"
-                (click)="
-                  navigationService.navigate('doctorDetails', {
-                    doctorId: d.id,
-                  })
-                "
-              >
-                <td>
-                  <div class="flex min-w-0 items-center gap-3">
-                    <app-avatar
-                      class="doctor-avatar"
-                      [name]="d.name"
-                      [size]="'md'"
-                      [variant]="'violet'"
-                    />
-                    <div class="enterprise-cell-stack">
-                      <span
-                        class="enterprise-cell-primary truncate-1"
-                        [title]="d.name"
-                        >{{ d.name }}</span
-                      >
-                      <span class="enterprise-cell-secondary font-mono"
-                        >ID: {{ d.id }}</span
-                      >
-                    </div>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-d>
+            <tr
+              class="cursor-pointer"
+              (click)="
+                navigationService.navigate('doctorDetails', {
+                  doctorId: d.id,
+                })
+              "
+            >
+              <td>
+                <div class="flex min-w-0 items-center gap-3">
+                  <app-avatar
+                    class="doctor-avatar"
+                    [name]="d.name"
+                    [size]="'md'"
+                    [variant]="'violet'"
+                  />
+                  <div class="enterprise-cell-stack">
+                    <span
+                      class="enterprise-cell-primary truncate-1"
+                      [title]="d.name"
+                      >{{ d.name }}</span
+                    >
+                    <span class="enterprise-cell-secondary font-mono"
+                      >ID: {{ d.id }}</span
+                    >
                   </div>
-                </td>
-                <td class="text-xs text-muted-foreground max-w-40">
-                  <span class="truncate-1" [title]="d.specialty">{{
-                    d.specialty
-                  }}</span>
-                </td>
-                <td class="text-xs text-muted-foreground max-w-44">
-                  <span class="truncate-1" [title]="d.clinicName">{{
-                    d.clinicName
-                  }}</span>
-                </td>
-                <td class="text-xs text-muted-foreground max-w-44">
-                  <span class="truncate-1" [title]="d.email">{{
-                    d.email
-                  }}</span>
-                </td>
-                <td
-                  class="text-xs font-mono text-muted-foreground whitespace-nowrap"
-                >
-                  {{ d.phone }}
-                </td>
-                <td
-                  class="text-xs font-mono font-semibold text-center text-foreground"
-                >
-                  {{ d.ordersCount }}
-                </td>
-                <td
-                  class="text-xs font-mono text-muted-foreground whitespace-nowrap"
-                >
-                  {{ d.joinedDate }}
-                </td>
-                <td>
-                  <app-status-badge [status]="d.status" size="xs" />
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
+                </div>
+              </td>
+              <td class="text-xs text-muted-foreground max-w-40">
+                <span class="truncate-1" [title]="d.specialty">{{
+                  d.specialty
+                }}</span>
+              </td>
+              <td class="text-xs text-muted-foreground max-w-44">
+                <span class="truncate-1" [title]="d.clinicName">{{
+                  d.clinicName
+                }}</span>
+              </td>
+              <td class="text-xs text-muted-foreground max-w-44">
+                <span class="truncate-1" [title]="d.email">{{ d.email }}</span>
+              </td>
+              <td class="text-xs font-mono text-muted-foreground whitespace-nowrap">
+                {{ d.phone }}
+              </td>
+              <td class="text-xs font-mono font-semibold text-center text-foreground">
+                {{ d.ordersCount }}
+              </td>
+              <td class="text-xs font-mono text-muted-foreground whitespace-nowrap">
+                {{ d.joinedDate }}
+              </td>
+              <td>
+                <app-status-badge [status]="d.status" size="xs" />
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
       }
     </div>
   </div>

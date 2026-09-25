@@ -4,6 +4,11 @@
   >
     Order Summary
   </p>
+  @if (totalServices() > 0) {
+    <p class="mb-3 text-xs text-muted-foreground">
+      {{ completedServices() }} of {{ totalServices() }}
+    </p>
+  }
   <dl class="space-y-2 text-xs">
     <div class="flex justify-between gap-2">
       <dt class="text-muted-foreground">Restoration</dt>

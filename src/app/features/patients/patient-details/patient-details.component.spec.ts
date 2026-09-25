@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
+import { signal } from "@angular/core";
 import {
   ActivatedRoute,
   convertToParamMap,
@@ -7,6 +8,8 @@ import {
 import { PatientDetailsComponent } from "./patient-details.component";
 import { PatientDataService } from "@core/services/patient-data.service";
 import { OrderDataService } from "@core/services/order-data.service";
+import { CaseDataService } from "@core/services/case-data.service";
+import { DocumentDataService } from "@core/services/document-data.service";
 
 describe("PatientDetailsComponent", () => {
   let component: PatientDetailsComponent;
@@ -32,6 +35,14 @@ describe("PatientDetailsComponent", () => {
         {
           provide: OrderDataService,
           useValue: { getOrdersByPatient: () => [] },
+        },
+        {
+          provide: CaseDataService,
+          useValue: { getCasesByPatient: () => [] },
+        },
+        {
+          provide: DocumentDataService,
+          useValue: { documents: signal([]) },
         },
       ],
     }).compileComponents();

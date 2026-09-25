@@ -2,12 +2,12 @@
   @if (case()) {
     <div class="px-6 py-4 border-b border-border bg-card shrink-0">
       <div class="flex items-center gap-3">
-        <button
-          (click)="goBack()"
-          class="p-1.5 hover:bg-muted rounded-lg text-muted-foreground"
-        >
-          <span [innerHTML]="getIconSvg('arrow-left') | safeHtml"></span>
-        </button>
+        <app-icon-action-button
+          [iconSvg]="getIconSvg('arrow-left')"
+          ariaLabel="Back to cases"
+          customClass="!border-0 !bg-transparent hover:!bg-muted !text-muted-foreground !p-1.5 !min-h-0 !min-w-0"
+          (actionClick)="goBack()"
+        ></app-icon-action-button>
         <div class="flex-1">
           <div class="flex items-center gap-3">
             <h1

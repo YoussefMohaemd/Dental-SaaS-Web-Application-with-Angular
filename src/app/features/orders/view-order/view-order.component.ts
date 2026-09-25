@@ -22,6 +22,7 @@ import { FormatUtils } from "@core/services/format-utils.service";
 import { Order, Patient, Doctor, Clinic, SubOrder } from "@core/models";
 import { AvatarComponent } from "@shared/components/avatar/avatar.component";
 import { ButtonComponent } from "@shared/components/button/button.component";
+import { IconActionButtonComponent } from "@shared/components/icon-action-button/icon-action-button.component";
 import { OrderSummaryCardComponent } from "@shared/components/order-summary-card/order-summary-card.component";
 import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
 import { lucideSvg } from "@shared/icons/lucide-icons";
@@ -55,6 +56,7 @@ function withIconSize(svg: string, size?: number): string {
     DialogModule,
     AvatarComponent,
     ButtonComponent,
+    IconActionButtonComponent,
     OrderSummaryCardComponent,
     SafeHtmlPipe,
   ],

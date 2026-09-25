@@ -1,55 +1,68 @@
 <div class="search-input-wrap relative w-full">
-  <svg
-    class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none shrink-0"
-    width="14"
-    height="14"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="2"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-    aria-hidden="true"
-  >
-    <circle cx="11" cy="11" r="8" />
-    <path d="M21 21l-4.35-4.35" />
-  </svg>
-  <input
+  <app-input
     [type]="type()"
     [placeholder]="placeholder()"
     [value]="value()"
-    (input)="onInput($event)"
-    (blur)="onBlur.emit($event)"
-    [attr.aria-label]="ariaLabel()"
-    [class]="inputClasses()"
-  />
-  @if (value() && clearable()) {
-    <button
-      type="button"
-      (click)="clear()"
-      class="absolute top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-      [class]="showShortcut() ? 'right-10' : 'right-2'"
-      aria-label="Clear search"
+    [ariaLabel]="ariaLabel()"
+    [unstyled]="true"
+    [inputClass]="inputClasses()"
+    [iconStart]="true"
+    [iconEnd]="showShortcut() || (!!value() && clearable())"
+    (valueChange)="onValueChanged($event)"
+    (onBlur)="onBlur.emit($event)"
+  >
+    <span
+      slot="prefix"
+      class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none shrink-0"
+      aria-hidden="true"
     >
       <svg
-        width="12"
-        height="12"
+        width="14"
+        height="14"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
         stroke-width="2"
         stroke-linecap="round"
-        aria-hidden="true"
+        stroke-linejoin="round"
       >
-        <path d="M18 6L6 18M6 6l12 12" />
+        <circle cx="11" cy="11" r="8" />
+        <path d="M21 21l-4.35-4.35" />
       </svg>
-    </button>
-  }
-  @if (showShortcut()) {
-    <kbd
-      class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hidden lg:block pointer-events-none"
-    >
-      ⌘K
-    </kbd>
-  }
+    </span>
+
+    @if (value() && clearable()) {
+      <span slot="suffix">
+        <app-button
+          variant="ghost"
+          size="icon-sm"
+          ariaLabel="Clear search"
+          [buttonClass]="clearButtonClass()"
+          (onClick)="clear()"
+        >
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <path d="M18 6L6 18M6 6l12 12" />
+          </svg>
+        </app-button>
+      </span>
+    }
+
+    @if (showShortcut()) {
+      <kbd
+        slot="suffix"
+        class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hidden lg:block pointer-events-none"
+      >
+        ⌘K
+      </kbd>
+    }
+  </app-input>
 </div>

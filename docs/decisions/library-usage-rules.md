@@ -17,6 +17,7 @@ Current standard wrappers:
 - `app-entity-dialog` wraps PrimeNG `p-dialog` as the single app-level modal shell
 - `app-enterprise-paginator` wraps PrimeNG `p-paginator` as the default enterprise pagination control
 - Orders, billing, patients, change-requests, and cases list pagination should use `app-enterprise-paginator` instead of page-button markup
+- Cases, Doctors, and Patients enterprise list tables should use PrimeNG `p-table` (or higher Prime table variants) while preserving existing row templates and business interactions
 
 ## Taiga UI
 
@@ -33,6 +34,8 @@ Current standard wrappers:
 - `app-button` is the preferred basic action primitive and includes Taiga button behavior
 - `app-status-badge` includes Taiga status semantics for lightweight status display
 - `app-icon-action-button` is the preferred row-level/icon-only action primitive for preview/download/delete type controls
+- `app-search-input` is the default search primitive and should build on shared Taiga-backed controls instead of raw native inputs/buttons
+- Back-navigation icon buttons in feature headers should prefer `app-icon-action-button` over ad-hoc button markup when behavior matches
 - Keep feature templates on shared wrappers instead of raw Taiga primitives unless a feature requires a unique behavior
 
 ## Angular CDK

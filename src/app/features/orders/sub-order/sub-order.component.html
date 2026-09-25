@@ -15,14 +15,12 @@
     </div>
   } @else {
     <div class="flex items-start gap-3 mb-6">
-      <button
-        type="button"
-        (click)="goBack()"
-        class="p-1.5 hover:bg-muted rounded-lg text-muted-foreground shrink-0"
-        aria-label="Back to order"
-      >
-        <span [innerHTML]="getIconSvg('arrow-left') | safeHtml"></span>
-      </button>
+      <app-icon-action-button
+        [iconSvg]="getIconSvg('arrow-left')"
+        ariaLabel="Back to order"
+        customClass="!border-0 !bg-transparent hover:!bg-muted !text-muted-foreground !p-1.5 !min-h-0 !min-w-0"
+        (actionClick)="goBack()"
+      ></app-icon-action-button>
       <div class="flex-1 min-w-0">
         <div class="flex items-center gap-2.5 flex-wrap mb-0.5">
           <span class="text-xl" aria-hidden="true">{{ subOrder()?.icon }}</span>

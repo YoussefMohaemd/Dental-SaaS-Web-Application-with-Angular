@@ -2,13 +2,12 @@
   @if (order(); as o) {
     <div class="flex items-start justify-between mb-6 gap-4 flex-wrap">
       <div class="flex items-center gap-3">
-        <button
-          (click)="navigationService.navigate('orders')"
-          class="p-1.5 hover:bg-muted rounded-lg text-muted-foreground"
-          aria-label="Back to orders"
-        >
-          <span [innerHTML]="getStageSvg('arrow-left') | safeHtml"></span>
-        </button>
+        <app-icon-action-button
+          [iconSvg]="getStageSvg('arrow-left')"
+          ariaLabel="Back to orders"
+          customClass="!border-0 !bg-transparent hover:!bg-muted !text-muted-foreground !p-1.5 !min-h-0 !min-w-0"
+          (actionClick)="navigationService.navigate('orders')"
+        ></app-icon-action-button>
         <div>
           <div class="flex items-center gap-2.5 flex-wrap">
             <h1 class="font-display font-bold text-xl text-foreground">
@@ -62,14 +61,13 @@
         >
           <span [innerHTML]="getStageSvg('download') | safeHtml"></span> Export
         </app-button>
-        <button
-          (click)="openMoreMenu()"
-          class="p-1.5 border border-border rounded-lg hover:bg-muted text-muted-foreground"
-          aria-label="More actions"
-          [attr.aria-expanded]="moreMenuOpen()"
-        >
-          <span [innerHTML]="getStageSvg('more-horizontal') | safeHtml"></span>
-        </button>
+        <app-icon-action-button
+          [iconSvg]="getStageSvg('more-horizontal')"
+          ariaLabel="More actions"
+          customClass="!p-1.5 !min-h-0 !min-w-0"
+          [ariaExpanded]="moreMenuOpen()"
+          (actionClick)="openMoreMenu()"
+        ></app-icon-action-button>
         @if (moreMenuOpen()) {
           <div
             class="absolute right-0 top-10 z-20 w-52 rounded-xl border border-border bg-card p-1.5 shadow-lg"

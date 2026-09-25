@@ -1,5 +1,6 @@
 import { Component, computed, inject, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
+import { TableModule } from "primeng/table";
 import { CaseDataService } from "@core/services/case-data.service";
 import { NavigationService } from "@core/services/navigation.service";
 import { FormatUtils } from "@core/services/format-utils.service";
@@ -20,6 +21,7 @@ type ViewMode = "table" | "grid";
   standalone: true,
   imports: [
     CommonModule,
+    TableModule,
     StatusBadgeComponent,
     PriorityBadgeComponent,
     ButtonComponent,

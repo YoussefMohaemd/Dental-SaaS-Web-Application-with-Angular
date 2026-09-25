@@ -9,7 +9,9 @@ import { Doctor, Order } from "@core/models";
 import { StatusBadgeComponent } from "@shared/components/status-badge/status-badge.component";
 import { ButtonComponent } from "@shared/components/button/button.component";
 import { AvatarComponent } from "@shared/components/avatar/avatar.component";
+import { IconActionButtonComponent } from "@shared/components/icon-action-button/icon-action-button.component";
 import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
+import { TableModule } from "primeng/table";
 
 interface ContactItem {
   icon: string;
@@ -25,7 +27,9 @@ interface ContactItem {
     StatusBadgeComponent,
     ButtonComponent,
     AvatarComponent,
+    IconActionButtonComponent,
     SafeHtmlPipe,
+    TableModule,
   ],
   templateUrl: "./doctor-details.component.html",
   styleUrl: "./doctor-details.component.scss",

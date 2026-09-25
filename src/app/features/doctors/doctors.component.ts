@@ -1,6 +1,7 @@
 import { Component, computed, inject, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
+import { TableModule } from "primeng/table";
 import { DoctorDataService } from "@core/services/doctor-data.service";
 import { NavigationService } from "@core/services/navigation.service";
 import { FormatUtils } from "@core/services/format-utils.service";
@@ -28,6 +29,7 @@ interface SortConfig {
   imports: [
     CommonModule,
     FormsModule,
+    TableModule,
     ButtonComponent,
     AvatarComponent,
     InputComponent,

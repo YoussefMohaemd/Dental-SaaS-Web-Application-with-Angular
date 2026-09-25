@@ -8,20 +8,21 @@ import {
   OnDestroy,
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
-import { FormsModule } from "@angular/forms";
 import {
   Subject,
   Subscription,
   debounceTime,
   distinctUntilChanged,
 } from "rxjs";
+import { InputComponent } from "@shared/components/input/input.component";
+import { ButtonComponent } from "@shared/components/button/button.component";
 
 export type SearchInputSize = "xs" | "sm";
 
 @Component({
   selector: "app-search-input",
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, InputComponent, ButtonComponent],
   templateUrl: "./search-input.component.html",
   styleUrl: "./search-input.component.scss",
 })
@@ -55,6 +56,11 @@ export class SearchInputComponent implements OnInit, OnDestroy {
     return `${base} ${sizeCls}`;
   });
 
+  readonly clearButtonClass = computed(() => {
+    const offset = this.showShortcut() ? "!right-10" : "!right-2";
+    return `!absolute !top-1/2 !-translate-y-1/2 ${offset} !min-h-0 !min-w-0 !p-0.5 !rounded-md !text-muted-foreground hover:!text-foreground hover:!bg-transparent`;
+  });
+
   ngOnInit(): void {
     this.subscription = this.searchSubject
       .pipe(debounceTime(this.debounceMs()), distinctUntilChanged())
@@ -66,11 +72,10 @@ export class SearchInputComponent implements OnInit, OnDestroy {
     this.searchSubject.complete();
   }
 
-  onInput(event: Event): void {
-    const target = event.target as HTMLInputElement;
-    this.value.set(target.value);
-    this.onSearch.emit(target.value);
-    this.searchSubject.next(target.value);
+  onValueChanged(next: string): void {
+    this.value.set(next);
+    this.onSearch.emit(next);
+    this.searchSubject.next(next);
   }
 
   clear(): void {

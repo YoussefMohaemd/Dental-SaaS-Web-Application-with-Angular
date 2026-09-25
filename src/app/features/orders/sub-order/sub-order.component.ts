@@ -18,6 +18,7 @@ import {
 import { InputComponent } from "@shared/components/input/input.component";
 import { SelectComponent } from "@shared/components/select/select.component";
 import { TeethChartComponent } from "@shared/components/teeth-chart/teeth-chart.component";
+import { IconActionButtonComponent } from "@shared/components/icon-action-button/icon-action-button.component";
 import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
 
 const TABS: SubOrderTab[] = ["overview", "forms", "scans", "activity"];
@@ -65,6 +66,7 @@ const EMPTY_DETAIL: SubOrderDetail = {
     InputComponent,
     SelectComponent,
     TeethChartComponent,
+    IconActionButtonComponent,
     SafeHtmlPipe,
   ],
   templateUrl: "./sub-order.component.html",

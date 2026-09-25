@@ -16,26 +16,20 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from "@angular/forms";
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: "./input.component.html",
-  styleUrl: "./input.component.scss",
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => InputComponent),
-      multi: true,
-    },
-  ],
+  styleUrls: ["./input.component.scss"],
 })
 export class InputComponent implements ControlValueAccessor {
   private static nextAutoId = 0;
 
   readonly id = input<string>("");
   readonly type = input<
-    "text" | "email" | "password" | "tel" | "number" | "date"
+    "text" | "email" | "password" | "tel" | "number" | "date" | "search"
   >(
     "text",
   );
   readonly label = input<string>("");
   readonly placeholder = input<string>("");
+  readonly ariaLabel = input<string>("");
   readonly disabled = input<boolean>(false);
   readonly required = input<boolean>(false);
   readonly value = model<string>("");
