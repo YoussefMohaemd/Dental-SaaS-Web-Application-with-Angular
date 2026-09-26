@@ -4,7 +4,7 @@ import { NotificationDataService } from "@core/services/notification-data.servic
 import { NavigationService } from "@core/services/navigation.service";
 import { FormatUtils } from "@core/services/format-utils.service";
 import { Notification, NotificationType } from "@core/models";
-import { ButtonComponent } from "@shared/components/button/button.component";
+import { AppButtonComponent } from "@shared/components/button/button.component";
 import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
 
 type NotificationFilter = "all" | "unread";
@@ -21,7 +21,7 @@ const TYPE_STYLES: Record<NotificationType, string> = {
 @Component({
   selector: "app-notifications",
   standalone: true,
-  imports: [CommonModule, ButtonComponent, SafeHtmlPipe],
+  imports: [CommonModule, AppButtonComponent, SafeHtmlPipe],
   templateUrl: "./notifications.component.html",
   styleUrl: "./notifications.component.scss",
 })

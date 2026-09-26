@@ -42,7 +42,7 @@ const SIZE_CLASSES: Record<ButtonSize, string> = {
   templateUrl: "./button.component.html",
   styleUrl: "./button.component.scss",
 })
-export class ButtonComponent {
+export class AppButtonComponent {
   readonly variant = input<ButtonVariant>("primary");
   readonly size = input<ButtonSize>("md");
   readonly type = input<"button" | "submit" | "reset">("button");

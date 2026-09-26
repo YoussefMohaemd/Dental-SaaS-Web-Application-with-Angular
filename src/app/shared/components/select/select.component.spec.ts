@@ -1,16 +1,16 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
-import { SelectComponent } from "./select.component";
+import { AppSelectComponent } from "./select.component";
 
-describe("SelectComponent", () => {
-  let fixture: ComponentFixture<SelectComponent>;
-  let component: SelectComponent;
+describe("AppSelectComponent", () => {
+  let fixture: ComponentFixture<AppSelectComponent>;
+  let component: AppSelectComponent;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [SelectComponent],
+      imports: [AppSelectComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(SelectComponent);
+    fixture = TestBed.createComponent(AppSelectComponent);
     component = fixture.componentInstance;
     fixture.componentRef.setInput("id", "status-select");
     fixture.componentRef.setInput("options", ["New", "Review", "Design"]);
@@ -42,6 +42,33 @@ describe("SelectComponent", () => {
 
   it("applies disabled state to the native select", () => {
     fixture.componentRef.setInput("disabled", true);
+    fixture.detectChanges();
+
+    const select = fixture.nativeElement.querySelector(
+      "select",
+    ) as HTMLSelectElement;
+    expect(select.disabled).toBeTrue();
+  });
+
+  it("renders object options with explicit labels", () => {
+    fixture.componentRef.setInput("options", [
+      { label: "Active", value: "active" },
+      { label: "Closed", value: "closed" },
+    ]);
+    fixture.detectChanges();
+
+    const select = fixture.nativeElement.querySelector(
+      "select",
+    ) as HTMLSelectElement;
+    const options = Array.from(select.querySelectorAll("option")).map(
+      (option) => option.textContent?.trim(),
+    );
+
+    expect(options).toEqual(["Choose status", "Active", "Closed"]);
+  });
+
+  it("applies ControlValueAccessor disabled state from forms", () => {
+    component.setDisabledState(true);
     fixture.detectChanges();
 
     const select = fixture.nativeElement.querySelector(

@@ -15,9 +15,9 @@ import {
 } from "@core/models/create-order.model";
 import { ArchType, RestoType } from "@core/models";
 import { SubOrderCreationData } from "@core/models/sub-order.model";
-import { ButtonComponent } from "@shared/components/button/button.component";
-import { InputComponent } from "@shared/components/input/input.component";
-import { SelectComponent } from "@shared/components/select/select.component";
+import { AppButtonComponent } from "@shared/components/button/button.component";
+import { AppTextFieldComponent } from "@shared/components/input/input.component";
+import { AppSelectComponent } from "@shared/components/select/select.component";
 import { TeethChartComponent } from "@shared/components/teeth-chart/teeth-chart.component";
 import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
 
@@ -93,9 +93,9 @@ function defaultClinicalForm(): ServiceClinicalForm {
   imports: [
     CommonModule,
     FormsModule,
-    ButtonComponent,
-    InputComponent,
-    SelectComponent,
+    AppButtonComponent,
+    AppTextFieldComponent,
+    AppSelectComponent,
     TeethChartComponent,
     SafeHtmlPipe,
   ],

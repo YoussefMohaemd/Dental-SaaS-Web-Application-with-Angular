@@ -59,4 +59,13 @@ describe("StatusBadgeComponent", () => {
       "rgb(241, 245, 249)",
     );
   });
+
+  it("should expose status semantics for assistive technologies", () => {
+    fixture.componentRef.setInput("status", "Review");
+    fixture.detectChanges();
+
+    const badge = fixture.debugElement.query(By.css("span"));
+    expect(badge.nativeElement.getAttribute("role")).toBe("status");
+    expect(badge.nativeElement.getAttribute("aria-label")).toBe("Review");
+  });
 });

@@ -6,6 +6,17 @@ Angular 21 proof-of-concept for a dental SaaS UI foundation. The repository demo
 
 This repository is an Angular-based dental SaaS POC. It focuses on reusable components, enterprise UI patterns, order and workflow surfaces, accessibility, and evidence-backed documentation.
 
+## Documentation Map
+
+- [Component architecture](./docs/component-architecture.md)
+- [Weighted comparison matrix](./docs/weighted-comparison-matrix.md)
+- [Licensing review](./docs/licensing-review.md)
+- [Scope exceptions](./docs/scope-exceptions.md)
+- [Test matrix](./docs/test-matrix.md)
+- [Final recommendation](./docs/final-recommendation.md)
+- [Demo script](./docs/demo-script.md)
+- [AI protocol](./docs/ai-comparison-protocol.md)
+
 ## Stack
 
 - Angular 21 + TypeScript
@@ -35,6 +46,7 @@ npm start
 npm test
 npm test -- --watch=false --browsers=ChromeHeadless
 npm run lint
+npm run type-check
 npx tsc -p tsconfig.app.json --noEmit
 npx tsc -p tsconfig.spec.json --noEmit
 ```
@@ -53,7 +65,7 @@ Storybook covers the shared controls and reusable composite/business patterns. S
 | Gate | Result |
 | --- | --- |
 | `npm run build` | Passing, with non-blocking Sass/CSS budget warnings |
-| `npm test -- --watch=false --browsers=ChromeHeadless` | 336/336 passing |
+| `npm test -- --watch=false --browsers=ChromeHeadless` | 357/357 passing |
 | `npm run lint` | Passing |
 | `npm run build-storybook` | Passing |
 | axe-core scan (wcag2a/aa + best-practice, 24 route-states) | 0 violations |
@@ -69,7 +81,7 @@ Raw logs live under `evidence/`.
 
 ## Supported Scenarios
 
-- Orders TreeTable browsing and filtering
+- Orders page with shared header toolbar, shared status badges, and service-driven preview states (normal/loading/empty/error)
 - Order detail, sub-order detail, and create-order flows
 - Workflow board drag/drop transitions
 - Forms, scan/file, patient, doctor, clinic, billing, change-request, report, notification, and settings pages
@@ -88,14 +100,15 @@ Raw logs live under `evidence/`.
 
 - This is a POC with in-memory/static JSON data, not a production backend.
 - Controlled AI-comparison evidence is pending human execution.
+- Mentor checkpoint approvals are pending for recorded deviations.
 - Some evidence items are intentionally human-validated and must not be fabricated.
 
 ## Demo Notes
 
 - Start at the login route, then enter the authenticated shell.
-- Use the Orders and Workflow surfaces to review the reusable UI patterns.
-- Review routed detail pages to confirm entity relationships and protected states.
-- On `/orders`, use the `normal | loading | empty | error` toggle in the toolbar header to switch the Order Management view.
+- Open `/orders` and use the `normal | loading | empty | error` POC control in the header.
+- Show retry from error state and shared component usage (header, toolbar, status badges).
+- Walk Storybook Basic/Composite/Business stories and conclude with docs + evidence tour.
 
 ## Architecture Overview
 

@@ -1,6 +1,6 @@
 import { CommonModule } from "@angular/common";
 import { Component, computed, input, output } from "@angular/core";
-import { ButtonComponent } from "@shared/components/button/button.component";
+import { AppButtonComponent } from "@shared/components/button/button.component";
 import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
 
 export type IconActionTone = "neutral" | "primary" | "danger";
@@ -18,7 +18,7 @@ const TONE_CLASSES: Record<IconActionTone, string> = {
 @Component({
   selector: "app-icon-action-button",
   standalone: true,
-  imports: [CommonModule, ButtonComponent, SafeHtmlPipe],
+  imports: [CommonModule, AppButtonComponent, SafeHtmlPipe],
   templateUrl: "./icon-action-button.component.html",
   styleUrls: ["./icon-action-button.component.scss"],
 })

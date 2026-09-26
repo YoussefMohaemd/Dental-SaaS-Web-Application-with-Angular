@@ -13,6 +13,7 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "lint": "tsc --noEmit -p tsconfig.lint.json",
+    "type-check": "tsc --noEmit -p tsconfig.lint.json",
     "format": "prettier --write \"src/**/*.{ts,html,scss,json}\"",
     "storybook": "ng run dental-saas-angular:storybook",
     "build-storybook": "ng run dental-saas-angular:build-storybook"
@@ -51,7 +52,7 @@
     "@angular/build": "^21.0.0",
     "@angular/cli": "^21.0.0",
     "@angular/compiler-cli": "^21.0.0",
-    "@chromatic-com/storybook": "latest",
+    "@chromatic-com/storybook": "5.3.1",
     "@storybook/addon-a11y": "^10.6.0",
     "@storybook/addon-docs": "^10.6.0",
     "@storybook/addon-onboarding": "^10.6.0",
@@ -70,11 +71,11 @@
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
-    "playwright": "latest",
+    "playwright": "1.63.0",
     "prettier": "^3.0.0",
     "storybook": "^10.6.0",
     "typescript": "^5.9.3",
-    "vite": "latest",
+    "vite": "8.3.1",
     "vitest": "^4.0.8"
   }
 }

@@ -3,7 +3,7 @@ import { CommonModule } from "@angular/common";
 import { ActivatedRoute } from "@angular/router";
 import { OrderDataService } from "@core/services/order-data.service";
 import { NavigationService } from "@core/services/navigation.service";
-import { ButtonComponent } from "@shared/components/button/button.component";
+import { AppButtonComponent } from "@shared/components/button/button.component";
 import { EntityDialogComponent } from "@shared/components/entity-dialog/entity-dialog.component";
 import { IconActionButtonComponent } from "@shared/components/icon-action-button/icon-action-button.component";
 import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
@@ -99,7 +99,7 @@ const MAX_FILE_BYTES = 100 * 1024 * 1024;
   standalone: true,
   imports: [
     CommonModule,
-    ButtonComponent,
+    AppButtonComponent,
     EntityDialogComponent,
     IconActionButtonComponent,
     SafeHtmlPipe,

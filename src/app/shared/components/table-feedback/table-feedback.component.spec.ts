@@ -77,4 +77,12 @@ describe("TableFeedbackComponent", () => {
     expect(message.nativeElement.textContent.trim()).toBe("Loading orders...");
     expect(component.mode()).toBe("loading");
   });
+
+  it("should accept error mode for failed table states", () => {
+    fixture.componentRef.setInput("mode", "error");
+    fixture.componentRef.setInput("message", "Failed to load");
+    fixture.detectChanges();
+
+    expect(component.mode()).toBe("error");
+  });
 });

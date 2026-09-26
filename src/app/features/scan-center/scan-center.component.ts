@@ -7,9 +7,9 @@ import { NavigationService } from "@core/services/navigation.service";
 import { FormatUtils } from "@core/services/format-utils.service";
 import { Order, ScanCenter } from "@core/models";
 import { StatusBadgeComponent } from "@shared/components/status-badge/status-badge.component";
-import { ButtonComponent } from "@shared/components/button/button.component";
+import { AppButtonComponent } from "@shared/components/button/button.component";
 import { AvatarComponent } from "@shared/components/avatar/avatar.component";
-import { InputComponent } from "@shared/components/input/input.component";
+import { AppTextFieldComponent } from "@shared/components/input/input.component";
 import { SafeHtmlPipe } from "../../shared/pipes/safe-html.pipe";
 
 interface ScanOrderRow extends Order {
@@ -19,7 +19,7 @@ interface ScanOrderRow extends Order {
 @Component({
   selector: "app-scan-center",
   standalone: true,
-  imports: [CommonModule, TableModule, InputComponent, SafeHtmlPipe],
+  imports: [CommonModule, TableModule, AppTextFieldComponent, SafeHtmlPipe],
   templateUrl: "./scan-center.component.html",
   styleUrl: "./scan-center.component.scss",
 })

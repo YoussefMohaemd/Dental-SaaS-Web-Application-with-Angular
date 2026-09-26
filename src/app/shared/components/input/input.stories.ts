@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/angular-vite';
-import { InputComponent } from './input.component';
+import { AppTextFieldComponent } from './input.component';
 
-const meta: Meta<InputComponent> = {
+const meta: Meta<AppTextFieldComponent> = {
   title: 'Basic/AppTextField',
-  component: InputComponent,
+  component: AppTextFieldComponent,
   tags: ['autodocs'],
   parameters: { layout: 'centered' },
   argTypes: {
@@ -46,7 +46,7 @@ const meta: Meta<InputComponent> = {
 };
 
 export default meta;
-type Story = StoryObj<InputComponent>;
+type Story = StoryObj<AppTextFieldComponent>;
 
 export const Default: Story = {};
 

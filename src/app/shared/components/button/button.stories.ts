@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/angular-vite';
-import { ButtonComponent } from './button.component';
+import { AppButtonComponent } from './button.component';
 
-const meta: Meta<ButtonComponent> = {
+const meta: Meta<AppButtonComponent> = {
   title: 'Basic/AppButton',
-  component: ButtonComponent,
+  component: AppButtonComponent,
   tags: ['autodocs'],
   parameters: { layout: 'centered' },
   argTypes: {
@@ -46,7 +46,7 @@ const meta: Meta<ButtonComponent> = {
 };
 
 export default meta;
-type Story = StoryObj<ButtonComponent>;
+type Story = StoryObj<AppButtonComponent>;
 
 export const Primary: Story = {
   render: (args) => ({

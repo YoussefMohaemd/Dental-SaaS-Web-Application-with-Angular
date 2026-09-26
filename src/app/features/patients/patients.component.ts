@@ -6,9 +6,9 @@ import { PatientDataService } from "@core/services/patient-data.service";
 import { NavigationService } from "@core/services/navigation.service";
 import { FormatUtils } from "@core/services/format-utils.service";
 import { Patient, PatientStatus } from "@core/models";
-import { ButtonComponent } from "@shared/components/button/button.component";
+import { AppButtonComponent } from "@shared/components/button/button.component";
 import { AvatarComponent } from "@shared/components/avatar/avatar.component";
-import { InputComponent } from "@shared/components/input/input.component";
+import { AppTextFieldComponent } from "@shared/components/input/input.component";
 import { EntityDialogComponent } from "@shared/components/entity-dialog/entity-dialog.component";
 import { EnterprisePaginatorComponent } from "@shared/components/enterprise-paginator/enterprise-paginator.component";
 import { DataTableToolbarComponent } from "@shared/components/data-table-toolbar/data-table-toolbar.component";
@@ -36,9 +36,9 @@ import {
     CommonModule,
     FormsModule,
     TableModule,
-    ButtonComponent,
+    AppButtonComponent,
     AvatarComponent,
-    InputComponent,
+    AppTextFieldComponent,
     EntityDialogComponent,
     EnterprisePaginatorComponent,
     DataTableToolbarComponent,

@@ -1,4 +1,6 @@
 import { Injectable } from "@angular/core";
+import { priorityColor, priorityDotClass } from "@shared/utils/priority-styles";
+import { statusStylesFor } from "@shared/utils/status-styles";
 
 @Injectable({ providedIn: "root" })
 export class FormatUtils {
@@ -53,44 +55,15 @@ export class FormatUtils {
   }
 
   getStatusStyles(status: string): { bg: string; fg: string } {
-    const statusStyles: Record<string, { bg: string; fg: string }> = {
-      New: { bg: "#F1F5F9", fg: "#475569" },
-      Review: { bg: "#FFFBEB", fg: "#B45309" },
-      Design: { bg: "#ECFEFF", fg: "#164E63" },
-      Production: { bg: "#EFF6FF", fg: "#1E40AF" },
-      "Quality Check": { bg: "#F5F3FF", fg: "#5B21B6" },
-      Ready: { bg: "#ECFDF5", fg: "#065F46" },
-      Completed: { bg: "#ECFDF5", fg: "#065F46" },
-      Cancelled: { bg: "#FEF2F2", fg: "#B91C1C" },
-      Open: { bg: "#EFF6FF", fg: "#1E40AF" },
-      "In Progress": { bg: "#FFFBEB", fg: "#B45309" },
-      Closed: { bg: "#F1F5F9", fg: "#64748B" },
-      Pending: { bg: "#F1F5F9", fg: "#64748B" },
-      Invoiced: { bg: "#EFF6FF", fg: "#1E40AF" },
-      Paid: { bg: "#ECFDF5", fg: "#065F46" },
-      Overdue: { bg: "#FEF2F2", fg: "#B91C1C" },
-    };
-    return statusStyles[status] || { bg: "#F1F5F9", fg: "#64748B" };
+    return statusStylesFor(status);
   }
 
   getPriorityColor(priority: string): string {
-    const colors: Record<string, string> = {
-      Low: "#94A3B8",
-      Normal: "#3B82F6",
-      High: "#F59E0B",
-      Urgent: "#EF4444",
-    };
-    return colors[priority] || "#94A3B8";
+    return priorityColor(priority);
   }
 
   getPriorityDotClass(priority: string): string {
-    const classes: Record<string, string> = {
-      Low: "bg-slate-400",
-      Normal: "bg-blue-500",
-      High: "bg-amber-500",
-      Urgent: "bg-red-500",
-    };
-    return classes[priority] || "bg-slate-400";
+    return priorityDotClass(priority);
   }
 
   getArchBadge(arch: string): { class: string; text: string } {

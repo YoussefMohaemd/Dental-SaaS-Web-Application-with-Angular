@@ -7,12 +7,12 @@ import {
   computed,
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
-import { ButtonComponent } from "../button/button.component";
+import { AppButtonComponent } from "../button/button.component";
 
 @Component({
   selector: "app-empty-state",
   standalone: true,
-  imports: [CommonModule, ButtonComponent],
+  imports: [CommonModule, AppButtonComponent],
   templateUrl: "./empty-state.component.html",
   styleUrl: "./empty-state.component.scss",
 })

@@ -5,7 +5,7 @@ import { OrderDataService } from "@core/services/order-data.service";
 import { NavigationService } from "@core/services/navigation.service";
 import { FormatUtils } from "@core/services/format-utils.service";
 import { OrderStatus } from "@core/models";
-import { ButtonComponent } from "@shared/components/button/button.component";
+import { AppButtonComponent } from "@shared/components/button/button.component";
 import { IconActionButtonComponent } from "@shared/components/icon-action-button/icon-action-button.component";
 import { WorkflowTimelineComponent } from "@shared/components/workflow-timeline/workflow-timeline.component";
 import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
@@ -97,7 +97,7 @@ const STAGES: WorkflowStage[] = [
   standalone: true,
   imports: [
     CommonModule,
-    ButtonComponent,
+    AppButtonComponent,
     IconActionButtonComponent,
     WorkflowTimelineComponent,
     SafeHtmlPipe,

@@ -3,6 +3,8 @@
   [class]="badgeClasses()"
   [style.background-color]="styles().bg"
   [style.color]="styles().fg"
+  role="status"
+  [attr.aria-label]="displayLabel()"
 >
   {{ displayLabel() }}
 </span>

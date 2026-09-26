@@ -1,0 +1,10 @@
+Date: 2026-09-26
+Command: npm test -- --watch=false --browsers=ChromeHeadless --code-coverage
+
+TOTAL: 357 SUCCESS
+
+Coverage summary
+- Statements: 61.33% (2202/3590)
+- Branches: 40.09% (405/1010)
+- Functions: 48.59% (552/1136)
+- Lines: 63.99% (1998/3122)

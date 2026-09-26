@@ -7,9 +7,9 @@ import { FormatUtils } from "@core/services/format-utils.service";
 import { Case, CaseStatus, Priority } from "@core/models";
 import { StatusBadgeComponent } from "@shared/components/status-badge/status-badge.component";
 import { PriorityBadgeComponent } from "@shared/components/priority-badge/priority-badge.component";
-import { ButtonComponent } from "@shared/components/button/button.component";
-import { InputComponent } from "@shared/components/input/input.component";
-import { SelectComponent } from "@shared/components/select/select.component";
+import { AppButtonComponent } from "@shared/components/button/button.component";
+import { AppTextFieldComponent } from "@shared/components/input/input.component";
+import { AppSelectComponent } from "@shared/components/select/select.component";
 import { EnterprisePaginatorComponent } from "@shared/components/enterprise-paginator/enterprise-paginator.component";
 import { TableFeedbackComponent } from "@shared/components/table-feedback/table-feedback.component";
 import { SafeHtmlPipe } from "../../shared/pipes/safe-html.pipe";
@@ -24,9 +24,9 @@ type ViewMode = "table" | "grid";
     TableModule,
     StatusBadgeComponent,
     PriorityBadgeComponent,
-    ButtonComponent,
-    InputComponent,
-    SelectComponent,
+    AppButtonComponent,
+    AppTextFieldComponent,
+    AppSelectComponent,
     EnterprisePaginatorComponent,
     TableFeedbackComponent,
     SafeHtmlPipe,

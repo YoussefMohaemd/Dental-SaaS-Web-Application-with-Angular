@@ -10,7 +10,12 @@ import {
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from "@angular/forms";
 import { TuiLabel } from "@taiga-ui/core/components/label";
 
-type SelectOption = string | { label: string; value: string };
+export interface SelectOption {
+  label: string;
+  value: unknown;
+}
+
+type SelectOptionInput = string | SelectOption;
 
 @Component({
   selector: "app-select",
@@ -21,18 +26,18 @@ type SelectOption = string | { label: string; value: string };
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => SelectComponent),
+      useExisting: forwardRef(() => AppSelectComponent),
       multi: true,
     },
   ],
 })
-export class SelectComponent implements ControlValueAccessor {
+export class AppSelectComponent implements ControlValueAccessor {
   private static nextAutoId = 0;
 
   readonly id = input<string>("");
   readonly label = input<string>("");
   readonly placeholder = input<string>("");
-  readonly options = input<readonly SelectOption[]>([]);
+  readonly options = input<readonly SelectOptionInput[]>([]);
   readonly value = model<string>("");
   readonly disabled = input<boolean>(false);
   readonly required = input<boolean>(false);
@@ -45,7 +50,7 @@ export class SelectComponent implements ControlValueAccessor {
   private readonly cvaDisabled = signal(false);
   private onChangeFn: (value: string) => void = () => {};
   private onTouchedFn: () => void = () => {};
-  private readonly generatedId = `app-select-${SelectComponent.nextAutoId++}`;
+  private readonly generatedId = `app-select-${AppSelectComponent.nextAutoId++}`;
 
   readonly selectId = computed(() => this.id().trim() || this.generatedId);
   readonly isDisabled = computed(() => this.disabled() || this.cvaDisabled());

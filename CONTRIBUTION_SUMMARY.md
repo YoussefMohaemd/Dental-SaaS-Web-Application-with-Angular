@@ -2,36 +2,25 @@
 
 Date: 2026-09-26
 
-## Ownership
+## Ownership and review reality
 
-This repository is single-author. No verified reviewer matrix, team ownership split, or merge-request history is claimed in this summary.
+- Author model: **single contributor**
+- External PR review matrix: **none recorded**
+- Review mode for this cycle: **self-review + automated checks**
 
-## Work Completed in This Cycle
+## Work ownership table
 
-| Area | Result |
-| --- | --- |
-| Baseline and dependency validation | Build/test baseline repaired and verified |
-| Missing unit specs | Shared component coverage added and tightened |
-| Storybook coverage | Real stories added for reusable controls and workflow components |
-| Accessibility | Keyboard-operable sortable headers and axe-clean route states verified |
-| Evidence pack | Build, test, Storybook, responsive, and accessibility logs collected under `evidence/` |
-| AI protocol | Controlled comparison protocol prepared; execution remains pending human ownership |
+| Area | Owner | Review performed | Representative commits | Current status |
+| --- | --- | --- | --- | --- |
+| Accessibility header sorting and keyboard parity | Repository author | Self-review | `c269831`, `cd88bee` | Done |
+| Storybook migration to real component stories | Repository author | Self-review | `c646d66`, `3b51729` | Done |
+| Evidence pack generation (build/test/storybook/a11y/responsive) | Repository author | Self-review | `7ffad90`, `c224f5b` | Done |
+| Controlled AI protocol scaffolding | Repository author | Self-review | `6d16dca` | Done (execution pending) |
+| Final documentation reconciliation | Repository author | Self-review | `d0930e1` | In progress (further updates ongoing) |
 
-## Verification Gate
+## Unresolved / human-gated items
 
-- `npm run build` passing
-- `npm test -- --watch=false --browsers=ChromeHeadless` passing (336/336)
-- `npm run lint` passing
-- `npm run build-storybook` passing
-- axe-core scan passing with 0 violations across the audited route states
-
-## Remaining Human-Validated Items
-
-- controlled AI comparison run
-- mentor-facing checkpoint approvals
-- human-only accessibility and responsive checks
-- live demonstration or presentation evidence
-
-## Note
-
-This summary only records facts that can be verified from the repository history and evidence files.
+- Controlled AI comparison execution for all candidates (protocol exists, runs pending)
+- Mentor checkpoint sign-off on deviations in [`docs/scope-exceptions.md`](./docs/scope-exceptions.md)
+- Live presentation/demo delivery evidence
+- Any approval requiring external stakeholder validation

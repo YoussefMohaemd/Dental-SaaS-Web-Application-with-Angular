@@ -57,6 +57,16 @@ describe("SearchFilterToolbarComponent", () => {
     expect(component.actionAriaLabel()).toBe("");
   });
 
+  it("should forward the configured search aria-label to the search input", () => {
+    fixture.componentRef.setInput("searchAriaLabel", "Search orders");
+    fixture.detectChanges();
+
+    const input = fixture.debugElement.query(By.css("app-input input"));
+    expect(input.nativeElement.getAttribute("aria-label")).toBe(
+      "Search orders",
+    );
+  });
+
   it("should emit searchValueChange when the search input changes", () => {
     spyOn(component.searchValueChange, "emit");
     const input = fixture.debugElement.query(By.css("app-input"));

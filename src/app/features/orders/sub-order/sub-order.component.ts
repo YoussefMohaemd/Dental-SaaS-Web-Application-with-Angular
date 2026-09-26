@@ -15,8 +15,8 @@ import {
   SubOrderTab,
   SubOrderDetail,
 } from "@core/models/sub-order.model";
-import { InputComponent } from "@shared/components/input/input.component";
-import { SelectComponent } from "@shared/components/select/select.component";
+import { AppTextFieldComponent } from "@shared/components/input/input.component";
+import { AppSelectComponent } from "@shared/components/select/select.component";
 import { TeethChartComponent } from "@shared/components/teeth-chart/teeth-chart.component";
 import { IconActionButtonComponent } from "@shared/components/icon-action-button/icon-action-button.component";
 import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
@@ -63,8 +63,8 @@ const EMPTY_DETAIL: SubOrderDetail = {
   imports: [
     CommonModule,
     FormsModule,
-    InputComponent,
-    SelectComponent,
+    AppTextFieldComponent,
+    AppSelectComponent,
     TeethChartComponent,
     IconActionButtonComponent,
     SafeHtmlPipe,

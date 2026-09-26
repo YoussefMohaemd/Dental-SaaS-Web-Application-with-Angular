@@ -1,19 +1,28 @@
-# Evidence: controlled AI comparison
+# Evidence: controlled AI comparison (partitioned)
 
-Status: **SLOTS ARE EMPTY — AWAITING HUMAN EXECUTION.** Nothing in this folder has been produced by a controlled run yet.
+Status: **EMPTY — AWAITING HUMAN EXECUTION**
 
-Protocol: [`docs/ai-comparison-protocol.md`](../../docs/ai-comparison-protocol.md) (frozen conditions, rubric, capture list).
+Protocol: [`docs/ai-comparison-protocol.md`](../../docs/ai-comparison-protocol.md)
 
-| Slot | File | Status |
+## Candidate partitions
+
+| Candidate | Folder | Status |
 | --- | --- | --- |
-| Initial AI output | [`initial-output.md`](./initial-output.md) | EMPTY |
-| Corrected working output | [`corrected-output.md`](./corrected-output.md) | EMPTY |
-| Screenshots (1440/768/375, before/after) | [`screenshots/`](./screenshots/) | EMPTY |
-| Build & test results | [`build-test-results.md`](./build-test-results.md) | EMPTY |
-| Accessibility findings | [`a11y-findings.md`](./a11y-findings.md) | EMPTY |
-| Hallucinated / invalid APIs | [`hallucinated-apis.md`](./hallucinated-apis.md) | EMPTY |
-| Manual corrections | [`manual-corrections.md`](./manual-corrections.md) | EMPTY |
-| Elapsed effort, iterations, run metadata | [`effort-log.md`](./effort-log.md) | EMPTY |
-| Completed scoresheet | [`scoresheet.md`](./scoresheet.md) | EMPTY |
+| React + KendoReact | [`react-kendo/`](./react-kendo/) | EMPTY |
+| React + Material UI | [`react-mui/`](./react-mui/) | EMPTY |
+| Vue 3 + Vuetify | [`vue-vuetify/`](./vue-vuetify/) | EMPTY |
 
-Do not pre-fill any slot. Mark skipped captures as "NOT CAPTURED — reason" instead.
+Each candidate folder contains the same slot templates:
+
+- `prompts.md`
+- `initial-output.md`
+- `corrected-output.md`
+- `build-test-results.md`
+- `a11y-findings.md`
+- `hallucinated-apis.md`
+- `manual-corrections.md`
+- `effort-log.md`
+- `scoresheet.md`
+- `screenshots/README.md`
+
+Do not pre-fill any slot. If a capture cannot be produced, record `NOT CAPTURED — reason`.

@@ -10,7 +10,7 @@ import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
   styleUrl: "./table-feedback.component.scss",
 })
 export class TableFeedbackComponent {
-  readonly mode = input<"loading" | "empty">("empty");
+  readonly mode = input<"loading" | "empty" | "error">("empty");
   readonly message = input.required<string>();
   readonly iconSvg = input<string>("");
   readonly spin = input<boolean>(false);

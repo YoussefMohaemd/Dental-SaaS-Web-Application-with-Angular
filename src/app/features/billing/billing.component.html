@@ -50,35 +50,24 @@
     </div>
   </div>
 
-  <div class="enterprise-toolbar shrink-0">
-    <div class="enterprise-toolbar-group enterprise-toolbar-group--grow">
-      <div class="enterprise-toolbar-search">
-        <span
-          [innerHTML]="getIconSvg('search') | safeHtml"
-          class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-          aria-hidden="true"
-        ></span>
-        <app-input
-          id="billing-search"
-          [unstyled]="true"
-          inputClass="enterprise-toolbar-input"
-          placeholder="Search billing..."
-          [value]="search()"
-          (valueChange)="onSearchValueChange($event)"
-        ></app-input>
-      </div>
-      <app-select
-        id="billing-status-filter"
-        [unstyled]="true"
-        selectClass="enterprise-toolbar-select cursor-pointer focus:outline-none"
-        placeholder="All Status"
-        [ariaLabel]="'Status'"
-        [options]="['Pending', 'Invoiced', 'Paid', 'Overdue', 'Cancelled']"
-        [value]="statusFilter()"
-        (valueChange)="onStatusValueChange($event)"
-      ></app-select>
-    </div>
-  </div>
+  <app-search-filter-toolbar
+    searchId="billing-search"
+    searchPlaceholder="Search billing..."
+    searchAriaLabel="Search billing records"
+    [searchValue]="search()"
+    [searchIconSvg]="getIconSvg('search')"
+    selectId="billing-status-filter"
+    selectPlaceholder="All Status"
+    [selectOptions]="['Pending', 'Invoiced', 'Paid', 'Overdue', 'Cancelled']"
+    [selectValue]="statusFilter()"
+    selectAriaLabel="Filter billing by status"
+    actionLabel="Clear Filters"
+    actionAriaLabel="Clear billing filters"
+    [actionDisabled]="!search() && !statusFilter()"
+    (searchValueChange)="onSearchValueChange($event)"
+    (selectValueChange)="onStatusValueChange($event)"
+    (actionClick)="clearFilters()"
+  ></app-search-filter-toolbar>
 
   <div class="enterprise-table-panel">
     <div class="enterprise-table-scroll">

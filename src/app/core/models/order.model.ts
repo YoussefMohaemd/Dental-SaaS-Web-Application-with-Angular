@@ -85,5 +85,7 @@ export interface OrderTableState {
   totalPages: number;
   sortColumn: keyof Order | "";
   sortDirection: "asc" | "desc";
-  viewState: "normal" | "loading" | "empty" | "error";
+  viewState: OrdersViewState;
 }
+
+export type OrdersViewState = "normal" | "loading" | "empty" | "error";

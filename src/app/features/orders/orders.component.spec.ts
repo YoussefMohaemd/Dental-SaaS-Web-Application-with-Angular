@@ -4,10 +4,12 @@ import { provideHttpClientTesting } from "@angular/common/http/testing";
 import { provideRouter } from "@angular/router";
 import { OrdersComponent, compareOrderValues } from "./orders.component";
 import { NavigationService } from "@core/services/navigation.service";
+import { OrderDataService } from "@core/services/order-data.service";
 
 describe("OrdersComponent", () => {
   let component: OrdersComponent;
   let fixture: ComponentFixture<OrdersComponent>;
+  let orderService: OrderDataService;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -21,6 +23,7 @@ describe("OrdersComponent", () => {
 
     fixture = TestBed.createComponent(OrdersComponent);
     component = fixture.componentInstance;
+    orderService = TestBed.inject(OrderDataService);
     fixture.detectChanges();
   });
 
@@ -181,10 +184,73 @@ describe("OrdersComponent", () => {
     expect(component.page()).toBeLessThanOrEqual(component.totalPages());
   });
 
-  it("should refresh the table state through the loading simulation", () => {
-    component.simulateRefresh();
-    expect(component.viewState()).toBe("loading");
-    component.retryLoad();
-    expect(component.viewState()).toBe("normal");
+  it("should show the loading state while the service is loading", () => {
+    orderService.previewState("loading");
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain("Loading orders...");
+  });
+
+  it("should show the error state when the service reports an error", () => {
+    orderService.previewState("error");
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain("Failed to load orders");
+    expect(fixture.nativeElement.textContent).toContain("Try Again");
+  });
+
+  it("should reload orders on retry", () => {
+    orderService.previewState("error");
+    fixture.detectChanges();
+    spyOn(orderService, "reload");
+
+    const retryButton = Array.from(
+      fixture.nativeElement.querySelectorAll("button") as NodeListOf<HTMLButtonElement>,
+    ).find((button) =>
+      button.textContent?.trim().includes("Try Again"),
+    );
+
+    expect(retryButton).toBeDefined();
+    retryButton?.click();
+    expect(orderService.reload).toHaveBeenCalled();
+  });
+
+  it("should show the empty state when no orders are available", () => {
+    orderService.previewState("empty");
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain("No orders yet");
+  });
+
+  it("should show the normal table when orders are loaded", () => {
+    orderService.previewState("empty");
+    orderService.createOrder({
+      patientId: "pt-1",
+      patientName: "Alice Johnson",
+      doctorId: "dr-1",
+      doctorName: "Dr. Park",
+      clinicId: "cl-1",
+      clinicName: "Bright Smile Dental",
+      scanCenterId: "scan-1",
+      scanCenterName: "Main Scan Center",
+      status: "New",
+      priority: "High",
+      restoration: "Crown",
+      arch: "Maxilla",
+      format: "STL",
+      shade: "A2",
+      units: 2,
+      amount: 500,
+      billed: false,
+      billTo: "Bright Smile Dental",
+      vouchers: 0,
+      isLocked: false,
+      hasNotes: false,
+      notes: "",
+      dueDate: "2026-12-24",
+    });
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector("p-treetable")).toBeTruthy();
   });
 });

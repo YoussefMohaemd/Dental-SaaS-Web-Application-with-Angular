@@ -4,17 +4,26 @@ Inventory date: 2026-09-22 (synced 2026-09-26 against the source tree)
 
 This inventory is based on real source files in the current repository snapshot. It documents existing UI components and patterns only; no invented components are included.
 
+## Sanitized source provenance
+
+The inventory was compiled from sanitized repository surfaces representing CRM/customer-portal workflows:
+
+- orders, sub-orders, workflow, billing, documents, notifications
+- patients, doctors, clinics, scan-center, change-requests
+- shared shell/navigation and shared components under `src/app/shared/`
+
+No private patient records, production secrets, or external tenant data were used to compile this list.
+
 ## Inventory
 
 | Component / Pattern | Purpose | Location | Variants | Current Reuse Level | Reuse Priority | Observed Inconsistency / Issue | Should Become Shared? |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| ButtonComponent | Primary reusable action control | `src/app/shared/components/button/` | primary, secondary, outline, ghost, danger, success; sm/md/lg/icon sizes | High | High | Core action control, already reusable | Yes |
-| InputComponent | Labeled form input with optional icons | `src/app/shared/components/input/` | text, email, password, tel, number | High | High | Input state is reusable across forms | Yes |
+| AppButtonComponent | Primary reusable action control | `src/app/shared/components/button/` | primary, secondary, outline, ghost, danger, success; sm/md/lg/icon sizes | High | High | Core action control, already reusable | Yes |
+| AppTextFieldComponent | Labeled form input with optional icons | `src/app/shared/components/input/` | text, email, password, tel, number | High | High | Input state is reusable across forms | Yes |
 | SearchInputComponent | Search field with debounce support | `src/app/shared/components/search-input/` | xs/sm, clearable, shortcut hint | High | High | Used as a shared search affordance | Yes |
-| SelectComponent | Custom select with label/aria-label and placeholder fallback | `src/app/shared/components/select/` | labeled/aria-labeled, option lists | High | High | Used by every table filter toolbar | Yes |
-| TextFieldComponent | Storybook-backed text field with validation states | `src/app/shared/components/text-field/` | valid/error, helper text | Medium | Medium | Storybook showcase control | Yes |
+| AppSelectComponent | Custom select with label/aria-label and placeholder fallback | `src/app/shared/components/select/` | labeled/aria-labeled, option lists | High | High | Used by every table filter toolbar | Yes |
 | DataTableToolbarComponent | Page-level data table toolbar wrapper | `src/app/shared/components/data-table-toolbar/` | default | High | High | Orders/patients/doctors tables | Yes |
-| SearchFilterToolbarComponent | Search + select filters + advanced/action toolbar | `src/app/shared/components/search-filter-toolbar/` | with/without action button, active filters | High | High | Table pages; forwards select aria-labels | Yes |
+| SearchFilterToolbarComponent | Search + select filters + advanced/action toolbar | `src/app/shared/components/search-filter-toolbar/` | with/without action button, active filters | High | High | Consumer variance still exists in action semantics (filter reset vs create actions) | Yes |
 | EntityDialogComponent | Modal dialog shell (PrimeNG dialog) with title/subtitle/actions | `src/app/shared/components/entity-dialog/` | add/edit variants via inputs | High | High | Form/dialog flows | Yes |
 | IconActionButtonComponent | Icon-only action button with aria-label | `src/app/shared/components/icon-action-button/` | header/sidebar actions | High | High | Shell header (menu toggle) | Yes |
 | EnterprisePaginatorComponent | Table pagination control | `src/app/shared/components/enterprise-paginator/` | page size variants | High | High | Table pages | Yes |
@@ -36,7 +45,7 @@ This inventory is based on real source files in the current repository snapshot.
 | Sub-order detail page | Sub-order forms, scans, activity | `src/app/features/orders/sub-order/` | tabs, forms, scans, activity | High | High | Business-critical detail surface | Yes |
 | Create order flow | New order wizard/form | `src/app/features/orders/create-order/` | step-driven sections | High | High | Strong POC candidate for reuse | Yes |
 | Edit order flow | Existing order editing surface | `src/app/features/orders/edit-order/` | edit states | Medium | Medium | Reuses create-order patterns | Yes |
-| Order workflow board | Status column drag/drop board | `src/app/features/orders/order-workflow/` | seven workflow stages | High | High | Uses CDK drag/drop and timeline summary | Yes |
+| Order workflow board | Status column review board | `src/app/features/orders/order-workflow/` | seven workflow stages | High | High | Workflow summary style differs from the drag/drop workflow-board surface | Yes |
 | Order files page | File upload/review surface | `src/app/features/orders/order-files/` | normal/loading/error/preview | High | High | Important for clinical workflow | Yes |
 | Workflow board | Column-based order progression board | `src/app/features/workflow-board/` | drag active / hover / idle | High | High | Central enterprise workflow pattern | Yes |
 | Doctor list/detail pages | Doctor directory and profile detail | `src/app/features/doctors/` | list/detail | Medium | Medium | Table/detail behavior should stay aligned | Yes |

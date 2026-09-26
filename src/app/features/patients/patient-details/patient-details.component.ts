@@ -9,7 +9,7 @@ import { NavigationService } from "@core/services/navigation.service";
 import { FormatUtils } from "@core/services/format-utils.service";
 import { Case, LabDocument, Order, Patient } from "@core/models";
 import { StatusBadgeComponent } from "@shared/components/status-badge/status-badge.component";
-import { ButtonComponent } from "@shared/components/button/button.component";
+import { AppButtonComponent } from "@shared/components/button/button.component";
 import { AvatarComponent } from "@shared/components/avatar/avatar.component";
 import { IconActionButtonComponent } from "@shared/components/icon-action-button/icon-action-button.component";
 import { PriorityBadgeComponent } from "@shared/components/priority-badge/priority-badge.component";
@@ -46,7 +46,7 @@ interface PatientActivityItem {
   imports: [
     CommonModule,
     StatusBadgeComponent,
-    ButtonComponent,
+    AppButtonComponent,
     AvatarComponent,
     IconActionButtonComponent,
     PriorityBadgeComponent,

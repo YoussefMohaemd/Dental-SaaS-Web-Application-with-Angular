@@ -1,12 +1,6 @@
 import { Component, input, computed } from "@angular/core";
 import { CommonModule } from "@angular/common";
-
-const DOT_CLASSES: Record<string, string> = {
-  Low: "bg-slate-400",
-  Normal: "bg-blue-500",
-  High: "bg-amber-500",
-  Urgent: "bg-red-500",
-};
+import { priorityDotClass } from "@shared/utils/priority-styles";
 
 @Component({
   selector: "app-priority-badge",
@@ -17,8 +11,12 @@ const DOT_CLASSES: Record<string, string> = {
 })
 export class PriorityBadgeComponent {
   readonly priority = input.required<string>();
+  readonly size = input<"xs" | "sm" | "md">("xs");
 
-  readonly dotClass = computed(
-    () => DOT_CLASSES[this.priority()] ?? "bg-slate-400",
-  );
+  readonly dotClass = computed(() => priorityDotClass(this.priority()));
+  readonly textClass = computed(() => {
+    if (this.size() === "md") return "text-sm";
+    if (this.size() === "sm") return "text-xs";
+    return "text-[10px]";
+  });
 }

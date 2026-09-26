@@ -3,7 +3,7 @@
     class="relative space-y-3 border-l-2 border-border pl-5"
     aria-label="Workflow timeline"
   >
-    @for (stage of stages(); track stage.status; let i = $index) {
+    @for (stage of stages(); track $index; let i = $index) {
       <li
         class="relative rounded-xl border p-4"
         [class]="
@@ -13,6 +13,7 @@
               ? 'border-success/40 bg-success/5'
               : 'border-border bg-card'
         "
+        [attr.aria-current]="i === currentIndex() ? 'step' : null"
       >
         <span
           class="absolute -left-6.75 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white text-[10px] font-bold"

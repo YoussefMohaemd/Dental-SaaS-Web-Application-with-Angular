@@ -1,30 +1,23 @@
 # AI Usage Log
 
-Date: 2026-09-26
+## Session log (fact-only)
 
-## Summary
+| Date | Session / scope | Prompt summary | AI output summary | Verification method + result | Rejected/changed items |
+| --- | --- | --- | --- | --- | --- |
+| 2026-09-26 | IMP-FE-003 gap-audit assistance | Audit repo vs assignment requirements and map gaps to actions | Gap list, risk list, remediation plan draft | Manual source verification + evidence file checks; accepted as planning aid only | Any unverified claims removed or marked pending |
+| 2026-09-26 | Documentation drafting | Draft matrix/protocol/licensing/scope docs in current Angular POC context | Draft markdown files and template structures | Cross-checked against repository code and cited external sources; factual sections retained | Any non-evidenced score/output left pending |
+| 2026-09-26 | Implementation support | Apply targeted refactors and tests per plan tasks | Code edits for naming, a11y, states, shared utilities | `npm run lint`, unit tests, and build/storybook checks (run in repository) | Failing variants iterated; no fabricated pass claims |
 
-This repository now contains a truthful record of the AI-assisted documentation and evidence work performed in this session. No controlled comparison results are claimed here because that run has not been executed.
+## Controlled AI comparison runs
 
-## What AI was used for
+Status: **PENDING HUMAN EXECUTION**  
+Protocol: [`docs/ai-comparison-protocol.md`](./docs/ai-comparison-protocol.md)  
+Evidence slots: [`evidence/ai-comparison/`](./evidence/ai-comparison/)
 
-- repository inspection and documentation cleanup
-- removal of obsolete internal plan/checkpoint files
-- alignment of the remaining docs with the current Angular POC
-- consolidation of setup, evidence, and task-summary language
+No candidate run scores, screenshots, or transcripts are recorded here until human execution is completed.
 
 ## What AI was not used for
 
-- inventing test results, screenshots, approvals, or mentor feedback
-- fabricating controlled AI comparison output
-- claiming completion of human-only validation steps
-
-## Current Evidence State
-
-- Build/test/storybook/accessibility evidence already exists under `evidence/`
-- `docs/ai-comparison-protocol.md` remains a pending human-executed protocol
-- `README.md`, `CONTRIBUTION_SUMMARY.md`, and the docs under `docs/` now describe the current Angular repository more clearly
-
-## Final Note
-
-All repository claims should be backed by files, logs, or observable source code. Anything that still depends on a human step must remain marked as pending.
+- inventing screenshots, logs, approvals, reviewers, or contributors
+- fabricating matrix AI-15% scores before controlled execution
+- claiming completion of mentor-only checkpoints

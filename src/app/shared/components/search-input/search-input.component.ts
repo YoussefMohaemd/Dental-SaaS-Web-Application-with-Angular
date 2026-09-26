@@ -14,15 +14,15 @@ import {
   debounceTime,
   distinctUntilChanged,
 } from "rxjs";
-import { InputComponent } from "@shared/components/input/input.component";
-import { ButtonComponent } from "@shared/components/button/button.component";
+import { AppTextFieldComponent } from "@shared/components/input/input.component";
+import { AppButtonComponent } from "@shared/components/button/button.component";
 
 export type SearchInputSize = "xs" | "sm";
 
 @Component({
   selector: "app-search-input",
   standalone: true,
-  imports: [CommonModule, InputComponent, ButtonComponent],
+  imports: [CommonModule,  AppButtonComponent, AppTextFieldComponent],
   templateUrl: "./search-input.component.html",
   styleUrl: "./search-input.component.scss",
 })

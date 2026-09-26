@@ -23,6 +23,10 @@ $color-danger-foreground: #ffffff;
 $color-border: #e2e8f0;
 $color-input: #e2e8f0;
 $color-ring: #2563eb;
+$color-disabled-background: #e2e8f0;
+$color-disabled-foreground: #94a3b8;
+$color-disabled-border: #cbd5e1;
+$disabled-opacity: 0.5;
 
 $color-background-dark: #0f172a;
 $color-foreground-dark: #f1f5f9;
@@ -46,6 +50,10 @@ $color-danger-dark: #f87171;
 $color-border-dark: #334155;
 $color-input-dark: #334155;
 $color-ring-dark: #3b82f6;
+$color-disabled-background-dark: #334155;
+$color-disabled-foreground-dark: #94a3b8;
+$color-disabled-border-dark: #475569;
+$disabled-opacity-dark: 0.5;
 
 $status-colors: (
   "new": (
@@ -203,6 +211,7 @@ $sidebar-width-collapsed: 3.5rem;
 $header-height: 3.5rem;
 
 :root {
+  // --color-* maps to Tailwind @theme variables; unprefixed --* is app/PrimeNG layer.
   --color-primary: #{$color-primary};
   --color-primary-hover: #1e40af;
   --color-primary-light: #dbeafe;
@@ -256,6 +265,10 @@ $header-height: 3.5rem;
   --color-input-border: #{$color-border};
   --color-input-border-focus: #{$color-ring};
   --color-input-placeholder: #94a3b8;
+  --disabled-background: #{$color-disabled-background};
+  --disabled-foreground: #{$color-disabled-foreground};
+  --disabled-border: #{$color-disabled-border};
+  --disabled-opacity: #{$disabled-opacity};
 
   --color-muted: #{$color-muted};
   --color-muted-foreground: #{$color-muted-foreground};
@@ -293,6 +306,10 @@ $header-height: 3.5rem;
   --color-input-border: #{$color-border-dark};
   --color-input-border-focus: #{$color-ring-dark};
   --color-input-placeholder: #64748b;
+  --disabled-background: #{$color-disabled-background-dark};
+  --disabled-foreground: #{$color-disabled-foreground-dark};
+  --disabled-border: #{$color-disabled-border-dark};
+  --disabled-opacity: #{$disabled-opacity-dark};
 
   --color-muted: #{$color-muted-dark};
   --color-muted-foreground: #{$color-muted-foreground-dark};

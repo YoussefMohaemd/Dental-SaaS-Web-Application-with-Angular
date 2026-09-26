@@ -2,9 +2,9 @@ import { CommonModule } from "@angular/common";
 import { Component, computed, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { TableModule } from "primeng/table";
-import { ButtonComponent } from "@shared/components/button/button.component";
+import { AppButtonComponent } from "@shared/components/button/button.component";
 import { SearchInputComponent } from "@shared/components/search-input/search-input.component";
-import { SelectComponent } from "@shared/components/select/select.component";
+import { AppSelectComponent } from "@shared/components/select/select.component";
 import { StatusBadgeComponent } from "@shared/components/status-badge/status-badge.component";
 import { PriorityBadgeComponent } from "@shared/components/priority-badge/priority-badge.component";
 import { LoadingStateComponent } from "@shared/components/loading-state/loading-state.component";
@@ -91,9 +91,9 @@ interface PatientSnapshot {
     CommonModule,
     FormsModule,
     TableModule,
-    ButtonComponent,
+    AppButtonComponent,
     SearchInputComponent,
-    SelectComponent,
+    AppSelectComponent,
     StatusBadgeComponent,
     PriorityBadgeComponent,
     LoadingStateComponent,

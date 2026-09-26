@@ -2,9 +2,9 @@ import { Component, inject, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { ReactiveFormsModule, FormBuilder, Validators } from "@angular/forms";
 import { ThemeService } from "@core/services/theme.service";
-import { ButtonComponent } from "@shared/components/button/button.component";
-import { InputComponent } from "@shared/components/input/input.component";
-import { SelectComponent } from "@shared/components/select/select.component";
+import { AppButtonComponent } from "@shared/components/button/button.component";
+import { AppTextFieldComponent } from "@shared/components/input/input.component";
+import { AppSelectComponent } from "@shared/components/select/select.component";
 import { SafeHtmlPipe } from "../../shared/pipes/safe-html.pipe";
 
 type SettingsSection =
@@ -21,9 +21,9 @@ type SettingsSection =
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    ButtonComponent,
-    InputComponent,
-    SelectComponent,
+    AppButtonComponent,
+    AppTextFieldComponent,
+    AppSelectComponent,
     SafeHtmlPipe,
   ],
   templateUrl: "./settings.component.html",

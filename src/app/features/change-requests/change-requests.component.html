@@ -38,35 +38,24 @@
     </div>
   </div>
 
-  <div class="enterprise-toolbar shrink-0">
-    <div class="enterprise-toolbar-group enterprise-toolbar-group--grow">
-      <div class="enterprise-toolbar-search">
-        <span
-          [innerHTML]="getIconSvg('search') | safeHtml"
-          class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-          aria-hidden="true"
-        ></span>
-        <app-input
-          id="change-requests-search"
-          [unstyled]="true"
-          inputClass="enterprise-toolbar-input"
-          placeholder="Search requests..."
-          [value]="search()"
-          (valueChange)="onSearchValueChange($event)"
-        ></app-input>
-      </div>
-      <app-select
-        id="change-requests-status-filter"
-        [unstyled]="true"
-        selectClass="enterprise-toolbar-select cursor-pointer focus:outline-none"
-        placeholder="All Status"
-        [ariaLabel]="'Status'"
-        [options]="['Pending', 'In Review', 'Approved', 'Rejected', 'Completed']"
-        [value]="statusFilter()"
-        (valueChange)="onStatusValueChange($event)"
-      ></app-select>
-    </div>
-  </div>
+  <app-search-filter-toolbar
+    searchId="change-requests-search"
+    searchPlaceholder="Search requests..."
+    searchAriaLabel="Search change requests"
+    [searchValue]="search()"
+    [searchIconSvg]="getIconSvg('search')"
+    selectId="change-requests-status-filter"
+    selectPlaceholder="All Status"
+    [selectOptions]="['Pending', 'In Review', 'Approved', 'Rejected', 'Completed']"
+    [selectValue]="statusFilter()"
+    selectAriaLabel="Filter change requests by status"
+    actionLabel="Clear Filters"
+    actionAriaLabel="Clear change request filters"
+    [actionDisabled]="!search() && !statusFilter()"
+    (searchValueChange)="onSearchValueChange($event)"
+    (selectValueChange)="onStatusValueChange($event)"
+    (actionClick)="clearFilters()"
+  ></app-search-filter-toolbar>
 
   <div class="enterprise-table-panel">
     <div class="enterprise-table-scroll">

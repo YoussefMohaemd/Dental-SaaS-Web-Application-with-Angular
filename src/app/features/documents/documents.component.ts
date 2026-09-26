@@ -1,9 +1,9 @@
 import { Component, computed, inject, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { TableModule } from "primeng/table";
-import { ButtonComponent } from "@shared/components/button/button.component";
+import { AppButtonComponent } from "@shared/components/button/button.component";
 import { EntityDialogComponent } from "@shared/components/entity-dialog/entity-dialog.component";
-import { InputComponent } from "@shared/components/input/input.component";
+import { AppTextFieldComponent } from "@shared/components/input/input.component";
 import { TableFeedbackComponent } from "@shared/components/table-feedback/table-feedback.component";
 import { IconActionButtonComponent } from "@shared/components/icon-action-button/icon-action-button.component";
 import { DocumentDataService } from "@core/services/document-data.service";
@@ -22,9 +22,9 @@ export type { DocumentCategory, LabDocument };
   imports: [
     CommonModule,
     TableModule,
-    ButtonComponent,
+    AppButtonComponent,
     EntityDialogComponent,
-    InputComponent,
+    AppTextFieldComponent,
     TableFeedbackComponent,
     IconActionButtonComponent,
     SafeHtmlPipe,

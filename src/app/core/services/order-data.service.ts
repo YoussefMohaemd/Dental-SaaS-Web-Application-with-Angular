@@ -1,7 +1,13 @@
 import { Injectable, signal, computed, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { Observable, of, delay, map, catchError } from "rxjs";
-import { Order, OrderFilters, OrderStatus, Priority } from "../models";
+import {
+  Order,
+  OrderFilters,
+  OrdersViewState,
+  OrderStatus,
+  Priority,
+} from "../models";
 import { filterTableRows } from "@shared/utils/table-state";
 
 export function compareValues(a: unknown, b: unknown): number {
@@ -23,6 +29,7 @@ export class OrderDataService {
   private readonly _orders = signal<Order[]>([]);
   private readonly _loading = signal<boolean>(false);
   private readonly _error = signal<string | null>(null);
+  private snapshotOrders: Order[] = [];
 
   readonly orders = this._orders.asReadonly();
   readonly loading = this._loading.asReadonly();
@@ -80,12 +87,47 @@ export class OrderDataService {
       .subscribe({
         next: (orders: Order[]) => {
           this._orders.set(orders);
+          this.snapshotOrders = [...orders];
           this._loading.set(false);
         },
         error: () => {
           this._loading.set(false);
         },
       });
+  }
+
+  reload(): void {
+    this.loadOrders();
+  }
+
+  // POC evidence control: keeps screenshots and service state in sync.
+  previewState(state: OrdersViewState): void {
+    if (state === "normal") {
+      if (this.snapshotOrders.length > 0) {
+        this._orders.set([...this.snapshotOrders]);
+      }
+      this.reload();
+      return;
+    }
+
+    if (state === "loading") {
+      this._error.set(null);
+      this._loading.set(true);
+      return;
+    }
+
+    if (state === "error") {
+      this._loading.set(false);
+      this._error.set("Failed to load orders");
+      return;
+    }
+
+    this._loading.set(false);
+    this._error.set(null);
+    if (this._orders().length > 0) {
+      this.snapshotOrders = [...this._orders()];
+    }
+    this._orders.set([]);
   }
 
   getOrderById(id: string): Order | undefined {

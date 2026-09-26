@@ -1,10 +1,10 @@
 import { Component, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
-import { ButtonComponent } from "@shared/components/button/button.component";
+import { AppButtonComponent } from "@shared/components/button/button.component";
 import { IconActionButtonComponent } from "@shared/components/icon-action-button/icon-action-button.component";
-import { InputComponent } from "@shared/components/input/input.component";
-import { SelectComponent } from "@shared/components/select/select.component";
+import { AppTextFieldComponent } from "@shared/components/input/input.component";
+import { AppSelectComponent } from "@shared/components/select/select.component";
 import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
 
 export type FormsSectionId =
@@ -22,10 +22,10 @@ export type FormsSectionId =
   imports: [
     CommonModule,
     FormsModule,
-    ButtonComponent,
+    AppButtonComponent,
     IconActionButtonComponent,
-    InputComponent,
-    SelectComponent,
+    AppTextFieldComponent,
+    AppSelectComponent,
     SafeHtmlPipe,
   ],
   templateUrl: "./forms.component.html",

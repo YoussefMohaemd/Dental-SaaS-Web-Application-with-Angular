@@ -1,51 +1,46 @@
-# Weighted Comparison Matrix
+# Candidate Weighted Comparison Matrix (Research Baseline)
 
-Date: 2026-09-22 (AI-assisted line reconciled 2026-09-26; see note)
+Date: 2026-09-26
 
-This matrix is intentionally conservative and evidence-based. It does not invent scores for controlled AI comparison evidence that has not yet been executed in a controlled way.
+This matrix separates **frontend technology** (React, React, Vue 3) from **component library** (KendoReact, MUI, Vuetify). They are evaluated as paired candidates for this assignment, but they are not equivalent product categories.
 
-Reconciliation note (2026-09-26): the qualitative scores above were assigned at the 2026-09-22 inspection and are **unchanged** — no score has been raised without evidence. Evidence basis has since strengthened (green build/test/lint/Storybook gate, axe-core 0 violations, responsive/state screenshots in `evidence/`), and any re-scoring is deferred to the final re-audit, which must cite that evidence.
+> Scope note: this matrix is evidence-based research for the assignment record. The organizational stack decision for this repository remains Angular + PrimeNG/Taiga/CDK/Tailwind (see [`scope-exceptions.md`](./scope-exceptions.md), DEV-1).
 
-## Weights
+## Criteria and weights
 
 | Criterion | Weight |
 | --- | ---: |
-| Existing-system and business understanding | 10% |
-| Technology comparison and evidence | 20% |
-| Design-system architecture | 15% |
-| Component implementation | 25% |
-| Code quality, testing, and accessibility | 15% |
-| Documentation and presentation | 10% |
-| Git collaboration and AI validation | 5% |
-| Total | 100% |
+| Technical suitability | 20% |
+| Licensing & cost | 15% |
+| Accessibility (library-level) | 10% |
+| Maintainability | 10% |
+| Team fit | 10% |
+| Dependency / lock-in risk | 10% |
+| Ecosystem maturity | 10% |
+| **AI-Assisted Development Effectiveness** | **15%** |
+| **Total** | **100%** |
 
-## Scoring Basis
+## Scored matrix
 
-Scores below are qualitative project scores for the current repository state, not a claim of production approval.
+Scores are on a 0–10 scale. Each cell includes score + one-line justification + citation.
 
-| Criterion | Score | Justification | Evidence / Source Basis |
-| --- | ---: | --- | --- |
-| Existing-system and business understanding | 8/10 | The repo already demonstrates the dental CRM/customer-portal context through orders, patients, doctors, clinics, billing, workflow, and file handling. | Routed feature set, JSON fixtures, order/sub-order data services, and current UI surface. |
-| Technology comparison and evidence | 6/10 | The technology stack is clearly implemented, but the dedicated comparison artifact and controlled AI comparison evidence were not present at inspection time. | Current Angular/PrimeNG/Taiga/CDK/Tailwind usage plus missing evidence artifacts. |
-| Design-system architecture | 8/10 | Tokens, theme mapping, and shared controls already exist and are wired into the app shell. | `src/styles/tokens.scss`, `src/styles/theme.scss`, `src/styles.scss`, shared controls. |
-| Component implementation | 8/10 | Many reusable controls and business views already exist, including the Orders TreeTable and workflow board. | Shared components, Orders, workflow, and routed detail pages. |
-| Code quality, testing, and accessibility | 7/10 | The repository already contains extensive unit tests, but the task-specific accessibility and state-validation evidence still needs completion. | Existing spec files and validation docs; remaining evidence gaps. |
-| Documentation and presentation | 7/10 | The README, AI log, contribution summary, and core docs now exist and are aligned with the Angular POC. The remaining gaps are human-validated evidence and pending comparison artifacts. | Current repository docs and evidence files. |
-| Git collaboration and AI validation | 4/10 | Git evidence exists only indirectly in the workspace; controlled AI comparison artifacts are still not present. | Repository state, controlled comparison still pending. |
+| Criterion (Weight) | React + KendoReact | React + Material UI | Vue 3 + Vuetify |
+| --- | --- | --- | --- |
+| Technical suitability (20%) | **8** — broad enterprise component coverage (120+ full tier), strong fit for data-heavy POCs ([Kendo free vs premium](https://www.telerik.com/kendo-react-ui/components/getting-started/free-vs-premium)). | **8** — mature React component system with broad ecosystem and composability ([MUI Material README](https://raw.githubusercontent.com/mui/material-ui/master/packages/mui-material/README.md)). | **7** — complete Vue UI framework with rich defaults, but less aligned with current React-oriented assignment comparators ([Vuetify why page](https://vuetifyjs.com/en/introduction/why-vuetify/#feature-guides)). |
+| Licensing & cost (15%) | **6** — usable free tier exists, but premium/advanced coverage is commercial and license-key enforced ([Kendo licensing](https://www.telerik.com/kendo-react-ui/components/my-license), [Kendo pricing](https://www.telerik.com/kendo-react-ui/pricing)). | **8** — Material UI core is MIT; advanced MUI X features move to commercial Pro/Premium tiers ([MUI LICENSE](https://raw.githubusercontent.com/mui/material-ui/master/LICENSE), [MUI X README](https://raw.githubusercontent.com/mui/mui-x/master/README.md)). | **9** — Vuetify framework is MIT licensed with permissive use terms ([Vuetify LICENSE](https://raw.githubusercontent.com/vuetifyjs/vuetify/master/packages/vuetify/LICENSE.md)). |
+| Accessibility (library-level) (10%) | **8** — enterprise-grade component set with documented production usage and support pathways ([Kendo docs home](https://www.telerik.com/kendo-react-ui/components/)). | **8** — established component library widely used for accessible React patterns ([MUI docs](https://mui.com/material-ui/)). | **7** — strong defaults, but app-level accessibility quality depends heavily on implementation discipline ([Vuetify docs](https://vuetifyjs.com/en/)). |
+| Maintainability (10%) | **7** — commercial support improves SLA, but license-key lifecycle adds operational overhead ([Kendo licensing activation](https://www.telerik.com/kendo-react-ui/components/my-license)). | **8** — open-source core + large ecosystem and clear docs reduce long-term maintenance friction ([MUI README](https://raw.githubusercontent.com/mui/material-ui/master/packages/mui-material/README.md)). | **7** — cohesive framework helps consistency, but tighter framework conventions can raise migration cost if strategy changes ([Vuetify intro](https://vuetifyjs.com/en/introduction/why-vuetify/#feature-guides)). |
+| Team fit (10%) | **6** — strongest when team accepts commercial workflow, procurement, and license governance ([Kendo pricing](https://www.telerik.com/kendo-react-ui/pricing)). | **8** — easiest hiring/onboarding fit for broad React talent pools and OSS-first workflows ([MUI docs](https://mui.com/material-ui/)). | **6** — requires Vue-specific expertise and ecosystem transition from React baselines in spec comparisons ([Vuetify docs](https://vuetifyjs.com/en/)). |
+| Dependency / lock-in risk (10%) | **5** — premium feature reliance + commercial EULA and subscription lifecycle increase lock-in risk ([Kendo EULA](https://www.telerik.com/purchase/license-agreement/kendo-ui), [Kendo licensing](https://www.telerik.com/kendo-react-ui/components/my-license)). | **7** — core is MIT, but advanced grid/chart/tree capabilities often shift to commercial MUI X plans ([MUI X README](https://raw.githubusercontent.com/mui/mui-x/master/README.md)). | **7** — MIT licensing lowers legal lock-in, though framework-level coupling can still create technical switching cost ([Vuetify LICENSE](https://raw.githubusercontent.com/vuetifyjs/vuetify/master/packages/vuetify/LICENSE.md)). |
+| Ecosystem maturity (10%) | **8** — long-lived commercial ecosystem with support, templates, and tooling ([Kendo pricing/features](https://www.telerik.com/kendo-react-ui/pricing)). | **9** — very large ecosystem and sustained OSS/community momentum around Material UI + MUI X ([MUI README](https://raw.githubusercontent.com/mui/material-ui/master/packages/mui-material/README.md), [MUI X README](https://raw.githubusercontent.com/mui/mui-x/master/README.md)). | **8** — mature Vue ecosystem option with established component suite ([Vuetify docs](https://vuetifyjs.com/en/)). |
+| **AI-Assisted Development Effectiveness (15%)** | **PENDING HUMAN EXECUTION** — score must come from [`ai-comparison-protocol.md`](./ai-comparison-protocol.md); contribution formula: `protocol_score / 100 × 15%`. | **PENDING HUMAN EXECUTION** — score must come from [`ai-comparison-protocol.md`](./ai-comparison-protocol.md); contribution formula: `protocol_score / 100 × 15%`. | **PENDING HUMAN EXECUTION** — score must come from [`ai-comparison-protocol.md`](./ai-comparison-protocol.md); contribution formula: `protocol_score / 100 × 15%`. |
 
-## AI-Assisted Development Effectiveness
+## Provisional weighted subtotal (excluding AI 15%)
 
-Weight: 15% within the broader selection criteria requested by the task.
+| Candidate | Weighted subtotal across first 7 criteria (max 85) |
+| --- | ---: |
+| React + KendoReact | 58.0 |
+| React + Material UI | 69.0 |
+| Vue 3 + Vuetify | 62.0 |
 
-Status: **AWAITING HUMAN EXECUTION.**
-
-The controlled comparison is fully specified in [`docs/ai-comparison-protocol.md`](./ai-comparison-protocol.md) (frozen requirement, exact prompt, fixed context bundle, 60-minute allowance, 3-iteration limit, rubric weights 20/20/20/15/15/10 = 100%). Empty capture slots are prepared in [`evidence/ai-comparison/`](../evidence/ai-comparison/).
-
-Contribution formula once executed: `protocol_score / 100 × 15%`.
-
-No score will be entered into this matrix without a completed `evidence/ai-comparison/scoresheet.md` and `effort-log.md`. Any score appearing before that would be fabricated.
-
-## Notes
-
-- This matrix should be revisited only after the controlled AI comparison, artifact completion, and final validation are complete.
-- The matrix total is 100%.
+Final ranking is intentionally blocked until the AI 15% controlled run is executed and scored.

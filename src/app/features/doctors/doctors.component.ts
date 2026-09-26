@@ -6,10 +6,10 @@ import { DoctorDataService } from "@core/services/doctor-data.service";
 import { NavigationService } from "@core/services/navigation.service";
 import { FormatUtils } from "@core/services/format-utils.service";
 import { Doctor, DoctorStatus } from "@core/models";
-import { ButtonComponent } from "@shared/components/button/button.component";
+import { AppButtonComponent } from "@shared/components/button/button.component";
 import { AvatarComponent } from "@shared/components/avatar/avatar.component";
-import { InputComponent } from "@shared/components/input/input.component";
-import { SelectComponent } from "@shared/components/select/select.component";
+import { AppTextFieldComponent } from "@shared/components/input/input.component";
+import { AppSelectComponent } from "@shared/components/select/select.component";
 import { EntityDialogComponent } from "@shared/components/entity-dialog/entity-dialog.component";
 import { DataTableToolbarComponent } from "@shared/components/data-table-toolbar/data-table-toolbar.component";
 import { SearchFilterToolbarComponent } from "@shared/components/search-filter-toolbar/search-filter-toolbar.component";
@@ -35,10 +35,10 @@ interface SortConfig {
     CommonModule,
     FormsModule,
     TableModule,
-    ButtonComponent,
+    AppButtonComponent,
     AvatarComponent,
-    InputComponent,
-    SelectComponent,
+    AppTextFieldComponent,
+    AppSelectComponent,
     EntityDialogComponent,
     DataTableToolbarComponent,
     SearchFilterToolbarComponent,

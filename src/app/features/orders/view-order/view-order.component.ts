@@ -20,7 +20,7 @@ import { NavigationService } from "@core/services/navigation.service";
 import { FormatUtils } from "@core/services/format-utils.service";
 import { Order, Patient, Doctor, Clinic, SubOrder } from "@core/models";
 import { AvatarComponent } from "@shared/components/avatar/avatar.component";
-import { ButtonComponent } from "@shared/components/button/button.component";
+import { AppButtonComponent } from "@shared/components/button/button.component";
 import { EntityDialogComponent } from "@shared/components/entity-dialog/entity-dialog.component";
 import { IconActionButtonComponent } from "@shared/components/icon-action-button/icon-action-button.component";
 import { OrderSummaryCardComponent } from "@shared/components/order-summary-card/order-summary-card.component";
@@ -54,7 +54,7 @@ function withIconSize(svg: string, size?: number): string {
     FormsModule,
     CdkMenuModule,
     AvatarComponent,
-    ButtonComponent,
+    AppButtonComponent,
     EntityDialogComponent,
     IconActionButtonComponent,
     OrderSummaryCardComponent,

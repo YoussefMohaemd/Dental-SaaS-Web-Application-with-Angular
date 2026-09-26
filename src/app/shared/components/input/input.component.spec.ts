@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { By } from "@angular/platform-browser";
-import { InputComponent } from "./input.component";
+import { AppTextFieldComponent } from "./input.component";
 
-describe("InputComponent", () => {
-  let component: InputComponent;
-  let fixture: ComponentFixture<InputComponent>;
+describe("AppTextFieldComponent", () => {
+  let component: AppTextFieldComponent;
+  let fixture: ComponentFixture<AppTextFieldComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [InputComponent],
+      imports: [AppTextFieldComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(InputComponent);
+    fixture = TestBed.createComponent(AppTextFieldComponent);
     component = fixture.componentInstance;
     fixture.componentRef.setInput("id", "test-input");
     fixture.detectChanges();
@@ -54,6 +54,14 @@ describe("InputComponent", () => {
     fixture.detectChanges();
     const error = fixture.debugElement.query(By.css(".field-error"));
     expect(error.nativeElement.textContent.trim()).toBe("Invalid email");
+  });
+
+  it("should set aria-invalid when an error is present", () => {
+    fixture.componentRef.setInput("error", "Invalid email");
+    fixture.detectChanges();
+
+    const input = fixture.debugElement.query(By.css("input"));
+    expect(input.nativeElement.getAttribute("aria-invalid")).toBe("true");
   });
 
   it("should show hint when provided and no error", () => {
@@ -116,5 +124,14 @@ describe("InputComponent", () => {
     fixture.detectChanges();
     const input = fixture.debugElement.query(By.css("input"));
     expect(input.nativeElement.getAttribute("autocomplete")).toBe("email");
+  });
+
+  it("should mark required fields on both HTML and ARIA attributes", () => {
+    fixture.componentRef.setInput("required", true);
+    fixture.detectChanges();
+
+    const input = fixture.debugElement.query(By.css("input"));
+    expect(input.nativeElement.required).toBeTrue();
+    expect(input.nativeElement.getAttribute("aria-required")).toBe("true");
   });
 });

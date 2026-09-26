@@ -1,9 +1,9 @@
 import { CommonModule } from "@angular/common";
 import { Component, input, output } from "@angular/core";
 import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
-import { ButtonComponent } from "@shared/components/button/button.component";
-import { InputComponent } from "@shared/components/input/input.component";
-import { SelectComponent } from "@shared/components/select/select.component";
+import { AppButtonComponent } from "@shared/components/button/button.component";
+import { AppTextFieldComponent } from "@shared/components/input/input.component";
+import { AppSelectComponent } from "@shared/components/select/select.component";
 
 @Component({
   selector: "app-search-filter-toolbar",
@@ -11,10 +11,10 @@ import { SelectComponent } from "@shared/components/select/select.component";
   imports: [
     CommonModule,
     SafeHtmlPipe,
-    ButtonComponent,
-    InputComponent,
-    SelectComponent,
-  ],
+    AppButtonComponent,
+    AppTextFieldComponent,
+    AppSelectComponent,
+],
   templateUrl: "./search-filter-toolbar.component.html",
   styleUrl: "./search-filter-toolbar.component.scss",
 })
@@ -22,6 +22,7 @@ export class SearchFilterToolbarComponent {
   readonly searchId = input.required<string>();
   readonly searchPlaceholder = input<string>("Search...");
   readonly searchValue = input<string>("");
+  readonly searchAriaLabel = input<string>("");
   readonly searchIconSvg = input<string>("");
 
   readonly selectId = input.required<string>();

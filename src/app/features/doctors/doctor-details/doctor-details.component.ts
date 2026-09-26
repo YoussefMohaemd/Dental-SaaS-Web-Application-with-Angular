@@ -7,7 +7,7 @@ import { NavigationService } from "@core/services/navigation.service";
 import { FormatUtils } from "@core/services/format-utils.service";
 import { Doctor, Order } from "@core/models";
 import { StatusBadgeComponent } from "@shared/components/status-badge/status-badge.component";
-import { ButtonComponent } from "@shared/components/button/button.component";
+import { AppButtonComponent } from "@shared/components/button/button.component";
 import { AvatarComponent } from "@shared/components/avatar/avatar.component";
 import { IconActionButtonComponent } from "@shared/components/icon-action-button/icon-action-button.component";
 import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
@@ -25,7 +25,7 @@ interface ContactItem {
   imports: [
     CommonModule,
     StatusBadgeComponent,
-    ButtonComponent,
+    AppButtonComponent,
     AvatarComponent,
     IconActionButtonComponent,
     SafeHtmlPipe,

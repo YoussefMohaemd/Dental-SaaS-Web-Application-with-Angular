@@ -20,12 +20,12 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from "@angular/forms";
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => InputComponent),
+      useExisting: forwardRef(() => AppTextFieldComponent),
       multi: true,
     },
   ],
 })
-export class InputComponent implements ControlValueAccessor {
+export class AppTextFieldComponent implements ControlValueAccessor {
   private static nextAutoId = 0;
 
   readonly id = input<string>("");
@@ -56,7 +56,7 @@ export class InputComponent implements ControlValueAccessor {
   private readonly cvaDisabled = signal(false);
   private onChangeFn: (value: string) => void = () => {};
   private onTouchedFn: () => void = () => {};
-  private readonly generatedId = `app-input-${InputComponent.nextAutoId++}`;
+  private readonly generatedId = `app-input-${AppTextFieldComponent.nextAutoId++}`;
 
   readonly isDisabled = computed(() => this.disabled() || this.cvaDisabled());
   readonly controlId = computed(() => this.id().trim() || this.generatedId);

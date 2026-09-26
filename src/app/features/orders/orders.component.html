@@ -1,63 +1,62 @@
 <div class="flex h-full flex-col">
-  <div
-    class="flex shrink-0 flex-wrap items-center gap-2 sm:gap-3 border-b border-border bg-card px-4 sm:px-6 py-3 sm:py-4"
-  >
-    <div class="min-w-0 flex-1">
-      <h1 class="font-display text-lg font-bold text-foreground">Orders</h1>
-      <p class="text-xs text-muted-foreground">
-        {{ filtered().length }} orders total
-      </p>
-    </div>
-    <app-button
-      variant="primary"
-      size="md"
-      (onClick)="createOrder()"
-      aria-label="Create new order"
+  <div class="shrink-0 border-b border-border bg-card px-4 py-3 sm:px-6 sm:py-4">
+    <app-data-table-toolbar
+      title="Orders"
+      [subtitle]="filtered().length + ' orders total'"
     >
-      <span class="flex items-center gap-2">
-        <span [innerHTML]="getIconSvg('plus') | safeHtml"></span>
-        <span class="hidden sm:inline">New Order</span>
-      </span>
-    </app-button>
-    <app-button
-      variant="outline"
-      size="icon"
-      [ariaLabel]="'Export orders'"
-      title="Export"
-      (onClick)="exportCsv()"
-    >
-      <span [innerHTML]="getIconSvg('download') | safeHtml"></span>
-    </app-button>
-    <app-button
-      variant="outline"
-      size="icon"
-      [ariaLabel]="'Refresh orders'"
-      title="Refresh"
-      (onClick)="simulateRefresh()"
-    >
-      <span [innerHTML]="getIconSvg('refresh') | safeHtml"></span>
-    </app-button>
-    <div
-      class="flex overflow-hidden rounded-lg border border-border"
-      role="group"
-      aria-label="Preview table states"
-    >
-      @for (state of ["normal", "loading", "empty", "error"]; track state) {
-        <button
-          type="button"
-          (click)="setViewState($any(state))"
-          class="px-2 py-1.5 text-[10px] font-medium transition-colors"
-          [class]="
-            viewState() === state
-              ? 'bg-primary text-white'
-              : 'text-muted-foreground hover:bg-muted'
-          "
-          [attr.aria-pressed]="viewState() === state"
+      <div header-actions class="flex flex-wrap items-center gap-2 sm:gap-3">
+        <app-button
+          variant="primary"
+          size="md"
+          (onClick)="createOrder()"
+          aria-label="Create new order"
         >
-          {{ state }}
-        </button>
-      }
-    </div>
+          <span class="flex items-center gap-2">
+            <span [innerHTML]="getIconSvg('plus') | safeHtml"></span>
+            <span class="hidden sm:inline">New Order</span>
+          </span>
+        </app-button>
+        <app-button
+          variant="outline"
+          size="icon"
+          [ariaLabel]="'Export orders'"
+          title="Export"
+          (onClick)="exportCsv()"
+        >
+          <span [innerHTML]="getIconSvg('download') | safeHtml"></span>
+        </app-button>
+        <app-button
+          variant="outline"
+          size="icon"
+          [ariaLabel]="'Refresh orders'"
+          title="Refresh"
+          (onClick)="simulateRefresh()"
+        >
+          <span [innerHTML]="getIconSvg('refresh') | safeHtml"></span>
+        </app-button>
+        <div
+          class="flex overflow-hidden rounded-lg border border-border"
+          role="group"
+          aria-label="Preview data states (POC control)"
+        >
+          @for (state of ["normal", "loading", "empty", "error"]; track state) {
+            <button
+              type="button"
+              (click)="setViewState($any(state))"
+              class="px-2 py-1.5 text-[10px] font-medium transition-colors"
+              [class]="
+                viewState() === state
+                  ? 'bg-primary text-white'
+                  : 'text-muted-foreground hover:bg-muted'
+              "
+              [attr.aria-pressed]="viewState() === state"
+            >
+              {{ state }}
+            </button>
+          }
+        </div>
+      </div>
+    </app-data-table-toolbar>
   </div>
 
   <div class="shrink-0 space-y-2 border-b border-border bg-card px-4 sm:px-6 py-3">
@@ -189,7 +188,7 @@
           >
             {{
               filter.type === "status"
-                ? orderStatusLabel($any(filter.label))
+                ? statusDisplayLabel($any(filter.label))
                 : filter.label
             }}
             <app-icon-action-button
@@ -197,7 +196,7 @@
               [ariaLabel]="
                 'Remove ' +
                 (filter.type === 'status'
-                  ? orderStatusLabel($any(filter.label))
+                  ? statusDisplayLabel($any(filter.label))
                   : filter.label) +
                 ' filter'
               "
@@ -220,80 +219,57 @@
   <div class="flex-1 overflow-auto">
     @switch (viewState()) {
       @case ("loading") {
-        <div class="space-y-2 p-4 sm:p-6" aria-label="Loading orders" role="status">
-          @for (row of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; track row) {
-            <div class="skeleton h-10 animate-pulse rounded-lg bg-muted"></div>
-          }
+        <div class="p-4 sm:p-6">
+          <app-table-feedback
+            mode="loading"
+            message="Loading orders..."
+            [iconSvg]="getIconSvg('refresh')"
+            [spin]="true"
+            iconClass="mb-3 text-muted-foreground"
+            iconWidth="28px"
+            iconHeight="28px"
+          ></app-table-feedback>
         </div>
       }
       @case ("empty") {
-        <div class="flex h-64 flex-col items-center justify-center text-center">
-          <div
-            class="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-muted text-muted-foreground"
-            aria-hidden="true"
-          >
+        <app-empty-state
+          title="No orders yet"
+          description="Start by creating your first dental order."
+          actionLabel="Create Order"
+          (actionClick)="createOrder()"
+        >
+          <ng-template #icon>
             <span [innerHTML]="getIconSvg('file-text') | safeHtml"></span>
-          </div>
-          <h3 class="font-display font-semibold text-foreground">
-            No orders yet
-          </h3>
-          <p class="mb-4 text-sm text-muted-foreground">
-            Start by creating your first dental order.
-          </p>
-          <app-button variant="primary" size="md" (onClick)="createOrder()">
-            <span class="flex items-center gap-2">
-              <span [innerHTML]="getIconSvg('plus') | safeHtml"></span>
-              Create Order
-            </span>
-          </app-button>
-        </div>
+          </ng-template>
+        </app-empty-state>
       }
       @case ("error") {
-        <div class="flex h-64 flex-col items-center justify-center text-center">
-          <div
-            class="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-red-50 text-danger"
-            aria-hidden="true"
-          >
+        <app-empty-state
+          title="Failed to load orders"
+          description="An error occurred while loading the order list."
+        >
+          <ng-template #icon>
             <span [innerHTML]="getIconSvg('refresh') | safeHtml"></span>
-          </div>
-          <h3 class="font-display font-semibold text-foreground">
-            Failed to load orders
-          </h3>
-          <p class="mb-4 text-sm text-muted-foreground">
-            An error occurred while loading the order list.
-          </p>
-          <app-button variant="primary" size="md" (onClick)="retryLoad()"
-            >Try Again</app-button
-          >
-        </div>
+          </ng-template>
+          <ng-template #action>
+            <app-button variant="primary" size="md" (onClick)="retryLoad()">
+              Try Again
+            </app-button>
+          </ng-template>
+        </app-empty-state>
       }
       @default {
         @if (filtered().length === 0) {
-          <div
-            class="flex h-64 flex-col items-center justify-center text-center"
+          <app-empty-state
+            title="No matching orders"
+            description="Try adjusting your search or filters."
+            actionLabel="Clear all filters"
+            (actionClick)="clearAllFilters()"
           >
-            <div
-              class="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-muted text-muted-foreground"
-              aria-hidden="true"
-            >
+            <ng-template #icon>
               <span [innerHTML]="getIconSvg('search') | safeHtml"></span>
-            </div>
-            <h3 class="font-display font-semibold text-foreground">
-              No matching orders
-            </h3>
-            <p class="mb-4 text-sm text-muted-foreground">
-              Try adjusting your search or filters.
-            </p>
-            <app-button
-              variant="ghost"
-              size="sm"
-              buttonClass="!min-h-0 !p-0 text-sm text-primary hover:underline"
-              ariaLabel="Clear all filters"
-              (onClick)="clearAllFilters()"
-            >
-              Clear all filters
-            </app-button>
-          </div>
+            </ng-template>
+          </app-empty-state>
         } @else {
           <div class="orders-table-scroll">
             <p-treetable
@@ -731,16 +707,10 @@
                   </td>
                   <td class="sub-order-status-cell" colspan="2">
                     <div class="sub-order-status">
-                      <span
-                        class="sub-order-status-surface"
-                        [ngStyle]="
-                          subOrderStatusBlockStyle(rowData.subOrder.status)
-                        "
-                      >
-                        <span class="sub-order-status-block">
-                          {{ subOrderStatusLabel(rowData.subOrder.status) }}
-                        </span>
-                      </span>
+                      <app-status-badge
+                        [status]="subOrderStatusLabel(rowData.subOrder.status)"
+                        [label]="subOrderStatusLabel(rowData.subOrder.status)"
+                      ></app-status-badge>
                     </div>
                   </td>
                   <td class="sub-order-note-cell">
@@ -1034,25 +1004,14 @@
                   </td>
                   <td>
                     @if (rowData.kind === "order") {
-                      <span
-                        class="treetable-status-surface"
-                        [ngStyle]="orderStatusBlockStyle(rowData.order.status)"
-                      >
-                        <span class="treetable-status-block">{{
-                          orderStatusLabel(rowData.order.status)
-                        }}</span>
-                      </span>
+                      <app-status-badge
+                        [status]="rowData.order.status"
+                      ></app-status-badge>
                     } @else if (rowData.subOrder) {
-                      <span
-                        class="treetable-status-surface"
-                        [ngStyle]="
-                          subOrderStatusBlockStyle(rowData.subOrder.status)
-                        "
-                      >
-                        <span class="treetable-status-block">{{
-                          subOrderStatusLabel(rowData.subOrder.status)
-                        }}</span>
-                      </span>
+                      <app-status-badge
+                        [status]="subOrderStatusLabel(rowData.subOrder.status)"
+                        [label]="subOrderStatusLabel(rowData.subOrder.status)"
+                      ></app-status-badge>
                     } @else {
                       <span class="text-muted-foreground/30">—</span>
                     }

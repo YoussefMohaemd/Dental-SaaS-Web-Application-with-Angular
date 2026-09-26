@@ -13,6 +13,7 @@
         [unstyled]="true"
         inputClass="enterprise-toolbar-input"
         [placeholder]="searchPlaceholder()"
+        [ariaLabel]="searchAriaLabel() || 'Search'"
         [value]="searchValue()"
         (valueChange)="onSearchChanged($event)"
       ></app-input>

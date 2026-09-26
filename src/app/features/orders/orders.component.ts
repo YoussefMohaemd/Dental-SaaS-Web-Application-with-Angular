@@ -7,15 +7,27 @@ import { SubOrderDataService } from "@core/services/sub-order-data.service";
 import { SubOrderColorService } from "@core/services/sub-order-color.service";
 import { NavigationService } from "@core/services/navigation.service";
 import { FormatUtils } from "@core/services/format-utils.service";
-import { Order, OrderStatus, Priority, SubOrder } from "@core/models";
+import {
+  Order,
+  OrdersViewState,
+  OrderStatus,
+  Priority,
+  SubOrder,
+} from "@core/models";
 import { ArchBadgeComponent } from "@shared/components/arch-badge/arch-badge.component";
-import { ButtonComponent } from "@shared/components/button/button.component";
+import { AppButtonComponent } from "@shared/components/button/button.component";
+import { DataTableToolbarComponent } from "@shared/components/data-table-toolbar/data-table-toolbar.component";
+import { EmptyStateComponent } from "@shared/components/empty-state/empty-state.component";
 import { EnterprisePaginatorComponent } from "@shared/components/enterprise-paginator/enterprise-paginator.component";
 import { IconActionButtonComponent } from "@shared/components/icon-action-button/icon-action-button.component";
 import { SearchInputComponent } from "@shared/components/search-input/search-input.component";
-import { SelectComponent } from "@shared/components/select/select.component";
+import { AppSelectComponent } from "@shared/components/select/select.component";
+import { StatusBadgeComponent } from "@shared/components/status-badge/status-badge.component";
+import { TableFeedbackComponent } from "@shared/components/table-feedback/table-feedback.component";
 import { SafeHtmlPipe } from "../../shared/pipes/safe-html.pipe";
 import { lucideSvg } from "@shared/icons/lucide-icons";
+import { buildSortAriaLabel, sortAriaValue } from "@shared/utils/sort-a11y";
+import { statusDisplayLabel } from "@shared/utils/status-label";
 import { filterTableRows } from "@shared/utils/table-state";
 
 export interface OrderTreeRowData {
@@ -52,8 +64,6 @@ export function mapOrderToTreeNode(
   };
 }
 
-export type OrdersViewState = "normal" | "loading" | "empty" | "error";
-
 const PAGE_SIZES = [10, 20, 30, 40, 50];
 
 const COLLAPSE_ANIMATION_MS = 220;
@@ -68,30 +78,6 @@ const STATUS_OPTIONS: OrderStatus[] = [
   "Cancelled",
 ];
 const PRIORITY_OPTIONS: Priority[] = ["Low", "Normal", "High", "Urgent"];
-
-const ORDER_STATUS_BLOCK_STYLES: Record<
-  OrderStatus,
-  { bg: string; fg: string }
-> = {
-  New: { bg: "#F1F5F9", fg: "#475569" },
-  Review: { bg: "#FFFBEB", fg: "#B45309" },
-  Design: { bg: "#ECFEFF", fg: "#164E63" },
-  Production: { bg: "#EFF6FF", fg: "#1E40AF" },
-  "Quality Check": { bg: "#F5F3FF", fg: "#5B21B6" },
-  Ready: { bg: "#ECFDF5", fg: "#065F46" },
-  Completed: { bg: "#ECFDF5", fg: "#065F46" },
-  Cancelled: { bg: "#FEF2F2", fg: "#B91C1C" },
-};
-
-const SUB_ORDER_STATUS_BLOCK_STYLES: Record<
-  SubOrder["status"],
-  { bg: string; fg: string }
-> = {
-  pending: { bg: "#E2E8F0", fg: "#475569" },
-  "in-progress": { bg: "#DBEAFE", fg: "#1E40AF" },
-  blocked: { bg: "#FECACA", fg: "#991B1B" },
-  done: { bg: "#D1FAE5", fg: "#065F46" },
-};
 
 const SORT_COLUMN_LABELS: Partial<Record<keyof Order, string>> = {
   orderNumber: "Order number",
@@ -132,11 +118,15 @@ export function compareOrderValues(a: unknown, b: unknown): number {
     CommonModule,
     TreeTableModule,
     ArchBadgeComponent,
-    ButtonComponent,
+    AppButtonComponent,
+    DataTableToolbarComponent,
+    EmptyStateComponent,
     EnterprisePaginatorComponent,
     IconActionButtonComponent,
     SearchInputComponent,
-    SelectComponent,
+    AppSelectComponent,
+    StatusBadgeComponent,
+    TableFeedbackComponent,
     SafeHtmlPipe,
   ],
   templateUrl: "./orders.component.html",
@@ -160,7 +150,12 @@ export class OrdersComponent {
   readonly pageSize = signal(10);
   readonly sortColumn = signal<keyof Order | "">("receivedAt");
   readonly sortDirection = signal<"asc" | "desc">("desc");
-  readonly viewState = signal<OrdersViewState>("normal");
+  readonly viewState = computed<OrdersViewState>(() => {
+    if (this.orderService.loading()) return "loading";
+    if (this.orderService.error()) return "error";
+    if (this.orders().length === 0) return "empty";
+    return "normal";
+  });
   readonly advancedFilters = signal(false);
 
   readonly pageSizes = PAGE_SIZES;
@@ -168,7 +163,7 @@ export class OrdersComponent {
   readonly priorityOptions = PRIORITY_OPTIONS;
   readonly statusSelectOptions = STATUS_OPTIONS.map((status) => ({
     value: status,
-    label: this.orderStatusLabel(status),
+    label: statusDisplayLabel(status),
   }));
   readonly pageSizeSelectOptions = PAGE_SIZES.map((size) => ({
     value: String(size),
@@ -204,7 +199,6 @@ export class OrdersComponent {
     Math.max(1, Math.ceil(this.filtered().length / this.pageSize())),
   );
   readonly pageData = computed(() => {
-    if (this.viewState() !== "normal") return [];
     return this.filtered().slice(
       (this.page() - 1) * this.pageSize(),
       this.page() * this.pageSize(),
@@ -297,6 +291,8 @@ export class OrdersComponent {
     );
   });
 
+  readonly statusDisplayLabel = statusDisplayLabel;
+
   toggleSort(column: keyof Order): void {
     if (this.sortColumn() === column)
       this.sortDirection.update((direction) =>
@@ -323,15 +319,16 @@ export class OrdersComponent {
   }
 
   sortAriaSort(column: keyof Order): "ascending" | "descending" | "none" {
-    if (this.sortColumn() !== column) return "none";
-    return this.sortDirection() === "asc" ? "ascending" : "descending";
+    return sortAriaValue(this.sortColumn() === column, this.sortDirection());
   }
 
   sortAriaLabel(column: keyof Order): string {
     const label = SORT_COLUMN_LABELS[column] ?? column;
-    const state = this.sortAriaSort(column);
-    if (state === "none") return `Sort by ${label}, currently unsorted`;
-    return `Sort by ${label}, currently ${state}`;
+    return buildSortAriaLabel(
+      label,
+      this.sortColumn() === column,
+      this.sortDirection(),
+    );
   }
 
   onSearchChange(event: Event): void {
@@ -443,16 +440,15 @@ export class OrdersComponent {
   }
 
   setViewState(state: OrdersViewState): void {
-    this.viewState.set(state);
+    this.orderService.previewState(state);
   }
 
   simulateRefresh(): void {
-    this.viewState.set("loading");
-    window.setTimeout(() => this.viewState.set("normal"), 1200);
+    this.orderService.reload();
   }
 
   retryLoad(): void {
-    this.viewState.set("normal");
+    this.orderService.reload();
   }
 
   exportCsv(): void {
@@ -583,38 +579,11 @@ export class OrdersComponent {
     });
   }
 
-  orderStatusLabel(status: OrderStatus): string {
-    if (status === "Completed") return "Shipped";
-    return status;
-  }
-
   subOrderStatusLabel(status: SubOrder["status"]): string {
-    if (status === "done") return "done";
+    if (status === "done") return "Done";
     if (status === "in-progress") return "In Progress";
     if (status === "blocked") return "Blocked";
     return "Pending";
-  }
-
-  orderStatusBlockStyle(status: OrderStatus): Record<string, string> {
-    const style = ORDER_STATUS_BLOCK_STYLES[status] ?? {
-      bg: "#F1F5F9",
-      fg: "#64748B",
-    };
-    return {
-      "background-color": style.bg,
-      color: style.fg,
-    };
-  }
-
-  subOrderStatusBlockStyle(status: SubOrder["status"]): Record<string, string> {
-    const style = SUB_ORDER_STATUS_BLOCK_STYLES[status] ?? {
-      bg: "#F1F5F9",
-      fg: "#64748B",
-    };
-    return {
-      "background-color": style.bg,
-      color: style.fg,
-    };
   }
 
   subOrderServiceBlockStyle(subOrder: SubOrder): Record<string, string> {

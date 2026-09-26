@@ -1,25 +1,25 @@
 import { Component } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { By } from "@angular/platform-browser";
-import { ButtonComponent } from "./button.component";
+import { AppButtonComponent } from "./button.component";
 
 @Component({
   standalone: true,
-  imports: [ButtonComponent],
+  imports: [AppButtonComponent],
   template: `<app-button variant="primary">Sign in</app-button>`,
 })
 class ProjectionHostComponent {}
 
-describe("ButtonComponent", () => {
-  let component: ButtonComponent;
-  let fixture: ComponentFixture<ButtonComponent>;
+describe("AppButtonComponent", () => {
+  let component: AppButtonComponent;
+  let fixture: ComponentFixture<AppButtonComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ButtonComponent, ProjectionHostComponent],
+      imports: [AppButtonComponent, ProjectionHostComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(ButtonComponent);
+    fixture = TestBed.createComponent(AppButtonComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

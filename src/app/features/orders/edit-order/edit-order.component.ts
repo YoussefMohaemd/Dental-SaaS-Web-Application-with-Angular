@@ -7,10 +7,10 @@ import { PatientDataService } from "@core/services/patient-data.service";
 import { DoctorDataService } from "@core/services/doctor-data.service";
 import { ClinicDataService } from "@core/services/clinic-data.service";
 import { NavigationService } from "@core/services/navigation.service";
-import { ButtonComponent } from "@shared/components/button/button.component";
+import { AppButtonComponent } from "@shared/components/button/button.component";
 import { IconActionButtonComponent } from "@shared/components/icon-action-button/icon-action-button.component";
-import { InputComponent } from "@shared/components/input/input.component";
-import { SelectComponent } from "@shared/components/select/select.component";
+import { AppTextFieldComponent } from "@shared/components/input/input.component";
+import { AppSelectComponent } from "@shared/components/select/select.component";
 import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
 import { statusDisplayLabel } from "@shared/utils/status-label";
 
@@ -20,10 +20,10 @@ import { statusDisplayLabel } from "@shared/utils/status-label";
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    ButtonComponent,
+    AppButtonComponent,
     IconActionButtonComponent,
-    InputComponent,
-    SelectComponent,
+    AppTextFieldComponent,
+    AppSelectComponent,
     SafeHtmlPipe,
   ],
   templateUrl: "./edit-order.component.html",

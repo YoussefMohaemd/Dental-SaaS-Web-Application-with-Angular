@@ -5,8 +5,8 @@ import { ClinicDataService } from "@core/services/clinic-data.service";
 import { NavigationService } from "@core/services/navigation.service";
 import { FormatUtils } from "@core/services/format-utils.service";
 import { Clinic, ClinicStatus } from "@core/models";
-import { ButtonComponent } from "@shared/components/button/button.component";
-import { InputComponent } from "@shared/components/input/input.component";
+import { AppButtonComponent } from "@shared/components/button/button.component";
+import { AppTextFieldComponent } from "@shared/components/input/input.component";
 import { EntityDialogComponent } from "@shared/components/entity-dialog/entity-dialog.component";
 import { SafeHtmlPipe } from "../../shared/pipes/safe-html.pipe";
 
@@ -21,8 +21,8 @@ interface StatItem {
   imports: [
     CommonModule,
     FormsModule,
-    ButtonComponent,
-    InputComponent,
+    AppButtonComponent,
+    AppTextFieldComponent,
     EntityDialogComponent,
     SafeHtmlPipe,
   ],

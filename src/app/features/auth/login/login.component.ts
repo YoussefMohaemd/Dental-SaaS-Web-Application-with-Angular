@@ -2,8 +2,8 @@ import { Component, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { Router } from "@angular/router";
-import { ButtonComponent } from "../../../shared/components/button/button.component";
-import { InputComponent } from "../../../shared/components/input/input.component";
+import { AppButtonComponent } from "../../../shared/components/button/button.component";
+import { AppTextFieldComponent } from "../../../shared/components/input/input.component";
 import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
 import { lucideSvg } from "../../../shared/icons/lucide-icons";
 
@@ -13,8 +13,8 @@ import { lucideSvg } from "../../../shared/icons/lucide-icons";
   imports: [
     CommonModule,
     FormsModule,
-    ButtonComponent,
-    InputComponent,
+    AppButtonComponent,
+    AppTextFieldComponent,
     SafeHtmlPipe,
   ],
   templateUrl: "./login.component.html",
