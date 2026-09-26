@@ -38,9 +38,31 @@ The `start` script runs Tailwind in watch mode together with the Angular dev ser
 ```text
 npm test
 npm test -- --watch=false --browsers=ChromeHeadless
+npm run lint
 npx tsc -p tsconfig.app.json --noEmit
 npx tsc -p tsconfig.spec.json --noEmit
 ```
+
+## Storybook
+
+```text
+npm run storybook
+npm run build-storybook
+```
+
+`npm run storybook` starts the interactive workshop; `npm run build-storybook` produces the static bundle in `storybook-static/`. Stories cover the basic (`app-button`, `app-text-field`), composite (`search-filter-toolbar`), and business (`status-badge`, `workflow-timeline`) groups; per-story screenshots are stored in `evidence/storybook/`.
+
+## Current Status (2026-09-26)
+
+| Gate | Result |
+| --- | --- |
+| `npm run build` | Passing (non-blocking Sass/CSS budget warnings only) |
+| `npm test -- --watch=false --browsers=ChromeHeadless` | 336/336 passing |
+| `npm run lint` (`tsc --noEmit -p tsconfig.lint.json`) | Passing |
+| `npm run build-storybook` | Passing |
+| axe-core scan (wcag2a/aa + best-practice, 24 route-states) | 0 violations |
+
+Raw logs: `evidence/build/`, `evidence/tests/`, `evidence/storybook/`.
 
 ## Configuration
 
@@ -79,6 +101,7 @@ Verified artifacts live under `evidence/`:
 - Start at the login route, then navigate into the authenticated shell.
 - Use the Orders and Workflow surfaces to observe the main reusable UI patterns.
 - Use the routed detail pages to review entity relationships and protected UI states.
+- **Order state demo:** on `/orders`, use the `normal | loading | empty | error` toggle in the toolbar header to switch the Order Management view between its four states (screenshots in `evidence/states/`).
 
 ## Architecture Overview
 

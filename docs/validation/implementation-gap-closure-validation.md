@@ -1,6 +1,6 @@
 # Implementation Gap-Closure Validation
 
-Date: 2026-09-22
+Date: 2026-09-22 (checks re-executed and reconciled 2026-09-26)
 
 ## Baseline Evidence
 
@@ -31,9 +31,14 @@ Date: 2026-09-22
 | `npx tsc -p tsconfig.app.json --noEmit` | Passed |
 | `npx tsc -p tsconfig.spec.json --noEmit` | Passed |
 | `npm run build` after reusable-component extraction | Passed |
-| `npm run lint` | Blocked: configured `@angular/build:tsc` builder is unavailable in the installed CLI environment |
+| `npm run lint` | Originally blocked: configured `@angular/build:tsc` builder unavailable in the installed CLI environment |
+| `npm run lint` (replaced by `tsc --noEmit -p tsconfig.lint.json`) | Passed 2026-09-26 (`evidence/build/lint.log`) |
+| `npm test -- --watch=false --browsers=ChromeHeadless` | Passed: 336/336 (2026-09-26, `evidence/tests/test.log`) |
+| `npm run build` | Passed 2026-09-26 (`evidence/build/build.log`) |
+| `npm run build-storybook` | Passed 2026-09-26 (`evidence/storybook/build-storybook.log`) |
+| axe-core scan (wcag2a/aa + best-practice, 24 route-states) | Passed: 0 violations (`evidence/accessibility/axe-summary.md`) |
 
-Known non-blocking build output consists of existing Sass deprecation notices and stylesheet budget warnings. Lint remains a tooling configuration gap and is not represented as a passing result.
+Known non-blocking build output consists of existing Sass deprecation notices and stylesheet budget warnings. The original lint builder gap was closed by the `tsconfig.lint.json` fallback script, which is now the configured `npm run lint`.
 
 ## UI Preservation Record
 
@@ -41,8 +46,11 @@ No stylesheet, token, renderer-library, or protected layout values were intentio
 
 ## Remaining Work
 
-- Keep the restored `karma.conf.js` test-runner configuration and run it in CI/local environments.
-- Add focused tests for invalid ids, creation metadata, Order Files validation, and the new reusable components.
-- Complete shared table-state/icon extraction only where DOM/computed-style parity is demonstrated.
-- Capture remaining protected surfaces, accessibility scans, responsive artifacts, and final before/after comparisons.
-- Complete final re-audit and update the historical parity report with executable evidence.
+Status reconciled 2026-09-26:
+
+- Keep the restored `karma.conf.js` test-runner configuration and run it in CI/local environments. — ongoing (336/336 passing locally).
+- Focused tests for invalid ids, creation metadata, Order Files validation, and the new reusable components — completed (336 tests, incl. specs for shared composites, sortable-header a11y, and sort-a11y utilities).
+- Complete shared table-state/icon extraction only where DOM/computed-style parity is demonstrated. — optional; unchanged.
+- Capture accessibility scans and responsive artifacts — completed (`evidence/accessibility/`, `evidence/responsive/`, `evidence/states/`).
+- Controlled AI comparison pack — prepared (`docs/ai-comparison-protocol.md` + empty slots); **AWAITING HUMAN EXECUTION**.
+- Final re-audit and documentation reconciliation — tracked by the compliance plan (Phase 6/7).

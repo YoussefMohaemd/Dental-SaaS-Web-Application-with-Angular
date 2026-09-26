@@ -1,8 +1,10 @@
 # Weighted Comparison Matrix
 
-Date: 2026-09-22
+Date: 2026-09-22 (AI-assisted line reconciled 2026-09-26; see note)
 
 This matrix is intentionally conservative and evidence-based. It does not invent scores for controlled AI comparison evidence that has not yet been executed in a controlled way.
+
+Reconciliation note (2026-09-26): the qualitative scores above were assigned at the 2026-09-22 inspection and are **unchanged** — no score has been raised without evidence. Evidence basis has since strengthened (green build/test/lint/Storybook gate, axe-core 0 violations, responsive/state screenshots in `evidence/`), and any re-scoring is deferred to the final re-audit, which must cite that evidence.
 
 ## Weights
 

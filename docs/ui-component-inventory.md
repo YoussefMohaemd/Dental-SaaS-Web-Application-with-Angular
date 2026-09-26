@@ -1,6 +1,6 @@
 # UI Component Inventory
 
-Inventory date: 2026-09-22
+Inventory date: 2026-09-22 (synced 2026-09-26 against the source tree)
 
 This inventory is based on real source files in the current repository snapshot. It documents existing UI components and patterns only; no invented components are included.
 
@@ -11,6 +11,16 @@ This inventory is based on real source files in the current repository snapshot.
 | ButtonComponent | Primary reusable action control | `src/app/shared/components/button/` | primary, secondary, outline, ghost, danger, success; sm/md/lg/icon sizes | High | High | Core action control, already reusable | Yes |
 | InputComponent | Labeled form input with optional icons | `src/app/shared/components/input/` | text, email, password, tel, number | High | High | Input state is reusable across forms | Yes |
 | SearchInputComponent | Search field with debounce support | `src/app/shared/components/search-input/` | xs/sm, clearable, shortcut hint | High | High | Used as a shared search affordance | Yes |
+| SelectComponent | Custom select with label/aria-label and placeholder fallback | `src/app/shared/components/select/` | labeled/aria-labeled, option lists | High | High | Used by every table filter toolbar | Yes |
+| TextFieldComponent | Storybook-backed text field with validation states | `src/app/shared/components/text-field/` | valid/error, helper text | Medium | Medium | Storybook showcase control | Yes |
+| DataTableToolbarComponent | Page-level data table toolbar wrapper | `src/app/shared/components/data-table-toolbar/` | default | High | High | Orders/patients/doctors tables | Yes |
+| SearchFilterToolbarComponent | Search + select filters + advanced/action toolbar | `src/app/shared/components/search-filter-toolbar/` | with/without action button, active filters | High | High | Table pages; forwards select aria-labels | Yes |
+| EntityDialogComponent | Modal dialog shell (PrimeNG dialog) with title/subtitle/actions | `src/app/shared/components/entity-dialog/` | add/edit variants via inputs | High | High | Form/dialog flows | Yes |
+| IconActionButtonComponent | Icon-only action button with aria-label | `src/app/shared/components/icon-action-button/` | header/sidebar actions | High | High | Shell header (menu toggle) | Yes |
+| EnterprisePaginatorComponent | Table pagination control | `src/app/shared/components/enterprise-paginator/` | page size variants | High | High | Table pages | Yes |
+| TableFeedbackComponent | Loading/empty/error feedback for tables | `src/app/shared/components/table-feedback/` | loading/empty/error | High | High | Table pages | Yes |
+| OrderSummaryCardComponent | Shared order summary display | `src/app/shared/components/order-summary-card/` | default | Medium | High | Order detail surface | Yes |
+| WorkflowTimelineComponent | Workflow stage timeline | `src/app/shared/components/workflow-timeline/` | in-progress/final stage | Medium | High | Order/workflow surfaces | Yes |
 | StatusBadgeComponent | Status pill for workflow/state labels | `src/app/shared/components/status-badge/` | size xs/sm/md | High | High | Local status palette mapping is component-specific | Yes |
 | PriorityBadgeComponent | Priority indicator chip | `src/app/shared/components/priority-badge/` | low/normal/high/urgent | Medium | Medium | Similar pattern appears in workflow and tables | Yes |
 | AvatarComponent | User/avatar display | `src/app/shared/components/avatar/` | image/initials states | Medium | Medium | Used in shell and detail contexts | Yes |
@@ -39,6 +49,14 @@ This inventory is based on real source files in the current repository snapshot.
 | Forms page | Prototype form workflow | `src/app/features/forms/` | active/prototype states | Medium | Medium | Policy/documentation boundary is important | Yes |
 | Scan center page | Scan intake and review surface | `src/app/features/scan-center/` | scan states | Medium | Medium | Domain workflow pattern | Yes |
 | Documents page | Document listing/dialog surface | `src/app/features/documents/` | table/dialog | Medium | Medium | Table/dialog integration | Yes |
+
+## Shared utilities
+
+| Utility | Purpose | Location |
+| --- | --- | --- |
+| `table-state.ts` | Table filtering/sorting/pagination helpers | `src/app/shared/utils/table-state.ts` |
+| `status-label.ts` | Workflow status label lookup | `src/app/shared/utils/status-label.ts` |
+| `sort-a11y.ts` | Accessible sort state helpers (`aria-sort` values and button labels for sortable table headers) | `src/app/shared/utils/sort-a11y.ts` |
 
 ## Notes
 
