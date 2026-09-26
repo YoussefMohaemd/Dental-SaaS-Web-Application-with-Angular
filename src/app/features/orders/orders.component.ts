@@ -19,7 +19,9 @@ import { AppButtonComponent } from "@shared/components/button/button.component";
 import { DataTableToolbarComponent } from "@shared/components/data-table-toolbar/data-table-toolbar.component";
 import { EmptyStateComponent } from "@shared/components/empty-state/empty-state.component";
 import { EnterprisePaginatorComponent } from "@shared/components/enterprise-paginator/enterprise-paginator.component";
+import { EntityDialogComponent } from "@shared/components/entity-dialog/entity-dialog.component";
 import { IconActionButtonComponent } from "@shared/components/icon-action-button/icon-action-button.component";
+import { AppTextFieldComponent } from "@shared/components/input/input.component";
 import { SearchInputComponent } from "@shared/components/search-input/search-input.component";
 import { AppSelectComponent } from "@shared/components/select/select.component";
 import { StatusBadgeComponent } from "@shared/components/status-badge/status-badge.component";
@@ -121,7 +123,9 @@ export function compareOrderValues(a: unknown, b: unknown): number {
     DataTableToolbarComponent,
     EmptyStateComponent,
     EnterprisePaginatorComponent,
+    EntityDialogComponent,
     IconActionButtonComponent,
+    AppTextFieldComponent,
     SearchInputComponent,
     AppSelectComponent,
     StatusBadgeComponent,
@@ -155,6 +159,9 @@ export class OrdersComponent {
     return "normal";
   });
   readonly advancedFilters = signal(false);
+  readonly draftSearch = signal("");
+  readonly draftStatusFilter = signal<OrderStatus[]>([]);
+  readonly draftPriorityFilter = signal<Priority | "">("");
 
   readonly pageSizes = PAGE_SIZES;
   readonly statusOptions = STATUS_OPTIONS;
@@ -281,6 +288,9 @@ export class OrdersComponent {
       ? [{ type: "priority" as const, label: this.priorityFilter() as string }]
       : []),
   ]);
+  readonly activeFilterCount = computed(
+    () => this.activeFilters().length + (this.search().trim() ? 1 : 0),
+  );
 
   readonly allPageSelected = computed(() => {
     const pageIds = this.pageData().map((order) => order.id);
@@ -416,8 +426,55 @@ export class OrdersComponent {
     return this.selectedIds().has(orderId);
   }
 
-  toggleAdvancedFilters(): void {
-    this.advancedFilters.update((value) => !value);
+  openAdvancedFilters(): void {
+    this.resetDraftFiltersFromCurrent();
+    this.advancedFilters.set(true);
+  }
+
+  onAdvancedFiltersVisibleChange(next: boolean): void {
+    this.advancedFilters.set(next);
+    if (!next) this.resetDraftFiltersFromCurrent();
+  }
+
+  closeAdvancedFiltersDialog(): void {
+    this.advancedFilters.set(false);
+    this.resetDraftFiltersFromCurrent();
+  }
+
+  onDraftSearchValueChange(value: string): void {
+    this.draftSearch.set(value);
+  }
+
+  toggleDraftStatus(status: OrderStatus): void {
+    if (this.draftStatusFilter().includes(status)) {
+      this.draftStatusFilter.update((current) =>
+        current.filter((item) => item !== status),
+      );
+      return;
+    }
+    this.draftStatusFilter.update((current) => [...current, status]);
+  }
+
+  isDraftStatusSelected(status: OrderStatus): boolean {
+    return this.draftStatusFilter().includes(status);
+  }
+
+  onDraftPriorityValueChange(value: string): void {
+    this.draftPriorityFilter.set(value as Priority | "");
+  }
+
+  clearAdvancedFiltersDraft(): void {
+    this.draftSearch.set("");
+    this.draftStatusFilter.set([]);
+    this.draftPriorityFilter.set("");
+  }
+
+  applyAdvancedFilters(): void {
+    this.search.set(this.draftSearch().trim());
+    this.statusFilter.set([...this.draftStatusFilter()]);
+    this.priorityFilter.set(this.draftPriorityFilter());
+    this.page.set(1);
+    this.advancedFilters.set(false);
   }
 
   setViewState(state: OrdersViewState): void {
@@ -577,5 +634,11 @@ export class OrdersComponent {
     const entry = sizes[name];
     if (!entry) return "";
     return lucideSvg(entry.icon, entry.size);
+  }
+
+  private resetDraftFiltersFromCurrent(): void {
+    this.draftSearch.set(this.search());
+    this.draftStatusFilter.set([...this.statusFilter()]);
+    this.draftPriorityFilter.set(this.priorityFilter());
   }
 }

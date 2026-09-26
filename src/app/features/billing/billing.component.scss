@@ -32,3 +32,13 @@
   display: inline-flex;
   color: var(--muted-foreground);
 }
+
+:host ::ng-deep .billing-prime-table.p-datatable {
+  border-radius: 0.875rem;
+  overflow: hidden;
+}
+
+:host ::ng-deep .billing-prime-table.p-datatable .p-datatable-table-container {
+  border-radius: inherit;
+  overflow: hidden;
+}
