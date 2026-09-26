@@ -1,0 +1,134 @@
+{
+  "route": "/patients",
+  "tabSequence": [
+    {
+      "tag": "button",
+      "label": "Dashboard",
+      "cls": "border-l border-transparent flex gap-3 hover:bg-muted hover:text-foreground item"
+    },
+    {
+      "tag": "button",
+      "label": "Orders",
+      "cls": "border-l border-transparent flex gap-3 hover:bg-muted hover:text-foreground item"
+    },
+    {
+      "tag": "button",
+      "label": "Cases",
+      "cls": "border-l border-transparent flex gap-3 hover:bg-muted hover:text-foreground item"
+    },
+    {
+      "tag": "button",
+      "label": "Workflow",
+      "cls": "border-l border-transparent flex gap-3 hover:bg-muted hover:text-foreground item"
+    },
+    {
+      "tag": "button",
+      "label": "Scan Center",
+      "cls": "border-l border-transparent flex gap-3 hover:bg-muted hover:text-foreground item"
+    },
+    {
+      "tag": "button",
+      "label": "Patients",
+      "cls": "bg-primary/10 border-l border-primary border-transparent flex gap-3 items-center"
+    },
+    {
+      "tag": "button",
+      "label": "Doctors",
+      "cls": "border-l border-transparent flex gap-3 hover:bg-muted hover:text-foreground item"
+    },
+    {
+      "tag": "button",
+      "label": "Clinics",
+      "cls": "border-l border-transparent flex gap-3 hover:bg-muted hover:text-foreground item"
+    },
+    {
+      "tag": "button",
+      "label": "Documents",
+      "cls": "border-l border-transparent flex gap-3 hover:bg-muted hover:text-foreground item"
+    },
+    {
+      "tag": "button",
+      "label": "Billing",
+      "cls": "border-l border-transparent flex gap-3 hover:bg-muted hover:text-foreground item"
+    },
+    {
+      "tag": "button",
+      "label": "Change Requests 4",
+      "cls": "border-l border-transparent flex gap-3 hover:bg-muted hover:text-foreground item"
+    },
+    {
+      "tag": "button",
+      "label": "Reports",
+      "cls": "border-l border-transparent flex gap-3 hover:bg-muted hover:text-foreground item"
+    },
+    {
+      "tag": "button",
+      "label": "Grid",
+      "cls": "border-l border-transparent flex gap-3 hover:bg-muted hover:text-foreground item"
+    },
+    {
+      "tag": "button",
+      "label": "Forms",
+      "cls": "border-l border-transparent flex gap-3 hover:bg-muted hover:text-foreground item"
+    },
+    {
+      "tag": "button",
+      "label": "Settings",
+      "cls": "border-l border-transparent flex gap-3 hover:bg-muted hover:text-foreground item"
+    },
+    {
+      "tag": "button",
+      "label": "Toggle sidebar",
+      "cls": "!bg-card/50 !bg-transparent !border !border-border/70 !border-transparent !round"
+    },
+    {
+      "tag": "input",
+      "label": "Search",
+      "cls": "bg-muted border border-border focus:border-primary focus:outline-none focus:ring"
+    },
+    {
+      "tag": "button",
+      "label": "Toggle theme",
+      "cls": "!bg-card/50 !bg-transparent !border !border-border/70 !border-transparent !round"
+    },
+    {
+      "tag": "button",
+      "label": "Notifications",
+      "cls": "!bg-card/50 !bg-transparent !border !border-border/70 !border-transparent !relat"
+    },
+    {
+      "tag": "button",
+      "label": "Profile menu",
+      "cls": "flex items-center gap-2 pl-1.5 sm:pl-2 pr-1.5 sm:pr-3 py-1.5 rounded-lg hover:bg"
+    },
+    {
+      "tag": "main",
+      "label": "Patients32 registered patientsAll StatusActiveInactiveAdd Pa",
+      "cls": "flex-1 overflow-y-auto bg-background"
+    },
+    {
+      "tag": "input",
+      "label": "",
+      "cls": "enterprise-toolbar-input"
+    },
+    {
+      "tag": "select",
+      "label": "Status",
+      "cls": "cursor-pointer enterprise-toolbar-select focus:outline-none"
+    },
+    {
+      "tag": "button",
+      "label": "Add patient",
+      "cls": "!bg-primary !rounded-xl !text-primary-foreground [&_svg]:block [&_svg]:shrink-0 "
+    },
+    {
+      "tag": "button",
+      "label": "Sort by Name, currently ascending",
+      "cls": "enterprise-th-sort-btn"
+    }
+  ],
+  "headerButtonFocused": true,
+  "enterActivated": true,
+  "ariaSortBefore": "ascending",
+  "ariaSortAfter": "descending"
+}

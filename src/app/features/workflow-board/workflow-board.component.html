@@ -9,7 +9,10 @@
     </p>
   </div>
 
-  <div class="workflow-board-scroll flex-1 overflow-x-auto overflow-y-hidden p-3 sm:p-5">
+  <div
+    class="workflow-board-scroll flex-1 overflow-x-auto overflow-y-hidden p-3 sm:p-5"
+    tabindex="0"
+  >
     <div class="workflow-board-lanes flex gap-4 h-full" cdkDropListGroup>
       @for (col of columns; track col.id) {
         @let colOrders = getColumnOrders(col.id);

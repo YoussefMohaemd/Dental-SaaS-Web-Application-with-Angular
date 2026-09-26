@@ -8,7 +8,10 @@
     (actionClick)="toggleSidebar()"
   ></app-icon-action-button>
 
-  <nav class="hidden sm:flex items-center gap-1 text-sm min-w-0">
+  <nav
+    class="hidden sm:flex items-center gap-1 text-sm min-w-0"
+    aria-label="Breadcrumb"
+  >
     @for (crumb of breadcrumbs(); track $index) {
       <span class="flex items-center gap-1">
         @if ($index > 0) {

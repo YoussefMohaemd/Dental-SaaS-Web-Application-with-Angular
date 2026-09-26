@@ -60,6 +60,7 @@
         [unstyled]="true"
         selectClass="enterprise-toolbar-select cursor-pointer focus:outline-none"
         placeholder="All Status"
+        [ariaLabel]="'Status'"
         [options]="['Pending', 'In Review', 'Approved', 'Rejected', 'Completed']"
         [value]="statusFilter()"
         (valueChange)="onStatusValueChange($event)"

@@ -28,6 +28,7 @@ export class SearchFilterToolbarComponent {
   readonly selectPlaceholder = input<string>("All");
   readonly selectOptions = input<readonly string[]>([]);
   readonly selectValue = input<string>("");
+  readonly selectAriaLabel = input<string>("");
 
   readonly actionLabel = input.required<string>();
   readonly actionAriaLabel = input<string>("");

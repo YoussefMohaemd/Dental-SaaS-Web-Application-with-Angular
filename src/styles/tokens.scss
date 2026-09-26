@@ -4,21 +4,21 @@ $color-card: #ffffff;
 $color-card-foreground: #0f172a;
 $color-sidebar: #1e293b;
 $color-sidebar-foreground: #f1f5f9;
-$color-sidebar-active: #2563eb;
+$color-sidebar-active: #1d4ed8;
 $color-sidebar-muted: #94a3b8;
-$color-primary: #2563eb;
+$color-primary: #1d4ed8;
 $color-primary-foreground: #ffffff;
 $color-secondary: #f8fafc;
 $color-secondary-foreground: #475569;
 $color-muted: #f1f5f9;
-$color-muted-foreground: #64748b;
-$color-accent: #06b6d4;
+$color-muted-foreground: #5b6779;
+$color-accent: #0e7490;
 $color-accent-foreground: #ffffff;
-$color-success: #10b981;
+$color-success: #047857;
 $color-success-foreground: #ffffff;
-$color-warning: #f59e0b;
+$color-warning: #b45309;
 $color-warning-foreground: #ffffff;
-$color-danger: #ef4444;
+$color-danger: #b91c1c;
 $color-danger-foreground: #ffffff;
 $color-border: #e2e8f0;
 $color-input: #e2e8f0;
@@ -90,11 +90,11 @@ $status-colors: (
   ),
   "closed": (
     bg: #f1f5f9,
-    fg: #64748b,
+    fg: #5b6779,
   ),
   "pending": (
     bg: #f1f5f9,
-    fg: #64748b,
+    fg: #5b6779,
   ),
   "invoiced": (
     bg: #dbeafe,
@@ -204,7 +204,7 @@ $header-height: 3.5rem;
 
 :root {
   --color-primary: #{$color-primary};
-  --color-primary-hover: #1d4ed8;
+  --color-primary-hover: #1e40af;
   --color-primary-light: #dbeafe;
   --color-primary-foreground: #{$color-primary-foreground};
 
@@ -213,21 +213,21 @@ $header-height: 3.5rem;
   --color-secondary-foreground: #{$color-secondary-foreground};
 
   --color-accent: #{$color-accent};
-  --color-accent-hover: #0891b2;
+  --color-accent-hover: #155e75;
   --color-accent-light: #cffafe;
 
   --color-success: #{$color-success};
-  --color-success-hover: #059669;
+  --color-success-hover: #065f46;
   --color-success-light: #d1fae5;
   --color-success-foreground: #{$color-success-foreground};
 
   --color-warning: #{$color-warning};
-  --color-warning-hover: #d97706;
+  --color-warning-hover: #92400e;
   --color-warning-light: #fef3c7;
   --color-warning-foreground: #{$color-warning-foreground};
 
   --color-danger: #{$color-danger};
-  --color-danger-hover: #dc2626;
+  --color-danger-hover: #991b1b;
   --color-danger-light: #fee2e2;
   --color-danger-foreground: #{$color-danger-foreground};
 
@@ -245,7 +245,7 @@ $header-height: 3.5rem;
   --color-sidebar-active: #{$color-sidebar-active};
 
   --color-foreground: #{$color-foreground};
-  --color-foreground-muted: #64748b;
+  --color-foreground-muted: #5b6779;
   --color-foreground-subtle: #94a3b8;
 
   --color-border: #{$color-border};

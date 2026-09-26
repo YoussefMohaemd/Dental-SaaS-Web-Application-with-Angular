@@ -87,9 +87,9 @@
       aria-label="Patient"
     >
       <div class="border-b border-border bg-muted/30 px-5 py-3.5">
-        <h3 class="font-display text-sm font-semibold text-foreground">
+        <h2 class="font-display text-sm font-semibold text-foreground">
           Patient
-        </h3>
+        </h2>
       </div>
       <div class="p-5">
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -135,9 +135,9 @@
       aria-label="Doctor and clinic"
     >
       <div class="border-b border-border bg-muted/30 px-5 py-3.5">
-        <h3 class="font-display text-sm font-semibold text-foreground">
+        <h2 class="font-display text-sm font-semibold text-foreground">
           Doctor &amp; Clinic
-        </h3>
+        </h2>
       </div>
       <div class="p-5">
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -240,7 +240,7 @@
             </div>
           }
           <div class="mb-2 text-2xl" aria-hidden="true">{{ svc.icon }}</div>
-          <h3
+          <h2
             class="mb-1 text-sm font-semibold"
             [class]="
               selectedServices().includes(svc.id)
@@ -249,7 +249,7 @@
             "
           >
             {{ svc.name }}
-          </h3>
+          </h2>
           <p class="text-xs leading-relaxed text-muted-foreground">
             {{ svc.description }}
           </p>
@@ -403,9 +403,9 @@
         [attr.aria-label]="svc.name + ' details'"
       >
         <div class="border-b border-border bg-muted/30 px-5 py-3.5">
-          <h3 class="font-display text-sm font-semibold text-foreground">
+          <h2 class="font-display text-sm font-semibold text-foreground">
             {{ svc.icon }} {{ svc.name }}
-          </h3>
+          </h2>
         </div>
         <div class="grid grid-cols-1 gap-4 p-5 sm:grid-cols-2">
           @if (needsShadeArch(svc.id)) {
@@ -524,9 +524,9 @@
         [attr.aria-label]="svc.name + ' clinical form'"
       >
         <div class="border-b border-border bg-muted/30 px-5 py-3.5">
-          <h3 class="font-display text-sm font-semibold text-foreground">
+          <h2 class="font-display text-sm font-semibold text-foreground">
             {{ svc.icon }} {{ svc.name }} — Clinical Form
-          </h3>
+          </h2>
         </div>
         <div class="grid grid-cols-1 gap-4 p-5 sm:grid-cols-2">
           <div class="col-span-2">
@@ -632,9 +632,9 @@
         [attr.aria-label]="svc.name + ' required files'"
       >
         <div class="border-b border-border bg-muted/30 px-5 py-3.5">
-          <h3 class="font-display text-sm font-semibold text-foreground">
+          <h2 class="font-display text-sm font-semibold text-foreground">
             {{ svc.icon }} {{ svc.name }} — Required Files
-          </h3>
+          </h2>
         </div>
         <div class="p-5">
           <div class="mb-4 space-y-3">
@@ -678,9 +678,9 @@
     <div class="space-y-5">
       <div class="overflow-hidden rounded-xl border border-border bg-card">
         <div class="border-b border-border bg-muted/30 px-5 py-3.5">
-          <h3 class="font-display text-sm font-semibold text-foreground">
+          <h2 class="font-display text-sm font-semibold text-foreground">
             Order Summary
-          </h3>
+          </h2>
         </div>
         <div class="divide-y divide-border">
           <div class="flex items-center gap-4 px-5 py-2.5">
@@ -730,9 +730,9 @@
         <div
           class="flex items-center gap-2 border-b border-border bg-muted/30 px-5 py-3.5"
         >
-          <h3 class="font-display text-sm font-semibold text-foreground">
+          <h2 class="font-display text-sm font-semibold text-foreground">
             Services &amp; Sub-orders
-          </h3>
+          </h2>
           <span
             class="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-bold text-primary"
             >{{ selectedServices().length }}</span
@@ -784,9 +784,9 @@
 
       @if (hasAnyTeeth()) {
         <div class="rounded-xl border border-border bg-card p-5">
-          <h3 class="mb-3 font-display text-sm font-semibold text-foreground">
+          <h2 class="mb-3 font-display text-sm font-semibold text-foreground">
             Tooth Selection
-          </h3>
+          </h2>
           <app-teeth-chart
             [selected]="allTeethCombined()"
             [services]="serviceNames()"

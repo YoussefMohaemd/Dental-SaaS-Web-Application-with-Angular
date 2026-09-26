@@ -19,7 +19,7 @@
     [value]="value()"
     [disabled]="isDisabled()"
     [required]="required()"
-    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-label]="ariaLabel() || (!label() && placeholder()) || null"
     (change)="onChange($event)"
     (blur)="onBlur()"
   >

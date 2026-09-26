@@ -372,7 +372,7 @@
       @if (activityLoading()) {
         <app-loading-state type="skeleton" [skeletonClass]="'skeleton h-10'" />
       } @else {
-        <div class="p-4 space-y-4 max-h-96 overflow-y-auto">
+        <div class="p-4 space-y-4 max-h-96 overflow-y-auto" tabindex="0">
           @for (notification of activity(); track notification.id) {
             <div class="flex gap-3">
               <div
@@ -387,7 +387,7 @@
                 <p class="text-xs text-muted-foreground mt-0.5 line-clamp-2">
                   {{ notification.message }}
                 </p>
-                <p class="text-xs text-muted-foreground/70 mt-1">
+                <p class="text-xs text-muted-foreground mt-1">
                   {{ formatUtils.timeAgo(notification.createdAt) }}
                 </p>
               </div>

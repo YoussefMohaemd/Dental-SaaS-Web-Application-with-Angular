@@ -1,0 +1,174 @@
+{
+  "generatedAt": "2026-09-26T09:29:04.169Z",
+  "scope": "axe-core tags: wcag2a, wcag2aa, best-practice",
+  "routes": [
+    {
+      "route": "/login",
+      "ok": true,
+      "violations": [],
+      "violationCount": 0,
+      "wcagViolationCount": 0
+    },
+    {
+      "route": "/dashboard",
+      "ok": true,
+      "violations": [],
+      "violationCount": 0,
+      "wcagViolationCount": 0
+    },
+    {
+      "route": "/orders",
+      "ok": true,
+      "violations": [],
+      "violationCount": 0,
+      "wcagViolationCount": 0
+    },
+    {
+      "route": "/patients",
+      "ok": true,
+      "violations": [],
+      "violationCount": 0,
+      "wcagViolationCount": 0
+    },
+    {
+      "route": "/doctors",
+      "ok": true,
+      "violations": [],
+      "violationCount": 0,
+      "wcagViolationCount": 0
+    },
+    {
+      "route": "/billing",
+      "ok": true,
+      "violations": [],
+      "violationCount": 0,
+      "wcagViolationCount": 0
+    },
+    {
+      "route": "/change-requests",
+      "ok": true,
+      "violations": [],
+      "violationCount": 0,
+      "wcagViolationCount": 0
+    },
+    {
+      "route": "/workflow-board",
+      "ok": true,
+      "violations": [],
+      "violationCount": 0,
+      "wcagViolationCount": 0
+    },
+    {
+      "route": "/settings",
+      "ok": true,
+      "violations": [],
+      "violationCount": 0,
+      "wcagViolationCount": 0
+    },
+    {
+      "route": "/cases",
+      "ok": true,
+      "violations": [],
+      "violationCount": 0,
+      "wcagViolationCount": 0
+    },
+    {
+      "route": "/clinics",
+      "ok": true,
+      "violations": [],
+      "violationCount": 0,
+      "wcagViolationCount": 0
+    },
+    {
+      "route": "/scan-center",
+      "ok": true,
+      "violations": [],
+      "violationCount": 0,
+      "wcagViolationCount": 0
+    },
+    {
+      "route": "/documents",
+      "ok": true,
+      "violations": [],
+      "violationCount": 0,
+      "wcagViolationCount": 0
+    },
+    {
+      "route": "/reports",
+      "ok": true,
+      "violations": [],
+      "violationCount": 0,
+      "wcagViolationCount": 0
+    },
+    {
+      "route": "/notifications",
+      "ok": true,
+      "violations": [],
+      "violationCount": 0,
+      "wcagViolationCount": 0
+    },
+    {
+      "route": "/grid",
+      "ok": true,
+      "violations": [],
+      "violationCount": 0,
+      "wcagViolationCount": 0
+    },
+    {
+      "route": "/forms",
+      "ok": true,
+      "violations": [],
+      "violationCount": 0,
+      "wcagViolationCount": 0
+    },
+    {
+      "route": "/forms#restoration-form",
+      "ok": true,
+      "violations": [],
+      "violationCount": 0,
+      "wcagViolationCount": 0
+    },
+    {
+      "route": "/forms#doctor-form",
+      "ok": true,
+      "violations": [],
+      "violationCount": 0,
+      "wcagViolationCount": 0
+    },
+    {
+      "route": "/forms#billing-config",
+      "ok": true,
+      "violations": [],
+      "violationCount": 0,
+      "wcagViolationCount": 0
+    },
+    {
+      "route": "/forms#change-request",
+      "ok": true,
+      "violations": [],
+      "violationCount": 0,
+      "wcagViolationCount": 0
+    },
+    {
+      "route": "/forms#scan-info",
+      "ok": true,
+      "violations": [],
+      "violationCount": 0,
+      "wcagViolationCount": 0
+    },
+    {
+      "route": "/forms#validation-states",
+      "ok": true,
+      "violations": [],
+      "violationCount": 0,
+      "wcagViolationCount": 0
+    },
+    {
+      "route": "/orders/create",
+      "ok": true,
+      "violations": [],
+      "violationCount": 0,
+      "wcagViolationCount": 0
+    }
+  ]
+}

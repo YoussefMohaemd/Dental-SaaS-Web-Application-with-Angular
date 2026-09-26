@@ -6,8 +6,8 @@ import { statusDisplayLabel } from "@shared/utils/status-label";
 const STATUS_STYLES: Record<string, { bg: string; fg: string }> = {
   Active: { bg: "#ECFDF5", fg: "#065F46" },
   active: { bg: "#ECFDF5", fg: "#065F46" },
-  Inactive: { bg: "#F1F5F9", fg: "#64748B" },
-  inactive: { bg: "#F1F5F9", fg: "#64748B" },
+  Inactive: { bg: "#F1F5F9", fg: "#5B6779" },
+  inactive: { bg: "#F1F5F9", fg: "#5B6779" },
   New: { bg: "#F1F5F9", fg: "#475569" },
   Review: { bg: "#FFFBEB", fg: "#B45309" },
   Design: { bg: "#ECFEFF", fg: "#164E63" },
@@ -18,14 +18,14 @@ const STATUS_STYLES: Record<string, { bg: string; fg: string }> = {
   Cancelled: { bg: "#FEF2F2", fg: "#B91C1C" },
   Open: { bg: "#EFF6FF", fg: "#1E40AF" },
   "In Progress": { bg: "#FFFBEB", fg: "#B45309" },
-  Closed: { bg: "#F1F5F9", fg: "#64748B" },
-  Pending: { bg: "#F1F5F9", fg: "#64748B" },
+  Closed: { bg: "#F1F5F9", fg: "#5B6779" },
+  Pending: { bg: "#F1F5F9", fg: "#5B6779" },
   Invoiced: { bg: "#EFF6FF", fg: "#1E40AF" },
   Paid: { bg: "#ECFDF5", fg: "#065F46" },
   Overdue: { bg: "#FEF2F2", fg: "#B91C1C" },
 };
 
-const DEFAULT_STYLE = { bg: "#F1F5F9", fg: "#64748B" };
+const DEFAULT_STYLE = { bg: "#F1F5F9", fg: "#5B6779" };
 
 @Component({
   selector: "app-status-badge",
