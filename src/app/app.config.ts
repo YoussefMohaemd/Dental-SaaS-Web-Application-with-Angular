@@ -1,4 +1,8 @@
-import { provideRouter, withViewTransitions } from "@angular/router";
+import {
+  PreloadAllModules,
+  provideRouter,
+  withPreloading,
+} from "@angular/router";
 import { provideHttpClient, withInterceptors } from "@angular/common/http";
 import { providePrimeNG } from "primeng/config";
 import { provideAnimationsAsync } from "@angular/platform-browser/animations/async";
@@ -19,7 +23,7 @@ export const appConfig: ApplicationConfig = {
     provideZonelessChangeDetection(),
     provideAnimationsAsync(),
     provideHttpClient(withInterceptors([authInterceptor])),
-    provideRouter(appRoutes, withViewTransitions()),
+    provideRouter(appRoutes, withPreloading(PreloadAllModules)),
     providePrimeNG({
       theme: {
         preset: Aura,

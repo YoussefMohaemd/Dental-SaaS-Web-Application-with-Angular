@@ -1,4 +1,4 @@
-<div class="flex h-full flex-col">
+<div class="flex flex-col">
   <div
     class="shrink-0 border-b border-border bg-card px-4 py-3 sm:px-6 sm:py-4"
   >
@@ -224,7 +224,7 @@
     }
   </div>
 
-  <div class="flex-1 overflow-auto">
+  <div>
     @switch (viewState()) {
       @case ("loading") {
         <div class="space-y-2 p-4 sm:p-6" aria-label="Loading orders" role="status">
@@ -1179,23 +1179,20 @@
               </ng-template>
             </p-treetable>
           </div>
+          <div
+            class="mt-2 flex flex-wrap items-center justify-between gap-2 border-t border-border bg-card px-4 py-3 sm:px-6"
+          >
+            <app-enterprise-paginator
+              class="w-full"
+              [totalRecords]="filtered().length"
+              [rows]="pageSize()"
+              [page]="page()"
+              [pageLinkSize]="7"
+              (pageChange)="onPageNumberChange($event)"
+            ></app-enterprise-paginator>
+          </div>
         }
       }
     }
   </div>
-
-  @if (viewState() === "normal" && filtered().length > 0) {
-    <div
-      class="flex shrink-0 flex-wrap items-center justify-between gap-2 border-t border-border bg-card px-4 sm:px-6 py-3"
-    >
-      <app-enterprise-paginator
-        class="w-full"
-        [totalRecords]="filtered().length"
-        [rows]="pageSize()"
-        [page]="page()"
-        [pageLinkSize]="7"
-        (pageChange)="onPageNumberChange($event)"
-      ></app-enterprise-paginator>
-    </div>
-  }
 </div>
