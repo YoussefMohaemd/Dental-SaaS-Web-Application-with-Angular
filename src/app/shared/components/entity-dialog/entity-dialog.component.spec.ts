@@ -63,6 +63,21 @@ describe("EntityDialogComponent", () => {
     expect(component.subtitle()).toBe("");
   });
 
+  it("should append dialogs to body for consistent outside-click closing", async () => {
+    fixture.componentRef.setInput("visible", true);
+    await renderVisibleDialog(fixture);
+
+    const dialog = fixture.debugElement.query(By.css("p-dialog"));
+    expect(dialog).toBeTruthy();
+    expect(dialog.componentInstance.closable).toBeTrue();
+    const appendTo = dialog.componentInstance.appendTo;
+    if (typeof appendTo === "function") {
+      expect(appendTo()).toBe("body");
+      return;
+    }
+    expect(appendTo).toBe("body");
+  });
+
   it("should emit visibleChange when the dialog visibility changes", () => {
     spyOn(component.visibleChange, "emit");
     component.onDialogVisibleChange(true);

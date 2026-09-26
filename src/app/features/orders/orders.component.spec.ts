@@ -103,9 +103,30 @@ describe("OrdersComponent", () => {
 
   it("should clear all filters and reset pagination", () => {
     component.page.set(3);
+    component.patientFilter.set("Alice Johnson");
+    component.doctorFilter.set("Dr. Park");
+    component.serviceFilter.set("Crown");
     component.clearAllFilters();
     expect(component.page()).toBe(1);
     expect(component.activeFilters()).toEqual([]);
+    expect(component.patientFilter()).toBe("");
+    expect(component.doctorFilter()).toBe("");
+    expect(component.serviceFilter()).toBe("");
+  });
+
+  it("should remove patient, doctor, and service filters individually", () => {
+    component.patientFilter.set("Alice Johnson");
+    component.doctorFilter.set("Dr. Park");
+    component.serviceFilter.set("Crown");
+
+    component.removeFilter("patient", "Alice Johnson");
+    expect(component.patientFilter()).toBe("");
+
+    component.removeFilter("doctor", "Dr. Park");
+    expect(component.doctorFilter()).toBe("");
+
+    component.removeFilter("service", "Crown");
+    expect(component.serviceFilter()).toBe("");
   });
 
   it("should update search and reset pagination (immediate + debounced paths)", () => {

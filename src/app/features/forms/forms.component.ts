@@ -16,6 +16,8 @@ export type FormsSectionId =
   | "scan"
   | "validation";
 
+type ArchOption = "Upper" | "Lower" | "Both";
+
 @Component({
   selector: "app-forms",
   standalone: true,
@@ -35,7 +37,8 @@ export class FormsComponent {
   readonly active = signal<FormsSectionId | null>("patient");
 
   readonly gender = signal("");
-  readonly arch = signal("Both");
+  readonly arch = signal<ArchOption>("Both");
+  readonly archOptions: readonly ArchOption[] = ["Upper", "Lower", "Both"];
   readonly material = signal("");
   readonly showPassword = signal(false);
   readonly autoInvoice = signal(false);
@@ -79,6 +82,29 @@ export class FormsComponent {
 
   removeScanFile(name: string): void {
     this.scanFiles.update((current) => current.filter((f) => f !== name));
+  }
+
+  scanFileExtension(fileName: string): string {
+    const dotIndex = fileName.lastIndexOf(".");
+    if (dotIndex < 0 || dotIndex === fileName.length - 1) return "FILE";
+    return fileName.slice(dotIndex + 1).toUpperCase();
+  }
+
+  onScanFilesSelected(event: Event): void {
+    const target = event.target as HTMLInputElement | null;
+    if (!target?.files?.length) return;
+    const selectedNames = Array.from(target.files).map((file) => file.name);
+    this.scanFiles.update((current) => {
+      const existing = new Set(current);
+      const next = [...current];
+      for (const fileName of selectedNames) {
+        if (existing.has(fileName)) continue;
+        next.push(fileName);
+        existing.add(fileName);
+      }
+      return next;
+    });
+    target.value = "";
   }
 
   onAttachmentDropzoneActivate(event?: Event | KeyboardEvent): void {

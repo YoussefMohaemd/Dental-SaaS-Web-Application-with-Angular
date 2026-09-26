@@ -77,38 +77,6 @@
           ariaLabel="Search orders"
         />
       </div>
-      <div class="relative">
-        <app-select
-          id="orders-status-picker"
-          [unstyled]="true"
-          selectClass="cursor-pointer appearance-none rounded-lg border border-border bg-card pl-2 pr-6 py-1.5 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
-          placeholder="Status"
-          [options]="statusSelectOptions"
-          [value]="''"
-          (valueChange)="onStatusPickerValueChange($event)"
-          ariaLabel="Add status filter"
-        ></app-select>
-        <span
-          [innerHTML]="getIconSvg('chevron-down') | safeHtml"
-          class="absolute right-1.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
-        ></span>
-      </div>
-      <div class="relative">
-        <app-select
-          id="orders-priority-filter"
-          [unstyled]="true"
-          selectClass="cursor-pointer appearance-none rounded-lg border border-border bg-card pl-2 pr-6 py-1.5 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
-          placeholder="Priority"
-          [options]="priorityOptions"
-          [value]="priorityFilter()"
-          (valueChange)="onPriorityValueChange($event)"
-          ariaLabel="Filter by priority"
-        ></app-select>
-        <span
-          [innerHTML]="getIconSvg('chevron-down') | safeHtml"
-          class="absolute right-1.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
-        ></span>
-      </div>
       <app-button
         variant="outline"
         size="sm"
@@ -201,23 +169,13 @@
           <span
             class="flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"
           >
-            {{
-              filter.type === "status"
-                ? statusDisplayLabel($any(filter.label))
-                : filter.label
-            }}
+            {{ filter.label }}
             <app-icon-action-button
               [iconSvg]="getIconSvg('x')"
-              [ariaLabel]="
-                'Remove ' +
-                (filter.type === 'status'
-                  ? statusDisplayLabel($any(filter.label))
-                  : filter.label) +
-                ' filter'
-              "
+              [ariaLabel]="'Remove ' + filter.label + ' filter'"
               size="icon-sm"
               customClass="!h-4 !min-h-0 !w-4 !min-w-0 !rounded-full !border-transparent !bg-transparent !p-0 hover:!text-danger"
-              (actionClick)="removeFilter(filter.type, filter.label)"
+              (actionClick)="removeFilter(filter.type, filter.value)"
             ></app-icon-action-button>
           </span>
         }
@@ -230,25 +188,10 @@
     (visibleChange)="onAdvancedFiltersVisibleChange($event)"
     (closed)="closeAdvancedFiltersDialog()"
     title="Search Filters"
-    subtitle="Search and filter orders from one place."
+    subtitle="Filter orders by status, priority, patient, doctor, and service."
     width="34rem"
   >
     <div class="mt-2 space-y-4">
-      <label class="block">
-        <span class="mb-1 block text-xs font-semibold text-foreground"
-          >Search</span
-        >
-        <app-input
-          id="orders-advanced-search"
-          [unstyled]="true"
-          inputClass="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
-          placeholder="Order #, patient, doctor, clinic..."
-          [value]="draftSearch()"
-          (valueChange)="onDraftSearchValueChange($event)"
-          ariaLabel="Search orders from filter popup"
-        ></app-input>
-      </label>
-
       <div>
         <span class="mb-1 block text-xs font-semibold text-foreground"
           >Status</span
@@ -285,6 +228,54 @@
           [value]="draftPriorityFilter()"
           (valueChange)="onDraftPriorityValueChange($event)"
           ariaLabel="Filter orders by priority from filter popup"
+        ></app-select>
+      </label>
+
+      <label class="block">
+        <span class="mb-1 block text-xs font-semibold text-foreground"
+          >Patient</span
+        >
+        <app-select
+          id="orders-advanced-patient"
+          [unstyled]="true"
+          selectClass="w-full cursor-pointer rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+          placeholder="All patients"
+          [options]="patientOptions()"
+          [value]="draftPatientFilter()"
+          (valueChange)="onDraftPatientValueChange($event)"
+          ariaLabel="Filter orders by patient from filter popup"
+        ></app-select>
+      </label>
+
+      <label class="block">
+        <span class="mb-1 block text-xs font-semibold text-foreground"
+          >Doctor</span
+        >
+        <app-select
+          id="orders-advanced-doctor"
+          [unstyled]="true"
+          selectClass="w-full cursor-pointer rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+          placeholder="All doctors"
+          [options]="doctorOptions()"
+          [value]="draftDoctorFilter()"
+          (valueChange)="onDraftDoctorValueChange($event)"
+          ariaLabel="Filter orders by doctor from filter popup"
+        ></app-select>
+      </label>
+
+      <label class="block">
+        <span class="mb-1 block text-xs font-semibold text-foreground"
+          >Service Type</span
+        >
+        <app-select
+          id="orders-advanced-service"
+          [unstyled]="true"
+          selectClass="w-full cursor-pointer rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+          placeholder="All services"
+          [options]="subOrderServiceOptions()"
+          [value]="draftServiceFilter()"
+          (valueChange)="onDraftServiceValueChange($event)"
+          ariaLabel="Filter orders by sub-order service type from filter popup"
         ></app-select>
       </label>
     </div>

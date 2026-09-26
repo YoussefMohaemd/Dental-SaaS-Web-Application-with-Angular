@@ -21,7 +21,6 @@ import { EmptyStateComponent } from "@shared/components/empty-state/empty-state.
 import { EnterprisePaginatorComponent } from "@shared/components/enterprise-paginator/enterprise-paginator.component";
 import { EntityDialogComponent } from "@shared/components/entity-dialog/entity-dialog.component";
 import { IconActionButtonComponent } from "@shared/components/icon-action-button/icon-action-button.component";
-import { AppTextFieldComponent } from "@shared/components/input/input.component";
 import { SearchInputComponent } from "@shared/components/search-input/search-input.component";
 import { AppSelectComponent } from "@shared/components/select/select.component";
 import { StatusBadgeComponent } from "@shared/components/status-badge/status-badge.component";
@@ -35,6 +34,19 @@ export interface OrderTreeRowData {
   kind: "order" | "service";
   order: Order;
   subOrder?: SubOrder;
+}
+
+type OrderFilterType =
+  | "status"
+  | "priority"
+  | "patient"
+  | "doctor"
+  | "service";
+
+interface ActiveOrderFilter {
+  type: OrderFilterType;
+  value: string;
+  label: string;
 }
 
 export function mapSubOrderToTreeNode(
@@ -125,7 +137,6 @@ export function compareOrderValues(a: unknown, b: unknown): number {
     EnterprisePaginatorComponent,
     EntityDialogComponent,
     IconActionButtonComponent,
-    AppTextFieldComponent,
     SearchInputComponent,
     AppSelectComponent,
     StatusBadgeComponent,
@@ -147,6 +158,9 @@ export class OrdersComponent {
   readonly search = signal("");
   readonly statusFilter = signal<OrderStatus[]>([]);
   readonly priorityFilter = signal<Priority | "">("");
+  readonly patientFilter = signal("");
+  readonly doctorFilter = signal("");
+  readonly serviceFilter = signal("");
   readonly selectedIds = signal<Set<string>>(new Set());
   readonly page = signal(1);
   readonly pageSize = signal(10);
@@ -159,21 +173,40 @@ export class OrdersComponent {
     return "normal";
   });
   readonly advancedFilters = signal(false);
-  readonly draftSearch = signal("");
   readonly draftStatusFilter = signal<OrderStatus[]>([]);
   readonly draftPriorityFilter = signal<Priority | "">("");
+  readonly draftPatientFilter = signal("");
+  readonly draftDoctorFilter = signal("");
+  readonly draftServiceFilter = signal("");
 
   readonly pageSizes = PAGE_SIZES;
   readonly statusOptions = STATUS_OPTIONS;
   readonly priorityOptions = PRIORITY_OPTIONS;
-  readonly statusSelectOptions = STATUS_OPTIONS.map((status) => ({
-    value: status,
-    label: statusDisplayLabel(status),
-  }));
   readonly pageSizeSelectOptions = PAGE_SIZES.map((size) => ({
     value: String(size),
     label: `${size} / page`,
   }));
+  readonly patientOptions = computed(() =>
+    this.uniqueSorted(this.orders().map((order) => order.patientName)),
+  );
+  readonly doctorOptions = computed(() =>
+    this.uniqueSorted(this.orders().map((order) => order.doctorName)),
+  );
+  readonly subOrderServiceOptions = computed(() =>
+    this.uniqueSorted(this.subOrders().map((subOrder) => subOrder.service)),
+  );
+  readonly subOrderServicesByOrderId = computed(() => {
+    const byOrderId = new Map<string, Set<string>>();
+    for (const subOrder of this.subOrders()) {
+      const orderId = subOrder.orderId;
+      const service = subOrder.service.trim();
+      if (!orderId || !service) continue;
+      const current = byOrderId.get(orderId) ?? new Set<string>();
+      current.add(service);
+      byOrderId.set(orderId, current);
+    }
+    return byOrderId;
+  });
 
   readonly filtered = computed(() => {
     let result = filterTableRows(this.orders(), this.search().trim(), [
@@ -189,6 +222,17 @@ export class OrdersComponent {
     if (this.priorityFilter())
       result = result.filter(
         (order) => order.priority === this.priorityFilter(),
+      );
+    if (this.patientFilter())
+      result = result.filter(
+        (order) => order.patientName === this.patientFilter(),
+      );
+    if (this.doctorFilter())
+      result = result.filter((order) => order.doctorName === this.doctorFilter());
+    if (this.serviceFilter())
+      result = result.filter((order) =>
+        this.subOrderServicesByOrderId().get(order.id)?.has(this.serviceFilter()) ??
+        false,
       );
     const column = this.sortColumn();
     if (column) {
@@ -279,13 +323,47 @@ export class OrdersComponent {
     );
   });
 
-  readonly activeFilters = computed(() => [
+  readonly activeFilters = computed<ActiveOrderFilter[]>(() => [
     ...this.statusFilter().map((status) => ({
       type: "status" as const,
-      label: status,
+      value: status,
+      label: `Status: ${statusDisplayLabel(status)}`,
     })),
     ...(this.priorityFilter()
-      ? [{ type: "priority" as const, label: this.priorityFilter() as string }]
+      ? [
+          {
+            type: "priority" as const,
+            value: this.priorityFilter() as string,
+            label: `Priority: ${this.priorityFilter()}`,
+          },
+        ]
+      : []),
+    ...(this.patientFilter()
+      ? [
+          {
+            type: "patient" as const,
+            value: this.patientFilter(),
+            label: `Patient: ${this.patientFilter()}`,
+          },
+        ]
+      : []),
+    ...(this.doctorFilter()
+      ? [
+          {
+            type: "doctor" as const,
+            value: this.doctorFilter(),
+            label: `Doctor: ${this.doctorFilter()}`,
+          },
+        ]
+      : []),
+    ...(this.serviceFilter()
+      ? [
+          {
+            type: "service" as const,
+            value: this.serviceFilter(),
+            label: `Service: ${this.serviceFilter()}`,
+          },
+        ]
       : []),
   ]);
   readonly activeFilterCount = computed(
@@ -368,15 +446,6 @@ export class OrdersComponent {
     this.page.set(1);
   }
 
-  onStatusPickerValueChange(value: string): void {
-    this.addStatusFilter(value as OrderStatus);
-  }
-
-  onPriorityValueChange(value: string): void {
-    this.priorityFilter.set(value as Priority | "");
-    this.page.set(1);
-  }
-
   onPageSizeValueChange(value: string): void {
     this.pageSize.set(Number(value));
     this.page.set(1);
@@ -386,12 +455,15 @@ export class OrdersComponent {
     this.page.set(Math.max(1, Math.min(this.totalPages(), pageNumber)));
   }
 
-  removeFilter(type: "status" | "priority", label?: string): void {
-    if (type === "status" && label)
+  removeFilter(type: OrderFilterType, value?: string): void {
+    if (type === "status" && value)
       this.statusFilter.update((current) =>
-        current.filter((status) => status !== label),
+        current.filter((status) => status !== value),
       );
     if (type === "priority") this.priorityFilter.set("");
+    if (type === "patient") this.patientFilter.set("");
+    if (type === "doctor") this.doctorFilter.set("");
+    if (type === "service") this.serviceFilter.set("");
     this.page.set(1);
   }
 
@@ -399,6 +471,9 @@ export class OrdersComponent {
     this.search.set("");
     this.statusFilter.set([]);
     this.priorityFilter.set("");
+    this.patientFilter.set("");
+    this.doctorFilter.set("");
+    this.serviceFilter.set("");
     this.page.set(1);
   }
 
@@ -441,10 +516,6 @@ export class OrdersComponent {
     this.resetDraftFiltersFromCurrent();
   }
 
-  onDraftSearchValueChange(value: string): void {
-    this.draftSearch.set(value);
-  }
-
   toggleDraftStatus(status: OrderStatus): void {
     if (this.draftStatusFilter().includes(status)) {
       this.draftStatusFilter.update((current) =>
@@ -463,16 +534,32 @@ export class OrdersComponent {
     this.draftPriorityFilter.set(value as Priority | "");
   }
 
+  onDraftPatientValueChange(value: string): void {
+    this.draftPatientFilter.set(value);
+  }
+
+  onDraftDoctorValueChange(value: string): void {
+    this.draftDoctorFilter.set(value);
+  }
+
+  onDraftServiceValueChange(value: string): void {
+    this.draftServiceFilter.set(value);
+  }
+
   clearAdvancedFiltersDraft(): void {
-    this.draftSearch.set("");
     this.draftStatusFilter.set([]);
     this.draftPriorityFilter.set("");
+    this.draftPatientFilter.set("");
+    this.draftDoctorFilter.set("");
+    this.draftServiceFilter.set("");
   }
 
   applyAdvancedFilters(): void {
-    this.search.set(this.draftSearch().trim());
     this.statusFilter.set([...this.draftStatusFilter()]);
     this.priorityFilter.set(this.draftPriorityFilter());
+    this.patientFilter.set(this.draftPatientFilter());
+    this.doctorFilter.set(this.draftDoctorFilter());
+    this.serviceFilter.set(this.draftServiceFilter());
     this.page.set(1);
     this.advancedFilters.set(false);
   }
@@ -636,9 +723,17 @@ export class OrdersComponent {
     return lucideSvg(entry.icon, entry.size);
   }
 
+  private uniqueSorted(values: string[]): string[] {
+    return Array.from(
+      new Set(values.map((value) => value.trim()).filter((value) => !!value)),
+    ).sort((a, b) => a.localeCompare(b));
+  }
+
   private resetDraftFiltersFromCurrent(): void {
-    this.draftSearch.set(this.search());
     this.draftStatusFilter.set([...this.statusFilter()]);
     this.draftPriorityFilter.set(this.priorityFilter());
+    this.draftPatientFilter.set(this.patientFilter());
+    this.draftDoctorFilter.set(this.doctorFilter());
+    this.draftServiceFilter.set(this.serviceFilter());
   }
 }

@@ -1,4 +1,4 @@
-<div class="flex flex-col h-full">
+<div class="flex flex-col">
   <div class="px-4 sm:px-6 py-4 border-b border-border bg-card shrink-0">
     <h1 class="font-display font-bold text-lg text-foreground">
       Workflow Board
@@ -10,10 +10,10 @@
   </div>
 
   <div
-    class="workflow-board-scroll flex-1 overflow-x-auto overflow-y-hidden p-3 sm:p-5"
+    class="workflow-board-scroll overflow-x-auto p-3 sm:p-5"
     tabindex="0"
   >
-    <div class="workflow-board-lanes flex gap-4 h-full" cdkDropListGroup>
+    <div class="workflow-board-lanes flex items-start gap-4" cdkDropListGroup>
       @for (col of columns; track col.id) {
         @let colOrders = getColumnOrders(col.id);
         <div
@@ -44,7 +44,7 @@
           </div>
 
           <div
-            class="flex-1 rounded-xl p-2 overflow-y-auto min-h-32 border-2 border-dashed transition-colors"
+            class="rounded-xl p-2 min-h-32 border-2 border-dashed transition-colors"
             [class.border-primary]="isDropListHovered(col.dropListId)"
             [class.border-border]="
               isDragActive() && !isDropListHovered(col.dropListId)

@@ -191,25 +191,19 @@
                   class="mb-1.5 block text-xs font-semibold text-foreground"
                   >Arch <span class="ml-0.5 text-danger">*</span></label
                 >
-                <div
-                  class="flex overflow-hidden rounded-lg border border-border"
-                >
-                  @for (a of ["Upper", "Lower", "Both"]; track a) {
-                    <app-button
-                      variant="ghost"
-                      size="sm"
-                      (onClick)="arch.set(a)"
-                      [buttonClass]="
-                        'flex-1 !rounded-none !border-0 !py-2 !text-xs ' +
-                        (arch() === a
-                          ? 'bg-primary !bg-primary text-white !text-white'
-                          : 'text-muted-foreground !text-muted-foreground hover:bg-muted hover:!bg-muted')
-                      "
-                      [ariaPressed]="arch() === a"
-                      [ariaLabel]="'Arch ' + a"
+                <div class="form-arch-toggle" role="radiogroup" aria-label="Arch">
+                  @for (a of archOptions; track a) {
+                    <button
+                      type="button"
+                      class="form-arch-toggle-btn"
+                      [class.form-arch-toggle-btn--active]="arch() === a"
+                      (click)="arch.set(a)"
+                      [attr.aria-checked]="arch() === a"
+                      [attr.aria-label]="'Arch ' + a"
+                      role="radio"
                     >
                       {{ a }}
-                    </app-button>
+                    </button>
                   }
                 </div>
               </div>
@@ -445,7 +439,7 @@
               </div>
               <div>
                 <label
-                  for="form-portal-password-span"
+                  for="form-portal-password"
                   class="mb-1.5 block text-xs font-semibold text-foreground"
                   >Portal Password
                   <span
@@ -456,19 +450,28 @@
                 <div class="relative">
                   <app-input
                     [unstyled]="true"
-                    id="form-portal-password-span"
+                    id="form-portal-password"
                     [type]="showPassword() ? 'text' : 'password'"
                     inputClass="w-full rounded-lg border border-border bg-card px-3 py-2 pr-10 text-sm"
                     placeholder="Set temporary password"
                   ></app-input>
-                  <app-icon-action-button
-                    [iconSvg]="getIconSvg(showPassword() ? 'eye-off' : 'eye')"
-                    [ariaLabel]="
+                  <button
+                    type="button"
+                    class="form-password-toggle"
+                    [attr.aria-label]="
                       showPassword() ? 'Hide password' : 'Show password'
                     "
-                    customClass="!absolute !right-2.5 !top-1/2 !-translate-y-1/2 !rounded-md !border-transparent !bg-transparent !p-1 !text-muted-foreground"
-                    (actionClick)="toggleShowPassword()"
-                  ></app-icon-action-button>
+                    [attr.aria-pressed]="showPassword()"
+                    (click)="toggleShowPassword()"
+                  >
+                    <span
+                      [innerHTML]="
+                        getIconSvg(showPassword() ? 'eye-off' : 'eye')
+                          | safeHtml
+                      "
+                      aria-hidden="true"
+                    ></span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -851,39 +854,80 @@
               <label class="mb-1.5 block text-xs font-semibold text-foreground"
                 >Uploaded Files</label
               >
-              <div class="space-y-2">
-                @for (f of scanFiles(); track f) {
-                  <div
-                    class="flex items-center gap-2 rounded-lg bg-muted/50 px-3 py-2"
-                  >
-                    <span
-                      [innerHTML]="getIconSvg('file-text') | safeHtml"
-                      class="shrink-0 text-muted-foreground"
-                      aria-hidden="true"
-                    ></span>
-                    <span
-                      class="flex-1 truncate font-mono text-xs text-foreground"
-                      >{{ f }}</span
-                    >
-                    <span class="text-[9px] font-semibold text-success"
-                      >Uploaded</span
-                    >
-                    <app-icon-action-button
-                      [iconSvg]="getIconSvg('x')"
-                      [ariaLabel]="'Remove ' + f"
-                      customClass="!rounded-md !border-transparent !bg-transparent !p-0.5 !text-muted-foreground hover:!text-danger"
-                      (actionClick)="removeScanFile(f)"
-                    ></app-icon-action-button>
+              <div class="rounded-xl border border-border bg-card p-3">
+                <input
+                  #scanFilesPicker
+                  type="file"
+                  multiple
+                  class="hidden"
+                  (change)="onScanFilesSelected($event)"
+                />
+                @if (scanFiles().length === 0) {
+                  <div class="py-4 text-center">
+                    <p class="text-xs font-semibold text-foreground">
+                      No uploaded files yet
+                    </p>
+                    <p class="mt-1 text-[11px] text-muted-foreground">
+                      Add scan files to include them in this case.
+                    </p>
+                  </div>
+                } @else {
+                  <div class="space-y-2">
+                    @for (f of scanFiles(); track f) {
+                      <div
+                        class="group flex items-center gap-3 rounded-lg border border-border bg-card px-3 py-2.5 transition-colors hover:border-primary/35 hover:bg-muted/20"
+                      >
+                        <span
+                          class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground"
+                        >
+                          <span
+                            [innerHTML]="getIconSvg('file-text') | safeHtml"
+                            aria-hidden="true"
+                          ></span>
+                        </span>
+                        <div class="min-w-0 flex-1">
+                          <p class="truncate font-mono text-xs text-foreground">
+                            {{ f }}
+                          </p>
+                          <p class="mt-0.5 text-[10px] text-muted-foreground">
+                            {{ scanFileExtension(f) }} · Ready for review
+                          </p>
+                        </div>
+                        <span
+                          class="inline-flex items-center gap-1 rounded-md bg-success/10 px-2 py-0.5 text-[10px] font-semibold text-success"
+                        >
+                          <span
+                            [innerHTML]="getIconSvg('check-circle') | safeHtml"
+                            aria-hidden="true"
+                          ></span>
+                          Uploaded
+                        </span>
+                        <app-icon-action-button
+                          [iconSvg]="getIconSvg('x')"
+                          [ariaLabel]="'Remove ' + f"
+                          title="Remove file"
+                          customClass="!rounded !border-transparent !bg-transparent !p-1.5 !text-muted-foreground hover:!bg-danger/10 hover:!text-danger"
+                          (actionClick)="removeScanFile(f)"
+                        ></app-icon-action-button>
+                      </div>
+                    }
                   </div>
                 }
               </div>
               <app-button
                 variant="ghost"
                 size="md"
-                buttonClass="mt-2 w-full !rounded-lg !border-2 !border-dashed !border-border !bg-transparent py-3 text-xs text-muted-foreground transition-colors hover:!border-primary/40 hover:!text-primary"
+                buttonClass="mt-2 w-full !rounded-lg !border-2 !border-dashed !border-border !bg-transparent py-3 text-xs text-muted-foreground transition-colors hover:!border-primary/40 hover:!bg-primary/5 hover:!text-primary"
                 ariaLabel="Add more scan files"
+                (onClick)="scanFilesPicker.click()"
               >
-                + Add more files
+                <span class="flex items-center justify-center gap-1.5">
+                  <span
+                    [innerHTML]="getIconSvg('upload') | safeHtml"
+                    aria-hidden="true"
+                  ></span>
+                  Add more files
+                </span>
               </app-button>
             </div>
           </div>
