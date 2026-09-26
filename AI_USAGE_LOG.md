@@ -18,9 +18,11 @@ The current session used AI-assisted repository inspection and documentation dra
 
 ## Controlled AI Comparison
 
-Status: Pending controlled evidence.
+Status: **AWAITING HUMAN EXECUTION** — protocol prepared, run not yet performed.
 
-Required conditions not yet satisfied in the repository snapshot:
+Protocol: `docs/ai-comparison-protocol.md` (frozen requirement, exact prompt, fixed context bundle, 60-minute time allowance, 3-iteration limit, rubric weights 20/20/20/15/15/10). Empty evidence slots: `evidence/ai-comparison/`.
+
+Required conditions to be satisfied at run time:
 
 - Same approved AI tool and model
 - Same sanitized requirement

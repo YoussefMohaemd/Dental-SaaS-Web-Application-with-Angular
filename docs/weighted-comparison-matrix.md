@@ -35,9 +35,13 @@ Scores below are qualitative project scores for the current repository state, no
 
 Weight: 15% within the broader selection criteria requested by the task.
 
-Status: pending controlled evidence.
+Status: **AWAITING HUMAN EXECUTION.**
 
-Reason: no controlled comparison pack was present in the inspected repository snapshot, so any score would be fabricated.
+The controlled comparison is fully specified in [`docs/ai-comparison-protocol.md`](./ai-comparison-protocol.md) (frozen requirement, exact prompt, fixed context bundle, 60-minute allowance, 3-iteration limit, rubric weights 20/20/20/15/15/10 = 100%). Empty capture slots are prepared in [`evidence/ai-comparison/`](../evidence/ai-comparison/).
+
+Contribution formula once executed: `protocol_score / 100 × 15%`.
+
+No score will be entered into this matrix without a completed `evidence/ai-comparison/scoresheet.md` and `effort-log.md`. Any score appearing before that would be fabricated.
 
 ## Notes
 
