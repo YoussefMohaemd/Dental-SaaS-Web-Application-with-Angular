@@ -30,8 +30,8 @@ Scores below are qualitative project scores for the current repository state, no
 | Design-system architecture | 8/10 | Tokens, theme mapping, and shared controls already exist and are wired into the app shell. | `src/styles/tokens.scss`, `src/styles/theme.scss`, `src/styles.scss`, shared controls. |
 | Component implementation | 8/10 | Many reusable controls and business views already exist, including the Orders TreeTable and workflow board. | Shared components, Orders, workflow, and routed detail pages. |
 | Code quality, testing, and accessibility | 7/10 | The repository already contains extensive unit tests, but the task-specific accessibility and state-validation evidence still needs completion. | Existing spec files and validation docs; remaining evidence gaps. |
-| Documentation and presentation | 5/10 | Prior docs exist, but the required final README, AI log, checkpoint status, and contribution summary were missing in the inspected snapshot. | Documentation inventory inspection. |
-| Git collaboration and AI validation | 4/10 | Git evidence exists only indirectly in the workspace; controlled AI comparison artifacts are not yet present. | Repository state, lack of AI usage log, lack of controlled comparison evidence. |
+| Documentation and presentation | 7/10 | The README, AI log, contribution summary, and core docs now exist and are aligned with the Angular POC. The remaining gaps are human-validated evidence and pending comparison artifacts. | Current repository docs and evidence files. |
+| Git collaboration and AI validation | 4/10 | Git evidence exists only indirectly in the workspace; controlled AI comparison artifacts are still not present. | Repository state, controlled comparison still pending. |
 
 ## AI-Assisted Development Effectiveness
 

@@ -1,10 +1,10 @@
 # Dental SaaS Web Application with Angular
 
-Angular 21 proof-of-concept for a dental SaaS UI foundation. The repository demonstrates a reusable design system, orders and workflow surfaces, in-memory JSON-backed data services, and a UI stack based on PrimeNG, Taiga UI, Angular CDK, and Tailwind CSS.
+Angular 21 proof-of-concept for a dental SaaS UI foundation. The repository demonstrates reusable UI components, routed business screens, in-memory JSON-backed services, and a design system built with PrimeNG, Taiga UI, Angular CDK, Tailwind CSS, and signals-based Angular patterns.
 
 ## Scope
 
-This repository is an Angular-based adaptation of the IMP-FE-003 POC. It focuses on reusable components, enterprise UI patterns, order management, workflow interactions, and truthful documentation/evidence rather than a visual redesign.
+This repository is an Angular-based dental SaaS POC. It focuses on reusable components, enterprise UI patterns, order and workflow surfaces, accessibility, and evidence-backed documentation.
 
 ## Stack
 
@@ -18,8 +18,6 @@ This repository is an Angular-based adaptation of the IMP-FE-003 POC. It focuses
 
 ## Setup
 
-Install dependencies and build the Tailwind output used by the app shell.
-
 ```text
 npm install
 npm run tailwind:build
@@ -30,8 +28,6 @@ npm run tailwind:build
 ```text
 npm start
 ```
-
-The `start` script runs Tailwind in watch mode together with the Angular dev server.
 
 ## Tests
 
@@ -50,26 +46,26 @@ npm run storybook
 npm run build-storybook
 ```
 
-`npm run storybook` starts the interactive workshop; `npm run build-storybook` produces the static bundle in `storybook-static/`. Stories cover the basic (`app-button`, `app-text-field`), composite (`search-filter-toolbar`), and business (`status-badge`, `workflow-timeline`) groups; per-story screenshots are stored in `evidence/storybook/`.
+Storybook covers the shared controls and reusable composite/business patterns. Static output is generated in `storybook-static/`.
 
 ## Current Status (2026-09-26)
 
 | Gate | Result |
 | --- | --- |
-| `npm run build` | Passing (non-blocking Sass/CSS budget warnings only) |
+| `npm run build` | Passing, with non-blocking Sass/CSS budget warnings |
 | `npm test -- --watch=false --browsers=ChromeHeadless` | 336/336 passing |
-| `npm run lint` (`tsc --noEmit -p tsconfig.lint.json`) | Passing |
+| `npm run lint` | Passing |
 | `npm run build-storybook` | Passing |
 | axe-core scan (wcag2a/aa + best-practice, 24 route-states) | 0 violations |
 
-Raw logs: `evidence/build/`, `evidence/tests/`, `evidence/storybook/`.
+Raw logs live under `evidence/`.
 
 ## Configuration
 
-- `src/styles/tokens.scss` defines design tokens and CSS custom properties.
-- `src/styles/theme.scss` maps the token system into browser variables and Tailwind theme values.
-- `src/styles.scss` applies global base styles and PrimeNG overrides.
-- `src/app/app.config.ts` wires routing, PrimeNG, Taiga UI language setup, HTTP, and animations.
+- `src/styles/tokens.scss` defines the design tokens.
+- `src/styles/theme.scss` maps token values into the browser/Tailwind theme layer.
+- `src/styles.scss` applies global styles and component overrides.
+- `src/app/app.config.ts` wires routing, HTTP, animations, and UI providers.
 
 ## Supported Scenarios
 
@@ -77,37 +73,34 @@ Raw logs: `evidence/build/`, `evidence/tests/`, `evidence/storybook/`.
 - Order detail, sub-order detail, and create-order flows
 - Workflow board drag/drop transitions
 - Forms, scan/file, patient, doctor, clinic, billing, change-request, report, notification, and settings pages
-- Shared reusable controls such as buttons, inputs, search input, status badges, avatars, and loading/empty states
+- Shared controls such as buttons, inputs, search input, status badges, avatars, and loading/empty states
 
 ## Evidence
 
-Verified artifacts live under `evidence/`:
-
-- `evidence/build/` - build and lint logs (`build.log`, `lint.log`)
-- `evidence/tests/` - full test run log (`test.log`, 336/336 passing)
-- `evidence/storybook/` - `build-storybook` log plus per-story screenshots
-- `evidence/states/` - Order Management screenshots for normal, loading, empty, and error states
-- `evidence/responsive/` - screenshots at 1440/768/375 for layout shell, sidebar behavior, orders table, forms, toolbars, cards, dialog, and workflow board, plus `responsive-checklist.md` and overflow results
-- `evidence/accessibility/` - axe-core report (0 violations across 24 route-states), keyboard walkthrough artifacts, and a manual checklist whose browser-only items are marked REQUIRES HUMAN VALIDATION
+- `evidence/build/` - build and lint logs
+- `evidence/tests/` - test log
+- `evidence/storybook/` - Storybook build log and screenshots
+- `evidence/states/` - order state screenshots
+- `evidence/responsive/` - responsive screenshots and checklist
+- `evidence/accessibility/` - axe-core and keyboard walkthrough artifacts
 
 ## Limitations
 
 - This is a POC with in-memory/static JSON data, not a production backend.
-- Controlled AI-comparison evidence is not yet present in the repository snapshot.
-- Some submission evidence must remain human-generated and cannot be fabricated.
+- Controlled AI-comparison evidence is pending human execution.
+- Some evidence items are intentionally human-validated and must not be fabricated.
 
 ## Demo Notes
 
-- Start at the login route, then navigate into the authenticated shell.
-- Use the Orders and Workflow surfaces to observe the main reusable UI patterns.
-- Use the routed detail pages to review entity relationships and protected UI states.
-- **Order state demo:** on `/orders`, use the `normal | loading | empty | error` toggle in the toolbar header to switch the Order Management view between its four states (screenshots in `evidence/states/`).
+- Start at the login route, then enter the authenticated shell.
+- Use the Orders and Workflow surfaces to review the reusable UI patterns.
+- Review routed detail pages to confirm entity relationships and protected states.
+- On `/orders`, use the `normal | loading | empty | error` toggle in the toolbar header to switch the Order Management view.
 
 ## Architecture Overview
 
-- Angular owns application composition and routing.
-- PrimeNG provides the enterprise widget layer such as TreeTable and dialogs.
-- Taiga UI supplies the app root and language integration.
-- Angular CDK provides drag/drop primitives for the workflow board.
+- Angular owns routing and application composition.
+- PrimeNG provides the enterprise widget layer.
+- Taiga UI supports root-level UI integration where used.
+- Angular CDK provides drag/drop primitives.
 - Tailwind provides utility-first layout and spacing.
-- Shared token files centralize the app's effective visual values without changing the current rendered UI.
