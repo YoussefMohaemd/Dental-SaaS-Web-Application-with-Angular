@@ -164,3 +164,23 @@ focus, keyboard, and board drag/drop.
 - Validation snapshot at the end of this slice: `248` unit tests passing and
   `npm run build` passing; lint remains unavailable via the configured
   `@angular/build:tsc` builder, so the documented fallback path still applies.
+
+## Accessibility contrast deviation (2026-09-26)
+
+The earlier theming claim ("tokens match React `index.css` exactly") is **no
+longer literally true** for foreground/accent colors, by deliberate decision to
+satisfy WCAG 2.1 AA contrast (axe-core reported failures on the React-exact
+values):
+
+| Token | React-exact value | Current value (WCAG AA) |
+| --- | --- | --- |
+| `--color-primary` / sidebar active | `#2563EB` | `#1D4ED8` |
+| `--color-primary-hover` | `#1D4ED8` | `#1E40AF` |
+| `--color-foreground-muted` | `#64748B` | `#5B6779` |
+| `--color-success` | `#10B981` | `#047857` |
+| `--color-warning` | `#F59E0B` | `#B45309` |
+| `--color-danger` | `#EF4444` | `#B91C1C` |
+| `--color-accent` | `#06B6D4` | `#0E7490` |
+| Status badge text (`status-badge.component.ts`) | `#64748B` | `#5B6779` |
+
+Layout, spacing, typography, radii, and geometry remain parity-verified. Evidence: `evidence/accessibility/axe-summary.md` (0 violations across 24 route-states after the change).

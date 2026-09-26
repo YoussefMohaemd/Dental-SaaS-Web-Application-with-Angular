@@ -57,3 +57,15 @@ only defined `--color-*` names, leaving most global styles unresolved.
    validation coverage (table state, workflow status lookup, create-order
    contract tests, route-safety tests, forms keyboard behavior).
 - No additional token or utility rewiring was required for that follow-up.
+
+## Follow-up note (2026-09-26) — deliberate contrast deviation
+
+- Foreground/accent colors were darkened relative to the React-exact values
+   for WCAG 2.1 AA contrast (axe-core failures on the original values):
+   `--color-primary` → `#1D4ED8`, `--color-primary-hover` → `#1E40AF`,
+   `--color-foreground-muted` → `#5B6779`, `--color-success` → `#047857`,
+   `--color-warning` → `#B45309`, `--color-danger` → `#B91C1C`,
+   `--color-accent` → `#0E7490`.
+- Full table and rationale: `docs/validation/react-angular-parity-report.md`
+   § "Accessibility contrast deviation (2026-09-26)".
+- Layout, spacing, typography, radii, and the dark-theme values are unchanged.
