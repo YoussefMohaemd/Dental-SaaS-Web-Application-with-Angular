@@ -128,7 +128,7 @@
         <app-button
           variant="ghost"
           size="sm"
-          buttonClass="!min-h-0 !rounded-md !p-0 text-xs text-muted-foreground hover:!text-danger"
+          buttonClass="!min-h-0 !rounded-md !border !border-border !bg-denger !px-2 !py-1 text-xs text-foreground hover:!text-danger"
           ariaLabel="Clear all filters"
           (onClick)="clearAllFilters()"
         >
@@ -227,16 +227,11 @@
   <div class="flex-1 overflow-auto">
     @switch (viewState()) {
       @case ("loading") {
-        <div class="p-4 sm:p-6">
-          <app-table-feedback
-            mode="loading"
-            message="Loading orders..."
-            [iconSvg]="getIconSvg('refresh')"
-            [spin]="true"
-            iconClass="mb-3 text-muted-foreground"
-            iconWidth="28px"
-            iconHeight="28px"
-          ></app-table-feedback>
+        <div class="space-y-2 p-4 sm:p-6" aria-label="Loading orders" role="status">
+          <span class="sr-only">Loading orders...</span>
+          @for (row of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; track row) {
+            <div class="skeleton h-10 animate-pulse rounded-lg bg-muted"></div>
+          }
         </div>
       }
       @case ("empty") {

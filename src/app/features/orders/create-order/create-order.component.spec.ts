@@ -96,6 +96,15 @@ describe("CreateOrderComponent", () => {
     expect(component.selectedServices()).not.toContain("gfmr");
   });
 
+  it("should open upload picker for a service requirement", () => {
+    const input = document.createElement("input");
+    spyOn(input, "click");
+
+    component.openUploadDialogForRequirement("gfmr", "Upper arch scan", input);
+
+    expect(input.click).toHaveBeenCalled();
+  });
+
   it("should toggle teeth in general context", () => {
     component.toggleTooth(11);
     expect(component.selectedTeeth()).toContain(11);
@@ -186,6 +195,44 @@ describe("CreateOrderComponent", () => {
     component.activeServiceForTeeth.set("gfmr");
     component.toggleTooth(11);
     expect(component.allTeethCombined()).toEqual([11, 12]);
+  });
+
+  it("should include selected file references for each service on submit", () => {
+    component.setField("patientId", "p1");
+    component.setField("doctorId", "d1");
+    component.setField("clinicId", "c1");
+    component.toggleService("gfmr");
+
+    const input = document.createElement("input");
+    const dataTransfer = new DataTransfer();
+    dataTransfer.items.add(new File(["scan"], "upper-arch.stl"));
+    dataTransfer.items.add(new File(["scan"], "bite-scan.obj"));
+    Object.defineProperty(input, "files", {
+      configurable: true,
+      value: dataTransfer.files,
+    });
+
+    component.openUploadDialogForRequirement("gfmr", "Upper arch scan", input);
+    component.onUploadFilesSelected({ target: input } as unknown as Event);
+
+    const orderService = (component as any).orderService as {
+      createOrder: jasmine.Spy;
+    };
+    const subOrderService = (component as any).subOrderService as {
+      createForOrder: jasmine.Spy;
+    };
+    spyOn(orderService, "createOrder").and.callThrough();
+    spyOn(subOrderService, "createForOrder").and.returnValue([]);
+    spyOn((component as any).navigationService, "navigate");
+
+    component.submitOrder();
+
+    expect(orderService.createOrder).toHaveBeenCalled();
+    const createdOrderArg = orderService.createOrder.calls.mostRecent().args[0];
+    expect(createdOrderArg.creationData.services[0].fileReferences).toEqual([
+      "upper-arch.stl",
+      "bite-scan.obj",
+    ]);
   });
 
   it("should preserve service/form/tooth/file references on submit", () => {

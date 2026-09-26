@@ -23,7 +23,6 @@ import { IconActionButtonComponent } from "@shared/components/icon-action-button
 import { SearchInputComponent } from "@shared/components/search-input/search-input.component";
 import { AppSelectComponent } from "@shared/components/select/select.component";
 import { StatusBadgeComponent } from "@shared/components/status-badge/status-badge.component";
-import { TableFeedbackComponent } from "@shared/components/table-feedback/table-feedback.component";
 import { SafeHtmlPipe } from "../../shared/pipes/safe-html.pipe";
 import { lucideSvg } from "@shared/icons/lucide-icons";
 import { buildSortAriaLabel, sortAriaValue } from "@shared/utils/sort-a11y";
@@ -126,7 +125,6 @@ export function compareOrderValues(a: unknown, b: unknown): number {
     SearchInputComponent,
     AppSelectComponent,
     StatusBadgeComponent,
-    TableFeedbackComponent,
     SafeHtmlPipe,
   ],
   templateUrl: "./orders.component.html",

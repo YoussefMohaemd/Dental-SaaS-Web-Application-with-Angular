@@ -136,6 +136,10 @@ export class CreateOrderComponent {
   readonly serviceDetails = signal<Record<string, ServiceDetail>>({});
 
   readonly serviceForms = signal<Record<string, ServiceClinicalForm>>({});
+  readonly uploadTarget = signal<{ serviceId: string; requirement: string } | null>(
+    null,
+  );
+  readonly uploadedRequirementFiles = signal<Record<string, string[]>>({});
 
   readonly selectedPatient = computed(() =>
     this.patients().find((p) => p.id === this.form().patientId),
@@ -404,13 +408,14 @@ export class CreateOrderComponent {
         : [...allTeeth];
       const serviceDetails = this.getServiceDetail(service.id);
       const serviceForm = this.getServiceForm(service.id);
+      const fileReferences = this.serviceFileReferences(service.id);
       const creationData: SubOrderCreationData = {
         serviceId: service.id,
         serviceDetails: { ...serviceDetails },
         serviceForm: { ...serviceForm },
         selectedTeeth,
         scanRequirements: [...service.scanRequirements],
-        fileReferences: [],
+        fileReferences,
       };
       return {
         serviceId: service.id,
@@ -424,6 +429,7 @@ export class CreateOrderComponent {
           this.fallbackServiceNote(service.name),
         teeth: selectedTeeth,
         scanRequirements: [...service.scanRequirements],
+        fileReferences,
         creationData,
       };
     });
@@ -517,6 +523,7 @@ export class CreateOrderComponent {
       "chevron-left":
         '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>',
       plus: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>',
+      x: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>',
       "file-up":
         '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 12 15 15"/></svg>',
       "file-up-lg":
@@ -532,5 +539,91 @@ export class CreateOrderComponent {
       .join("")
       .toUpperCase()
       .slice(0, 2);
+  }
+
+  openUploadDialogForRequirement(
+    serviceId: string,
+    requirement: string,
+    input: HTMLInputElement,
+  ): void {
+    this.uploadTarget.set({ serviceId, requirement });
+    input.value = "";
+    input.click();
+  }
+
+  openUploadDialogForService(serviceId: string, input: HTMLInputElement): void {
+    const service = this.selectedServiceObjects().find((s) => s.id === serviceId);
+    const firstRequirement = service?.scanRequirements[0];
+    if (!firstRequirement) return;
+    this.openUploadDialogForRequirement(serviceId, firstRequirement, input);
+  }
+
+  onUploadFilesSelected(event: Event): void {
+    const target = this.uploadTarget();
+    if (!target) return;
+
+    const input = event.target as HTMLInputElement;
+    const files = input.files;
+    if (!files || files.length === 0) {
+      input.value = "";
+      return;
+    }
+
+    const key = this.requirementKey(target.serviceId, target.requirement);
+    const additions = Array.from(files)
+      .map((file) => file.name.trim())
+      .filter((name) => name.length > 0);
+
+    if (additions.length > 0) {
+      this.uploadedRequirementFiles.update((prev) => {
+        const existing = prev[key] ?? [];
+        const merged = [...existing];
+        for (const name of additions) {
+          if (!merged.includes(name)) merged.push(name);
+        }
+        return { ...prev, [key]: merged };
+      });
+    }
+
+    input.value = "";
+  }
+
+  filesForRequirement(serviceId: string, requirement: string): string[] {
+    return (
+      this.uploadedRequirementFiles()[this.requirementKey(serviceId, requirement)] ??
+      []
+    );
+  }
+
+  removeRequirementFile(
+    serviceId: string,
+    requirement: string,
+    fileName: string,
+  ): void {
+    const key = this.requirementKey(serviceId, requirement);
+    this.uploadedRequirementFiles.update((prev) => {
+      const remaining = (prev[key] ?? []).filter((name) => name !== fileName);
+      if (remaining.length === 0) {
+        const next = { ...prev };
+        delete next[key];
+        return next;
+      }
+      return { ...prev, [key]: remaining };
+    });
+  }
+
+  serviceFileReferences(serviceId: string): string[] {
+    const refs = this.uploadedRequirementFiles();
+    const servicePrefix = `${serviceId}::`;
+    const merged = new Set<string>();
+    for (const [key, files] of Object.entries(refs)) {
+      if (!key.startsWith(servicePrefix)) continue;
+      for (const file of files) merged.add(file);
+    }
+    return [...merged];
+  }
+
+  private requirementKey(serviceId: string, requirement: string): string {
+    return `${serviceId}::${requirement}`;
   }
 }
