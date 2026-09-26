@@ -108,105 +108,17 @@
         />
       } @else {
         <div
-          class="h-50 flex gap-2"
+          class="h-50"
           role="img"
           aria-label="Bar chart of orders received versus completed per weekday"
         >
-          <div class="flex flex-col w-7 shrink-0" aria-hidden="true">
-            <div class="flex-1 flex flex-col justify-between text-right">
-              @for (tick of volumeTicks(); track tick) {
-                <span class="text-[11px] leading-none text-muted-foreground">{{
-                  tick
-                }}</span>
-              }
-            </div>
-            <div class="h-5 shrink-0"></div>
-          </div>
-
-          <div class="flex-1 flex flex-col min-w-0">
-            <div class="flex-1 relative min-h-0">
-              <div
-                class="absolute inset-0 flex flex-col justify-between"
-                aria-hidden="true"
-              >
-                @for (tick of volumeTicks(); track tick) {
-                  <div class="border-t border-dashed border-border"></div>
-                }
-              </div>
-              <div
-                class="relative h-full flex items-stretch justify-between gap-1"
-              >
-                @for (point of weeklyData(); track point.day) {
-                  <div
-                    class="flex-1 flex flex-col min-w-0 relative rounded cursor-default"
-                    (mouseenter)="setHoveredDay(point.day)"
-                    (mouseleave)="clearHoveredDay()"
-                    (focusin)="setHoveredDay(point.day)"
-                    (focusout)="clearHoveredDay()"
-                    tabindex="0"
-                    [attr.aria-label]="
-                      point.day +
-                      ': ' +
-                      point.orders +
-                      ' received, ' +
-                      point.completed +
-                      ' completed'
-                    "
-                  >
-                    @if (hoveredDay() === point.day) {
-                      <div
-                        class="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 z-10 whitespace-nowrap rounded-lg border border-border bg-card px-2.5 py-1.5 text-xs shadow-xl pointer-events-none"
-                      >
-                        <p class="font-semibold text-foreground mb-1">
-                          {{ point.day }}
-                        </p>
-                        <p
-                          class="flex items-center gap-1.5 text-muted-foreground"
-                        >
-                          <span
-                            class="w-2 h-2 rounded-sm bg-primary inline-block"
-                          ></span>
-                          Received:
-                          <span class="font-semibold text-foreground">{{
-                            point.orders
-                          }}</span>
-                        </p>
-                        <p
-                          class="flex items-center gap-1.5 text-muted-foreground mt-0.5"
-                        >
-                          <span
-                            class="w-2 h-2 rounded-sm bg-success inline-block"
-                          ></span>
-                          Completed:
-                          <span class="font-semibold text-foreground">{{
-                            point.completed
-                          }}</span>
-                        </p>
-                      </div>
-                    }
-                    <div
-                      class="flex-1 flex gap-1 items-end justify-center min-h-0"
-                    >
-                      <div
-                        class="w-5 max-w-[42%] min-h-1 bg-primary rounded-t-[4px] transition-all"
-                        [style.height.%]="orderBarHeight(point)"
-                        [title]="point.day + ' received: ' + point.orders"
-                      ></div>
-                      <div
-                        class="w-5 max-w-[42%] min-h-1 bg-success rounded-t-[4px] transition-all"
-                        [style.height.%]="completedBarHeight(point)"
-                        [title]="point.day + ' completed: ' + point.completed"
-                      ></div>
-                    </div>
-                    <span
-                      class="h-5 shrink-0 flex items-center justify-center text-[11px] text-muted-foreground"
-                      >{{ point.day }}</span
-                    >
-                  </div>
-                }
-              </div>
-            </div>
-          </div>
+          <canvas
+            baseChart
+            [data]="weeklyVolumeChartData()"
+            [options]="weeklyVolumeChartOptions()"
+            type="bar"
+            aria-label="Bar chart of orders received versus completed per weekday"
+          ></canvas>
         </div>
       }
     </div>

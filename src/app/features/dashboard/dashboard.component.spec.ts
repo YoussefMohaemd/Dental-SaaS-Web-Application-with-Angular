@@ -137,26 +137,23 @@ describe("DashboardComponent", () => {
 
   it("should render seven volume bars driven by the dashboard data service", () => {
     expect(component.weeklyData().length).toBe(7);
-    const chart = fixture.debugElement.query(By.css('[role="img"]'));
+    const chart = fixture.debugElement.query(
+      By.css(
+        '[aria-label="Bar chart of orders received versus completed per weekday"]',
+      ),
+    );
     expect(chart).toBeTruthy();
   });
 
-  it("should scale volume bars against the nice axis max", () => {
+  it("should configure weekly chart scaling from the nice axis max", () => {
     expect(component.volumeNiceMax()).toBe(25);
-    for (const point of component.weeklyData()) {
-      expect(component.orderBarHeight(point)).toBeGreaterThan(0);
-      expect(component.orderBarHeight(point)).toBeLessThanOrEqual(100);
-      expect(component.completedBarHeight(point)).toBeLessThanOrEqual(100);
-    }
-  });
-
-  it("should show a tooltip when a day is hovered", () => {
-    component.setHoveredDay("Mon");
-    fixture.detectChanges();
-    const chart = fixture.debugElement.query(By.css('[role="img"]'));
-    expect(chart.nativeElement.textContent).toContain("Received:");
-    component.clearHoveredDay();
-    expect(component.hoveredDay()).toBeNull();
+    const options = component.weeklyVolumeChartOptions();
+    const yScale = options?.scales?.["y"] as {
+      max?: number;
+      ticks?: { stepSize?: number };
+    };
+    expect(yScale?.max).toBe(25);
+    expect(yScale?.ticks?.stepSize).toBe(6.25);
   });
 
   it("should derive workflow stages from order data with a fallback", () => {

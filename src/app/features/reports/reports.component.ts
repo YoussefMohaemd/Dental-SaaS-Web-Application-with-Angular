@@ -5,6 +5,12 @@ import { CaseDataService } from "@core/services/case-data.service";
 import { BillingDataService } from "@core/services/billing-data.service";
 import { ReportsDataService } from "@core/services/reports-data.service";
 import { FormatUtils } from "@core/services/format-utils.service";
+import { ChartConfiguration, ChartData, TooltipItem } from "chart.js";
+import {
+  BaseChartDirective,
+  provideCharts,
+  withDefaultRegisterables,
+} from "ng2-charts";
 import {
   BREAKDOWN_COLORS,
   BreakdownSlice,
@@ -16,7 +22,8 @@ import {
 @Component({
   selector: "app-reports",
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, BaseChartDirective],
+  providers: [provideCharts(withDefaultRegisterables())],
   templateUrl: "./reports.component.html",
   styleUrl: "./reports.component.scss",
 })
@@ -43,14 +50,6 @@ export class ReportsComponent {
     return this.reportsService.reports().workflowShare;
   }
 
-  get maxRevenue(): number {
-    return Math.max(...this.monthlyRevenue.map((r) => r.revenue));
-  }
-
-  get maxTurnaround(): number {
-    return Math.max(...this.turnaround.map((t) => t.days));
-  }
-
   readonly totalRevenue = computed(() =>
     this.billingService
       .records()
@@ -72,95 +71,150 @@ export class ReportsComponent {
     );
   });
 
-  barHeight(revenue: number): number {
-    return Math.max(4, Math.round((revenue / this.maxRevenue) * 100));
-  }
+  readonly monthlyRevenueChartData = computed<ChartData<"bar">>(() => ({
+    labels: this.monthlyRevenue.map((point) => point.month),
+    datasets: [
+      {
+        label: "Revenue",
+        data: this.monthlyRevenue.map((point) => point.revenue),
+        backgroundColor: "#2563EB",
+        borderRadius: 4,
+        barThickness: 28,
+        maxBarThickness: 28,
+      },
+    ],
+  }));
 
-  lineHeight(days: number): number {
-    return Math.max(4, Math.round((days / this.maxTurnaround) * 100));
-  }
+  readonly monthlyRevenueChartOptions = computed<
+    ChartConfiguration<"bar">["options"]
+  >(() => ({
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: (context: TooltipItem<"bar">) =>
+            `Revenue: ${this.formatUtils.formatCurrency(Number(context.parsed.y ?? 0))}`,
+        },
+      },
+    },
+    scales: {
+      x: {
+        grid: { display: false },
+        ticks: { color: "#6B7280", font: { size: 11 } },
+      },
+      y: {
+        min: 0,
+        max: 70000,
+        grid: { color: "#E5E7EB", borderDash: [3, 3] },
+        ticks: {
+          stepSize: 20000,
+          color: "#6B7280",
+          font: { size: 11 },
+          callback: (value) => this.yTickValue(Number(value)),
+        },
+      },
+    },
+  }));
+
+  readonly restorationBreakdownChartData = computed<ChartData<"doughnut">>(
+    () => ({
+      labels: this.restorationBreakdown.map((slice) => slice.name),
+      datasets: [
+        {
+          label: "Restoration Distribution",
+          data: this.restorationBreakdown.map((slice) => slice.value),
+          backgroundColor: this.restorationBreakdown.map((_, i) =>
+            this.sliceColor(i),
+          ),
+          borderWidth: 0,
+          spacing: 2,
+          hoverOffset: 4,
+        },
+      ],
+    }),
+  );
+
+  readonly restorationBreakdownChartOptions: ChartConfiguration<"doughnut">["options"] =
+    {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: false,
+      cutout: "62%",
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: (context: TooltipItem<"doughnut">) => {
+              const label = context.label ?? "Value";
+              const value = context.parsed ?? 0;
+              return `${label}: ${value}%`;
+            },
+          },
+        },
+      },
+    };
+
+  readonly turnaroundChartData = computed<ChartData<"line">>(() => ({
+    labels: this.turnaround.map((point) => point.day),
+    datasets: [
+      {
+        label: "Average Turnaround",
+        data: this.turnaround.map((point) => point.days),
+        borderColor: "#06B6D4",
+        backgroundColor: "rgba(6, 182, 212, 0.2)",
+        borderWidth: 2.5,
+        tension: 0.35,
+        fill: false,
+        pointBackgroundColor: "#06B6D4",
+        pointBorderColor: "#06B6D4",
+        pointRadius: 4,
+        pointHoverRadius: 5,
+      },
+    ],
+  }));
+
+  readonly turnaroundChartOptions = computed<
+    ChartConfiguration<"line">["options"]
+  >(() => ({
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: (context: TooltipItem<"line">) =>
+            `${Number(context.parsed.y ?? 0).toFixed(1)} days`,
+        },
+      },
+    },
+    scales: {
+      x: {
+        grid: { display: false },
+        ticks: { color: "#6B7280", font: { size: 11 } },
+      },
+      y: {
+        min: 0,
+        max: 4,
+        grid: { color: "#E5E7EB", borderDash: [3, 3] },
+        ticks: {
+          stepSize: 1,
+          color: "#6B7280",
+          font: { size: 11 },
+          callback: (value) => `${value}d`,
+        },
+      },
+    },
+  }));
 
   sliceColor(index: number): string {
     return BREAKDOWN_COLORS[index % BREAKDOWN_COLORS.length];
   }
 
-  readonly barW = 560;
-  readonly barH = 240;
-  readonly barPadL = 44;
-  readonly barPadB = 28;
-  readonly barPadT = 8;
-
-  barX(index: number): number {
-    const inner = this.barW - this.barPadL - 8;
-    const slot = inner / this.monthlyRevenue.length;
-    return this.barPadL + slot * index + slot / 2 - 14;
-  }
-
-  barY(revenue: number): number {
-    const plotH = this.barH - this.barPadB - this.barPadT;
-    return this.barPadT + plotH - (revenue / 70000) * plotH;
-  }
-
-  barHt(revenue: number): number {
-    const plotH = this.barH - this.barPadB - this.barPadT;
-    return (revenue / 70000) * plotH;
-  }
-
-  barLabelX(index: number): number {
-    return this.barX(index) + 14;
-  }
-
   yTickValue(tick: number): string {
     return `$${Math.round(tick / 1000)}k`;
-  }
-
-  yTickY(tick: number): number {
-    const plotH = this.barH - this.barPadB - this.barPadT;
-    return this.barPadT + plotH - (tick / 70000) * plotH;
-  }
-
-  donutSegments(): { dash: string; offset: number; color: string }[] {
-    const total = this.restorationBreakdown.reduce((s, r) => s + r.value, 0);
-    const R = 62;
-    const C = 2 * Math.PI * R;
-    let acc = 0;
-    return this.restorationBreakdown.map((slice, i) => {
-      const frac = slice.value / total;
-      const gap = 0.02;
-      const seg = {
-        dash: `${Math.max(0, frac * C - 4)} ${C}`,
-        offset: -(acc * C) + C / 4,
-        color: this.sliceColor(i),
-      };
-      acc += frac + gap / this.restorationBreakdown.length;
-      return seg;
-    });
-  }
-
-  readonly lineW = 560;
-  readonly lineH = 200;
-  readonly linePadL = 36;
-  readonly linePadB = 28;
-  readonly linePadT = 8;
-
-  lineX(index: number): number {
-    const inner = this.lineW - this.linePadL - 8;
-    return this.linePadL + (inner / (this.turnaround.length - 1)) * index;
-  }
-
-  lineY(days: number): number {
-    const plotH = this.lineH - this.linePadB - this.linePadT;
-    return this.linePadT + plotH - (days / 4) * plotH;
-  }
-
-  linePoints(): string {
-    return this.turnaround
-      .map((t, i) => `${this.lineX(i)},${this.lineY(t.days)}`)
-      .join(" ");
-  }
-
-  lineTickY(tick: number): number {
-    const plotH = this.lineH - this.linePadB - this.linePadT;
-    return this.linePadT + plotH - (tick / 4) * plotH;
   }
 }

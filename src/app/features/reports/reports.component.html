@@ -50,55 +50,16 @@
           Revenue collected over the past 6 months
         </p>
       </div>
-      <svg
-        [attr.viewBox]="'0 0 ' + barW + ' ' + barH"
-        class="w-full"
-        role="img"
-        aria-label="Bar chart of monthly revenue"
-      >
-        @for (tick of [0, 20000, 40000, 60000]; track tick) {
-          <line
-            [attr.x1]="barPadL"
-            [attr.x2]="barW - 8"
-            [attr.y1]="yTickY(tick)"
-            [attr.y2]="yTickY(tick)"
-            stroke="var(--border)"
-            stroke-dasharray="3 3"
-          />
-          <text
-            [attr.x]="barPadL - 6"
-            [attr.y]="yTickY(tick) + 4"
-            text-anchor="end"
-            font-size="11"
-            fill="var(--muted-foreground)"
-          >
-            {{ yTickValue(tick) }}
-          </text>
-        }
-        @for (point of monthlyRevenue; track point.month; let i = $index) {
-          <rect
-            [attr.x]="barX(i)"
-            [attr.y]="barY(point.revenue)"
-            width="28"
-            [attr.height]="barHt(point.revenue)"
-            rx="4"
-            fill="var(--primary)"
-          >
-            <title>
-              {{ point.month }}: {{ formatUtils.formatCurrency(point.revenue) }}
-            </title>
-          </rect>
-          <text
-            [attr.x]="barLabelX(i)"
-            [attr.y]="barH - 8"
-            text-anchor="middle"
-            font-size="11"
-            fill="var(--muted-foreground)"
-          >
-            {{ point.month }}
-          </text>
-        }
-      </svg>
+      <div class="h-60">
+        <canvas
+          baseChart
+          [data]="monthlyRevenueChartData()"
+          [options]="monthlyRevenueChartOptions()"
+          type="bar"
+          role="img"
+          aria-label="Bar chart of monthly revenue"
+        ></canvas>
+      </div>
     </section>
 
     <section
@@ -114,31 +75,16 @@
         </p>
       </div>
       <div class="flex items-center gap-6">
-        <svg
-          viewBox="0 0 200 200"
-          class="w-full max-w-[260px]"
-          role="img"
-          aria-label="Donut chart of restoration types"
-        >
-          @for (seg of donutSegments(); track seg.color; let i = $index) {
-            <circle
-              cx="100"
-              cy="100"
-              r="62"
-              fill="none"
-              [attr.stroke]="seg.color"
-              stroke-width="26"
-              [attr.stroke-dasharray]="seg.dash"
-              [attr.stroke-dashoffset]="seg.offset"
-              stroke-linecap="butt"
-            >
-              <title>
-                {{ restorationBreakdown[i].name }}:
-                {{ restorationBreakdown[i].value }}%
-              </title>
-            </circle>
-          }
-        </svg>
+        <div class="h-64 w-full max-w-[260px]">
+          <canvas
+            baseChart
+            [data]="restorationBreakdownChartData()"
+            [options]="restorationBreakdownChartOptions"
+            type="doughnut"
+            role="img"
+            aria-label="Donut chart of restoration types"
+          ></canvas>
+        </div>
         <div class="shrink-0 space-y-2">
           @for (
             slice of restorationBreakdown;
@@ -178,59 +124,16 @@
           Days from received to ready — this week
         </p>
       </div>
-      <svg
-        [attr.viewBox]="'0 0 ' + lineW + ' ' + lineH"
-        class="w-full"
-        role="img"
-        aria-label="Line chart of average turnaround days"
-      >
-        @for (tick of [0, 1, 2, 3, 4]; track tick) {
-          <line
-            [attr.x1]="linePadL"
-            [attr.x2]="lineW - 8"
-            [attr.y1]="lineTickY(tick)"
-            [attr.y2]="lineTickY(tick)"
-            stroke="var(--border)"
-            stroke-dasharray="3 3"
-          />
-          <text
-            [attr.x]="linePadL - 6"
-            [attr.y]="lineTickY(tick) + 4"
-            text-anchor="end"
-            font-size="11"
-            fill="var(--muted-foreground)"
-          >
-            {{ tick }}d
-          </text>
-        }
-        <polyline
-          [attr.points]="linePoints()"
-          fill="none"
-          stroke="var(--accent)"
-          stroke-width="2.5"
-          stroke-linejoin="round"
-          stroke-linecap="round"
-        />
-        @for (point of turnaround; track point.day; let i = $index) {
-          <circle
-            [attr.cx]="lineX(i)"
-            [attr.cy]="lineY(point.days)"
-            r="4"
-            fill="var(--accent)"
-          >
-            <title>{{ point.day }}: {{ point.days }} days</title>
-          </circle>
-          <text
-            [attr.x]="lineX(i)"
-            [attr.y]="lineH - 8"
-            text-anchor="middle"
-            font-size="11"
-            fill="var(--muted-foreground)"
-          >
-            {{ point.day }}
-          </text>
-        }
-      </svg>
+      <div class="h-56">
+        <canvas
+          baseChart
+          [data]="turnaroundChartData()"
+          [options]="turnaroundChartOptions()"
+          type="line"
+          role="img"
+          aria-label="Line chart of average turnaround days"
+        ></canvas>
+      </div>
     </section>
 
     <section

@@ -22,8 +22,26 @@ describe("ReportsComponent", () => {
     expect(component).toBeTruthy();
   });
 
-  it("should scale chart bars within 0-100", () => {
-    expect(component.barHeight(component.maxRevenue)).toBe(100);
-    expect(component.lineHeight(component.maxTurnaround)).toBe(100);
+  it("should build chart datasets from reports data", () => {
+    const revenueData = component.monthlyRevenueChartData();
+    const breakdownData = component.restorationBreakdownChartData();
+    const turnaroundData = component.turnaroundChartData();
+
+    expect(revenueData.labels?.length).toBeGreaterThan(0);
+    expect(revenueData.datasets[0].data.length).toBe(
+      component.monthlyRevenue.length,
+    );
+
+    expect(breakdownData.labels?.length).toBe(
+      component.restorationBreakdown.length,
+    );
+    expect(breakdownData.datasets[0].data.length).toBe(
+      component.restorationBreakdown.length,
+    );
+
+    expect(turnaroundData.labels?.length).toBe(component.turnaround.length);
+    expect(turnaroundData.datasets[0].data.length).toBe(
+      component.turnaround.length,
+    );
   });
 });

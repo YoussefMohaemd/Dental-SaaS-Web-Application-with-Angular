@@ -1,15 +1,14 @@
 import { CommonModule } from "@angular/common";
-import {
-  Component,
-  computed,
-  effect,
-  inject,
-  OnInit,
-  signal,
-} from "@angular/core";
+import { Component, computed, effect, inject, OnInit } from "@angular/core";
 import { CaseDataService } from "@core/services/case-data.service";
 import { ChangeRequestDataService } from "@core/services/change-request-data.service";
 import { DashboardDataService } from "@core/services/dashboard-data.service";
+import { ChartConfiguration, ChartData, TooltipItem } from "chart.js";
+import {
+  BaseChartDirective,
+  provideCharts,
+  withDefaultRegisterables,
+} from "ng2-charts";
 import { TableModule } from "primeng/table";
 import { FormatUtils } from "@core/services/format-utils.service";
 import { NavigationService } from "@core/services/navigation.service";
@@ -68,6 +67,7 @@ const FALLBACK_WORKFLOW: WorkflowDataPoint[] = [
   standalone: true,
   imports: [
     CommonModule,
+    BaseChartDirective,
     TableModule,
     StatusBadgeComponent,
     PriorityBadgeComponent,
@@ -75,6 +75,7 @@ const FALLBACK_WORKFLOW: WorkflowDataPoint[] = [
     EmptyStateComponent,
     SafeHtmlPipe,
   ],
+  providers: [provideCharts(withDefaultRegisterables())],
   templateUrl: "./dashboard.component.html",
   styleUrl: "./dashboard.component.scss",
 })
@@ -143,6 +144,63 @@ export class DashboardComponent implements OnInit {
       Math.round(v),
     );
   });
+  readonly weeklyVolumeChartData = computed<ChartData<"bar">>(() => ({
+    labels: this.weeklyData().map((point) => point.day),
+    datasets: [
+      {
+        label: "Received",
+        data: this.weeklyData().map((point) => point.orders),
+        backgroundColor: "#2563EB",
+        borderRadius: 4,
+        borderSkipped: false,
+        barThickness: 18,
+        maxBarThickness: 18,
+      },
+      {
+        label: "Completed",
+        data: this.weeklyData().map((point) => point.completed),
+        backgroundColor: "#10B981",
+        borderRadius: 4,
+        borderSkipped: false,
+        barThickness: 18,
+        maxBarThickness: 18,
+      },
+    ],
+  }));
+
+  readonly weeklyVolumeChartOptions = computed<
+    ChartConfiguration<"bar">["options"]
+  >(() => ({
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: (context: TooltipItem<"bar">) =>
+            `${context.dataset.label}: ${context.parsed.y}`,
+        },
+      },
+    },
+    scales: {
+      x: {
+        grid: { display: false },
+        ticks: { color: "#6B7280", font: { size: 11 } },
+      },
+      y: {
+        min: 0,
+        max: this.volumeNiceMax(),
+        ticks: {
+          stepSize: this.volumeNiceMax() / 4,
+          color: "#6B7280",
+          font: { size: 11 },
+          callback: (value) => Math.round(Number(value)).toString(),
+        },
+        grid: { color: "#E5E7EB", borderDash: [3, 3] },
+      },
+    },
+  }));
 
   readonly workflowData = computed<WorkflowDataPoint[]>(() => {
     if (this.orders().length === 0) return FALLBACK_WORKFLOW;
@@ -240,8 +298,6 @@ export class DashboardComponent implements OnInit {
     },
   ];
 
-  readonly hoveredDay = signal<string | null>(null);
-
   readonly today = new Date();
 
   constructor() {
@@ -293,28 +349,6 @@ export class DashboardComponent implements OnInit {
   getWorkflowBarWidth(count: number): number {
     const max = Math.max(...this.workflowData().map((w) => w.count), 1);
     return Math.max(0, Math.min(100, (count / max) * 100));
-  }
-
-  orderBarHeight(point: { orders: number }): number {
-    return Math.max(
-      0,
-      Math.min(100, (point.orders / this.volumeNiceMax()) * 100),
-    );
-  }
-
-  completedBarHeight(point: { completed: number }): number {
-    return Math.max(
-      0,
-      Math.min(100, (point.completed / this.volumeNiceMax()) * 100),
-    );
-  }
-
-  setHoveredDay(day: string): void {
-    this.hoveredDay.set(day);
-  }
-
-  clearHoveredDay(): void {
-    this.hoveredDay.set(null);
   }
 
   navigateTo(route: string): void {
