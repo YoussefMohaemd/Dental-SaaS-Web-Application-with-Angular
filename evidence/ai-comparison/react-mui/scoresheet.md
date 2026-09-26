@@ -6,15 +6,14 @@
 
 | # | Criterion | Weight | Score 0-10 | Weighted |
 | --- | --- | ---: | ---: | ---: |
-| 1 | Requirement understanding | 20% | | |
-| 2 | UI/UX (visual fit with existing system) | 20% | | |
-| 3 | Framework usage | 20% | | |
-| 4 | Responsiveness and accessibility | 15% | | |
-| 5 | Code quality | 15% | | |
-| 6 | Manual correction / hallucination resistance | 10% | | |
+| C1 | Requirement understanding | 20% | | |
+| C2 | UI/UX (visual fit with existing system) | 20% | | |
+| C3 | Framework usage | 20% | | |
+| C4 | Responsiveness and accessibility | 15% | | |
+| C5 | Code quality | 15% | | |
+| C6 | Manual correction / hallucination resistance | 10% | | |
 | | **Total** | **100%** | | |
 
 - Scored by (name):
 - Date:
 - Feeds the 15% AI-assisted line of `docs/weighted-comparison-matrix.md`: YES, once completed
-

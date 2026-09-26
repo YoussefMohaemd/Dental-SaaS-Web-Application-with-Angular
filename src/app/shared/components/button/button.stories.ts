@@ -1,47 +1,54 @@
-import type { Meta, StoryObj } from '@storybook/angular-vite';
-import { AppButtonComponent } from './button.component';
+import type { Meta, StoryObj } from "@storybook/angular-vite";
+import { AppButtonComponent } from "./button.component";
 
 const meta: Meta<AppButtonComponent> = {
-  title: 'Basic/AppButton',
+  title: "Basic/AppButton",
   component: AppButtonComponent,
-  tags: ['autodocs'],
-  parameters: { layout: 'centered' },
+  tags: ["autodocs"],
+  parameters: { layout: "centered" },
   argTypes: {
     variant: {
-      control: 'select',
-      options: ['primary', 'secondary', 'outline', 'ghost', 'danger', 'success'],
-      description: 'Visual variant of the button.',
+      control: "select",
+      options: [
+        "primary",
+        "secondary",
+        "outline",
+        "ghost",
+        "danger",
+        "success",
+      ],
+      description: "Visual variant of the button.",
     },
     size: {
-      control: 'select',
-      options: ['sm', 'md', 'lg', 'icon', 'icon-sm'],
-      description: 'Size scale of the button.',
+      control: "select",
+      options: ["sm", "md", "lg", "icon", "icon-sm"],
+      description: "Size scale of the button.",
     },
     type: {
-      control: 'select',
-      options: ['button', 'submit', 'reset'],
-      description: 'Native button type.',
+      control: "select",
+      options: ["button", "submit", "reset"],
+      description: "Native button type.",
     },
-    disabled: { control: 'boolean', description: 'Disables interaction.' },
+    disabled: { control: "boolean", description: "Disables interaction." },
     loading: {
-      control: 'boolean',
-      description: 'Shows a spinner and sets aria-busy.',
+      control: "boolean",
+      description: "Shows a spinner and sets aria-busy.",
     },
     ariaLabel: {
-      control: 'text',
-      description: 'Accessible name (required for icon-only buttons).',
+      control: "text",
+      description: "Accessible name (required for icon-only buttons).",
     },
-    title: { control: 'text', description: 'Native tooltip title.' },
-    onClick: { action: 'onClick', table: { category: 'Outputs' } },
+    title: { control: "text", description: "Native tooltip title." },
+    onClick: { action: "onClick", table: { category: "Outputs" } },
   },
   args: {
-    variant: 'primary',
-    size: 'md',
-    type: 'button',
+    variant: "primary",
+    size: "md",
+    type: "button",
     disabled: false,
     loading: false,
-    ariaLabel: '',
-    title: '',
+    ariaLabel: "",
+    title: "",
   },
 };
 

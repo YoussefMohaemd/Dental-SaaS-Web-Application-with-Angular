@@ -75,6 +75,8 @@ Use a wrapper when:
 
 Use direct vendor components only for feature-specific, heavy widgets that are not practical shared wrappers.
 
+Tailwind utilities and inline styles own the visual output of `tuiButton`/`tuiStatus`; Taiga directives provide behavior/semantics only. This is intentional to avoid a second styling system and should not be treated as a bug.
+
 ## 4) Component interfaces and ownership rules
 
 - Prefer signal-based public API: `input()`, `input.required()`, `model()`, `output()`.
@@ -90,6 +92,7 @@ State ownership:
 ## 5) Documentation approach
 
 - Storybook is the living usage reference for shared components.
+- 2026-09-26 strict Storybook a11y gate: `npm run build-storybook` passed with `preview.ts` accessibility `test: 'error'` enabled.
 - Inventory and usage mapping: [`ui-component-inventory.md`](./ui-component-inventory.md).
 - Architectural/decision records: `docs/*.md`.
 - Verifiable runtime evidence: `evidence/*`.

@@ -30,7 +30,7 @@
                 ? 'bg-success'
                 : s.id === step()
                   ? 'bg-primary ring-4 ring-primary/20'
-                  : 'bg-muted disabled:cursor-not-allowed disabled:opacity-70'
+                  : 'bg-muted disabled:cursor-not-allowed disabled:opacity-[var(--disabled-opacity)]'
             "
             [attr.aria-label]="
               'Step ' +
@@ -453,7 +453,9 @@
                 selectClass="w-full cursor-pointer rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
                 [options]="occlusalConcepts"
                 [value]="getServiceDetail(svc.id).occlusalConcept"
-                (valueChange)="setServiceDetail(svc.id, 'occlusalConcept', $event)"
+                (valueChange)="
+                  setServiceDetail(svc.id, 'occlusalConcept', $event)
+                "
               ></app-select>
             </div>
           }
@@ -470,7 +472,9 @@
                 selectClass="w-full cursor-pointer rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
                 [options]="implantSystems"
                 [value]="getServiceDetail(svc.id).implantSystem"
-                (valueChange)="setServiceDetail(svc.id, 'implantSystem', $event)"
+                (valueChange)="
+                  setServiceDetail(svc.id, 'implantSystem', $event)
+                "
               ></app-select>
             </div>
           }

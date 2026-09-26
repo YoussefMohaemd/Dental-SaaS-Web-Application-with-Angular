@@ -9,13 +9,18 @@ This repository is an Angular-based dental SaaS POC. It focuses on reusable comp
 ## Documentation Map
 
 - [Component architecture](./docs/component-architecture.md)
+- [UI component inventory](./docs/ui-component-inventory.md)
+- [Technology comparison](./docs/technology-comparison.md)
 - [Weighted comparison matrix](./docs/weighted-comparison-matrix.md)
+- [Deliverable scoring](./docs/deliverable-scoring.md)
 - [Licensing review](./docs/licensing-review.md)
 - [Scope exceptions](./docs/scope-exceptions.md)
 - [Test matrix](./docs/test-matrix.md)
 - [Final recommendation](./docs/final-recommendation.md)
 - [Demo script](./docs/demo-script.md)
 - [AI protocol](./docs/ai-comparison-protocol.md)
+- [AI usage log](./AI_USAGE_LOG.md)
+- [Contribution summary](./CONTRIBUTION_SUMMARY.md)
 
 ## Stack
 
@@ -64,11 +69,11 @@ Storybook covers the shared controls and reusable composite/business patterns. S
 
 | Gate | Result |
 | --- | --- |
-| `npm run build` | Passing, with non-blocking Sass/CSS budget warnings |
-| `npm test -- --watch=false --browsers=ChromeHeadless` | 357/357 passing |
-| `npm run lint` | Passing |
-| `npm run build-storybook` | Passing |
-| axe-core scan (wcag2a/aa + best-practice, 24 route-states) | 0 violations |
+| `npm run build` | Passing (2026-09-26 capture; non-blocking Sass/CSS budget warnings remain) |
+| `npm test -- --watch=false --browsers=ChromeHeadless` | 363/363 passing (2026-09-26 capture) |
+| `npm run lint` | Passing (2026-09-26 capture) |
+| `npm run build-storybook` | Passing (2026-09-26 capture; 8 story files emitted) |
+| axe-core scan (wcag2a/aa + best-practice, 24 route-states) | 0 violations (2026-09-26 capture) |
 
 Raw logs live under `evidence/`.
 
@@ -92,6 +97,7 @@ Raw logs live under `evidence/`.
 - `evidence/build/` - build and lint logs
 - `evidence/tests/` - test log
 - `evidence/storybook/` - Storybook build log and screenshots
+- `evidence/ai-comparison/` - controlled AI comparison slots (pending human execution)
 - `evidence/states/` - order state screenshots
 - `evidence/responsive/` - responsive screenshots and checklist
 - `evidence/accessibility/` - axe-core and keyboard walkthrough artifacts

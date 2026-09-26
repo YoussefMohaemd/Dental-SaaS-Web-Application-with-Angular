@@ -1,28 +1,21 @@
 {
-  "generatedAt": "2026-09-26T09:39:05.110Z",
+  "generatedAt": "2026-09-26T15:53:03.614Z",
   "notes": [
-    "states: orders-normal.png captured via state toggle",
-    "states: orders-loading.png captured via state toggle",
-    "states: orders-empty.png captured via state toggle",
-    "states: orders-error.png captured via state toggle",
-    "desktop-1440/layout-shell: aside visible=true, toggle visible=true",
-    "desktop-1440/orders-table: aside visible=true, toggle visible=true",
-    "desktop-1440/forms: aside visible=true, toggle visible=true",
-    "desktop-1440/toolbars: aside visible=true, toggle visible=true",
-    "desktop-1440: dialog opened, role check = pn_id_1_header",
-    "desktop-1440/workflow-board: aside visible=true, toggle visible=true",
-    "tablet-768/layout-shell: aside visible=true, toggle visible=true",
-    "tablet-768/orders-table: aside visible=true, toggle visible=true",
-    "tablet-768/forms: aside visible=true, toggle visible=true",
-    "tablet-768/toolbars: aside visible=true, toggle visible=true",
-    "tablet-768: dialog opened, role check = pn_id_1_header",
-    "tablet-768/workflow-board: aside visible=true, toggle visible=true",
-    "mobile-375/layout-shell: aside visible=true, toggle visible=true",
-    "mobile-375/orders-table: aside visible=true, toggle visible=true",
-    "mobile-375/forms: aside visible=true, toggle visible=true",
-    "mobile-375/toolbars: aside visible=true, toggle visible=true",
-    "mobile-375: dialog opened, role check = pn_id_1_header",
-    "mobile-375/workflow-board: aside visible=true, toggle visible=true"
+    "desktop-1440/dashboard: overflow=false",
+    "desktop-1440/orders: overflow=false",
+    "desktop-1440/forms: overflow=false",
+    "desktop-1440/patients: overflow=false",
+    "desktop-1440/workflow-board: overflow=false",
+    "tablet-768/dashboard: overflow=false",
+    "tablet-768/orders: overflow=false",
+    "tablet-768/forms: overflow=false",
+    "tablet-768/patients: overflow=false",
+    "tablet-768/workflow-board: overflow=false",
+    "mobile-375/dashboard: overflow=false",
+    "mobile-375/orders: overflow=false",
+    "mobile-375/forms: overflow=false",
+    "mobile-375/patients: overflow=false",
+    "mobile-375/workflow-board: overflow=false"
   ],
   "overflow": [
     {
@@ -71,12 +64,12 @@
       "innerWidth": 1440,
       "horizontalOverflow": false,
       "offenders": [
-        "div.workflow-board-lanes.flex.gap-4 (right=1754)",
-        "div.cdk-drop-list.workflow-lane.flex (right=1572)",
-        "div.flex.items-center.gap-2 (right=1572)",
-        "span.bg-emerald-100.font-bold.ml-auto (right=1572)",
-        "div.flex-1.rounded-xl.p-2 (right=1572)",
-        "div.cdk-drag.bg-card.border (right=1563)"
+        "div.workflow-board-lanes.flex.gap-4.h-full (right=1754)",
+        "div.cdk-drop-list.workflow-lane.flex.flex-col.w-52.shrink-0 (right=1572)",
+        "div.flex.items-center.gap-2.mb-3 (right=1572)",
+        "span.bg-emerald-100.font-bold.ml-auto.px-2.py-0.5.rounded-full.text-[10px].text-emerald-800 (right=1572)",
+        "div.flex-1.rounded-xl.p-2.overflow-y-auto.min-h-32.border-2.border-dashed.transition-colors.border-transparent (right=1572)",
+        "div.cdk-drag.bg-card.border.border-border.rounded-xl.p-3.cursor-pointer.hover:border-primary/40.hover:shadow-sm.mb-2.5.select-none.group.kanban-card (right=1563)"
       ]
     },
     {
@@ -89,8 +82,8 @@
         "table.p-datatable-table (right=946)",
         "thead.p-datatable-thead (right=946)",
         "tr.border-b.border-border.bg-muted/40 (right=946)",
-        "th.px-3.py-2.5.text-left (right=837)",
-        "th.px-5.py-2.5.text-left (right=946)",
+        "th.px-3.py-2.5.text-left.text-xs.font-semibold.text-muted-foreground (right=837)",
+        "th.px-5.py-2.5.text-left.text-xs.font-semibold.text-muted-foreground (right=946)",
         "tbody.p-datatable-tbody (right=946)"
       ]
     },
@@ -117,9 +110,9 @@
       "horizontalOverflow": false,
       "offenders": [
         "app-button (right=814)",
-        "button.!bg-transparent.!font-medium.!px-3 (right=814)",
+        "button.!bg-transparent.!font-medium.!px-3.!py-2.!rounded-lg.!rounded-xl.!text-foreground.!text-left.!text-muted-foreground.!text-xs.[&_svg]:block.[&_svg]:shrink-0.active:!bg-muted.active:bg-muted.bg-transparent.dark:hover:!bg-muted.dark:hover:bg-muted.disabled:!text-muted-foreground.disabled:cursor-not-allowed.disabled:opacity-[var(--disabled-opacity)].disabled:pointer-events-none.disabled:text-muted-foreground.duration-150.flex.focus-visible:outline-none.focus-visible:ring-2.focus-visible:ring-offset-1.focus-visible:ring-offset-card.focus-visible:ring-primary/30.font-semibold.gap-2.hover:!bg-muted.hover:bg-muted.hover:text-foreground.inline-flex.items-center.justify-center.lg:!w-full.min-h-8.px-3.py-1.5.rounded-lg.shrink-0.text-foreground.text-muted-foreground.text-xs.transition-colors.w-auto.whitespace-nowrap (right=814)",
         "app-button (right=910)",
-        "button.!bg-transparent.!font-medium.!px-3 (right=910)",
+        "button.!bg-transparent.!font-medium.!px-3.!py-2.!rounded-lg.!rounded-xl.!text-foreground.!text-left.!text-muted-foreground.!text-xs.[&_svg]:block.[&_svg]:shrink-0.active:!bg-muted.active:bg-muted.bg-transparent.dark:hover:!bg-muted.dark:hover:bg-muted.disabled:!text-muted-foreground.disabled:cursor-not-allowed.disabled:opacity-[var(--disabled-opacity)].disabled:pointer-events-none.disabled:text-muted-foreground.duration-150.flex.focus-visible:outline-none.focus-visible:ring-2.focus-visible:ring-offset-1.focus-visible:ring-offset-card.focus-visible:ring-primary/30.font-semibold.gap-2.hover:!bg-muted.hover:bg-muted.hover:text-foreground.inline-flex.items-center.justify-center.lg:!w-full.min-h-8.px-3.py-1.5.rounded-lg.shrink-0.text-foreground.text-muted-foreground.text-xs.transition-colors.w-auto.whitespace-nowrap (right=910)",
         "span.shrink-0 (right=841)",
         "svg (right=841)"
       ]
@@ -131,7 +124,7 @@
       "innerWidth": 768,
       "horizontalOverflow": false,
       "offenders": [
-        "p-table.enterprise-data-table.enterprise-prime-table.p-component (right=1189)",
+        "p-table.enterprise-data-table.enterprise-prime-table.p-component.p-datatable.p-datatable-sm (right=1189)",
         "div.p-datatable-table-container (right=1189)",
         "table.p-datatable-table (right=1189)",
         "thead.p-datatable-thead (right=1189)",
@@ -146,12 +139,12 @@
       "innerWidth": 768,
       "horizontalOverflow": false,
       "offenders": [
-        "div.workflow-board-lanes.flex.gap-4 (right=1754)",
-        "div.cdk-drop-list.workflow-lane.flex (right=788)",
-        "div.flex.items-center.gap-2 (right=788)",
-        "span.bg-cyan-50.font-bold.ml-auto (right=788)",
-        "div.flex-1.rounded-xl.p-2 (right=788)",
-        "div.cdk-drag.bg-card.border (right=779)"
+        "div.workflow-board-lanes.flex.gap-4.h-full (right=1754)",
+        "div.cdk-drop-list.workflow-lane.flex.flex-col.w-52.shrink-0 (right=788)",
+        "div.flex.items-center.gap-2.mb-3 (right=788)",
+        "span.bg-cyan-50.font-bold.ml-auto.px-2.py-0.5.rounded-full.text-[10px].text-cyan-700 (right=788)",
+        "div.flex-1.rounded-xl.p-2.overflow-y-auto.min-h-32.border-2.border-dashed.transition-colors.border-transparent (right=788)",
+        "div.cdk-drag.bg-card.border.border-border.rounded-xl.p-3.cursor-pointer.hover:border-primary/40.hover:shadow-sm.mb-2.5.select-none.group.kanban-card (right=779)"
       ]
     },
     {
@@ -164,9 +157,9 @@
         "table.p-datatable-table (right=750)",
         "thead.p-datatable-thead (right=750)",
         "tr.border-b.border-border.bg-muted/40 (right=750)",
-        "th.px-3.py-2.5.text-left (right=420)",
-        "th.px-3.py-2.5.text-left (right=547)",
-        "th.px-3.py-2.5.text-left (right=641)"
+        "th.px-3.py-2.5.text-left.text-xs.font-semibold.text-muted-foreground (right=420)",
+        "th.px-3.py-2.5.text-left.text-xs.font-semibold.text-muted-foreground (right=547)",
+        "th.px-3.py-2.5.text-left.text-xs.font-semibold.text-muted-foreground (right=641)"
       ]
     },
     {
@@ -192,7 +185,7 @@
       "horizontalOverflow": false,
       "offenders": [
         "app-button (right=480)",
-        "button.!bg-transparent.!font-medium.!px-3 (right=480)",
+        "button.!bg-transparent.!font-medium.!px-3.!py-2.!rounded-lg.!rounded-xl.!text-foreground.!text-left.!text-muted-foreground.!text-xs.[&_svg]:block.[&_svg]:shrink-0.active:!bg-muted.active:bg-muted.bg-transparent.dark:hover:!bg-muted.dark:hover:bg-muted.disabled:!text-muted-foreground.disabled:cursor-not-allowed.disabled:opacity-[var(--disabled-opacity)].disabled:pointer-events-none.disabled:text-muted-foreground.duration-150.flex.focus-visible:outline-none.focus-visible:ring-2.focus-visible:ring-offset-1.focus-visible:ring-offset-card.focus-visible:ring-primary/30.font-semibold.gap-2.hover:!bg-muted.hover:bg-muted.hover:text-foreground.inline-flex.items-center.justify-center.lg:!w-full.min-h-8.px-3.py-1.5.rounded-lg.shrink-0.text-foreground.text-muted-foreground.text-xs.transition-colors.w-auto.whitespace-nowrap (right=480)",
         "span.shrink-0 (right=393)",
         "svg (right=393)",
         "path (right=391)",
@@ -206,7 +199,7 @@
       "innerWidth": 375,
       "horizontalOverflow": false,
       "offenders": [
-        "p-table.enterprise-data-table.enterprise-prime-table.p-component (right=992)",
+        "p-table.enterprise-data-table.enterprise-prime-table.p-component.p-datatable.p-datatable-sm (right=992)",
         "div.p-datatable-table-container (right=992)",
         "table.p-datatable-table (right=992)",
         "thead.p-datatable-thead (right=992)",
@@ -221,12 +214,12 @@
       "innerWidth": 375,
       "horizontalOverflow": false,
       "offenders": [
-        "div.workflow-board-lanes.flex.gap-4 (right=1827)",
-        "div.cdk-drop-list.workflow-lane.flex (right=514)",
-        "div.flex.items-center.gap-2 (right=514)",
-        "span.bg-amber-50.font-bold.ml-auto (right=514)",
-        "div.flex-1.rounded-xl.p-2 (right=514)",
-        "div.cdk-drag.bg-card.border (right=505)"
+        "div.workflow-board-lanes.flex.gap-4.h-full (right=1827)",
+        "div.cdk-drop-list.workflow-lane.flex.flex-col.w-52.shrink-0 (right=514)",
+        "div.flex.items-center.gap-2.mb-3 (right=514)",
+        "span.bg-amber-50.font-bold.ml-auto.px-2.py-0.5.rounded-full.text-[10px].text-amber-700 (right=514)",
+        "div.flex-1.rounded-xl.p-2.overflow-y-auto.min-h-32.border-2.border-dashed.transition-colors.border-transparent (right=514)",
+        "div.cdk-drag.bg-card.border.border-border.rounded-xl.p-3.cursor-pointer.hover:border-primary/40.hover:shadow-sm.mb-2.5.select-none.group.kanban-card (right=505)"
       ]
     }
   ]

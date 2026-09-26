@@ -60,7 +60,7 @@ export class AppButtonComponent {
     const base =
       "inline-flex items-center justify-center gap-2  font-semibold rounded-lg !rounded-xl transition-colors duration-150 " +
       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-1 " +
-      "focus-visible:ring-offset-card disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none " +
+      "focus-visible:ring-offset-card disabled:opacity-[var(--disabled-opacity)] disabled:cursor-not-allowed disabled:pointer-events-none " +
       "[&_svg]:shrink-0 [&_svg]:block";
 
     return `${base} ${VARIANT_CLASSES[this.variant()]} ${SIZE_CLASSES[this.size()]} ${this.buttonClass()}`;

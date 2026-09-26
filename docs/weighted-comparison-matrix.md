@@ -39,8 +39,10 @@ Scores are on a 0–10 scale. Each cell includes score + one-line justification 
 
 | Candidate | Weighted subtotal across first 7 criteria (max 85) |
 | --- | ---: |
-| React + KendoReact | 58.0 |
-| React + Material UI | 69.0 |
-| Vue 3 + Vuetify | 62.0 |
+| React + KendoReact | 59.0 |
+| React + Material UI | 68.0 |
+| Vue 3 + Vuetify | 62.5 |
+
+Derivation: `Σ(score × weight) ÷ 10` over the first 7 criteria (AI row excluded).
 
 Final ranking is intentionally blocked until the AI 15% controlled run is executed and scored.

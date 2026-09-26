@@ -7,10 +7,7 @@ import { DataTableToolbarComponent } from "./data-table-toolbar.component";
   standalone: true,
   imports: [DataTableToolbarComponent],
   template: `
-    <app-data-table-toolbar
-      title="Orders"
-      subtitle="Manage and track orders"
-    >
+    <app-data-table-toolbar title="Orders" subtitle="Manage and track orders">
       <button type="button" header-actions>Export</button>
     </app-data-table-toolbar>
 
@@ -72,9 +69,7 @@ describe("DataTableToolbarComponent", () => {
     const hostFixture = TestBed.createComponent(ToolbarHostComponent);
     hostFixture.detectChanges();
 
-    const action = hostFixture.debugElement.query(
-      By.css("[header-actions]"),
-    );
+    const action = hostFixture.debugElement.query(By.css("[header-actions]"));
     expect(action.nativeElement.textContent).toContain("Export");
 
     const headings = hostFixture.debugElement.queryAll(By.css("h1"));

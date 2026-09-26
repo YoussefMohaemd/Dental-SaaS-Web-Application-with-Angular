@@ -331,11 +331,6 @@ export class OrdersComponent {
     );
   }
 
-  onSearchChange(event: Event): void {
-    this.search.set((event.target as HTMLInputElement).value);
-    this.page.set(1);
-  }
-
   onSearchInput(value: string | Event): void {
     const next =
       typeof value === "string"
@@ -369,20 +364,8 @@ export class OrdersComponent {
     this.addStatusFilter(value as OrderStatus);
   }
 
-  onPriorityChange(event: Event): void {
-    this.priorityFilter.set(
-      (event.target as HTMLSelectElement).value as Priority | "",
-    );
-    this.page.set(1);
-  }
-
   onPriorityValueChange(value: string): void {
     this.priorityFilter.set(value as Priority | "");
-    this.page.set(1);
-  }
-
-  onPageSizeChange(event: Event): void {
-    this.pageSize.set(Number((event.target as HTMLSelectElement).value));
     this.page.set(1);
   }
 
@@ -495,40 +478,8 @@ export class OrdersComponent {
     URL.revokeObjectURL(url);
   }
 
-  firstPage(): void {
-    this.page.set(1);
-  }
-
-  lastPage(): void {
-    this.page.set(this.totalPages());
-  }
-
-  prevPage(): void {
-    this.page.update((current) => Math.max(1, current - 1));
-  }
-
-  nextPage(): void {
-    this.page.update((current) => Math.min(this.totalPages(), current + 1));
-  }
-
   goToPage(target: number): void {
     this.page.set(Math.max(1, Math.min(this.totalPages(), target)));
-  }
-
-  visiblePageNumbers(): number[] {
-    const total = this.totalPages();
-    const count = Math.min(total, 7);
-    return Array.from({ length: count }, (_, index) => index + 1);
-  }
-
-  rangeStart(): number {
-    return this.filtered().length === 0
-      ? 0
-      : (this.page() - 1) * this.pageSize() + 1;
-  }
-
-  rangeEnd(): number {
-    return Math.min(this.page() * this.pageSize(), this.filtered().length);
   }
 
   openOrder(orderId: string): void {
@@ -553,30 +504,6 @@ export class OrdersComponent {
 
   subOrdersFor(orderId: string): SubOrder[] {
     return this.subOrders().filter((s) => s.orderId === orderId);
-  }
-
-  hasChildren(orderId: string): boolean {
-    return this.subOrdersFor(orderId).length > 0;
-  }
-
-  onNodeExpand(event: { node: TreeNode<OrderTreeRowData> }): void {
-    const id = event.node?.data?.order?.id ?? event.node?.key;
-    if (!id) return;
-    this.expandedIds.update((current) => {
-      const next = new Set(current);
-      next.add(String(id));
-      return next;
-    });
-  }
-
-  onNodeCollapse(event: { node: TreeNode<OrderTreeRowData> }): void {
-    const id = event.node?.data?.order?.id ?? event.node?.key;
-    if (!id) return;
-    this.expandedIds.update((current) => {
-      const next = new Set(current);
-      next.delete(String(id));
-      return next;
-    });
   }
 
   subOrderStatusLabel(status: SubOrder["status"]): string {

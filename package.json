@@ -16,7 +16,8 @@
     "type-check": "tsc --noEmit -p tsconfig.lint.json",
     "format": "prettier --write \"src/**/*.{ts,html,scss,json}\"",
     "storybook": "ng run dental-saas-angular:storybook",
-    "build-storybook": "ng run dental-saas-angular:build-storybook"
+    "build-storybook": "ng run dental-saas-angular:build-storybook",
+    "evidence": "node scripts/capture-evidence.mjs"
   },
   "private": true,
   "dependencies": {

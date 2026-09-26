@@ -1,702 +1,667 @@
-# IMP-FE-003 Gap Analysis and Implementation Plan (Angular)
+﻿# IMP-FE-003 Gap Analysis and Implementation Plan v2 (Angular)
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
-**Goal:** Close every gap between the current Angular POC and IMP-FE-003 v1.1 (without changing the approved Angular stack), and record the deviations that are decided, so the repository satisfies the Definition of Done with honest evidence.
+**Goal:** Close the remaining gaps between the current Angular POC and IMP-FE-003 v1.1 Definition of Done â€” dead code, disabled-token consumption, missing tests, documentation defects, and stale/non-reproducible evidence â€” without changing the approved Angular stack, and record every remaining human-gated item honestly.
 
-**Architecture:** Part 1 is the audit (status per requirement with evidence, gap, action). Part 2 is the execution plan: docs and evidence first, then targeted code fixes (naming, a11y, authentic states, dedupe, dead code), then test/Storybook/evidence refresh, then recommendation and final gates. No library changes, no UI redesign, no React/Vue scaffolding.
+**Architecture:** Part 1 is a refreshed audit of the tree as of `dd631ae` + verified gate runs (lint 0, tests 357/357). Part 2 is a 9-task execution plan: code correctness first (dead code, tokens, tests), then documentation corrections, then a single evidence refresh driven by a repeatable capture script, then a final DoD walk. No library changes, no UI redesign, no React/Vue scaffolding, no fabricated evidence.
 
 **Tech Stack:** Angular 21, TypeScript 5.9, Signals + RxJS, PrimeNG 21, Taiga UI 4, Angular CDK 21, Tailwind CSS 4, Storybook 10 (angular-vite), Karma/Jasmine (`npm test`), Playwright + axe-core (evidence capture), tsc (`npm run lint`).
 
-**Spec:** IMP-FE-003 v1.1 (task specification in the assignment brief). Governing decisions supplied by the project owner on 2026-09-26 are recorded in §1.10 "Decided Deviations" and are binding on this plan.
+**Spec:** IMP-FE-003 v1.1 task brief (provided in the assignment). Requirements are mirrored line-by-line in Part 1 of this plan so the plan travels with the spec. Supersedes `docs/superpowers/plans/2026-09-26-imp-fe-003-gap-analysis-and-plan.md` (v1), whose Part 1 audit is now stale: Tasks 1â€“9 and most of 11â€“15 of that plan were executed in commit `dd631ae` (2026-09-26 16:47), but its checkboxes were never updated.
 
 ---
-
-## PART 1 — GAP ANALYSIS
-
-### 1.1 Method and stack-alignment statement
-
-Audit performed by reading source, tests, Storybook config, docs, evidence, and git history (2026-09-26). Every finding below carries file-level evidence. Per the owner's instruction, these are **not** issues in themselves:
-
-- Angular instead of React; PrimeNG instead of KendoReact/Material UI; Taiga UI for lightweight controls; Angular CDK for behavior/a11y/drag-drop/overlays; Tailwind for layout/theming; PrimeNG for enterprise data-heavy UI.
-- The requirement "final library uses React + TypeScript with KendoReact or MUI" is satisfied by an **approved stack substitution** (Angular + PrimeNG/Taiga), which must be recorded as a deviation, not fixed by rewriting.
-
-What IS assessed: whether each IMP-FE-003 requirement is present, actually implemented, in use, correct, reusable, and evidence-backed; and whether library responsibilities in the Angular stack are clean or duplicated.
-
-**Status summary (42 tracked line items):** DONE 14 · PARTIAL 15 · WRONG 3 · MISSING 7 · UNVERIFIED 2 · OPTIONAL 6 (OPTIONAL items are listed separately in §1.9 and are not counted against the core).
-
----
-
-### 1.2 Core scope requirements — Status / Evidence / Gap / Required Action
-
-| # | Requirement (spec §4) | Status | Evidence | Gap | Required action |
-|---|---|---|---|---|---|
-| 1 | UI inventory ≥20 components from sanitized CRM/Customer Portal sources, with purpose, variants, reuse priority, observed inconsistencies | PARTIAL | `docs/ui-component-inventory.md` — 40 rows, all 43 cited paths exist | No CRM/Portal provenance; 3 factually wrong rows (`:15` orders uses DataTableToolbar — false; `:16` search toolbar "Table pages" — orders not a consumer; `:20` TableFeedback has "error" mode — it does not; `:38` order-workflow uses CDK drag/drop — false); inconsistency column often holds usage notes | Task 11: provenance section, fix wrong rows, rewrite inconsistency column, commit |
-| 2 | Weighted comparison matrix, criteria total 100% incl. **AI-Assisted Effectiveness at exactly 15%** inside the table, justification for every score, three candidates, framework-vs-library separation | WRONG | `docs/weighted-comparison-matrix.md` — weights 10+20+15+25+15+10+5 = 100% but they score *project deliverables*, not candidates; AI 15% sits in a separate section (`:36-46`), so including it yields 115%; `KendoReact|Telerik|Vuetify|Material UI` = 0 hits in working tree **and** in all 35 commits (`git log -S`) | No candidate matrix exists anywhere; AI-15% not in a 100% table; no tech-vs-library separation for candidates | Task 3: rewrite as candidate-selection matrix (AI 15% in-table, 8 criteria = 100%), move project rubric to `docs/deliverable-scoring.md` |
-| 3 | Telerik/KendoReact licensing, free/premium limits, trial, long-term dependency risk from current official docs | MISSING | Grep across all `*.md`: 0 matches for `licens|Telerik|Kendo`; never existed in git history | Entire deliverable absent | Task 3: author `docs/licensing-review.md` with official URLs + retrieval date |
-| 4 | Three runnable spikes (React+KendoReact, React+MUI, Vue3+Vuetify) | MISSING | No spike code in repo (checked) | Literal spike requirement unmet | Task 3: `docs/scope-exceptions.md` — **decided**: replaced by evidence-based research (Angular is the approved stack). Do not scaffold React/Vue |
-| 5 | Sanitized comparison spike content: button, search input, status indicator, data table, confirmation dialog, responsive layout per candidate | MISSING | n/a | Same as #4; also affects the frozen AI requirement (§1.6) | Covered by #4 deviation + Task 4 (requirement amended to include all six elements) |
-| 6 | Central design tokens: color, typography, spacing, radius, shadows, focus, **disabled state**, breakpoints | PARTIAL | `src/styles/tokens.scss` (316 lines) + `theme.scss` — color/type/spacing/radius/shadow/breakpoint present and widely consumed; **no `disabled` token anywhere**; `theme.scss:267-270` uses invalid `ring:`/`ring-offset:` properties with `outline: none` (verified) — global focus ring is broken; dual namespace `--color-*` vs unprefixed `--*` undocumented | Disabled token missing; focus rule invalid; namespace undocumented | Task 5: add disabled tokens, fix `:focus-visible`, replace hardcoded `opacity: 0.5`, document namespace |
-| 7 | Component architecture doc: folder structure, naming, wrapper rules, interfaces, documentation approach | MISSING | `docs/` holds only 4 files; none is architecture; content existed pre-`baf6019` (`docs/decisions/library-usage-rules.md`) but was deleted | All five required topics undocumented | Task 1: author `docs/component-architecture.md` (recreate content fresh, do not restore stale files) |
-| 8 | Final reusable component POC with required components + responsive demo | DONE | All 8 required components exist, standalone, signal-based; responsive evidence in `evidence/responsive/` (3 viewports) | Naming gap tracked separately in §1.3 | Renames in Task 2; otherwise satisfied |
-| 9 | Storybook examples: ≥2 basic, ≥1 composite, ≥1 business | DONE | 8 stories / 38 story entries: `Basic/AppButton, AppTextField, AppSelect, StatusBadge` + `Composite/SearchFilterToolbar, DataTableToolbar` + `Business/OrderSummaryCard, WorkflowTimeline` | 3 story files untracked in git; build log covers only 5 of 8 | Task 13: commit, rebuild, refresh log + screenshots |
-| 10 | Automated tests: each basic component, button interaction, input validation, filter interaction, loading/empty | PARTIAL | 336/336 green (`evidence/tests/test.log`, 2026-09-26, verified against static count of 336 `it(` across 53 specs); no focused/skipped/commented tests | Input validation only display/form-level: `input.component.ts` has no validation logic and `aria-invalid`/`required` never asserted; business components have 1 test each; no guard/interceptor (permission) tests; coverage never run | Tasks 12 (+ per-task tests): matrix, gap tests, coverage run |
-| 11 | Accessibility checks (keyboard, focus, labels, semantics, forms, dialogs, tables, states, errors, disabled, responsive breakpoints) | PARTIAL | axe: 0 violations across 24 route-states (`evidence/accessibility/axe-report.json`); keyboard walkthrough checklist + 2 screenshots; dialog trap-focus (`entity-dialog.component.html:27`); keyboard-operable sort headers (commit `c269831`) | `SearchFilterToolbar` search field has **no accessible name** (no `searchAriaLabel` input, `search-filter-toolbar.component.html:11-18`); `StatusBadge` plain `<span>` with no `role`/`aria-label`; `WorkflowTimeline` active step lacks `aria-current="step"`; global focus rule broken (§1.2 #6); Storybook a11y set to report-only (`preview.ts:18` `test: 'todo'`); axe evidence not re-run against current dirty tree → **UNVERIFIED** | Task 6 (a11y fixes, TDD), Task 13 (storybook a11y), Task 16 (axe re-run) |
-| 12 | Controlled AI-output comparison: 15% of the matrix, same tool/model/requirement/context/time/iterations for **every candidate**, initial + corrected outputs, prompts, screenshots, build/test, a11y, hallucinations, corrections, elapsed effort, iteration count | PARTIAL | `docs/ai-comparison-protocol.md` (rubric 20/20/20/15/15/10 = 100% verified, 60 min, 3 iterations); `evidence/ai-comparison/` = 9 templates, **all empty** ("AWAITING HUMAN EXECUTION"); `screenshots/` has 0 PNGs | Tool+model not pre-locked ("recorded at run time"); frozen requirement lacks **data table** and **confirmation dialog**; only one protocol — no per-candidate partitions; no executed evidence | Task 4: freeze protocol (six elements, locked conditions, 3 candidate partitions), complete templates. **Human executes the runs — nothing fabricated** |
-| 13 | AI score used as one factor alongside licensing, maintainability, a11y, technical suitability, team fit, dependency risk; not decisive alone | PARTIAL | Formula documented (`weighted-comparison-matrix.md:44`), anti-fabrication stance documented (`ai-comparison-protocol.md §5`) | No score yet (pending #12 execution); final recommendation doc missing | Task 4 (structure) + Task 15 (recommendation states the score slot is pending) |
-| 14 | Final recommendation + 10–15 minute demo/presentation | MISSING | No recommendation/presentation file; no `*.pptx|*.pdf` in repo; prior compliance report deleted by `baf6019` | Deliverable 11 absent entirely | Tasks 15 |
-
----
-
-### 1.3 Required components — status table
-
-| Component | Status | Implemented Correctly | Used | Tested | Storybook | Accessibility | Problems | Required Action |
-|---|---|---|---|---|---|---|---|---|
-| **AppButton** | PARTIAL | Yes — `shared/components/button/`, selector `app-button`, signal API, loading/disabled | Yes — 23 files, 132 refs | Yes — 12 real interaction tests | Yes — `Basic/AppButton`, 7 stories | Good — aria-label/busy/disabled/pressed, native button | Class is `ButtonComponent`, not `AppButton*`; Taiga `tuiButton` neutralized by Tailwind `!important` (double styling system) | Task 2 rename → `AppButtonComponent`; Task 1 documents Taiga/Tailwind ownership decision |
-| **AppTextField** | PARTIAL | Yes — CVA, typed `type`, hint/error, auto ids | Yes — 15 files, 104 refs | Partial — 13 tests but `aria-invalid`/`required` never asserted; component has no validation logic of its own | Yes — `Basic/AppTextField`, 7 stories | Good — label[for], aria-describedby, aria-invalid | Class is `InputComponent` (ambiguous name); validation test gap | Task 2 rename → `AppTextFieldComponent`; Task 12 adds aria-invalid/required tests |
-| **AppSelect** | PARTIAL | Yes — native `<select>` + CVA + Taiga `TuiLabel` | Yes — 11 files, 95 refs | Weak — only 3 tests | Yes — `Basic/AppSelect`, 4 stories (untracked) | Good — label[for], aria-label fallback, native keyboard | Class is `SelectComponent`; `SelectOption` type not exported (`select.component.ts:13`); thin tests | Task 2 rename → `AppSelectComponent` + export `SelectOption`; Task 12 adds tests; Task 13 commits story |
-| **StatusBadge** | PARTIAL | Yes — status→style map, sizes | Yes — 8 files, 18 refs — **but not on `/orders`**, where the palette is duplicated inline | Yes — 6 tests | Yes — `Basic/StatusBadge`, 6 stories | Gap — plain `<span>`, no `role="status"`/`aria-label` | Style map duplicated 3× (`status-badge.component.ts:7-27`, `format-utils.service.ts:55-74`, `orders.component.ts:72-94`) | Task 6 a11y (role/label + test); Task 8 adoption on orders; Task 9 single source of style map |
-| **SearchFilterToolbar** | PARTIAL | Yes — composes input+select+button | Barely — 2 files (doctors, patients); billing + change-requests hand-roll identical markup (`billing.component.html:53-81`, `change-requests.component.html:41-69`) | Yes — 11 tests incl. host wiring | Yes — `Composite/SearchFilterToolbar`, 4 stories | Gap — search field has **no accessible name** | Adoption low + 2 inline duplicates + a11y gap | Task 6 `searchAriaLabel`; Task 9 replace both inline copies |
-| **DataTableToolbar** | PARTIAL | Thin but sound (title/subtitle + header-actions slot) | Partially — 4 files; **orders rebuilds its header inline** (`orders.component.html:1-61`) as do 5 other pages | Yes — 6 tests | Yes — `Composite/DataTableToolbar`, 3 stories (untracked) | OK — `<h1>` heading + projection | Header markup duplicated across ~19 pages, only 4 use the component; inventory falsely claims orders uses it | Task 8 adopt on orders; Task 11 fix inventory row; Task 13 commits story |
-| **OrderSummaryCard** | PARTIAL | Yes but **6 of 13 inputs are dead** (`patient, doctor, clinic, subOrders, overallProgress, currentStage, stages` never rendered; `order-summary-card.component.ts:14-22`) | 1 file (`view-order`) | Weak — 1 test; spec sets inputs the template ignores | Yes — `Business/OrderSummaryCard`, 3 stories (untracked) | OK — `<dl>/<dt>/<dd>` semantics | Dead inputs = API lies; test asserts nothing meaningful | Task 10 remove dead inputs + fix spec; Task 12 strengthen tests; Task 13 commits story |
-| **WorkflowTimeline** | PARTIAL | Mostly — but `@for (… track stage.status)` (`workflow-timeline.component.html:6`) throws on duplicate status | 1 file (`order-workflow`) | Weak — 1 test | Yes — `Business/WorkflowTimeline`, 4 stories | Gap — no `aria-current="step"` on active item | Fragile track key; aria gap; thin test | Task 6 aria-current + track fix; Task 12 strengthen tests |
-
-No required component is MISSING, and none is dead. Composite/business adoption is the weak area: 7 hand-rolled duplicates of shared patterns exist (§1.8).
-
----
-
-### 1.4 Order Management POC (`/orders`)
-
-| Aspect | Status | Evidence | Gap | Action |
-|---|---|---|---|---|
-| Normal state | DONE | Real HTTP load: `order-data.service.ts:67-89` → `public/data/orders.json`; signal-driven filter/sort/pagination (`orders.component.ts:178-212`) | — | — |
-| Loading state | PARTIAL | Skeleton markup real (`orders.component.html:222-228`) but reached only via a **hardcoded toggle** (`orders.component.html:40-60`) or `simulateRefresh()`'s `setTimeout` (`orders.component.ts:449-452`); service's real `loading` signal (`order-data.service.ts:24,28`) is never read by the page; first paint shows *empty*, not loading | State not reachable through authentic data flow | Task 7: derive state from service signals |
-| Empty state | PARTIAL | Two empties: authentic filter-driven empty with working `clearAllFilters()` (`orders.component.html:271-296`) ✅; named "No orders yet" empty only reachable via fake toggle (`:229-250`) ❌ | Fake branch cannot occur organically | Task 7: data-driven |
-| Error state | **WRONG** | Markup real (`:251-269`) but service `error` signal (`order-data.service.ts:25,29`) never bound; `retryLoad()` only flips a local signal (`orders.component.ts:454-456`) — **no reload happens**; contrast: `documents.component.html:113-122` binds its service error correctly | Unreachable except by toggle; retry is a no-op | Task 7: bind error, retry → `loadOrders()` |
-| Responsive | DONE | Tailwind `sm:`/`lg:` prefixes, flex-wrap, `overflow-x` scroll region, `@media (max-width: 640px)` (`orders.component.scss:13-17`), reduced-motion guard (`orders.component.ts:241`); 3-viewport screenshots exist | Table is fixed 164rem with horizontal scroll (documented, acceptable) | Keep; evidence refreshed in Task 16 |
-| Component reuse | PARTIAL | Uses `app-button` ×10, `app-search-input`, `app-select`, `app-arch-badge`, `app-enterprise-paginator`; does **not** use `app-data-table-toolbar`, `app-search-filter-toolbar`, `app-status-badge`, `app-table-feedback`/`empty-state`/`loading-state` | 4 of the required patterns hand-rebuilt on the flagship page | Tasks 8–9 |
-| Data flow | PARTIAL | Service has real loading/error simulation but the page never consumes it | See loading/error rows | Task 7 |
-| State screenshots | DONE (evidence) / UNVERIFIED as authentic | 4/4 PNGs in `evidence/states/`; `responsive-checklist.md:34` admits they came from the fake toggle | Evidence shows markup, not transition | Task 7 makes states authentic; Task 16 re-captures |
-
----
-
-### 1.5 Storybook audit
-
-| Item | Status | Evidence | Gap | Action |
-|---|---|---|---|---|
-| Config | DONE | `.storybook/main.ts` (angular-vite, addon-docs/a11y/vitest/onboarding), `preview.ts` imports global styles | Stale `src/**/*.mdx` glob → warning every build (`main.ts:5`) | Task 13 |
-| Story coverage | DONE (exceeds) | 8 files / 38 stories / 8 docs pages; requirement is 2 basic + 1 composite + 1 business | — | — |
-| Required components | DONE | 4 basic + 2 composite + 2 business all covered, with state/variant stories (loading, disabled, validation error, all-statuses, filter-active…) | — | — |
-| Git hygiene | PARTIAL | `select`, `data-table-toolbar`, `order-summary-card` stories **untracked** | Committed snapshot has only 5 of 8 | Task 13 |
-| Build evidence | PARTIAL / UNVERIFIED | `evidence/storybook/build-storybook.log` = success but emitted only **5** story chunks (12:36); current `storybook-static/` (14:58) has all 8 with no matching log | Log does not evidence current tree | Task 13 rebuild + refresh log |
-| Screenshots | PARTIAL | 9 PNGs cover 5 components; 3 newer stories have none | Missing screenshots for select/data-table-toolbar/order-summary-card | Task 13 |
-| A11y addon | PARTIAL | `preview.ts:18` `test: 'todo'` → report-only, never fails | No enforced a11y in Storybook | Task 13: attempt `test: 'error'`; document outcome |
-| Dependency compatibility | DONE | Peers verified: storybook 10.6 + angular 21.0.9 + vite 8.3.1 + vitest 4.1.11 all satisfy ranges; Playwright chromium installed | Unpinned `latest` for `@chromatic-com/storybook`, `playwright`, `vite` (`package.json:55,74,78`) | Pin in Task 13 (record exact installed versions) |
-
----
-
-### 1.6 Testing audit
-
-| Requirement | Status | Evidence | Gap | Action |
-|---|---|---|---|---|
-| Test inventory | DONE | 53 spec files, 336 `it(` occurrences = `evidence/tests/test.log` `TOTAL: 336 SUCCESS`, EXIT 0, 2026-09-26 | — | — |
-| Runner clarity | PARTIAL | `npm test` = Karma (`angular.json:87-90`, `karma.conf.js`); a second full stack (`vitest.config.ts`, `@storybook/addon-vitest`, `@vitest/coverage-v8`) is installed and type-checked but **no script runs it**; two coverage packages installed | Ambiguous/duplicated test tooling | Task 12: document which runner owns what; Task 13 pins versions |
-| Tests for 4 basic components | DONE | button 12, input 13, select 3, status-badge 6 — all assert DOM behavior | select thin | Task 12 |
-| Button interaction | DONE | `button.component.spec.ts:75-99` — click emits, disabled/loading do not emit, aria states | — | — |
-| Input validation | PARTIAL | Error display tested (`input.component.spec.ts:52-72`); `aria-invalid`, `required`, end-to-end invalid path never asserted; real validators only at form level (`edit-order.component.spec.ts:30-48`) | Spec's "input validation" only partially covered | Task 12 |
-| Filter interaction | DONE | `search-filter-toolbar.component.spec.ts:60-147` host-wiring test | — | — |
-| Loading/empty state | DONE | `loading-state` 6 tests, `empty-state` 6 tests incl. action emission | Orders states untested authentically | Task 7 adds state tests |
-| Focused/skipped/fake tests | DONE (clean) | Grep: 0 `fit/fdescribe/xit/xdescribe/.only/.skip`, 0 commented tests | 5 single-test specs assert only a rendered string (order-summary-card, workflow-timeline, order-data, doctor-details, patient-details) | Task 12 strengthens 3 of them |
-| Evidence freshness | UNVERIFIED | Log is genuine and matches README, but 8 dirty files post-date it and no spec changes are pending | Re-run needed after code tasks | Task 16 |
-| Coverage | MISSING | `karma.conf.js:20-24` configured, never enabled; no `coverage/`, no evidence | No coverage baseline | Task 12: run once, save `evidence/tests/coverage-summary.txt` (baseline, not a DoD gate) |
-| Test matrix (8 categories) | MISSING | No matrix file; grep for `boundary|permission|retry|recovery` in `*.md` → 0 relevant hits; 6 of 8 categories unmapped | Deliverable gap | Task 12: `docs/test-matrix.md` + gap tests for permission/dependency-failure/boundary |
-
----
-
-### 1.7 Accessibility and responsiveness — Implemented / Verified / Documented
-
-| Area | Implemented | Verified | Documented | Notes / Gap |
-|---|---|---|---|---|
-| Keyboard navigation (tables) | Yes — sortable headers are buttons with `aria-label` (`orders.component.html:352-602`), commit `c269831` | Yes — walkthrough checklist + 2 focus screenshots | Yes — `keyboard-walkthrough-checklist.md`, `keyboard-walkthrough.json` | — |
-| Focus visibility | Partial — per-component `focus-visible` Tailwind classes work; **global fallback broken** (`theme.scss:267-270` invalid `ring:` + `outline: none`, verified) | Partial — screenshots show focus on sort header | Documented as if complete | Task 5 fixes rule; Task 16 re-verifies |
-| Labels / accessible names | Yes for input/select/button/dialog | Yes (axe 0 violations, 24 routes) | `axe-summary.md` | **`SearchFilterToolbar` search field has no accessible name** — axe cannot catch it if not scanned in that state; Task 6 |
-| Semantic status | No — `StatusBadge` is a bare `<span>` | No dedicated check | No | Task 6: `role="status"` + `aria-label` |
-| Dialogs | Yes — PrimeNG Dialog + CDK `cdkTrapFocus` (`entity-dialog.component.html:27`), 12 spec tests | Covered by axe dialog route-state | Yes | — |
-| Forms / errors | Yes — `aria-invalid`, `aria-describedby`, error ids | Partly (screenshots `basic-apptextfield--with-validation-error.png`) | Storybook docs | `aria-invalid` untested (Task 12) |
-| Disabled states | Visual only (`opacity: 0.5` hardcoded in 3 places, no token) | Not separately verified | No | Task 5 tokens |
-| Workflow timeline | Partial — `<ol aria-label>` + `aria-hidden` markers | No | No | Task 6: `aria-current="step"` |
-| Storybook a11y | Addon installed | Report-only (`test: 'todo'`) | No per-story evidence | Task 13 |
-| Breakpoints / mobile / tablet / desktop | Yes — Tailwind `sm/md/lg/xl` used across templates; orders uses `sm:`+`lg:`; no CDK `BreakpointObserver` (not required) | Yes — 9 screenshots across 375/768/1440 + `overflow-results.json` + `sidebar-toggle-results.json` | `responsive-checklist.md` | Table relies on horizontal scroll at 375 (documented, acceptable) |
-| Overflow / clipped content | Yes — `overflow-x` regions, min-width columns | Yes — `overflow-results.json` | Yes | — |
-| Console / build errors | n/a | README gate: build EXIT 0 | `evidence/build/*` | Re-run in Task 16 |
-
----
-
-### 1.8 Library responsibility and duplication findings
-
-Declared division (`README.md:101-107`, `docs/technology-comparison.md:127-137`) is **respected at macro level**:
-
-| Library | Actual usage (verified) | Verdict |
-|---|---|---|
-| PrimeNG | 16 imports: `p-table` ×18, `p-treetable`, `p-dialog`, `p-paginator`, Aura theme in `app.config.ts:23-31` — the enterprise widget workhorse | Correct, meaningful |
-| Taiga UI | `TuiRoot` at app root + exactly 3 directives: `TuiButton` (button), `TuiStatus` (status-badge), `TuiLabel` (select) + i18n | Token-lean but real; **but** `tuiButton`/`tuiStatus` are visually overridden by Tailwind/inline styles — near-zero contribution (document this decision) |
-| Angular CDK | drag-drop (workflow-board), `cdkTrapFocus` (entity-dialog), `cdk/menu` (view-order) | Narrow, correct. No Overlay/VirtualScroll/BreakpointObserver |
-| Tailwind | 1,943 of 2,238 `class=` attributes; generated CSS committed (`src/styles/tailwind-generated.css`) | Dominant, correct |
-| Signals/RxJS | Pervasive signals; RxJS in services + interceptor | Correct |
-
-**Duplication / clean-architecture problems found (all flagged, none to be "fixed" beyond this plan):**
-
-| ID | Finding | Evidence |
-|---|---|---|
-| D1 | Status palette implemented 3× | `status-badge.component.ts:7-27`, `format-utils.service.ts:55-74`, `orders.component.ts:72-94` (identical hex pairs) |
-| D2 | Priority palette implemented 2× | `priority-badge.component.ts` `DOT_CLASSES` vs `format-utils.service.ts:76-84` |
-| D3 | "Completed→Shipped" label logic 2× | `shared/utils/status-label.ts` vs `orders.component.ts:586-589` |
-| D4 | Sort-a11y helper 2× | `shared/utils/sort-a11y.ts` vs `orders.component.ts:325-335` |
-| D5 | Comparator 2× | `order-data.service.ts:7-16` (exported, 0 external users) vs `orders.component.ts:113-126` |
-| D6 | SearchFilterToolbar hand-copied | `billing.component.html:53-81`, `change-requests.component.html:41-69` |
-| D7 | Page-header markup hand-copied | `orders.component.html:2-10`, `documents:5`, `notifications:5`, `settings:3`, `clinic-details:13` (component used by only 4 pages) |
-| D8 | Three loading/empty components coexist | `loading-state` + `empty-state` (dashboard/grid) vs `table-feedback` (6 pages) — no documented ownership rule |
-| D9 | Raw `<button>` ×123 across 27 files | Many justified (sort headers, tabs, menus) but ~30 generic action buttons could be `app-button` (settings, dashboard, login) |
-| D10 | Second styling system: `src/styles/utilities.scss` (1,086 lines, 151 selectors) — **64 of 106 class names referenced nowhere**; contradicts "Tailwind owns utility styling" | `utilities.scss` vs Tailwind; live subset: `input-base`, `label-base`, `select-base`, `enterprise-*` |
-| D11 | Dead PrimeNG button CSS | `styles.scss:47-56` `.p-button*` overrides; `p-button` count in templates = 0 |
-| D12 | Hand-rolled overlays in shell (no CDK Overlay) | `header.component.html:79-172` absolute divs + fixed click-catcher |
-| D13 | Unused state-model types | `order.model.ts:88`, `sub-order.model.ts:66` — 0 usages |
-| D14 | Docs contradict code | `ui-component-inventory.md:15,20,38`; `technology-comparison.md:35` claims PrimeNG "cards, badges" (0 `p-card`/`p-badge`) |
-
-Dead code also includes: `OrderSummaryCard` 6 unused inputs; `order-data.service.ts` `applyFilters`/`statusCounts`/`priorityCounts` (0 usages); orders pagination API `firstPage/lastPage/prevPage/nextPage/rangeStart/rangeEnd` (template-invisible); `LUCIDE_INNERS`; ~25 unused model exports; unused deps `@taiga-ui/{cdk,layout,event-plugins,polymorpheus}`, `@ng-web-apis/*` (verify peer status before any removal).
-
----
-
-### 1.9 Mandatory deliverables and Definition of Done
-
-| # | Deliverable | Status | Action |
-|---|---|---|---|
-| 1 | UI component inventory | PARTIAL | Task 11 |
-| 2 | Weighted matrix + references + AI Output Comparison Pack | WRONG / PARTIAL | Tasks 3, 4 (pack slots completed as templates; execution human) |
-| 3 | React + KendoReact spike | MISSING → **decided deviation** | Task 3 scope-exception record |
-| 4 | React + MUI spike | MISSING → **decided deviation** | Task 3 |
-| 5 | Vue 3 + Vuetify spike | MISSING → **decided deviation** | Task 3 |
-| 6 | Design tokens + component architecture | PARTIAL / MISSING | Tasks 5, 1 |
-| 7 | Required components | DONE (naming PARTIAL) | Task 2 |
-| 8 | Responsive demo page | DONE | — (evidence refresh Task 16) |
-| 9 | Documentation + required Storybook | PARTIAL | Tasks 1, 13 |
-| 10 | Automated tests + a11y/responsive review | PARTIAL | Tasks 6, 12, 16 |
-| 11 | Final recommendation + presentation | MISSING | Task 15 |
-| 12 | README, AI usage log, contribution summary | DONE / PARTIAL / PARTIAL | Tasks 14, 15 |
-
-**Definition of Done checkpoint (spec §7):**
-
-- [ ] Three candidates run as spikes — *decided deviation → documented research + scope exception (Task 3)*
-- [ ] Matrix weights = 100%, every score justified, Telerik licensing documented, AI at 15% in-table — Task 3
-- [ ] All three candidates evaluated under same AI conditions with full evidence — **protocol frozen (Task 4); runs pending human execution — recorded, never fabricated**
-- [ ] Final library uses approved stack with justified choice — Task 15 (recommendation)
-- [ ] Central tokens applied to all required components — Task 5
-- [ ] 4 basic + 2 composite + 2 business working and responsive — Tasks 2, 6, 8
-- [ ] Loading/empty/error visible **and authentic**; required tests and Storybook examples pass — Tasks 7, 12, 13
-- [ ] README, AI usage log, Git history, contribution summary, recommendation, demo, presentation complete — Tasks 14, 15, 16
-
-**OPTIONAL (not required; do not start before core DoD is green):** dark mode already present via `ThemeService`; RTL readiness; Storybook coverage for all 19 shared components; visual-regression suite; i18n; package publishing; advanced grid features; performance profiling; CI pipeline; coverage-percentage gate.
-
----
-
-### 1.10 Decided deviations (recorded per spec §11, require mentor sign-off at checkpoint)
-
-| ID | Deviation | Decision | Recorded in |
-|---|---|---|---|
-| DEV-1 | Stack: React+TS+KendoReact\|MUI → Angular 21 + PrimeNG/Taiga/CDK/Tailwind | Approved project stack; substitution accepted for DoD item "final library uses React+TS" | `docs/scope-exceptions.md` (Task 3), recommendation (Task 15) |
-| DEV-2 | Three runnable spikes → evidence-based research docs | Decided 2026-09-26; no React/Vue scaffolding unless later requested | `docs/scope-exceptions.md` (Task 3) |
-| DEV-3 | Team size 1 vs spec's 2–3 interns | Single-author truth preserved; no invented contributors/reviews | `CONTRIBUTION_SUMMARY.md` + `docs/scope-exceptions.md` (Task 14) |
-| DEV-4 | AI 15% controlled runs | Protocol frozen and templated; **execution pending human**; DoD item stays open until run | `docs/ai-comparison-protocol.md` (Task 4), README limitations |
-| DEV-5 | Spec doc `baf6019` deletions | Not restored; required content recreated fresh in current docs | Task 1 / Task 15 |
-
----
-
-## PART 2 — IMPLEMENTATION PLAN
 
 ## Global Constraints
 
-- Approved stack only: Angular 21, TypeScript, Signals + RxJS, PrimeNG, Taiga UI, Tailwind, Angular CDK. **No React/Vue code, no migration suggestions, no new libraries.**
-- Component class names must become: `AppButtonComponent`, `AppTextFieldComponent`, `AppSelectComponent`, `StatusBadgeComponent`, `SearchFilterToolbarComponent`, `DataTableToolbarComponent`, `OrderSummaryCardComponent`, `WorkflowTimelineComponent`. **Selectors (`app-button`, `app-input`, `app-select`, `app-status-badge`, …) and observable behavior stay unchanged.**
-- Candidate matrix: exactly 8 criteria, **AI-Assisted Development Effectiveness = 15% inside the table**, table sums to **100%**, every score has a written justification, framework (React/React/Vue 3) and component library (KendoReact/MUI/Vuetify) scored as separate axes.
-- AI rubric inside the protocol/scoresheet: requirement understanding 20%, UI/UX 20%, framework/library use 20%, responsiveness+a11y 15%, code quality 15%, manual corrections+hallucination 10% = 100%.
-- **Never fabricate**: AI outputs, scores, screenshots, test results, a11y results, approvals, contributors. Pending = marked pending.
+- Approved stack only: Angular 21, TypeScript, Signals + RxJS, PrimeNG, Taiga UI, Tailwind, Angular CDK. **No React/Vue code, no migration suggestions, no new runtime libraries.**
+- **Never fabricate**: AI outputs, scores, screenshots, test results, a11y results, approvals, contributors. Pending stays marked pending. The AI-comparison slots in `evidence/ai-comparison/` must remain empty until a human executes them.
 - No credentials, tokens, or real patient/customer/order data in code, screenshots, prompts, or logs. Sanitized data only (`public/data/*.json`).
-- Test baseline: **336 passing**; any task may only grow this number. Gates per code task: `npm run lint` + `npm test -- --watch=false --browsers=ChromeHeadless`. Full gate set (build, storybook, axe) at Task 16.
-- Commits: Conventional Commits (`feat:`, `fix:`, `refactor:`, `docs:`, `test:`, `chore:`), one per task (or logical step group), never commit `node_modules`, `dist/`, `storybook-static/`.
-- No unrelated UI changes. Visual diffs are expected only where the plan names them (orders header/states, status badges on orders, focus ring).
+- **Test baseline: 357 passing** (verified this session: `TOTAL: 357 SUCCESS`, exit 0). Tasks may only grow this number **except** Task 1, which may delete only the tests whose sole subject is a removed dead symbol â€” each deletion named in that commit body.
+- Gates for every code task: `npm run lint` + `npm test -- --watch=false --browsers=ChromeHeadless`. Full gate set (build, build-storybook, axe, screenshots) at Task 8.
+- **`rg` is not installed on this machine.** Use `findstr /s /n /c:"â€¦" src\app\â€¦` from PowerShell, or the Grep tool. Verification commands below use `findstr`.
+- Commits: Conventional Commits (`feat:`, `fix:`, `refactor:`, `docs:`, `test:`, `chore:`), one per task; never commit `node_modules/`, `dist/`, `storybook-static/`, `coverage/`.
+- No unrelated UI changes. The only expected visual diffs in this plan are named in Task 2 (disabled opacity standardization) and are re-captured in Task 8.
+- POC classification: nothing in this plan approves a production framework, license, migration, or security model.
 
 ## Review Focus
 
 Five failure modes most likely to bite, each pinned to the task that owns it:
 
-1. **Class rename breaking consumers, specs, or stories** (23+ import sites) — pinned by Task 2's mandatory full lint+test+build verification before commit.
-2. **Orders state rewiring breaking existing pagination/filter behavior** (19 existing orders tests; `pageData()` currently gated on `viewState`) — pinned by Task 7's tests for loading/error/empty plus the unchanged 19.
-3. **Global focus fix changing keyboard focus app-wide / axe results** — pinned by Task 5 verification (build + tests) and Task 16's fresh axe scan + keyboard checklist.
-4. **StatusBadge adoption on `/orders` changing status text/colors** (e.g. `Completed` → label "Shipped") — pinned by Task 8 test asserting rendered labels for every order status present in `public/data/orders.json`.
-5. **Dead-code removal deleting still-referenced symbols** (model barrel re-exports, `utilities.scss` classes used only in generated CSS) — pinned by Task 10's grep-verify + full build + full test gate before commit.
+1. **Dead-code removal deletes a still-referenced symbol** (models barrel, `utilities.scss` classes used only via `@extend`, `compareValues`) â€” pinned by Task 1 Step 2's per-symbol grep evidence and its four-gate verification (lint + test + build + build-storybook).
+2. **Dead-test deletion masks a real regression** â€” pinned by Task 1 Step 3: only tests whose *sole assertion subject* is a removed symbol may be deleted, and the commit body must list each deleted test name and the surviving equivalent coverage.
+3. **Disabled-token swap changes visuals app-wide** (opacity 0.7/0.4 â†’ 0.5 on three buttons) â€” pinned by Task 2 Step 5 naming exactly the three templates changed, and Task 8 recapturing screenshots afterwards.
+4. **Evidence script captures the wrong state or an unauthenticated page** â€” pinned by Task 8 Step 6: every output file must exist, axe must report 0 violations across the route list, and the four orders state PNGs must differ byte-wise (proving four distinct states were captured).
+5. **Documentation "corrections" introduce new false claims** â€” pinned by Task 5 Step 7 (re-derive matrix arithmetic from the score cells) and Task 6 Step 5 (resolve every cited path and re-grep every claimed consumer).
 
 ---
 
-### Task 1: Component architecture and naming rules document
+# PART 1 â€” GAP ANALYSIS
 
-**Files:**
-- Create: `docs/component-architecture.md`
-- Modify: none code
+Audit date 2026-09-26 against `dd631ae`, working tree clean. Gates re-run this session: `npm run lint` â†’ exit 0; `npm test -- --watch=false --browsers=ChromeHeadless` â†’ **TOTAL: 357 SUCCESS**, exit 0.
 
-**Interfaces:**
-- Consumes: current structure of `src/app/{core,shared,features}` and the final class names from Global Constraints (document the target naming even though Task 2 renames later).
-- Produces: the naming/wrapper rules that Tasks 2, 8, 9, 10 follow; README will link to it in Task 15.
+**Stack-alignment statement (per owner instruction â€” not issues):** Angular instead of React; PrimeNG instead of KendoReact/Material UI; Taiga UI for lightweight controls; Angular CDK for behavior/a11y/overlays; Tailwind for layout/theming. The spec's "final library uses React + TypeScript with KendoReact or MUI" and "three runnable spikes" are satisfied by **recorded deviations DEV-1/DEV-2** (`docs/scope-exceptions.md`), not by rewriting.
 
-- [ ] **Step 1: Write `docs/component-architecture.md`** with these five required sections:
-  1. **Folder structure** — `core/{guards,interceptors,layout,models,services}`, `shared/{components,icons,pipes,utils}`, `features/<name>` with lazy `loadComponent` routes from `app.routes.ts`; where tests and stories live.
-  2. **Naming** — file pattern `x.component.{ts,html,scss}` + `x.component.spec.ts` + `x.stories.ts`; selector `app-kebab`; class `PascalCase + Component`; **spec-name mapping table**: AppButton→`AppButtonComponent`/`app-button`, AppTextField→`AppTextFieldComponent`/`app-input`, AppSelect→`AppSelectComponent`/`app-select`, StatusBadge→`StatusBadgeComponent`/`app-status-badge`, plus the 4 composite/business names; Storybook titles `Basic/`, `Composite/`, `Business/`.
-  3. **Wrapper rules** — PrimeNG = enterprise data widgets (`p-table`, `p-treetable`, `p-dialog`, `p-paginator`); Taiga = root `tui-root` + i18n, `TuiButton`/`TuiStatus`/`TuiLabel` inside `app-*` wrappers only (state explicitly that Tailwind/inline styles own their visuals); CDK = drag-drop, focus trap, menu; Tailwind = utility styling (and that `styles/utilities.scss` live classes are the sanctioned non-Tailwind exception until removed); all form controls go through `app-input`/`app-select`/`app-button` — raw `<button>` only for structural controls (sort headers, tabs, menus); when to wrap (unstable 3rd-party API, a11y forwarding, shared states) vs use directly (one-off data widgets).
-  4. **Component interfaces** — signal `input()`/`input.required()`/`model()`/`output()`; form controls implement `ControlValueAccessor`; every interactive control requires an accessible-name input; loading/empty/error ownership rule resolving D8: `app-table-feedback` = in-table states, `app-loading-state`/`app-empty-state` = page-level, service signals are the single source of truth.
-  5. **Documentation approach** — Storybook docs pages as component documentation, inventory = `docs/ui-component-inventory.md`, decisions = `docs/*`, evidence = `evidence/*`.
-- [ ] **Step 2: Self-verify against spec §4/§5 (Phase 4)** — confirm all five topics exist and the mapping table lists all 8 required components. Expected: 5/5 sections present.
-- [ ] **Step 3: Commit**
+**Core-scope status summary (16 line items below):** DONE 3 Â· PARTIAL 9 Â· WRONG 2 Â· MISSING 2. OPTIONAL items are listed in Â§1.9 and are not counted against the core.
 
-```bash
-git add docs/component-architecture.md
-git commit -m "docs: add component architecture and naming rules"
-```
+## 1.1 Core scope requirements
 
----
+| # | Requirement (spec Â§4) | Status | Evidence | Gap | Required action |
+|---|---|---|---|---|---|
+| 1 | UI inventory â‰¥20 components, purpose/variants/reuse priority/observed inconsistencies, sanitized provenance | PARTIAL | `docs/ui-component-inventory.md` â€” 40 rows, provenance Â§`7-15`, all 44 cited paths resolve, 3 previously-false claims now true (orders uses `app-data-table-toolbar`, table-feedback has `error` mode, order-workflow has no drag-drop) | "Observed Inconsistency" column still holds usage notes for most rows (e.g. `:21` "already reusable", `:25` "Orders/patients/doctors tables"); row `:25` under-reports consumers | Task 6 |
+| 2 | Weighted comparison matrix: 100%, AI-15% **inside** the table, justification per score, tech-vs-library separation | **WRONG** | `docs/weighted-comparison-matrix.md:11-21` â€” 8 criteria = 100% with AI 15% in-table âœ“; 3 candidates âœ“; all 21 scored cells carry justification + citation âœ“ | `:42-44` provisional subtotals are arithmetically wrong: doc says 58.0/69.0/62.0, re-derived from `:29-35` = **59.0/68.0/62.5** (verified) | Task 5 Step 1 |
+| 3 | Telerik/KendoReact licensing, free/premium limits, trial, long-term dependency risk, official current sources | DONE | `docs/licensing-review.md` â€” free-vs-premium, trial, license-key workflow, npm governance, DEV-1 implication; 8 official URLs verified HTTP 200 this session | â€” | â€” |
+| 4 | Three runnable spikes (React+KendoReact, React+MUI, Vue3+Vuetify) | MISSING â†’ **decided deviation DEV-2** | `docs/scope-exceptions.md:11` records the decision + rationale + approver placeholder | Mentor sign-off still pending; no spike code (by decision) | Task 5 Step 4 (sign-off stays human) |
+| 5 | Per-candidate spike content (button, search input, status indicator, data table, confirmation dialog, responsive layout) | MISSING â†’ **DEV-2 + frozen AI requirement** | The six elements are frozen as the AI comparison requirement in `docs/ai-comparison-protocol.md:14-20` (5 of 6 explicit â€” **"button" is never named**, see #12) | Same deviation as #4; protocol must name all six elements | Task 5 Step 5 |
+| 6 | Central design tokens: color, typography, spacing, radius, shadows, focus, **disabled state**, breakpoints | PARTIAL | `src/styles/tokens.scss` â€” disabled tokens at `:26-29`, `:53-56`, `:268-271`, `:309-312`; global focus fixed: `theme.scss:267-270` `:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }` (invalid `ring:`/`ring-offset:` gone); dual namespace documented `tokens.scss:214` | The 3 basic components bypass the disabled token: `button.component.ts:63` `disabled:opacity-50`, `input.component.ts:78,82` `opacity-50`, `select.component.ts:67,69` `opacity-50`; `enterprise-paginator.component.scss:166` `opacity: 0.45`; 3 feature templates use `disabled:opacity-50/70/40` | Task 2 |
+| 7 | Component architecture doc: folder structure, naming, wrapper rules, interfaces, documentation approach | PARTIAL | `docs/component-architecture.md` â€” all 5 sections present (`:3, :28, :58, :78, :90`), naming table covers all 8 required components and matches the code | Â§3 never states that Tailwind/inline styles own the visuals of the Taiga directives it imports (`tuiButton`/`tuiStatus` are overridden) â€” the double-styling-system decision is undocumented | Task 5 Step 6 |
+| 8 | Final reusable component POC + responsive Order Management demo | DONE | 8 required components exist with spec class names; `/orders` responsive (Tailwind `sm:`/`lg:`, `overflow-x`, reduced-motion guard); 3-viewport evidence | Evidence freshness tracked in #15 | â€” |
+| 9 | Storybook examples: â‰¥2 basic, â‰¥1 composite, â‰¥1 business | DONE | 8 story files / 38 stories / 8 docs pages, all 8 tracked in git; Basic(4)+Composite(2)+Business(2); `preview.ts` a11y `test: 'error'`; no `latest` deps | Build log and screenshots stale â€” tracked in #15 | Task 8 |
+| 10 | Automated tests: each basic component, button interaction, input validation, filter interaction, loading/empty | PARTIAL | 56 specs / **357 tests, all green** (verified this session); no fit/xit/skip/commented tests; button interaction 12, filter interaction 13, loading/empty covered (orders state tests `orders.component.spec.ts:187-254`) | Input validation: display + `aria-invalid` + `required` asserted (`input.component.spec.ts:59,129`) but **no `aria-describedby` linkage test** and **no form/validator round-trip**; `order-summary-card` spec has 1 test and sets 2 dead inputs; interceptor asserts `has()` not the `Bearer` value; orders spec has **0 adoption assertions** (no query for `app-data-table-toolbar`/`app-status-badge`/`app-empty-state`) | Tasks 3, 4 |
+| 11 | Accessibility checks: keyboard, focus, labels, semantics, forms, dialogs, tables, states, errors, disabled, breakpoints | PARTIAL | Code fixes landed: `status-badge.component.html:6-7` `role="status"`+`aria-label`; `search-filter-toolbar.component.html:16` accessible name via `searchAriaLabel`; `workflow-timeline.component.html:16` `aria-current="step"`; sortable headers keyboard-operable (`c269831`); dialog focus trap `entity-dialog.component.html:27` | **Evidence UNVERIFIED**: `evidence/accessibility/axe-report.json` generated 09:29Z, *before* the 16:47 commit that introduced these fixes; `keyboard-walkthrough-checklist.md:38` claims "336/336"; `keyboard-walkthrough.json:110-113` records an input with `label: ""`; 8 checklist rows honestly marked "requires human validation" | Task 8 (re-run) + Task 4 (label fix if found) |
+| 12 | Controlled AI-output comparison: AI = 15% of the matrix; same tool/model/requirement/context/time/iterations for every candidate; initial + corrected outputs, prompts, screenshots, build/test, a11y, hallucinations, corrections, elapsed effort, iteration count | PARTIAL | `docs/ai-comparison-protocol.md` â€” base prompt locked `:29-31`, conditions `:33-42` (3 iterations, 60 min, fixed run order), rubric 20/20/20/15/15/10 = 100% `:50-60`, anti-fabrication `:44-48`; `evidence/ai-comparison/` = 3 partitions Ã— 9 empty templates + `screenshots/`, all marked `AWAITING HUMAN EXECUTION`, 0 PNGs, scoresheets unfilled â€” **no fabrication detected** | Frozen requirement never says **"button"** (5 of 6 elements explicit); Â§3 per-candidate runs are one table, not per-candidate sections with tool/model/date/iteration fields; 8 stray pre-partition duplicates sit in the evidence root; 3 `prompts.md` files contain an invalid UTF-8 byte (`0x97`) | Task 5 Step 5 (protocol), Task 7 (pack hygiene) |
+| 13 | AI score used as one factor alongside licensing, maintainability, a11y, technical suitability, team fit, dependency risk; never decisive alone | PARTIAL | Formula `protocol_score / 100 Ã— 15%` in matrix `:36` and protocol `:64`; recommendation states the score is PENDING with no invented number (`docs/final-recommendation.md:26-34`) | Score cannot exist until the human runs execute â€” DoD item stays open by design | Human execution (recorded, never fabricated) |
+| 14 | Final recommendation + 10â€“15 minute demo/presentation | PARTIAL | `docs/final-recommendation.md` (recommendation, evidence basis, risk register, "not approved" section) + `docs/demo-script.md` (~12â€“16 min, routes `/login`, `/orders`, Storybook; all claims verified against code) | Recommendation has **no "Next validation steps" section** (open items live only in demo-script `:62-65`); live presentation not yet delivered | Task 5 Step 7; delivery is human |
+| 15 | Evidence artifacts fresh, attributable, and reproducible | **WRONG** | Everything under `evidence/` was committed at 12:33â€“12:43, but `dd631ae` changed **67 src files at 16:47**; `evidence/tests/test.log` says **336** while the tree has **357** (README `:68` and `test-matrix:7` say 357 â€” two "truths" in one repo); `build-storybook.log` evidences only **5 of 8** story chunks and a removed mdx glob; `lint.log` is 15 bytes (`EXIT CODE: 0`) with no command or date; state PNGs captured from the **old hardcoded toggle**, not the service-driven `previewState()`; **no capture script exists** (`Test-Path scripts` = false; no `evidence` npm script) | Task 8 |
+| 16 | README, AI usage log, contribution summary | PARTIAL | README has all 7 required sections + doc map; `AI_USAGE_LOG.md` has per-session table, PENDING AI-runs section, "what AI was not used for", no invented people; `CONTRIBUTION_SUMMARY.md` single-author honest, all 8 cited commit hashes real | README omits links to inventory/technology-comparison/deliverable-scoring/AI log/contribution and omits `evidence/ai-comparison/` from its evidence list; status numbers stale (#15); AI log prompts are summaries not verbatim (base prompt IS verbatim in the protocol â€” must say where); contribution summary missing `baf6019`/`dd631ae` | Tasks 5, 8, 9 |
 
-### Task 2: Rename basic component classes to spec names
+## 1.2 Required components
 
-**Files:**
-- Modify: `src/app/shared/components/button/button.component.ts` (+ `.spec.ts`, `.stories.ts`)
-- Modify: `src/app/shared/components/input/input.component.ts` (+ `.spec.ts`, `.stories.ts`)
-- Modify: `src/app/shared/components/select/select.component.ts` (+ `.spec.ts`, `.stories.ts`)
-- Modify: every consumer importing these classes (~23 files for button, ~15 for input, ~11 for select — find with `rg -l "ButtonComponent|InputComponent|SelectComponent" src`)
+| Component | Status | Implemented correctly | Used | Tested | Storybook | Accessibility | Problems | Required action |
+|---|---|---|---|---|---|---|---|---|
+| **AppButton** (`shared/components/button`) | DONE | `AppButtonComponent` (`button.component.ts:45`), selector `app-button` unchanged, signal API, loading/disabled | 25 files / 71 uses | 12 (click emits; disabled/loading don't) | `Basic/AppButton`, 7 stories, tracked | aria-label/busy/disabled/pressed on native button | `tuiButton` imported but visually overridden by Tailwind `!important` classes | Task 5 Step 6 documents ownership |
+| **AppTextField** (`shared/components/input`) | DONE | `AppTextFieldComponent` (`input.component.ts:28`), CVA, auto ids | 14 files / 52 uses | 15 incl. `aria-invalid` `:59` + `required`/`aria-required` `:129` | `Basic/AppTextField`, 7, tracked | label[for], aria-describedby, aria-invalid | No `aria-describedby` linkage test; no validator round-trip; both `label` and `ariaLabel` optional â‡’ unnamed input possible if a consumer passes neither | Task 4 |
+| **AppSelect** (`shared/components/select`) | DONE | `AppSelectComponent` (`select.component.ts:34`); **`SelectOption` exported** `:13` | 10 files / 48 uses | 5 (options, CVA change, disabled, object options) | `Basic/AppSelect`, 4, tracked | label[for] + aria-label fallback, native keyboard | disabled styling `opacity-50` not token-backed | Task 2 |
+| **StatusBadge** | DONE | `StatusBadgeComponent`, statusâ†’style map from `shared/utils/status-styles.ts` (single source) | 9 files / 21 uses **incl. `/orders`** `orders.component.html:710,1007` | 7 incl. semantics test `:63` | `Basic/StatusBadge`, 6, tracked | `role="status"` + `aria-label` (`status-badge.component.html:6-7`) | `tuiStatus` neutralised by inline styles | Task 5 Step 6 |
+| **SearchFilterToolbar** | DONE | `SearchFilterToolbarComponent`; `searchAriaLabel` `:25` â†’ `html:16` `ariaLabel \|\| 'Search'` | 4 files (doctors, patients, billing, change-requests) | 12 incl. accessible-name + host wiring | `Composite/SearchFilterToolbar`, 4, tracked | none remaining | **Not used by `/orders`** (hand-rolls search + 3 selects, `orders.component.html:62-217`) | Record DEV-6 deliberate deviation (Task 5 Step 4) â€” do not force adoption |
+| **DataTableToolbar** | DONE | `DataTableToolbarComponent`, `<h1>` + `[header-actions]` slot | 5 files incl. **orders** `orders.component.html:3` | 6 | `Composite/DataTableToolbar`, 3, tracked | heading + projection | Orders spec asserts none of the adoption | Task 3 |
+| **OrderSummaryCard** | **WRONG** | Class name correct, but **7 dead inputs** `order-summary-card.component.ts:14-17,20-22` (`patient, doctor, clinic, subOrders, overallProgress, currentStage, stages`) are declared and never rendered; template only reads `order`, `completedServices`, `totalServices` | 1 file (`view-order`) | 1 â€” and the spec sets 2 dead inputs (`:19-20`) | `Business/OrderSummaryCard`, 3, tracked | `<dl>/<dt>/<dd>` semantics | API lies; test asserts nothing beyond one string | Task 1 (remove dead inputs) + Task 4 (expand spec) |
+| **WorkflowTimeline** | DONE | `WorkflowTimelineComponent`; `track $index` (`html:6`) fixes the old duplicate-status crash; `aria-current="step"` (`html:16`) | 1 file (`order-workflow`) | 4 incl. aria-current + empty branch | `Business/WorkflowTimeline`, 4, tracked | aria-current + `<ol aria-label>` | No stage `id` (acceptable while stages aren't reordered) | â€” |
 
-**Interfaces:**
-- Consumes: Global Constraints naming table.
-- Produces: classes `AppButtonComponent`, `AppTextFieldComponent`, `AppSelectComponent`; exported `SelectOption` type from `select.component.ts`; selectors and templates unchanged. Tasks 6–13 import these names.
+No required component is missing; all 8 have correct spec class names, tests, tracked stories, and consumers.
 
-- [ ] **Step 1: Record baseline**
+## 1.3 Order Management POC (`/orders`)
 
-Run: `npm test -- --watch=false --browsers=ChromeHeadless`
-Expected: `TOTAL: 336 SUCCESS`
+| Aspect | Status | Evidence | Gap | Action |
+|---|---|---|---|---|
+| Normal state | DONE | Real HTTP load â†’ `public/data/orders.json`; signal filter/sort/pagination | â€” | â€” |
+| Loading state | DONE | `viewState = computed(...)` derived from `orderService.loading()/error()/orders()` (`orders.component.ts:153-158`); skeleton rendered by that branch | â€” | â€” |
+| Empty state | DONE | Two authentic branches: dataset-empty and filter-empty with working clear-filters (`orders.component.html:235-244, 262-272`) | â€” | â€” |
+| Error state | DONE | Service `error` bound; `retryLoad()` â†’ `orderService.reload()` (`orders.component.ts:450-452`) â€” reload is real, tested (`orders.component.spec.ts:202`) | â€” | â€” |
+| State reachability | DONE | 4-button POC control `orders.component.html:37-57`, `aria-label="Preview data states (POC control)"`, drives **service** `previewState()` (`order-data.service.ts:104-131`, marked `// POC evidence control`) â€” markup and service state cannot disagree | â€” | â€” |
+| Responsive | DONE | Tailwind `sm:`/`lg:`, `overflow-x` scroll region, reduced-motion guard; 3-viewport screenshots exist (stale â€” #15) | Evidence predates final tree | Task 8 |
+| Component reuse | DONE (mostly) | `app-data-table-toolbar`, `app-status-badge` Ã—3, `app-table-feedback`, `app-empty-state`, `app-button` Ã—10, `app-search-input`, `app-select`, `app-enterprise-paginator`; `ORDER_STATUS_BLOCK_STYLES` gone (0 matches) | Search/filter row hand-rolled (deliberate â€” DEV-6); **zero adoption assertions in the spec** | Task 3 (tests), Task 5 (DEV-6) |
+| State screenshots | UNVERIFIED | 4 PNGs exist in `evidence/states/` but were captured at 12:38 from the **old hardcoded toggle** | Evidence shows old markup, not service-driven transitions | Task 8 recapture |
 
-- [ ] **Step 2: Rename symbols (exact pairs)**
+## 1.4 Storybook audit
 
-`ButtonComponent` → `AppButtonComponent`; `InputComponent` → `AppTextFieldComponent`; `SelectComponent` → `AppSelectComponent`. Rename class declarations, imports, `TestBed` declarations, story `component:` references, and `describe()` strings. Do **not** change selectors, file paths, or `StatusBadgeComponent` (already compliant).
+| Item | Status | Evidence | Gap | Action |
+|---|---|---|---|---|
+| Config | DONE | `.storybook/main.ts:4-14` â€” angular-vite, docs/a11y/vitest/onboarding; **stale mdx glob removed** | â€” | â€” |
+| a11y enforcement | DONE (source) | `preview.ts:19` `test: 'error'` | Outcome of strict run never recorded | Task 8 Step 7 |
+| Coverage | DONE (exceeds) | 8 files / 38 stories / 8 docs; Basic 4 + Composite 2 + Business 2 (min 2+1+1) | â€” | â€” |
+| Git hygiene | DONE | all 8 story files tracked | â€” | â€” |
+| Build evidence | **WRONG** | `evidence/storybook/build-storybook.log` (12:36) evidences **5 chunks** and logs `No story files found â€¦ src\**\*.mdx` (glob no longer exists); `storybook-static/` (16:38) has all 8 chunks but no log captured | Log does not evidence current tree | Task 8 Step 4 |
+| Screenshots | PARTIAL | 9 PNGs cover 5 components (all dated 2026-09-25, pre-rename) | Missing `Basic/AppSelect`, `Composite/DataTableToolbar`, `Business/OrderSummaryCard`; existing ones predate a11y/naming changes | Task 8 Step 5 |
+| Dependencies | DONE | no `"latest"`; playwright 1.63.0, vite 8.3.1, chromatic 5.3.1 pinned exactly | Storybook packages caret-range `^10.6.0` (lock 10.6.0) â€” acceptable | â€” |
 
-- [ ] **Step 3: Export the option type**
+## 1.5 Testing audit
 
-In `select.component.ts` add: `export interface SelectOption { label: string; value: unknown }` and use it for the `options` input type (currently inline at `select.component.ts:13`).
+| Requirement | Status | Evidence | Gap | Action |
+|---|---|---|---|---|
+| Inventory & freshness | DONE (source) | **56 specs / 357 `it(` â€” `TOTAL: 357 SUCCESS` re-run this session, exit 0** | `evidence/tests/test.log` still says 336 | Task 8 |
+| Runner clarity | PARTIAL | `npm test` = Karma/Jasmine (`angular.json`, `karma.conf.js`); `vitest.config.ts` + `@storybook/addon-vitest` + `@vitest/coverage-v8` installed but **no script runs standalone vitest**; two coverage packages installed | Undocumented dual stack | Task 5 Step 3 (document ownership; do not uninstall) |
+| Tests for 4 basic components | DONE | button 12, input 15, select 5, status-badge 7 | â€” | â€” |
+| Button interaction | DONE | `button.component.spec.ts:75-99` | â€” | â€” |
+| Input validation | PARTIAL | display `:52`, `aria-invalid` `:59`, `required`/`aria-required` `:129`; form-level validators in `edit-order.component.spec.ts:30,44` | No `aria-describedby`â†”error-element linkage test; no validatorâ†’component round-trip | Task 4 |
+| Filter interaction | DONE | `search-filter-toolbar.component.spec.ts:138` host wiring | â€” | â€” |
+| Loading/empty | DONE | `loading-state` 6, `empty-state` 6, orders state tests 5 (`:187,194,202,218,225`) | â€” | â€” |
+| Permission/security | DONE | `auth.guard.spec.ts:31,38`; `auth.interceptor.spec.ts:16,33` (new, `dd631ae`) | Interceptor asserts `headers.has()` only â€” not `Bearer <token>` value | Task 4 |
+| Dependency-failure / retry / recovery | DONE | `order-data.service.spec.ts:25` error, `:87` recover-after-reload; orders retry test `:202` | â€” | â€” |
+| Boundary | DONE | `orders.component.spec.ts:180` page clamp; `order-data.service.spec.ts:39` payload boundary | â€” | â€” |
+| Focused/skipped/fake tests | DONE (clean) | 0 `fit/fdescribe/xit/.only/.skip`, 0 commented tests | `order-summary-card` 1 weak test; orders `:169-185` tests dead pagination API | Tasks 1, 4 |
+| Test matrix | PARTIAL | `docs/test-matrix.md` â€” 8 categories Ã— 5 surfaces, header claims 357 âœ“ | One citation names a non-existent test (`order-data.service.spec.ts::(constructor load + empty flushâ€¦)` â€” that spec has 3 tests); 2 inexact citations; uncovered cells shown as `-` not `GAP` | Task 5 Step 3 |
+| Coverage | DONE (baseline) | `evidence/tests/coverage-summary.txt` â€” 357, Statements 61.33%, Lines 63.99% (baseline only, not a gate) | Transcribed rather than raw; regenerable in Task 8 | Task 8 |
 
-- [ ] **Step 4: Verify**
+## 1.6 Accessibility + responsiveness (Implemented / Verified / Documented)
 
-Run: `npm run lint && npm test -- --watch=false --browsers=ChromeHeadless && npm run build`
-Expected: lint clean; `TOTAL: 336 SUCCESS`; build EXIT 0.
+| Area | Implemented | Verified | Documented | Gap |
+|---|---|---|---|---|
+| Keyboard (table sort) | Yes â€” sortable headers are buttons w/ `aria-label`, `aria-sort` | Yes â€” checklist 9 rows VERIFIED + 2 screenshots | `keyboard-walkthrough-checklist.md` | Gate line stale (336) |
+| Focus visibility | Yes â€” `theme.scss:267-270` valid `:focus-visible` outline (fixed) | Partial â€” screenshots predate the fix | Documented as complete | Re-verify (Task 8) |
+| Labels / names | Yes â€” input/select/button/dialog; toolbar `searchAriaLabel` | axe 0/24 routes (stale scan) | `axe-summary.md` | `keyboard-walkthrough.json:110` captured an input with `label: ""`; re-scan (Task 8) |
+| Semantic status | Yes â€” `role="status"` + `aria-label` + test | Test-level only | Storybook docs | Re-scan (Task 8) |
+| Timeline | Yes â€” `aria-current="step"` + test | Test-level only | â€” | â€” |
+| Dialogs | Yes â€” PrimeNG + `cdkTrapFocus`, 12 spec tests | Covered by axe dialog route | â€” | â€” |
+| Forms/errors | Yes â€” `aria-invalid`, `aria-describedby`, `aria-required` | Screenshot + spec | Storybook docs | Linkage test (Task 4) |
+| Disabled states | Visual only â€” token exists, 6 call sites hardcode opacity | Not separately verified | Not documented | Task 2 |
+| Breakpoints | Yes â€” `sm/md/lg/xl` app-wide | Yes â€” 23 screenshots at 375/768/1440 + overflow/sidebar JSON | `responsive-checklist.md` | All stale vs `dd631ae` (Task 8) |
+| Overflow/clipping | Yes â€” `overflow-x` regions | Yes â€” `overflow-results.json` | Yes | Regenerate (Task 8) |
+| State authenticity | Yes â€” service-driven `previewState()`/`reload()` | **No** â€” PNGs came from the old fake toggle | `responsive-checklist.md:34` admits "state toggle" without saying service vs markup | Task 8 |
+| Storybook a11y | `test: 'error'` | Not recorded | No | Task 8 Step 7 |
+| Console/build | â€” | build EXIT 0 log exists but predates final tree; lint log is 15 bytes | `evidence/build/*` | Task 8 |
 
-- [ ] **Step 5: Commit**
+## 1.7 Library responsibility and duplication
 
-```bash
-git add -A src/app
-git commit -m "refactor(shared): rename basic components to AppButton/AppTextField/AppSelect spec names"
-```
+Division of responsibilities (`README.md`, `docs/technology-comparison.md`) is **respected at macro level**:
 
----
+| Library | Verified usage | Verdict |
+|---|---|---|
+| PrimeNG | `<p-table>` Ã—18 in 12 files, `<p-treetable>` Ã—1, `<p-dialog>` Ã—1, `<p-paginator>` Ã—1 (wrapped), Aura theme in `app.config.ts:23-31`; `p-dropdown/p-calendar/p-button/p-badge/p-card` = **0** | Correct, meaningful |
+| Taiga UI | `TuiRoot` + 3 directives (`TuiButton`, `TuiStatus`, `TuiLabel`) + i18n | Token-lean but **~0 visual contribution** (overridden by Tailwind/inline styles) â€” decision must be documented (Task 5 Step 6) |
+| Angular CDK | drag-drop (workflow-board), `cdkTrapFocus` (entity-dialog), `cdk/menu` (view-order) | Narrow, correct. Shell dropdowns still hand-rolled (documented, acceptable) |
+| Tailwind | 2,208 `class=` attributes; generated CSS committed | Dominant, correct |
+| Signals/RxJS | Pervasive signals; RxJS in services + interceptor | Correct |
 
-### Task 3: Candidate comparison matrix, Telerik licensing review, scope exceptions
+**Duplication status after `dd631ae`:**
 
-**Files:**
-- Rewrite: `docs/weighted-comparison-matrix.md`
-- Create: `docs/deliverable-scoring.md` (move the current project-deliverable rubric there unchanged)
-- Create: `docs/licensing-review.md`
-- Create: `docs/scope-exceptions.md`
+| ID | Finding | Status |
+|---|---|---|
+| D1 | Status palette 3Ã— | **FIXED** â€” single `shared/utils/status-styles.ts`, consumers delegate |
+| D2 | Priority palette 2Ã— | **FIXED** â€” `shared/utils/priority-styles.ts` (workflow-board's `getPriorityColor` still parallel â€” minor) |
+| D3 | Status-label logic 2Ã— | **FIXED** for order status (`status-label.ts`); sub-order labels still 3 copies â€” minor |
+| D4 | Sort-a11y helper 2Ã— | **FIXED** â€” orders uses `shared/utils/sort-a11y.ts` |
+| D5 | Comparator 2Ã— | **OPEN** â€” `order-data.service.ts:13-22 compareValues` (used only by dead `applyFilters`) vs `orders.component.ts:99-112` |
+| D6 | SearchFilterToolbar hand-copied | **FIXED** â€” billing + change-requests now use the component |
+| D7 | Page-header markup hand-copied | **PARTIAL** â€” 5 pages use `app-data-table-toolbar`, others still hand-roll |
+| D8 | Three loading/empty components | **DOCUMENTED** â€” ownership rule in `docs/component-architecture.md:84-88` |
+| D9 | Raw `<button>` Ã—125/29 files | Acceptable (sort headers, tabs, menus) |
+| D10 | `utilities.scss` second styling layer | **OPEN** â€” 1,091 lines, ~60 of 121 class tokens referenced nowhere; contradicts "Tailwind owns utilities" |
+| D11 | Dead `.p-button*` CSS | **OPEN** â€” `styles.scss:48,54`; 0 `<p-button>` usages |
+| D12 | Hand-rolled shell overlays | Documented; out of scope |
+| D13 | Unused model exports | **OPEN** â€” `OrderFilters`, `OrderTableState`, `SubOrderViewState` |
+| D14 | Docs contradict code | **OPEN** â€” `technology-comparison.md:35` claims PrimeNG provides "cards, badges" (0 usages) |
 
-**Interfaces:**
-- Consumes: DEV-1/DEV-2 decisions (§1.10).
-- Produces: candidate matrix with AI-15% in-table (DoD gate); licensing evidence; `docs/scope-exceptions.md` which Task 14 extends with DEV-3/DEV-4.
+Also dead: `OrderSummaryCard` 7 inputs; `order-data.service.ts` `applyFilters`/`statusCounts`/`priorityCounts`; orders pagination API (`firstPage/lastPage/prevPage/nextPage/rangeStart/rangeEnd/visiblePageNumbers`) + 6 more zero-use handlers; `LUCIDE_INNERS` export (internal uses only).
 
-- [ ] **Step 1: Fetch current official licensing sources** (webfetch): KendoReact licensing FAQ / license pages (progress.com/telerik), MUI licensing (mui.com/about), Vuetify licensing (vuetifyjs.com). Record retrieval date 2026-09-26 and URL for each.
-- [ ] **Step 2: Write `docs/deliverable-scoring.md`** — cut the existing 7-row project rubric from `weighted-comparison-matrix.md` verbatim (it is the spec §9 evaluation rubric and is still valid).
-- [ ] **Step 3: Rewrite `docs/weighted-comparison-matrix.md`** as the candidate-selection matrix:
-  - Rows = 3 candidates: `React + KendoReact`, `React + Material UI`, `Vue 3 + Vuetify`.
-  - Explicit preamble separating axes: *frontend technology* (React, React, Vue 3) vs *component library* (KendoReact, MUI, Vuetify) — states they are not equivalent product categories (spec §12 first mistake).
-  - Criteria columns, weights: Technical suitability 20, Licensing & cost 15, Accessibility (library-level) 10, Maintainability 10, Team fit 10, Dependency/lock-in risk 10, Ecosystem maturity 10, **AI-Assisted Development Effectiveness 15** = **100%**.
-  - Every candidate×criterion cell: score + one-line justification + evidence/source citation.
-  - AI-15% row links to `docs/ai-comparison-protocol.md` and is marked `PENDING HUMAN EXECUTION` with the contribution formula `protocol_score / 100 × 15%` (no invented number).
-  - Research-only caveat: evidence-based comparison for the record; organizational stack decision already approved (DEV-1).
-- [ ] **Step 4: Verify the arithmetic** — sum the weight column and confirm 100 and that 15 appears exactly once as AI-Assisted. Expected: `100%`.
-- [ ] **Step 5: Write `docs/licensing-review.md`** — free vs paid KendoReact component coverage, trial behavior, license types, npm package licensing implications, long-term dependency risk, contrast with MIT (MUI core, Vuetify, Angular/PrimeNG community edition), each claim cited with URL + retrieval date; section "Implication for this POC" referencing DEV-1.
-- [ ] **Step 6: Write `docs/scope-exceptions.md`** — DEV-1 and DEV-2 tables from §1.10, each with: spec requirement, decision, rationale (Angular approved stack), approver placeholder `Pending: mentor @ Checkpoint 2`.
-- [ ] **Step 7: Commit**
+## 1.8 Mandatory deliverables and Definition of Done
 
-```bash
-git add docs/weighted-comparison-matrix.md docs/deliverable-scoring.md docs/licensing-review.md docs/scope-exceptions.md
-git commit -m "docs: add candidate matrix with AI 15%, Telerik licensing review, scope exceptions"
-```
+| # | Deliverable | Status | Action |
+|---|---|---|---|
+| 1 | UI component inventory | PARTIAL | Task 6 |
+| 2 | Weighted matrix + references + AI Output Comparison Pack | WRONG (arithmetic) / PARTIAL (pack ready, empty) | Tasks 5, 7; execution human |
+| 3â€“5 | Three runnable spikes | MISSING â†’ DEV-2 | Task 5 (record) |
+| 6 | Design tokens + component architecture | PARTIAL | Tasks 2, 5 |
+| 7 | Required components | DONE | â€” |
+| 8 | Responsive demo page | DONE | Task 8 (evidence) |
+| 9 | Documentation + required Storybook | PARTIAL | Tasks 5, 8 |
+| 10 | Automated tests + a11y/responsive review | PARTIAL | Tasks 3, 4, 8 |
+| 11 | Final recommendation + presentation | PARTIAL | Task 5; delivery human |
+| 12 | README, AI usage log, contribution summary | PARTIAL | Tasks 5, 8, 9 |
 
----
+**Definition of Done (spec Â§7):**
 
-### Task 4: Freeze the AI-comparison protocol and scaffold per-candidate evidence
+- [x] All three candidates run as spikes â†’ *decided deviation DEV-2, recorded in `docs/scope-exceptions.md`*
+- [x] Matrix weights = 100%, every score justified, Telerik licensing documented, AI 15% in-table â†’ structure âœ“; **subtotals wrong (Task 5)**
+- [x] All three candidates evaluated under identical AI conditions with full evidence â†’ **protocol ready; runs PENDING HUMAN â€” never fabricated**
+- [x] Final library uses approved stack with justified choice â†’ recommendation exists; sign-off pending
+- [x] Central tokens applied to all required components â†’ **disabled tokens not consumed (Task 2)**
+- [x] 4 basic + 2 composite + 2 business working and responsive â†’ âœ“
+- [x] Loading/empty/error visible **and authentic**; tests and Storybook pass â†’ code âœ“; **evidence stale (Task 8)**
+- [x] README, AI log, Git history, contribution summary, recommendation, demo, presentation complete â†’ **README numbers/evidence wrong (Tasks 5, 8); live presentation human**
 
-**Files:**
-- Modify: `docs/ai-comparison-protocol.md`
-- Restructure: `evidence/ai-comparison/` → keep `README.md` at root; create `evidence/ai-comparison/{react-kendo,react-mui,vue-vuetify}/` each containing the 9 slot templates + `screenshots/`
+**OPTIONAL (do not start before core DoD is green):** dark mode (exists via `ThemeService`), RTL readiness, full Storybook coverage for all 19 shared components, visual-regression/a11y automation, i18n, package publishing, advanced grid features, performance profiling, CI pipeline, coverage-% gate, PrimeNG/Taiga adoption expansion beyond the 5 toolbar pages.
 
-**Interfaces:**
-- Consumes: matrix AI-15% row from Task 3 (same rubric, same status).
-- Produces: frozen protocol that the human executes three times; per-candidate evidence folders; nothing scored.
+## 1.9 Decided deviations and human-gated items
 
-- [ ] **Step 1: Amend §1.1 (frozen sanitized requirement)** so it explicitly requires all six elements: button, search input, status indicator, **data table**, **confirmation dialog**, responsive layout (current Promo Banners spec has a card grid and no confirm step — add a banner data table and a confirmation dialog on disable/delete).
-- [ ] **Step 2: Amend §1.4 (locked conditions)** — same approved AI tool + model for all three candidates, recorded in the protocol header **before the first run** and never changed; identical base prompt, context bundle, 60-minute allowance, 3-iteration limit; run order and timestamps logged. Keep the anti-fabrication §5 unchanged.
-- [ ] **Step 3: Add §4 "Per-candidate runs"** — for each candidate: assigned stack, run date/time, tool+model string, iteration log. States that outputs must be produced in that stack's own project (out-of-repo sandbox) and only sanitized artifacts land in `evidence/`.
-- [ ] **Step 4: Create the three evidence partitions** — copy the 9 templates (`initial-output`, `corrected-output`, `build-test-results`, `a11y-findings`, `hallucinated-apis`, `manual-corrections`, `effort-log`, `scoresheet`, plus `prompts.md`) into each candidate folder; `scoresheet.md` must carry the 20/20/20/15/15/10 = 100% weights with blank Score/Weighted columns; `screenshots/` subfolder with a README listing required captures (1440/768/375, initial and corrected). Update root `evidence/ai-comparison/README.md` to point at the three partitions and mark all slots `EMPTY — AWAITING HUMAN EXECUTION`.
-- [ ] **Step 5: Verify** — grep the protocol for `data table` and `confirmation dialog` (present), confirm rubric sums 100, confirm no slot contains invented results. Expected: all slots still empty and explicitly marked pending.
-- [ ] **Step 6: Commit**
-
-```bash
-git add docs/ai-comparison-protocol.md evidence/ai-comparison
-git commit -m "docs: freeze AI comparison protocol with six-element requirement and per-candidate evidence slots"
-```
-
----
-
-### Task 5: Design tokens — disabled state, focus fix, namespace note
-
-**Files:**
-- Modify: `src/styles/tokens.scss`, `src/styles/theme.scss`, `src/styles/utilities.scss`
-- Modify: `src/styles.scss` only if a disabled override lives there
-
-**Interfaces:**
-- Consumes: existing token categories (spec §4: color, typography, spacing, radius, shadows, focus, disabled, breakpoints).
-- Produces: CSS variables `--disabled-background`, `--disabled-foreground`, `--disabled-border`, `--disabled-opacity` (light + dark); valid global `:focus-visible`; consumed by Task 6/8 components.
-
-- [ ] **Step 1: Add disabled tokens** in `tokens.scss` (SCSS vars + `:root` + `[data-theme="dark"]` CSS custom properties) following the existing pattern of `--ring`/`--muted`.
-- [ ] **Step 2: Fix the global focus rule** in `theme.scss:267-270` — replace the invalid block with:
-
-```scss
-:focus-visible {
-  outline: 2px solid var(--ring);
-  outline-offset: 2px;
-}
-```
-
-- [ ] **Step 3: Consume the tokens** — replace hard-coded disabled styling with vars at `utilities.scss:141` (`.input-base:disabled`), `:209` (`.btn-base:disabled`), `:712` (`.enterprise-page-nav:disabled`), and any other `opacity: 0.5` disabled rule found by `rg "disabled" src/styles`.
-- [ ] **Step 4: Document the dual namespace** — add a header comment in `tokens.scss`: `--color-*` = Tailwind `@theme` bridge, unprefixed `--*` = app/PrimeNG layer; do not consolidate in this POC (visual-regression risk), record as known inconsistency in the architecture doc note appended to `docs/component-architecture.md` §Documentation.
-- [ ] **Step 5: Verify**
-
-Run: `npm run lint && npm test -- --watch=false --browsers=ChromeHeadless && npm run build`
-Expected: 336 SUCCESS, build EXIT 0; `rg "ring-offset|ring: 2px" src/styles` returns nothing.
-
-- [ ] **Step 6: Commit**
-
-```bash
-git add src/styles docs/component-architecture.md
-git commit -m "feat(tokens): add disabled-state tokens and fix global focus-visible rule"
-```
-
----
-
-### Task 6: Component accessibility fixes (TDD)
-
-**Files:**
-- Test: `src/app/shared/components/search-filter-toolbar/search-filter-toolbar.component.spec.ts`, `.../status-badge/status-badge.component.spec.ts`, `.../workflow-timeline/workflow-timeline.component.spec.ts`
-- Modify: `src/app/shared/components/search-filter-toolbar/search-filter-toolbar.component.{ts,html}`, `.../status-badge/status-badge.component.html`, `.../workflow-timeline/workflow-timeline.component.html`
-
-**Interfaces:**
-- Consumes: `AppButtonComponent`/`AppTextFieldComponent` names (Task 2), tokens (Task 5).
-- Produces: new optional input `searchAriaLabel` on `SearchFilterToolbarComponent`; `role="status"` + accessible name on `StatusBadgeComponent`; `aria-current="step"` on active timeline item. Tasks 8, 12, 13 rely on these.
-
-- [ ] **Step 1: Write the three failing tests**
-  - `search-filter-toolbar`: "should forward an accessible name to the search input" — set `searchAriaLabel`, assert `app-input` receives matching `ariaLabel` (host fixture pattern already in this spec).
-  - `status-badge`: "should expose status semantics to assistive tech" — assert root element has `role="status"` and `aria-label` containing the status label.
-  - `workflow-timeline`: "should mark the active stage with aria-current" — set `currentIndex`, assert `aria-current="step"` on that item only.
-- [ ] **Step 2: Run and confirm failure** — `npm test -- --watch=false --browsers=ChromeHeadless` → 3 new tests FAIL, 336 old PASS.
-- [ ] **Step 3: Implement**
-  - `search-filter-toolbar.component.ts`: `readonly searchAriaLabel = input<string>("")`; bind `[ariaLabel]="searchAriaLabel() || 'Search'"` on the `app-input` in the template (`:11-18`).
-  - `status-badge.component.html`: add `role="status"` and `[attr.aria-label]="label() || status()"` to the root span.
-  - `workflow-timeline.component.html`: add `[attr.aria-current]="i === currentIndex() ? 'step' : null"` to the stage item; also change `@for (… track stage.status)` to `track stage` **only if** stages carry a unique `id` — otherwise `track $index` (fixes the duplicate-key crash noted in §1.3).
-- [ ] **Step 4: Run and confirm green** — `npm test -- --watch=false --browsers=ChromeHeadless` → `TOTAL: 339 SUCCESS`.
-- [ ] **Step 5: Commit**
-
-```bash
-git add src/app/shared/components
-git commit -m "fix(a11y): accessible name for toolbar search, status semantics, timeline aria-current"
-```
+| ID | Deviation / open item | State | Recorded in |
+|---|---|---|---|
+| DEV-1 | Angular stack instead of React+KendoReact/MUI | Decided; mentor sign-off pending | `docs/scope-exceptions.md:10` |
+| DEV-2 | Research + protocol instead of three runnable spikes | Decided; sign-off pending | `docs/scope-exceptions.md:11` |
+| DEV-3 | Single author vs 2â€“3 interns | Decided; sign-off pending | `docs/scope-exceptions.md:12` |
+| DEV-4 | AI 15% held pending human execution | Decided; execution pending | `docs/scope-exceptions.md:13` |
+| DEV-5 | Docs deleted in `baf6019` recreated fresh, not restored | **Not yet recorded in scope-exceptions** | Task 5 Step 4 |
+| DEV-6 | `/orders` search/filter row not using `SearchFilterToolbar` (chips + multi-select advanced filters exceed its API) | **Not yet recorded** | Task 5 Step 4 |
+| HUMAN-1 | Three controlled AI comparison runs (60 min, 3 iterations, same tool/model) | **PENDING â€” AI must never execute or fill these** | `evidence/ai-comparison/*` |
+| HUMAN-2 | Mentor sign-off at checkpoints 1/2/3 + final review | PENDING | `docs/scope-exceptions.md` |
+| HUMAN-3 | Live 10â€“15 minute demonstration | PENDING | `docs/demo-script.md` |
 
 ---
 
-### Task 7: Order Management POC — authentic loading/empty/error/retry (TDD)
+# PART 2 â€” IMPLEMENTATION PLAN
 
-**Files:**
-- Test: `src/app/features/orders/orders.component.spec.ts`
-- Modify: `src/app/features/orders/orders.component.ts`, `orders.component.html`
-- Modify: `src/app/core/services/order-data.service.ts`, `src/app/core/models/order.model.ts`
-
-**Interfaces:**
-- Consumes: service signals `OrderDataService.loading`, `.error`, `.orders` (already exist, `order-data.service.ts:23-29`); `OrdersViewState` type from `core/models/order.model.ts:88` (currently unused — adopt it and delete the local union at `orders.component.ts:55`).
-- Produces: service-level preview API + `reload()`; page state derived from service; other tasks keep the state switcher for evidence capture.
-
-- [ ] **Step 1: Write failing tests** (append to `orders.component.spec.ts`, which already has 19):
-  1. "should show the loading state while the service is loading" — set service loading true → assert loading branch (`.skeleton` / `[role="status"]` container) rendered.
-  2. "should show the error state when the service reports an error" — set service error → assert error branch + retry button present.
-  3. "should reload orders on retry" — click retry → `spyOn(service, 'reload')` called; error cleared after reload resolves.
-  4. "should show the empty state when no orders match the dataset" — service orders set to `[]` → assert empty branch.
-  5. "should show the normal table when data is loaded" — existing behavior retained (fold into #1–4 asserts as needed).
-- [ ] **Step 2: Run and confirm failure** — new tests FAIL (state is still a local signal).
-- [ ] **Step 3: Extend `OrderDataService`**
-  - `reload(): void` → re-invokes the existing `loadOrders()` (clears error, sets loading).
-  - `previewState(state: 'normal' | 'loading' | 'empty' | 'error'): void` — **POC-only evidence control living in the service** so markup and service state can never disagree: `loading` holds loading true; `error` sets `_error`; `empty` temporarily empties `_orders`; `normal` reloads. Document as POC-only with a `// POC evidence control` note.
-- [ ] **Step 4: Rewire `OrdersComponent`**
-  - Replace local `viewState` signal with `readonly viewState = computed<OrdersViewState>(() => …)` derived from `this.orderService.loading/error/orders()` (order: loading → error → empty → normal).
-  - `setViewState(s)` → `this.orderService.previewState(s)`; `simulateRefresh()` → `this.orderService.reload()` (delete the `setTimeout`); `retryLoad()` → `this.orderService.reload()` (fixes the no-op at `orders.component.ts:454-456`).
-  - Remove the `if (this.viewState() !== "normal") return [];` gate in `pageData()` (`:207`) — filtering now naturally yields `[]` when data is empty.
-  - Adopt `OrdersViewState` from `core/models/order.model.ts:88`; delete the local type (`:55`).
-- [ ] **Step 5: Update the toolbar switcher** (`orders.component.html:40-60`) — keep the 4-button control (evidence screenshots depend on it) but relabel its `aria-label` to "Preview data states (POC control)" and have it drive `setViewState` (now service-backed). The toggle switches **service state**, not markup.
-- [ ] **Step 6: Run and confirm green** — `npm run lint && npm test -- --watch=false --browsers=ChromeHeadless` → 336 + new tests all PASS (adjust any of the old 19 that asserted the local-signal behavior; note each adjustment in the commit body).
-- [ ] **Step 7: Commit**
-
-```bash
-git add src/app/features/orders src/app/core
-git commit -m "fix(orders): derive page states from service signals and make retry reload data"
-```
+**Execution order:** 1 â†’ 2 â†’ 3 â†’ 4 â†’ 5 â†’ 6 â†’ 7 â†’ 8 â†’ 9. Tasks 1â€“4 are code and must precede Task 8 (evidence must match the final tree). Tasks 5â€“7 are docs/hygiene and can interleave after Task 4. Task 8 must run after all code changes. Task 9 closes.
 
 ---
 
-### Task 8: Adopt shared components on the orders page
+### Task 1: Remove verified dead code
 
 **Files:**
-- Modify: `src/app/features/orders/orders.component.ts`, `orders.component.html`
-- Test: `src/app/features/orders/orders.component.spec.ts`
-
-**Interfaces:**
-- Consumes: `DataTableToolbarComponent` (title/subtitle/`[header-actions]` slot), `StatusBadgeComponent` (+ Task 6 semantics), `AppTextFieldComponent` names, shared `sort-a11y.ts` and `status-label.ts`, `app-table-feedback` / `app-empty-state`.
-- Produces: orders header rendered via `app-data-table-toolbar`; status cells via `app-status-badge`; shared util usage that Task 9 generalizes.
-
-- [ ] **Step 1: Header → `app-data-table-toolbar`** — replace the hand-built header block (`orders.component.html:1-61`) with the component: `title="Orders"`, subtitle = count text, existing buttons + the state switcher projected into `[header-actions]`. Keep all button handlers unchanged.
-- [ ] **Step 2: Status cells → `app-status-badge`** — replace inline `<span class="treetable-status-surface" [ngStyle]="orderStatusBlockStyle(...)">` (and the sub-order equivalent) with `<app-status-badge [status]="…">`; delete `ORDER_STATUS_BLOCK_STYLES`/`SUB_ORDER_STATUS_BLOCK_STYLES` (`orders.component.ts:72-94`) **after** confirming every status string present in `public/data/orders.json` exists in the badge's style map — extend the shared map first if any are missing (Task 9 owns the single map; here just consume `StatusBadgeComponent`).
-- [ ] **Step 3: Shared helpers** — replace `sortAriaSort()`/`sortAriaLabel()` (`orders.component.ts:325-335`) with `shared/utils/sort-a11y.ts`; replace `orderStatusLabel()` (`:586-589`) with `shared/utils/status-label.ts`.
-- [ ] **Step 4: State markup → shared components** — replace the hand-written empty branch (`orders.component.html:271-296`) with `app-empty-state` (+ clear-filters action) and the in-table loading/error rows with `app-table-feedback` (extend `table-feedback` with an `error` mode first — `table-feedback.component.ts:13` currently only supports `loading|empty`, which is also inventory row error). Keep the skeleton rows only if `app-loading-state` cannot express them; prefer the shared component.
-- [ ] **Step 5: Tests** — add: "should render a status badge for each order status" (assert `app-status-badge` count > 0 and label text matches `statusDisplayLabel`), "should render the shared page header", "should render the shared empty state when filters match nothing". Keep all prior orders tests green.
-- [ ] **Step 6: Verify** — `npm run lint && npm test -- --watch=false --browsers=ChromeHeadless && npm run build` → all green; **visual change expected** on `/orders` header/status columns (screenshots recaptured in Task 16).
-- [ ] **Step 7: Commit**
-
-```bash
-git add src/app/features/orders src/app/shared/components
-git commit -m "refactor(orders): adopt DataTableToolbar, StatusBadge, and shared state components"
-```
-
----
-
-### Task 9: App-wide duplication consolidation
-
-**Files:**
-- Create: `src/app/shared/utils/status-styles.ts`, `src/app/shared/utils/priority-styles.ts`
-- Modify: `src/app/shared/components/status-badge/status-badge.component.ts`, `src/app/shared/components/priority-badge/priority-badge.component.ts`, `src/app/core/services/format-utils.service.ts`, `src/app/features/workflow-board/workflow-board.component.ts`, `src/app/features/billing/billing.component.{ts,html}`, `src/app/features/change-requests/change-requests.component.{ts,html}` (+ their specs)
-- Test: new `src/app/shared/utils/status-styles.spec.ts`
-
-**Interfaces:**
-- Consumes: existing maps at `status-badge.component.ts:7-27`, `format-utils.service.ts:55-84`, `priority-badge.component.ts`.
-- Produces: `statusStylesFor(status: string): StatusStyle`, `priorityDotClass(priority: string): string`, `statusDisplayLabel(status: string): string` (re-exported from existing `status-label.ts`) as the single sources; `format-utils` delegates; both inline toolbars replaced.
-
-- [ ] **Step 1: Failing test** — `status-styles.spec.ts`: "should define styles for every status used by dashboard and orders" (import both consumers' status lists, assert `statusStylesFor` returns a non-empty pair for each).
-- [ ] **Step 2: Create shared style modules** — move `STATUS_STYLES` → `status-styles.ts` and `DOT_CLASSES` → `priority-styles.ts`; make `StatusBadgeComponent`, `PriorityBadgeComponent`, and `FormatUtilsService.getStatusStyles/getPriorityColor` delegate to them (public method signatures unchanged so 35 dependents keep compiling).
-- [ ] **Step 3: Replace inline toolbars** — `billing.component.html:53-81` and `change-requests.component.html:41-69`: delete the hand-rolled `enterprise-toolbar` markup and render `<app-search-filter-toolbar>` with equivalent bindings (search placeholder, options, action label); wire `searchValueChange`/`selectValueChange`/`actionClick` to the existing handlers; add `searchAriaLabel` (Task 6). Update both specs if they query the old inline inputs.
-- [ ] **Step 4: Verify** — `npm run lint && npm test -- --watch=false --browsers=ChromeHeadless` → green; `rg "STATUS_STYLES|DOT_CLASSES|getPriorityColor" src` shows definitions in exactly one file each.
-- [ ] **Step 5: Commit**
-
-```bash
-git add src/app
-git commit -m "refactor(shared): single source for status/priority styles; adopt SearchFilterToolbar on billing and change-requests"
-```
-
----
-
-### Task 10: Dead code removal
-
-**Files:**
-- Modify: `src/app/shared/components/order-summary-card/order-summary-card.component.{ts,html,spec.ts}`
-- Modify: `src/app/core/services/order-data.service.ts` (+ spec), `src/app/features/orders/orders.component.{ts,spec.ts}`
-- Modify: `src/app/core/models/*.ts`, `src/styles/utilities.scss`, `src/styles.scss`
+- Modify: `src/app/shared/components/order-summary-card/order-summary-card.component.ts`, `.spec.ts`
+- Modify: `src/app/core/services/order-data.service.ts`, `.spec.ts`
+- Modify: `src/app/features/orders/orders.component.ts`, `.spec.ts`
+- Modify: `src/app/core/models/order.model.ts`, `src/app/core/models/sub-order.model.ts`, `src/app/core/models/index.ts` (barrel)
+- Modify: `src/styles.scss`, `src/styles/utilities.scss`
 - Modify: `src/app/shared/icons/lucide-icons.ts`
 
 **Interfaces:**
-- Consumes: verified usage greps (Step 1).
-- Produces: smaller public APIs; `OrderSummaryCardComponent` inputs reduced to those actually rendered; no behavior change.
+- Consumes: current green baseline (357 tests).
+- Produces: `OrderSummaryCardComponent` public inputs reduced to `order`, `completedServices`, `totalServices`; `OrderDataService` without `applyFilters`/`statusCounts`/`priorityCounts`; `OrderFilters`/`OrderTableState`/`SubOrderViewState` deleted; smaller `utilities.scss`. Task 4 writes new tests against the reduced API; Task 8 captures evidence of this tree.
 
-- [ ] **Step 1: Verify each removal target by grep** (record output in the commit body):
-  - `order-summary-card` unused inputs: `patient|doctor|clinic|subOrders|overallProgress|currentStage|stages` → 0 template matches.
-  - `order-data.service.ts`: `applyFilters`, `statusCounts`, `priorityCounts` → 0 usages (keep `compareValues` only if Task 8/9 now imports it — otherwise remove).
-  - `orders.component.ts`: `firstPage|lastPage|prevPage|nextPage|rangeStart|rangeEnd|visiblePageNumbers|onSearchChange|onPriorityChange|onPageSizeChange|hasChildren|onNodeExpand|onNodeCollapse` → 0 template matches; remove the spec cases that exercise them (`orders.component.spec.ts:169-182`) as testing dead code.
-  - `LUCIDE_INNERS` → 0 usages.
-  - Model exports listed in §1.8 (≈25 unused types incl. `OrderFilters`, `OrderTableState`, `SubOrderViewState`, tooth constants) → 0 usages; delete from files **and** from `core/models/index.ts` barrel.
-  - `utilities.scss`: remove only selectors with 0 matches across `src/**/*.{html,ts}` **and** 0 matches in `src/styles.scss`/`utilities.scss` self-`@extend` chains (the 64-name list from §1.8 D10); keep `input-base`, `label-base`, `select-base`, `enterprise-*`, `showcase-*`, `truncate-1`.
-  - `styles.scss:47-56` `.p-button*` overrides → `p-button` count is 0.
-- [ ] **Step 2: Remove** the verified items; for `OrderSummaryCardComponent` delete the dead inputs and the spec lines that set them.
-- [ ] **Step 3: Verify (Review Focus #5)** — `rg "<removed-symbol>" src` returns 0 for each; then `npm run lint && npm test -- --watch=false --browsers=ChromeHeadless && npm run build && npm run build-storybook`. Expected: tests ≥339 green, both builds EXIT 0.
-- [ ] **Step 4: Commit**
+- [x] **Step 1: Record baseline**
+
+Run: `npm test -- --watch=false --browsers=ChromeHeadless`
+Expected: `TOTAL: 357 SUCCESS`
+
+- [x] **Step 2: Grep-verify every removal target before deleting** (save the output; it goes in the commit body)
+
+```powershell
+# a) OrderSummaryCard dead inputs -> must be 0 in the template
+findstr /n /c:"patient" /c:"doctor" /c:"clinic" /c:"subOrders" /c:"overallProgress" /c:"currentStage" /c:"stages" src\app\shared\components\order-summary-card\order-summary-card.component.html
+# b) service methods -> 0 usages outside their own definition
+findstr /s /n /c:"applyFilters" /c:"statusCounts" /c:"priorityCounts" src\app\*.ts
+# c) orders dead API -> 0 matches in orders.component.html
+findstr /n /c:"firstPage" /c:"lastPage" /c:"prevPage" /c:"nextPage" /c:"rangeStart" /c:"rangeEnd" /c:"visiblePageNumbers" /c:"onSearchChange" /c:"onPriorityChange" /c:"onPageSizeChange" /c:"hasChildren" /c:"onNodeExpand" /c:"onNodeCollapse" src\app\features\orders\orders.component.html
+# d) model exports -> 0 usages outside their own file (check barrel + all consumers)
+findstr /s /n /c:"OrderFilters" /c:"OrderTableState" src\app\*.ts
+findstr /s /n /c:"SubOrderViewState" src\app\*.ts
+# e) dead PrimeNG button CSS -> 0 template usages
+findstr /s /n /c:"<p-button" /c:"pButton" src\app\*.html src\app\*.ts
+# f) LUCIDE_INNERS -> 0 imports outside lucide-icons.ts
+findstr /s /n /c:"LUCIDE_INNERS" src\app\*.ts
+```
+
+Expected: each returns definition-only hits (0 external consumers). **If any target has an external consumer, do not delete it â€” record it in the commit body as retained and why.** For (e), also check `styles.scss` for a `Primeng` button module import before removing CSS.
+
+- [x] **Step 3: Prune `src/styles/utilities.scss` orphan selectors**
+
+For each of the ~60 class tokens with 0 references outside the file, verify individually before removal:
+
+```powershell
+findstr /s /n /c:"<class-token>" src\app\*.html src\app\*.ts src\styles.scss src\styles\theme.scss src\styles\utilities.scss
+```
+
+Keep: `input-base`, `label-base`, `select-base`, `enterprise-*`, `showcase-*`, `truncate-1`, `p-datatable-thead` (referenced from `theme.scss`), and anything matched by a `@extend` inside `utilities.scss` itself. Remove only tokens with 0 matches everywhere. Include the removed-token list in the commit body.
+
+- [x] **Step 4: Delete the verified dead code**
+
+- `order-summary-card.component.ts`: delete the 7 dead inputs (lines 14â€“17, 20â€“22) and any type imports (`Patient`, `Doctor`, `Clinic`, `SubOrder`) that become unused.
+- `order-summary-card.component.spec.ts`: delete the `setInput("currentStage"â€¦)` and `setInput("stages"â€¦)` lines (19â€“20).
+- `order-data.service.ts`: delete `statusCounts` (`:39`), `priorityCounts` (`:53`), `applyFilters` (`:149`), and `compareValues` (`:13-22`) **only if** Step 2 confirms no remaining consumer; then delete `OrderFilters` from `order.model.ts` and its barrel entry.
+- `orders.component.ts`: delete the 13 zero-use members from Step 2c.
+- `orders.component.spec.ts`: delete **only** the test cases whose sole subject is removed API â€” the pagination block at `:169-185` and the `visiblePageNumbers` assertion at `:92`. Every other test must remain byte-identical.
+- `order.model.ts` / `sub-order.model.ts` / barrel: delete `OrderTableState`, `SubOrderViewState` (+ `OrderFilters`).
+- `styles.scss`: delete `.p-button` (`:48`) and `.p-button-sm` (`:54`) blocks.
+- `lucide-icons.ts`: drop the `export` keyword from `LUCIDE_INNERS` (keep the map â€” it has internal uses at `:189,193`).
+- `utilities.scss`: delete the Step 3 verified orphans.
+
+- [x] **Step 5: Verify (Review Focus #1 and #2)**
+
+```powershell
+# every removed symbol must return 0 hits
+findstr /s /n /c:"applyFilters" /c:"statusCounts" /c:"priorityCounts" /c:"OrderFilters" /c:"OrderTableState" /c:"SubOrderViewState" src\app
+npm run lint
+npm test -- --watch=false --browsers=ChromeHeadless
+npm run build
+npm run build-storybook
+```
+
+Expected: all greps 0; lint exit 0; tests green with total = **357 minus exactly the deleted test cases** (name them); both builds exit 0.
+
+- [x] **Step 6: Commit**
 
 ```bash
 git add src
-git commit -m "chore: remove verified dead code, unused model exports, and orphan style rules"
+git commit -m "chore: remove verified dead code, unused model exports, and orphan style rules" -m "grep evidence: <paste Step 2/3 output>; deleted tests: <names>; test total: <N>"
 ```
-
-*(Dependency note: do **not** remove `@taiga-ui/*` or `@ng-web-apis/*` from `package.json` in this task — run `npm ls <pkg>` first and skip any package required as a peer. If all are safe, do it in a separate commit.)*
 
 ---
 
-### Task 11: UI inventory correction
+### Task 2: Consume disabled-state tokens in all form controls
+
+**Files:**
+- Modify: `src/app/shared/components/button/button.component.ts`, `src/app/shared/components/input/input.component.ts`, `src/app/shared/components/select/select.component.ts`
+- Modify: `src/app/shared/components/enterprise-paginator/enterprise-paginator.component.scss`
+- Modify: `src/app/features/forms/forms.component.html`, `src/app/features/orders/create-order/create-order.component.html`, `src/app/features/orders/sub-order/sub-order.component.html`
+- Regenerate: `src/styles/tailwind-generated.css` (via `npm run tailwind:build`)
+
+**Interfaces:**
+- Consumes: `--disabled-opacity` token (`tokens.scss:29`, dark override `:311`).
+- Produces: every disabled control rendered from the token; Task 8 recaptures screenshots of the three changed templates.
+
+- [x] **Step 1: Locate every hardcoded disabled opacity**
+
+```powershell
+findstr /s /n /c:"opacity-50" src\app\shared\components\button\button.component.ts src\app\shared\components\input\input.component.ts src\app\shared\components\select\select.component.ts
+findstr /s /n /c:"disabled:opacity" src\app\features\*.html
+findstr /n /c:"opacity: 0.45" src\app\shared\components\enterprise-paginator\enterprise-paginator.component.scss
+```
+
+Expected: `button.component.ts:63`, `input.component.ts:78,82`, `select.component.ts:67,69`, `forms.component.html:931`, `create-order.component.html:33`, `sub-order.component.html:804`, `enterprise-paginator.component.scss:166`.
+
+- [x] **Step 2: Replace with the token (arbitrary-value utilities)**
+
+- `button.component.ts:63`: `disabled:opacity-50` â†’ `disabled:opacity-[var(--disabled-opacity)]`
+- `input.component.ts:78` and `:82`: `opacity-50` â†’ `opacity-[var(--disabled-opacity)]`
+- `select.component.ts:67` and `:69`: `opacity-50` â†’ `opacity-[var(--disabled-opacity)]`
+- `enterprise-paginator.component.scss:166`: `opacity: 0.45;` â†’ `opacity: var(--disabled-opacity);`
+- `forms.component.html:931`: `disabled:opacity-50` â†’ `disabled:opacity-[var(--disabled-opacity)]`
+- `create-order.component.html:33`: `disabled:opacity-70` â†’ `disabled:opacity-[var(--disabled-opacity)]`
+- `sub-order.component.html:804`: `disabled:opacity-40` â†’ `disabled:opacity-[var(--disabled-opacity)]`
+
+Expected visual diff (named, allowed): disabled sub-order/create-order buttons and paginator controls shift to 50% opacity. No other visuals change.
+
+- [x] **Step 3: Regenerate Tailwind and confirm the class survived the build**
+
+Run: `npm run tailwind:build`
+Then: `findstr /c:"disabled-opacity" src\styles\tailwind-generated.css`
+Expected: at least one match (the arbitrary utility was detected and emitted).
+
+- [x] **Step 4: Audit accessible-name coverage of `<app-input>` consumers**
+
+```powershell
+findstr /s /n /c:"<app-input" src\app\features\*.html src\app\shared\components\*.html
+```
+
+For each hit, confirm the element also passes `label=` or `ariaLabel=`. Fix any consumer that passes neither by adding `ariaLabel` (a descriptive name, not a placeholder copy). If none are missing, record "0 unnamed inputs" in the commit body.
+
+- [x] **Step 5: Verify (Review Focus #3)**
+
+Run: `npm run lint && npm test -- --watch=false --browsers=ChromeHeadless && npm run build`
+Expected: lint 0; tests green, total â‰¥ Task 1's total; build 0.
+
+- [x] **Step 6: Commit**
+
+```bash
+git add src
+git commit -m "feat(tokens): consume disabled-state tokens in form controls and paginator"
+```
+
+---
+
+### Task 3: Orders adoption tests
+
+**Files:**
+- Test: `src/app/features/orders/orders.component.spec.ts`
+
+**Interfaces:**
+- Consumes: existing orders implementation (`app-data-table-toolbar` `orders.component.html:3`, `app-status-badge` `:710,1007`, `app-empty-state` `:262-272`).
+- Produces: three assertions that pin the reuse requirement so a future refactor cannot silently un-adopt the shared components. Task 8 evidence depends on these states remaining shared.
+
+- [x] **Step 1: Add three tests** (the behavior already exists â€” these are characterization tests; expected to PASS, and a failure means the behavior is broken, not that the test is wrong)
+
+1. `"should render the shared data-table toolbar as the page header"` â€” query `app-data-table-toolbar` on the normal fixture; assert exactly 1 and that its title text contains `Orders`.
+2. `"should render a status badge with assistive semantics for every order row"` â€” normal fixture; assert `app-status-badge` count equals the rendered row count (or > 0 if rows paginate), and that each badge root has `role="status"`.
+3. `"should render the shared empty state when filters match nothing"` â€” set the search signal/filter to a term present in no order (e.g. `zzz-no-match`); assert `app-empty-state` appears and the filter-empty branch (`orders.component.html:262-272`) is what rendered.
+
+- [x] **Step 2: Run**
+
+Run: `npm test -- --watch=false --browsers=ChromeHeadless`
+Expected: previous total + 3, all green. If any new test fails, fix the *implementation* (or the assertion if it encodes a wrong expectation) â€” never delete the test to get green.
+
+- [x] **Step 3: Verify**
+
+Run: `npm run lint && npm test -- --watch=false --browsers=ChromeHeadless`
+Expected: lint 0, all green.
+
+- [x] **Step 4: Commit**
+
+```bash
+git add src/app/features/orders
+git commit -m "test(orders): assert shared toolbar, status badge, and empty-state adoption"
+```
+
+---
+
+### Task 4: Close the remaining test gaps
+
+**Files:**
+- Test: `src/app/shared/components/order-summary-card/order-summary-card.component.spec.ts`
+- Test: `src/app/core/interceptors/auth.interceptor.spec.ts`
+- Test: `src/app/shared/components/input/input.component.spec.ts`
+
+**Interfaces:**
+- Consumes: Task 1's reduced `OrderSummaryCardComponent` API (`order`, `completedServices`, `totalServices`).
+- Produces: form-level validation coverage for `AppTextField`; exact-token assertion for the interceptor; a non-trivial business-component spec. Raises the total again.
+
+- [x] **Step 1: Rewrite the `order-summary-card` spec**
+
+Read `order-summary-card.component.html` first, then replace the single test with:
+- `"should render the order number"` â€” assert the rendered text contains `DL-024001`.
+- `"should render the service progress summary"` â€” `completedServices: 3`, `totalServices: 5` â†’ assert `3 of 5`.
+- `"should render the no-progress fallback when no services are completed"` â€” `completedServices: 0` â†’ assert the fallback branch the template renders (read the template for its exact text; do not invent copy).
+- Do **not** set any input the template does not read.
+
+- [x] **Step 2: Strengthen the interceptor assertion**
+
+In `auth.interceptor.spec.ts` `:16`, replace `expect(forwarded.headers.has("Authorization")).toBeTrue()` with:
+
+```typescript
+expect(forwarded.headers.get("Authorization")).toBe("Bearer token-value");
+```
+
+- [x] **Step 3: Add the two input tests**
+
+In `input.component.spec.ts`:
+- `"should link the input to its error message via aria-describedby"` â€” set `error`; assert `input.getAttribute("aria-describedby")` equals the id of the rendered `.field-error` element, and that the hint element is absent.
+- `"should surface a required-validator error through a reactive form host"` â€” declare a tiny inline host component in the spec whose template is `<app-input [formControl]="fc" label="Email" />` with `fc = new FormControl("", Validators.required)`; `fc.markAsTouched(); fc.updateValueAndValidity();` â†’ assert `aria-invalid="true"` and the error text renders; then `fc.setValue("a@b.c")` â†’ assert `aria-invalid` is `"false"`/absent. (The host binds the control state to the `error` input â€” document that binding in the test.)
+
+- [x] **Step 4: Run**
+
+Run: `npm test -- --watch=false --browsers=ChromeHeadless`
+Expected: all green; total = Task 3's total âˆ’ 1 (old order-summary test) + 4 + 1 + 2.
+
+- [x] **Step 5: Verify**
+
+Run: `npm run lint && npm test -- --watch=false --browsers=ChromeHeadless`
+Expected: lint 0, all green, no `fit`/`xit` introduced.
+
+- [x] **Step 6: Commit**
+
+```bash
+git add src/app/shared/components src/app/core/interceptors
+git commit -m "test: expand order-summary-card, assert Bearer token, cover input error linkage and validator round-trip"
+```
+
+---
+
+### Task 5: Documentation corrections
+
+**Files:**
+- Modify: `docs/weighted-comparison-matrix.md`, `docs/technology-comparison.md`, `docs/test-matrix.md`, `docs/scope-exceptions.md`, `docs/ai-comparison-protocol.md`, `docs/component-architecture.md`, `docs/final-recommendation.md`, `README.md`
+
+**Interfaces:**
+- Consumes: verified facts from Part 1 (arithmetic, DEV-5/DEV-6, runner ownership).
+- Produces: factually correct comparison/licensing/protocol docs (DoD gates) and recorded deviations. Does **not** touch any evidence slot's pending status.
+
+- [x] **Step 1: Fix the matrix subtotals** â€” `docs/weighted-comparison-matrix.md:42-44`: replace 58.0 / 69.0 / 62.0 with **59.0 / 68.0 / 62.5**. Add the derivation line under the table: `Î£(score Ã— weight) Ã· 10 over the first 7 criteria (AI row excluded)`.
+
+- [x] **Step 2: Fix the false PrimeNG claim** â€” `docs/technology-comparison.md:35`: the repo uses 0 `p-card` and 0 `p-badge`. Change to name what is actually used (`TreeTable`, dialogs, tables, paginator) or append "(cards and badges are provided by PrimeNG but not used in this POC)". Verify with `findstr /s /c:"p-card" src\app\*.html` â†’ 0.
+
+- [x] **Step 3: Repair `docs/test-matrix.md`** â€” (a) replace the pseudo-citation `order-data.service.spec.ts::(constructor load + empty flush in create-order test)` with the real test names (`::should set error state when loading fails`, `::should preserve the create-order payload boundary`); (b) fix `auth.interceptor.spec.ts::forwards original requestâ€¦` â†’ `::forwards the original request when no token exists`; (c) add a legend line `- = GAP (no coverage)` and mark genuinely uncovered cells `GAP`; (d) add a **Runner ownership** subsection: `npm test` = Karma/Jasmine (authoritative for the 357 baseline); Vitest is installed only for the Storybook `addon-vitest` and has no standalone script; two coverage packages exist but only `karma-coverage` produces `evidence/tests` numbers. Re-verify each remaining citation with `findstr /n /c:"<test name>" <spec path>` before saving.
+
+- [x] **Step 4: Record DEV-5 and DEV-6** â€” append two rows to `docs/scope-exceptions.md` matching the existing column format: DEV-5 (docs deleted in `baf6019` were recreated fresh in current docs, not restored), DEV-6 (`/orders` search/filter row intentionally not using `SearchFilterToolbar`: chips + multi-select advanced filters exceed its API; component proven reusable on 4 other pages). Approver column: `Pending: mentor checkpoint`.
+
+- [x] **Step 5: Complete the frozen AI requirement** â€” `docs/ai-comparison-protocol.md`: in Â§1.1 add an explicit numbered element `1. Reusable primary/secondary button component (with disabled and loading states)` so all six spec elements (button, search input, status indicator, data table, confirmation dialog, responsive layout) are named; in Â§3 add three `### react-kendo` / `### react-mui` / `### vue-vuetify` run sections each with empty fields: `Run date:`, `Tool + model:`, `Iterations used:`, `Elapsed:`, `Notes:` â€” all left blank (PENDING). Do not fill anything.
+
+- [x] **Step 6: Document the Taiga visual-ownership decision** â€” `docs/component-architecture.md` Â§3: append one sentence: *"Tailwind utilities and inline styles own the visual output of `tuiButton`/`tuiStatus`; the Taiga directives supply behavior/semantics only â€” this is a deliberate decision to avoid a second styling system, recorded here so the override is not mistaken for a bug."*
+
+- [x] **Step 7: Add next steps + README links** â€” `docs/final-recommendation.md`: add `## Next validation steps` listing (1) three controlled AI runs per the protocol, (2) mentor sign-off on DEV-1â€¦DEV-6, (3) live demonstration, (4) any production-path review outside this POC. `README.md`: add links for `ui-component-inventory.md`, `technology-comparison.md`, `deliverable-scoring.md`, `AI_USAGE_LOG.md`, `CONTRIBUTION_SUMMARY.md` to the doc map, and `evidence/ai-comparison/` to the Evidence list. **Leave the status-table numbers alone â€” Task 8 owns them.**
+
+- [x] **Step 8: Verify (Review Focus #5)** â€” re-add the weights column in the matrix (must be 100), re-derive all three subtotals from the score cells, grep `technology-comparison.md` for `cards` (claim now qualified), `findstr /n /c:"DEV-5" /c:"DEV-6" docs\scope-exceptions.md` â†’ 2 hits, `findstr /i /n /c:"button" docs\ai-comparison-protocol.md` â†’ â‰¥1 hit in Â§1.1, and confirm no evidence slot was modified (`git status` shows only `docs/` + `README.md`).
+
+- [x] **Step 9: Commit**
+
+```bash
+git add docs README.md
+git commit -m "docs: fix matrix subtotals and false claims, record DEV-5/DEV-6, complete AI protocol elements"
+```
+
+---
+
+### Task 6: UI inventory inconsistency-column rewrite
 
 **Files:**
 - Modify: `docs/ui-component-inventory.md`
 
 **Interfaces:**
-- Consumes: code truths from Tasks 2–9 (final class names, orders header/status adoption, `table-feedback` error mode if added in Task 8).
-- Produces: accurate inventory (deliverable 1).
+- Consumes: code truth after Tasks 1â€“4 (orders toolbar/status adoption, reduced OrderSummaryCard API).
+- Produces: deliverable 1 in final form.
 
-- [ ] **Step 1: Add provenance section** — state the sanitized sources explicitly (current repository snapshot = sanitized CRM and Customer Portal surfaces: orders, patients, doctors, clinics, billing, documents, etc.), map rows to those surfaces, and confirm no confidential data.
-- [ ] **Step 2: Fix wrong rows** — `:15` (DataTableToolbar usage: remove "Orders" until Task 8 lands, then keep), `:16` (SearchFilterToolbar = doctors, patients, billing, change-requests), `:20` (TableFeedback modes — include `error` only if Task 8 added it), `:38` (order-workflow does **not** use CDK drag/drop; workflow-board does).
-- [ ] **Step 3: Rewrite the "Observed Inconsistency" column** — every row states a genuine inconsistency or "none observed" (no usage notes).
-- [ ] **Step 4: Verify** — resolve every cited path (`Test-Path`) and `rg` each claimed consumer selector. Expected: 0 broken paths, 0 false claims.
-- [ ] **Step 5: Commit**
+- [x] **Step 1: Rewrite the "Observed Inconsistency" column** â€” every row must state a *genuine* inconsistency (duplication, divergent styling, missing state, unclear ownership) or the literal text `none observed`. Usage/reuse notes ("already reusable", "used by table pages") are not inconsistencies â€” move them to Reuse Priority or delete them.
+
+- [x] **Step 2: Fix consumer claims** â€” row for `DataTableToolbar` must list all 5 consumers (orders, patients, doctors, billing, change-requests); `SearchFilterToolbar` must list 4 (doctors, patients, billing, change-requests); `OrderSummaryCard` row must reflect its post-Task-1 API (3 inputs).
+
+- [x] **Step 3: Verify every path and claim**
+
+```powershell
+# extract each `src/...` citation and Test-Path it
+findstr /n /c:"`src/" docs\ui-component-inventory.md
+# spot-check consumer claims
+findstr /s /c:"app-data-table-toolbar" src\app\features\*.html
+findstr /s /c:"app-search-filter-toolbar" src\app\features\*.html
+```
+
+Expected: 0 missing paths; consumer lists match grep output exactly.
+
+- [x] **Step 4: Commit**
 
 ```bash
 git add docs/ui-component-inventory.md
-git commit -m "docs: correct inventory rows, add sanitized-source provenance"
+git commit -m "docs: rewrite inventory inconsistency column with genuine findings and verified consumers"
 ```
 
 ---
 
-### Task 12: Test matrix and gap tests
+### Task 7: AI comparison pack hygiene (no content filling)
 
 **Files:**
-- Create: `docs/test-matrix.md`
-- Test: `src/app/shared/components/input/input.component.spec.ts`, `.../select/select.component.spec.ts`, `.../order-summary-card/order-summary-card.component.spec.ts`, `.../workflow-timeline/workflow-timeline.component.spec.ts`, `src/app/core/guards/auth.guard.spec.ts` (new), `src/app/core/interceptors/auth.interceptor.spec.ts` (new), `src/app/core/services/order-data.service.spec.ts`, `src/app/features/orders/orders.component.spec.ts` (boundary)
-- Create: `evidence/tests/coverage-summary.txt`
+- Delete: `evidence/ai-comparison/{a11y-findings,build-test-results,corrected-output,effort-log,hallucinated-apis,initial-output,manual-corrections,scoresheet}.md` and `evidence/ai-comparison/screenshots/` (root-level strays)
+- Rewrite (UTF-8): `evidence/ai-comparison/{react-kendo,react-mui,vue-vuetify}/prompts.md`
+- Modify: `evidence/ai-comparison/README.md`, `docs/ai-comparison-protocol.md` (only if it references root-level slot paths)
 
 **Interfaces:**
-- Consumes: 53 existing specs; Task 6/7/8/9 tests.
-- Produces: matrix mapping all 8 spec categories; tests for permission/security, dependency-failure, boundary, invalid; coverage baseline.
+- Consumes: Task 5's protocol (Â§4 evidence-slot list already points at the three partitions).
+- Produces: one unambiguous place per slot; all files valid UTF-8; every slot still empty.
 
-- [ ] **Step 1: Write `docs/test-matrix.md`** — rows = 8 categories (normal, empty, invalid, boundary, permission/security, dependency-failure, retry, recovery), columns = surfaces (shared basics, toolbars, orders page, forms, auth, services), each cell cites the exact spec file::test name or evidence artifact; cells with no coverage marked `GAP` and wired to Step 2.
-- [ ] **Step 2: Add failing gap tests** (write all first, confirm FAIL):
-  - **Invalid** — `input.component.spec.ts`: "should set aria-invalid when an error is present" and "should mark required fields" (`required` input → `aria-required`/`required` attribute).
-  - **Permission/security** — `auth.guard.spec.ts`: allows navigation with `localStorage['dentalab-auth']`, redirects to `/login` without it; `auth.interceptor.spec.ts`: attaches `Authorization: Bearer …` when a token exists, sends no header otherwise.
-  - **Dependency-failure** — `order-data.service.spec.ts`: `HttpClient` error → `error()` signal set, `loading()` false, `orders()` empty (`expectOne` + `flush error`).
-  - **Retry/recovery** — already added in Task 7 (cite it); add "reload after error recovers to normal".
-  - **Boundary** — `orders.component.spec.ts`: page size boundary (requesting page beyond last → clamps to last page), filter yielding exactly one row, search matching case-insensitively at string edges.
-  - **Thin specs** — expand `order-summary-card` (renders order id, amounts, progress; renders no-progress branch) and `workflow-timeline` (renders stage list, active stage, empty-stages branch) beyond their single string assertions; add 2+ tests to `select.component.spec.ts` (options rendering, disabled/CVA `setDisabledState`).
-- [ ] **Step 3: Run and confirm green** — `npm test -- --watch=false --browsers=ChromeHeadless` → all pass; record the exact total in the matrix header. The total must be ≥ the 336 baseline plus every test added by Tasks 6–9, minus only the dead-code spec cases removed in Task 10 (each removal justified in that commit body).
-- [ ] **Step 4: Coverage baseline** — `npm test -- --watch=false --browsers=ChromeHeadless --code-coverage`; copy the `text-summary` output into `evidence/tests/coverage-summary.txt` with the date. (Baseline only — coverage % is OPTIONAL per §1.9.)
-- [ ] **Step 5: Commit**
+- [x] **Step 1: Confirm nothing references the root strays**
+
+```powershell
+findstr /s /n /c:"evidence/ai-comparison/initial-output" docs *.md
+findstr /s /n /c:"evidence/ai-comparison/scoresheet" docs *.md
+```
+
+Expected: only the root `README.md` / protocol references. If the protocol references a root path, repoint it to `evidence/ai-comparison/<candidate>/â€¦` first.
+
+- [x] **Step 2: Delete the 8 root-level template duplicates + root `screenshots/`** â€” the three partitions already carry all 9 slots each. Keep the root `README.md`.
+
+- [x] **Step 3: Re-save the three `prompts.md` as UTF-8** â€” each currently contains byte `0x97` (Windows-1252 em dash) at line 1, invalid UTF-8. Rewrite line 1 as plain ASCII: `# SLOT - AWAITING HUMAN EXECUTION`.
+
+- [x] **Step 4: Update the root README** â€” its slot list must describe only the three partitions; state `Root-level duplicate templates removed 2026-09-26 (hygiene only â€” no slot was filled).`
+
+- [x] **Step 5: Verify integrity (anti-fabrication gate)**
+
+```powershell
+# every slot must still be marked pending
+findstr /s /n /c:"AWAITING HUMAN EXECUTION" evidence\ai-comparison\*.md evidence\ai-comparison\*\*.md
+# no screenshots anywhere in the pack
+Get-ChildItem -Recurse evidence\ai-comparison -Filter *.png
+# no scores present
+findstr /s /n /r /c:"| [0-9] |" evidence\ai-comparison\*\scoresheet.md
+```
+
+Expected: pending markers in all 27 slot files + 3 screenshots READMEs; **0 PNGs**; no filled score cells.
+
+- [x] **Step 6: Commit**
 
 ```bash
-git add docs/test-matrix.md src evidence/tests/coverage-summary.txt
-git commit -m "test: add category test matrix, guard/interceptor/boundary tests, coverage baseline"
+git add -A evidence/ai-comparison docs/ai-comparison-protocol.md
+git commit -m "chore(evidence): remove stray root AI slots and fix UTF-8; no slot content changed"
 ```
 
 ---
 
-### Task 13: Storybook refresh and evidence
+### Task 8: Repeatable evidence capture and full evidence refresh
 
 **Files:**
-- Modify: `.storybook/main.ts` (remove stale mdx glob), `.storybook/preview.ts` (a11y test mode), `package.json` (pin `latest` versions to installed versions)
-- Add to git: `src/app/shared/components/{select,data-table-toolbar,order-summary-card}/*.stories.ts`
-- Modify: `evidence/storybook/build-storybook.log` (regenerated), new screenshots
+- Create: `scripts/capture-evidence.mjs`, `package.json` script `"evidence"`
+- Overwrite: `evidence/build/lint.log`, `evidence/build/build.log`, `evidence/tests/test.log`, `evidence/tests/coverage-summary.txt`, `evidence/storybook/build-storybook.log`, `evidence/accessibility/axe-report.json` + `axe-summary.md`, `evidence/responsive/**`, `evidence/states/*` (+ new `evidence/states/README.md`), `evidence/accessibility/keyboard-walkthrough-checklist.md` gate line
+- Add: `evidence/storybook/{basic-appselect--default, basic-appselect--disabled, composite-datatable-toolbar--default, business-ordersummarycard--default}.png`
+- Modify: `README.md` status table
 
 **Interfaces:**
-- Consumes: renamed classes (Task 2) — stories must compile against `AppButtonComponent` etc.
-- Produces: build log evidencing 8 story chunks; screenshots for all 8 components; minimum-coverage claim re-verified.
+- Consumes: final code tree (Tasks 1â€“4), Playwright + axe-core (already in devDependencies), the documented method in `evidence/accessibility/axe-summary.md` and `evidence/responsive/responsive-checklist.md`.
+- Produces: evidence that is fresh, attributable (command + date + exit code in every log), and reproducible by `npm run evidence`.
 
-- [ ] **Step 1: Commit the 3 untracked story files** and remove the dead `../src/**/*.mdx` glob (`main.ts:5`).
-- [ ] **Step 2: Pin versions** — replace `"latest"` for `@chromatic-com/storybook`, `playwright`, `vite` with the installed versions from `package-lock.json`.
-- [ ] **Step 3: Set Storybook a11y enforcement** — change `preview.ts:18` `test: 'todo'` → `test: 'error'`, run `npm run build-storybook`. If it fails, inspect violations: fix trivial ones (labels/roles); if any violation is non-trivial, revert to `'todo'` and record the reason in `docs/component-architecture.md` §Documentation. Either outcome is committed with a note — no silent bypass.
-- [ ] **Step 4: Rebuild and refresh evidence** — `npm run build-storybook 2>&1 | Tee-Object evidence/storybook/build-storybook.log`; confirm log contains chunks for all 8 story files and `EXIT CODE: 0`.
-- [ ] **Step 5: Capture missing screenshots** — storybook screenshots for `Basic/AppSelect` (default + disabled), `Composite/DataTableToolbar` (default), `Business/OrderSummaryCard` (default) into `evidence/storybook/`, matching the existing naming convention (`<title>--<story>.png`).
-- [ ] **Step 6: Verify minimum coverage** — confirm ≥2 basic, ≥1 composite, ≥1 business stories render. Expected: 4 + 2 + 2.
-- [ ] **Step 7: Commit**
+- [x] **Step 1: Write `scripts/capture-evidence.mjs`** â€” Node ESM script using `playwright` (chromium) that:
+  1. spawns `ng serve --port 4200`, polls `http://localhost:4200` until HTTP 200 (timeout 120 s),
+  2. sets `localStorage['dentalab-auth']` before app boot (same marker `auth.guard` reads),
+  3. runs axe-core (`axe.min.js` injected from `node_modules/axe-core`) over the same route list recorded in `evidence/accessibility/axe-summary.md` (17 routes + `/forms` anchors + `/orders/create` = 24 route-states), writing `evidence/accessibility/axe-report.json` with a fresh `generatedAt`,
+  4. captures the 3 viewports (1440/768/375) for the same page set as `evidence/responsive/<viewport>/*.png`,
+  5. on `/orders`, clicks each of the 4 POC state-control buttons (service-driven `previewState()`) and writes `evidence/states/orders-{normal,loading,empty,error}.png`,
+  6. re-runs the overflow and sidebar-toggle checks into the existing JSON shapes,
+  7. kills the server and prints a file manifest with per-file byte sizes.
+  Add `"evidence": "node scripts/capture-evidence.mjs"` to `package.json` scripts.
+
+- [x] **Step 2: Refresh the four gate logs (each must embed command, date, exit code)**
+
+**Do not use `>` â€” PowerShell 5.1 writes UTF-16 and corrupts the logs.** Use `| Out-File -Encoding utf8`, and prefix every log with the command and timestamp:
+
+```powershell
+"CMD: npm run lint | $(Get-Date -Format s)" | Out-File -Encoding utf8 evidence\build\lint.log
+npm run lint 2>&1 | Out-File -Append -Encoding utf8 evidence\build\lint.log
+# repeat the same two-line pattern for:
+#   npm test -- --watch=false --browsers=ChromeHeadless   -> evidence\tests\test.log
+#   npm run build                                         -> evidence\build\build.log
+#   npm run build-storybook                               -> evidence\storybook\build-storybook.log
+# each file ends with "EXIT CODE: $LASTEXITCODE"
+```
+
+Expected: lint exit 0; test `TOTAL: <Task 4 total> SUCCESS`; build exit 0; storybook exit 0 **and the log must contain chunks for all 8 story files** (`button`, `input`, `select`, `status-badge`, `search-filter-toolbar`, `data-table-toolbar`, `order-summary-card`, `workflow-timeline`) with no `*.mdx` warning.
+
+- [x] **Step 3: Refresh coverage baseline** â€” `npm test -- --watch=false --browsers=ChromeHeadless --code-coverage > â€¦` then copy the raw `text-summary` into `evidence/tests/coverage-summary.txt` with date and command (raw output, not hand-typed numbers).
+
+- [x] **Step 4: Run `npm run evidence`** â†’ fresh axe report, responsive screenshots, states, overflow/sidebar JSON.
+
+- [x] **Step 5: Capture the 4 missing Storybook screenshots** â€” start `npm run storybook` (port 6006) and capture `Basic/AppSelect` (default + disabled), `Composite/DataTableToolbar` (default), `Business/OrderSummaryCard` (default) using the existing `<title>--<story>.png` naming; optionally refresh the 9 pre-rename PNGs from the same session.
+
+- [x] **Step 6: Verify (Review Focus #4)** â€” every manifest file exists and is non-zero; `axe-report.json` `generatedAt` is today and `violationCount` is 0 across all 24 route-states; the four `orders-*.png` differ pairwise (`Get-FileHash` â†’ 4 distinct hashes); `build-storybook.log` shows 8 chunks; the checklist gate line now reads the fresh test total instead of 336.
+
+- [x] **Step 7: Record the Storybook strict-a11y outcome** â€” from the `test: 'error'` run, append one line to `docs/component-architecture.md` Â§5: date, command, result (pass, or violations fixed / reverted with reason). No silent bypass.
+
+- [x] **Step 8: Update the README status table** â€” test count, dates, and commands exactly as captured; keep the "AI comparison pending" and POC-only limitation rows.
+
+- [x] **Step 9: Commit**
 
 ```bash
-git add .storybook package.json src/app/shared/components evidence/storybook
-git commit -m "chore(storybook): commit all 8 stories, enforce a11y check, refresh build evidence"
+git add scripts package.json evidence README.md docs/component-architecture.md
+git commit -m "chore(evidence): repeatable capture script and refreshed gate, a11y, responsive, and state evidence"
 ```
 
 ---
 
-### Task 14: AI usage log, contribution summary, deviations
+### Task 9: Final DoD walk and log polish
 
 **Files:**
-- Modify: `AI_USAGE_LOG.md`, `CONTRIBUTION_SUMMARY.md`, `docs/scope-exceptions.md`
+- Modify: `AI_USAGE_LOG.md`, `CONTRIBUTION_SUMMARY.md`, `docs/scope-exceptions.md` (only if sign-off state changed), `docs/superpowers/plans/` (mark this plan's checkboxes)
 
 **Interfaces:**
-- Consumes: DEV-3/DEV-4 (§1.10), Task 3's `scope-exceptions.md`, Task 4's pending AI runs.
-- Produces: spec §8 compliance for deliverable 12 (log + contribution), all real, nothing invented.
+- Consumes: everything from Tasks 1â€“8 plus honest human-gated status.
+- Produces: spec Â§8 compliance for deliverable 12 and the final open-items list.
 
-- [ ] **Step 1: Restructure `AI_USAGE_LOG.md`** into a per-session table: date/session, exact prompt (verbatim), AI-generated output summary, verification method + result, items rejected/changed and why, final owner. Sections must cover: gap-audit assistance, docs drafted with AI, protocol drafted, plan drafted. Explicit section: "Controlled AI comparison runs — PENDING HUMAN EXECUTION (Task 4 protocol)" and "What AI was not used for" (kept from current file).
-- [ ] **Step 2: Restructure `CONTRIBUTION_SUMMARY.md`** to the spec's format with real data only: table of owned areas → owner (sole author, from `git log`) → reviews performed (state honestly: none / self-review) → commits (cite representative hashes from `git log --oneline`) → unresolved items (the 4 existing human-validated items + AI runs + mentor checkpoints). Add **DEV-3** row to `docs/scope-exceptions.md`: team size 1 vs 2–3, rationale, `Pending: mentor`.
-- [ ] **Step 3: Verify honesty** — every claim in both files must trace to a commit, file, or log; grep for reviewer/contributor names: only the real author may appear. Expected: no invented people.
-- [ ] **Step 4: Commit**
+- [x] **Step 1: `AI_USAGE_LOG.md`** â€” add an `Owner` column to the per-session table (real author only); add a line under each prompt row stating where the verbatim text lives (base prompt verbatim in `docs/ai-comparison-protocol.md` Â§1.2; historical session prompts archived as summaries â€” say so explicitly rather than implying verbatim); keep the `PENDING HUMAN EXECUTION` section unchanged.
 
-```bash
-git add AI_USAGE_LOG.md CONTRIBUTION_SUMMARY.md docs/scope-exceptions.md
-git commit -m "docs: restructure AI log and contribution summary with recorded deviations"
-```
+- [x] **Step 2: `CONTRIBUTION_SUMMARY.md`** â€” add the commits produced by Tasks 1â€“8 with their real hashes from `git log`, update the "In progress" row to completed-with-open-human-items. No invented reviewers.
 
----
+- [x] **Step 3: Honesty check** â€” grep both files for any person name; only the real repository author may appear. Confirm every claim traces to a commit or file.
 
-### Task 15: Final recommendation, demo script, README
+- [x] **Step 4: Final DoD walk (spec Â§7)** â€” tick what is done; list the rest **verbatim** as remaining open. Expected remaining: (a) three controlled AI comparison runs â€” HUMAN-1; (b) mentor sign-off on DEV-1â€¦DEV-6 â€” HUMAN-2; (c) live demonstration delivery â€” HUMAN-3. Never mark a pending item done.
 
-**Files:**
-- Create: `docs/final-recommendation.md`, `docs/demo-script.md`
-- Modify: `README.md`
+- [x] **Step 5: Mark this plan's checkboxes** for Tasks 1â€“9 as completed.
 
-**Interfaces:**
-- Consumes: Task 3 matrix + licensing, Task 4 pending status, all code/evidence tasks.
-- Produces: deliverable 11 + presentation (5–15 min) + DoD recommendation item.
-
-- [ ] **Step 1: Write `docs/final-recommendation.md`** — sections: recommendation (Angular 21 + PrimeNG + Taiga + CDK + Tailwind as approved/continued stack, justified via the candidate matrix and licensing review), evidence base (link matrix, licensing, tests, a11y, responsive, storybook), **AI-15% score = PENDING HUMAN EXECUTION** (formula, no number), risks (licensing, dependency, single-maintainer, dead-style-layer), what is NOT approved (production migration, license purchase, security model — POC classification per spec §16), next validation steps with owners.
-- [ ] **Step 2: Write `docs/demo-script.md`** — 10–15 minute walkthrough: login → shell → `/orders` (4 states via the POC control, authentic retry) → shared components in Storybook (Basic/Composite/Business) → tokens/theme → evidence tour (`evidence/`) → recommendation. Include exact routes, buttons, and expected visuals.
-- [ ] **Step 3: Update `README.md`** — link `docs/component-architecture.md`, `docs/final-recommendation.md`, `docs/test-matrix.md`, `docs/demo-script.md`, `docs/scope-exceptions.md`; refresh "Supported Scenarios" for the new orders header/status; keep Limitations (AI runs pending, POC-only, single-author deviations); leave the status table numbers for Task 16.
-- [ ] **Step 4: Verify against spec §8** — README has purpose, setup, configuration, run/test commands, supported scenarios, limitations, demo steps. Expected: all 7 present.
-- [ ] **Step 5: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
-git add docs/final-recommendation.md docs/demo-script.md README.md
-git commit -m "docs: add final recommendation and demo script; update README"
-```
-
----
-
-### Task 16: Full evidence refresh, gates, final DoD verification
-
-**Files:**
-- Create: `scripts/capture-evidence.mjs` (Playwright: auth bypass via `localStorage['dentalab-auth']`, axe-core scan over the route list, 3-viewport screenshots, orders state captures)
-- Modify: `evidence/**` (regenerated logs/screenshots/reports), `README.md` (status table)
-
-**Interfaces:**
-- Consumes: all prior tasks; Playwright + axe-core already in devDependencies.
-- Produces: refreshed, repeatable evidence for every DoD gate.
-
-- [ ] **Step 1: Write `scripts/capture-evidence.mjs`** and a `package.json` script `"evidence": "node scripts/capture-evidence.mjs"` — reproduces what `evidence/accessibility/axe-summary.md` and `evidence/responsive/responsive-checklist.md` describe (documented method, now repeatable).
-- [ ] **Step 2: Run all gates and refresh logs**
-  - `npm run lint` → `evidence/build/lint.log`
-  - `npm test -- --watch=false --browsers=ChromeHeadless` → `evidence/tests/test.log` (expected: full pass, count ≥ baseline 336)
-  - `npm run build` → `evidence/build/build.log`
-  - `npm run build-storybook` → `evidence/storybook/build-storybook.log`
-  - `npm run evidence` → `evidence/accessibility/axe-report.json` + `axe-summary.md`, `evidence/responsive/**`, `evidence/states/orders-{normal,loading,empty,error}.png` (all four now captured from **service-driven** states)
-  - Keyboard walkthrough checklist re-run against the new focus rule.
-- [ ] **Step 3: Verify Review Focus #2/#3** — compare axe results with previous (expect 0 violations still); walk the 5 keyboard checks in the checklist; confirm focus ring now visible globally.
-- [ ] **Step 4: Update README status table** with the fresh numbers/dates and the exact commands used.
-- [ ] **Step 5: Final DoD pass** — walk every checkbox in §1.9: mark done what is done, and list what remains open **verbatim** (expected remaining: AI 15% human runs, mentor sign-offs on DEV-1…DEV-4, live presentation delivery). Never mark a pending item done.
-- [ ] **Step 6: Commit**
-
-```bash
-git add scripts package.json evidence README.md
-git commit -m "chore(evidence): repeatable capture script and refreshed gate evidence"
+git add AI_USAGE_LOG.md CONTRIBUTION_SUMMARY.md docs/scope-exceptions.md docs/superpowers/plans
+git commit -m "docs: finalize AI log, contribution summary, and DoD walk with open human items"
 ```
 
 ---
 
 ## Execution Notes
 
-- **Order matters**: 1 → 2 → (3,4 parallel) → 5 → 6 → 7 → 8 → 9 → 10 → (11,12) → 13 → 14 → 15 → 16. Tasks 3/4 (docs) are independent of code; 11 (inventory) must follow 8/9 so its claims are true.
-- **Human-only steps** (never delegated to AI): executing the three controlled AI comparison runs, mentor checkpoint approvals, live presentation, any screenshot the script cannot automate.
-- **Stop condition**: if a task's verification fails and the fix would change UI or architecture beyond the task's named changes, stop and record the blocker instead of expanding scope (spec §11).
+- **Human-only, never delegated to AI:** executing the three controlled AI comparison runs, mentor checkpoint approvals, the live presentation, and filling any slot under `evidence/ai-comparison/`.
+- **Stop condition:** if a task's verification fails and the fix would require changing UI or architecture beyond that task's named changes, stop and record the blocker instead of expanding scope (spec Â§11).
+- **Evidence rule:** a log or screenshot generated before the last code commit is UNVERIFIED, not DONE. Task 8 must run last.
+- **Optional stretch work** (dark mode, RTL, full Storybook coverage, visual regression, i18n) starts only after Task 9 and only with mentor approval.
+

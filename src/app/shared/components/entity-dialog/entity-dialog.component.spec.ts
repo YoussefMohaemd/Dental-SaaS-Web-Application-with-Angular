@@ -28,7 +28,9 @@ class DialogHostComponent {
   closed = 0;
 }
 
-async function renderVisibleDialog<T>(fixture: ComponentFixture<T>): Promise<void> {
+async function renderVisibleDialog<T>(
+  fixture: ComponentFixture<T>,
+): Promise<void> {
   fixture.detectChanges();
   await fixture.whenStable();
   fixture.detectChanges();
@@ -123,9 +125,7 @@ describe("EntityDialogComponent", () => {
   it("should render projected footer actions when the footer is shown", async () => {
     const hostFixture = TestBed.createComponent(DialogHostComponent);
     await renderVisibleDialog(hostFixture);
-    const action = hostFixture.debugElement.query(
-      By.css("[dialog-actions]"),
-    );
+    const action = hostFixture.debugElement.query(By.css("[dialog-actions]"));
     expect(action).toBeTruthy();
     expect(action.nativeElement.textContent).toContain("Delete");
   });
@@ -144,9 +144,7 @@ describe("EntityDialogComponent", () => {
     const hostFixture = TestBed.createComponent(DialogHostComponent);
     hostFixture.componentInstance.footer = false;
     await renderVisibleDialog(hostFixture);
-    const action = hostFixture.debugElement.query(
-      By.css("[dialog-actions]"),
-    );
+    const action = hostFixture.debugElement.query(By.css("[dialog-actions]"));
     expect(action).toBeNull();
   });
 

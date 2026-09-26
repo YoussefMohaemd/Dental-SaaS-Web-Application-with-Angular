@@ -1,25 +1,7 @@
 import { Injectable, signal, computed, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import { Observable, of, delay, map, catchError } from "rxjs";
-import {
-  Order,
-  OrderFilters,
-  OrdersViewState,
-  OrderStatus,
-  Priority,
-} from "../models";
-import { filterTableRows } from "@shared/utils/table-state";
-
-export function compareValues(a: unknown, b: unknown): number {
-  if (a == null && b == null) return 0;
-  if (a == null) return -1;
-  if (b == null) return 1;
-  if (typeof a === "number" && typeof b === "number") return a - b;
-  const aTime = Date.parse(String(a));
-  const bTime = Date.parse(String(b));
-  if (!Number.isNaN(aTime) && !Number.isNaN(bTime)) return aTime - bTime;
-  return String(a).localeCompare(String(b));
-}
+import { of, catchError } from "rxjs";
+import { Order, OrdersViewState } from "../models";
 
 @Injectable({ providedIn: "root" })
 export class OrderDataService {
@@ -36,30 +18,6 @@ export class OrderDataService {
   readonly error = this._error.asReadonly();
 
   readonly totalOrders = computed(() => this._orders().length);
-  readonly statusCounts = computed(() => {
-    const counts: Record<OrderStatus, number> = {
-      New: 0,
-      Review: 0,
-      Design: 0,
-      Production: 0,
-      "Quality Check": 0,
-      Ready: 0,
-      Completed: 0,
-      Cancelled: 0,
-    };
-    this._orders().forEach((o) => counts[o.status]++);
-    return counts;
-  });
-  readonly priorityCounts = computed(() => {
-    const counts: Record<Priority, number> = {
-      Low: 0,
-      Normal: 0,
-      High: 0,
-      Urgent: 0,
-    };
-    this._orders().forEach((o) => counts[o.priority]++);
-    return counts;
-  });
   readonly urgentOrdersCount = computed(
     () => this._orders().filter((o) => o.priority === "Urgent").length,
   );
@@ -144,38 +102,6 @@ export class OrderDataService {
 
   getOrdersByClinic(clinicId: string): Order[] {
     return this._orders().filter((o) => o.clinicId === clinicId);
-  }
-
-  applyFilters(filters: OrderFilters): Order[] {
-    let result = filterTableRows(this._orders(), filters.search ?? "", [
-      (order) => order.orderNumber,
-      (order) => order.patientName,
-      (order) => order.doctorName,
-      (order) => order.clinicName,
-    ]);
-
-    if (filters.statusFilter && filters.statusFilter.length > 0) {
-      result = result.filter((o) => filters.statusFilter!.includes(o.status));
-    }
-
-    if (filters.priorityFilter) {
-      result = result.filter((o) => o.priority === filters.priorityFilter);
-    }
-
-    if (filters.sortColumn) {
-      const direction = filters.sortDirection === "asc" ? 1 : -1;
-      result.sort((a, b) => {
-        const av = (a as unknown as Record<string, unknown>)[
-          filters.sortColumn!
-        ];
-        const bv = (b as unknown as Record<string, unknown>)[
-          filters.sortColumn!
-        ];
-        return compareValues(av, bv) * direction;
-      });
-    }
-
-    return result;
   }
 
   createOrder(

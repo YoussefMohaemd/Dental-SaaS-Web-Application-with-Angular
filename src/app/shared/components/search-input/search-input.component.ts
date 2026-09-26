@@ -22,7 +22,7 @@ export type SearchInputSize = "xs" | "sm";
 @Component({
   selector: "app-search-input",
   standalone: true,
-  imports: [CommonModule,  AppButtonComponent, AppTextFieldComponent],
+  imports: [CommonModule, AppButtonComponent, AppTextFieldComponent],
   templateUrl: "./search-input.component.html",
   styleUrl: "./search-input.component.scss",
 })

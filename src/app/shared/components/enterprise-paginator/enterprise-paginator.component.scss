@@ -82,7 +82,11 @@
 :host ::ng-deep .enterprise-prime-paginator .p-paginator-first:hover,
 :host ::ng-deep .enterprise-prime-paginator .p-paginator-last:hover {
   background: color-mix(in srgb, var(--primary) 12%, var(--card)) !important;
-  border-color: color-mix(in srgb, var(--primary) 45%, var(--border)) !important;
+  border-color: color-mix(
+    in srgb,
+    var(--primary) 45%,
+    var(--border)
+  ) !important;
   color: var(--foreground) !important;
 }
 
@@ -105,10 +109,7 @@
     0 10px 20px -12px color-mix(in srgb, var(--primary) 80%, #0f172a);
 }
 
-:host
-  ::ng-deep
-  .enterprise-prime-paginator
-  .p-paginator-page.p-highlight:hover,
+:host ::ng-deep .enterprise-prime-paginator .p-paginator-page.p-highlight:hover,
 :host
   ::ng-deep
   .enterprise-prime-paginator
@@ -122,48 +123,20 @@
   color: var(--primary-foreground) !important;
 }
 
-:host
-  ::ng-deep
-  .enterprise-prime-paginator
-  .p-paginator-page:focus-visible,
-:host
-  ::ng-deep
-  .enterprise-prime-paginator
-  .p-paginator-prev:focus-visible,
-:host
-  ::ng-deep
-  .enterprise-prime-paginator
-  .p-paginator-next:focus-visible,
-:host
-  ::ng-deep
-  .enterprise-prime-paginator
-  .p-paginator-first:focus-visible,
-:host
-  ::ng-deep
-  .enterprise-prime-paginator
-  .p-paginator-last:focus-visible {
+:host ::ng-deep .enterprise-prime-paginator .p-paginator-page:focus-visible,
+:host ::ng-deep .enterprise-prime-paginator .p-paginator-prev:focus-visible,
+:host ::ng-deep .enterprise-prime-paginator .p-paginator-next:focus-visible,
+:host ::ng-deep .enterprise-prime-paginator .p-paginator-first:focus-visible,
+:host ::ng-deep .enterprise-prime-paginator .p-paginator-last:focus-visible {
   outline: none !important;
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 28%, transparent)
-    !important;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 28%, transparent) !important;
 }
 
-:host
-  ::ng-deep
-  .enterprise-prime-paginator
-  .p-paginator-prev.p-disabled,
-:host
-  ::ng-deep
-  .enterprise-prime-paginator
-  .p-paginator-next.p-disabled,
-:host
-  ::ng-deep
-  .enterprise-prime-paginator
-  .p-paginator-first.p-disabled,
-:host
-  ::ng-deep
-  .enterprise-prime-paginator
-  .p-paginator-last.p-disabled {
-  opacity: 0.45;
+:host ::ng-deep .enterprise-prime-paginator .p-paginator-prev.p-disabled,
+:host ::ng-deep .enterprise-prime-paginator .p-paginator-next.p-disabled,
+:host ::ng-deep .enterprise-prime-paginator .p-paginator-first.p-disabled,
+:host ::ng-deep .enterprise-prime-paginator .p-paginator-last.p-disabled {
+  opacity: var(--disabled-opacity);
 }
 
 @media (max-width: 640px) {

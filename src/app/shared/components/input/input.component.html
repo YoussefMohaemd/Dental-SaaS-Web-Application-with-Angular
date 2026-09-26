@@ -21,7 +21,7 @@
       (blur)="onNativeBlur($event)"
       (focus)="onFocus.emit($event)"
       [class]="inputClasses()"
-      [attr.aria-label]="ariaLabel() || null"
+      [attr.aria-label]="resolvedAriaLabel()"
       [attr.aria-describedby]="error() ? errorId() : hint() ? hintId() : null"
       [attr.aria-invalid]="!!error()"
       [attr.aria-required]="required() ? 'true' : null"

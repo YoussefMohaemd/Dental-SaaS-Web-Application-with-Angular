@@ -50,7 +50,9 @@ describe("WorkflowTimelineComponent", () => {
 
   it("marks only the active stage with aria-current step", () => {
     const stages = Array.from(
-      fixture.nativeElement.querySelectorAll("ol li") as NodeListOf<HTMLElement>,
+      fixture.nativeElement.querySelectorAll(
+        "ol li",
+      ) as NodeListOf<HTMLElement>,
     );
     const marked = stages.filter(
       (element) => element.getAttribute("aria-current") === "step",
@@ -66,6 +68,8 @@ describe("WorkflowTimelineComponent", () => {
     fixture.componentRef.setInput("currentIndex", 0);
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.textContent).toContain("0 of 0 stages complete");
+    expect(fixture.nativeElement.textContent).toContain(
+      "0 of 0 stages complete",
+    );
   });
 });

@@ -124,13 +124,19 @@
               <td class="text-xs text-muted-foreground max-w-44">
                 <span class="truncate-1" [title]="d.email">{{ d.email }}</span>
               </td>
-              <td class="text-xs font-mono text-muted-foreground whitespace-nowrap">
+              <td
+                class="text-xs font-mono text-muted-foreground whitespace-nowrap"
+              >
                 {{ d.phone }}
               </td>
-              <td class="text-xs font-mono font-semibold text-center text-foreground">
+              <td
+                class="text-xs font-mono font-semibold text-center text-foreground"
+              >
                 {{ d.ordersCount }}
               </td>
-              <td class="text-xs font-mono text-muted-foreground whitespace-nowrap">
+              <td
+                class="text-xs font-mono text-muted-foreground whitespace-nowrap"
+              >
                 {{ d.joinedDate }}
               </td>
               <td>
@@ -173,7 +179,7 @@
             'Prosthodontics',
             'Oral Surgery',
             'Orthodontics',
-            'Periodontics'
+            'Periodontics',
           ]"
           [value]="newSpecialty()"
           (valueChange)="newSpecialty.set($event)"

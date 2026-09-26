@@ -1,24 +1,24 @@
-import type { Meta, StoryObj } from '@storybook/angular-vite';
-import { DataTableToolbarComponent } from './data-table-toolbar.component';
+import type { Meta, StoryObj } from "@storybook/angular-vite";
+import { DataTableToolbarComponent } from "./data-table-toolbar.component";
 
 const meta: Meta<DataTableToolbarComponent> = {
-  title: 'Composite/DataTableToolbar',
+  title: "Composite/DataTableToolbar",
   component: DataTableToolbarComponent,
-  tags: ['autodocs'],
-  parameters: { layout: 'centered' },
+  tags: ["autodocs"],
+  parameters: { layout: "centered" },
   argTypes: {
     title: {
-      control: 'text',
-      description: 'Main title shown in the page header.',
+      control: "text",
+      description: "Main title shown in the page header.",
     },
     subtitle: {
-      control: 'text',
-      description: 'Optional supporting description.',
+      control: "text",
+      description: "Optional supporting description.",
     },
   },
   args: {
-    title: 'Orders',
-    subtitle: '126 active records',
+    title: "Orders",
+    subtitle: "126 active records",
   },
 };
 
@@ -46,6 +46,6 @@ export const WithActions: Story = {
 
 export const WithoutSubtitle: Story = {
   args: {
-    subtitle: '',
+    subtitle: "",
   },
 };

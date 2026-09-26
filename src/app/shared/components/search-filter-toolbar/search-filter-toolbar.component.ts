@@ -14,7 +14,7 @@ import { AppSelectComponent } from "@shared/components/select/select.component";
     AppButtonComponent,
     AppTextFieldComponent,
     AppSelectComponent,
-],
+  ],
   templateUrl: "./search-filter-toolbar.component.html",
   styleUrl: "./search-filter-toolbar.component.scss",
 })

@@ -58,7 +58,9 @@ describe("AppButtonComponent", () => {
     fixture.detectChanges();
     const button = fixture.debugElement.query(By.css("button"));
     expect(button.nativeElement.disabled).toBe(true);
-    expect(button.nativeElement.className).toContain("disabled:opacity-50");
+    expect(button.nativeElement.className).toContain(
+      "disabled:opacity-[var(--disabled-opacity)]",
+    );
     expect(button.nativeElement.getAttribute("aria-disabled")).toBe("true");
   });
 

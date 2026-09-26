@@ -4,10 +4,19 @@
   >
     Order Summary
   </p>
+  <p class="mb-3 text-xs font-medium text-foreground">
+    {{ order().orderNumber }}
+  </p>
   @if (totalServices() > 0) {
-    <p class="mb-3 text-xs text-muted-foreground">
-      {{ completedServices() }} of {{ totalServices() }}
-    </p>
+    @if (completedServices() > 0) {
+      <p class="mb-3 text-xs text-muted-foreground">
+        {{ completedServices() }} of {{ totalServices() }}
+      </p>
+    } @else {
+      <p class="mb-3 text-xs text-muted-foreground">
+        No services completed yet
+      </p>
+    }
   }
   <dl class="space-y-2 text-xs">
     <div class="flex justify-between gap-2">

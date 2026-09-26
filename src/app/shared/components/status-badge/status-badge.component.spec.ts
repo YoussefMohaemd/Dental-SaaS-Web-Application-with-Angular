@@ -51,6 +51,11 @@ describe("StatusBadgeComponent", () => {
     expect(badge.nativeElement).toHaveClass("text-sm");
   });
 
+  it("should render badge with pill border radius", () => {
+    const badge = fixture.debugElement.query(By.css("span"));
+    expect(badge.nativeElement).toHaveClass("rounded-full");
+  });
+
   it("should handle unknown status with default styles", () => {
     fixture.componentRef.setInput("status", "Unknown");
     fixture.detectChanges();

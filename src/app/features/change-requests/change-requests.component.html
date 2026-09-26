@@ -46,7 +46,13 @@
     [searchIconSvg]="getIconSvg('search')"
     selectId="change-requests-status-filter"
     selectPlaceholder="All Status"
-    [selectOptions]="['Pending', 'In Review', 'Approved', 'Rejected', 'Completed']"
+    [selectOptions]="[
+      'Pending',
+      'In Review',
+      'Approved',
+      'Rejected',
+      'Completed',
+    ]"
     [selectValue]="statusFilter()"
     selectAriaLabel="Filter change requests by status"
     actionLabel="Clear Filters"

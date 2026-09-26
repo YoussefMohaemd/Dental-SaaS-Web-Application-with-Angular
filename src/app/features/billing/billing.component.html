@@ -103,7 +103,9 @@
                   type="button"
                   (click)="toggleSort('orderNumber')"
                   class="billing-sort-button"
-                  [attr.aria-label]="sortAriaLabel('orderNumber', 'Order Number')"
+                  [attr.aria-label]="
+                    sortAriaLabel('orderNumber', 'Order Number')
+                  "
                 >
                   Order #
                   <span
@@ -155,7 +157,9 @@
                   type="button"
                   (click)="toggleSort('invoiceDate')"
                   class="billing-sort-button"
-                  [attr.aria-label]="sortAriaLabel('invoiceDate', 'Invoice Date')"
+                  [attr.aria-label]="
+                    sortAriaLabel('invoiceDate', 'Invoice Date')
+                  "
                 >
                   Invoice Date
                   <span

@@ -63,8 +63,6 @@ export interface SubOrderWorkflowStep {
   requiredActions: string[];
 }
 
-export type SubOrderViewState = "loading" | "normal" | "error";
-
 export type SubOrderFormItemStatus = "complete" | "incomplete" | "optional";
 export type SubOrderScanItemStatus =
   "uploaded" | "missing" | "optional" | "selected-local";

@@ -26,3 +26,5 @@ Each candidate folder contains the same slot templates:
 - `screenshots/README.md`
 
 Do not pre-fill any slot. If a capture cannot be produced, record `NOT CAPTURED — reason`.
+
+Root-level duplicate templates were removed on 2026-09-26 (hygiene only — no slot was filled).

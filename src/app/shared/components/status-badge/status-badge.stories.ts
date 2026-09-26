@@ -1,31 +1,31 @@
-import type { Meta, StoryObj } from '@storybook/angular-vite';
-import { StatusBadgeComponent } from './status-badge.component';
+import type { Meta, StoryObj } from "@storybook/angular-vite";
+import { StatusBadgeComponent } from "./status-badge.component";
 
 const meta: Meta<StatusBadgeComponent> = {
-  title: 'Basic/StatusBadge',
+  title: "Basic/StatusBadge",
   component: StatusBadgeComponent,
-  tags: ['autodocs'],
-  parameters: { layout: 'centered' },
+  tags: ["autodocs"],
+  parameters: { layout: "centered" },
   argTypes: {
     status: {
-      control: 'text',
+      control: "text",
       description:
-        'Raw status key; drives color mapping and default display label.',
+        "Raw status key; drives color mapping and default display label.",
     },
     label: {
-      control: 'text',
-      description: 'Optional display label override.',
+      control: "text",
+      description: "Optional display label override.",
     },
     size: {
-      control: 'select',
-      options: ['xs', 'sm', 'md'],
-      description: 'Size scale of the badge.',
+      control: "select",
+      options: ["xs", "sm", "md"],
+      description: "Size scale of the badge.",
     },
   },
   args: {
-    status: 'New',
-    label: '',
-    size: 'xs',
+    status: "New",
+    label: "",
+    size: "xs",
   },
 };
 
@@ -35,19 +35,19 @@ type Story = StoryObj<StatusBadgeComponent>;
 export const Default: Story = {};
 
 export const Completed: Story = {
-  args: { status: 'Completed' },
+  args: { status: "Completed" },
 };
 
 export const InProgress: Story = {
-  args: { status: 'In Progress' },
+  args: { status: "In Progress" },
 };
 
 export const Cancelled: Story = {
-  args: { status: 'Cancelled' },
+  args: { status: "Cancelled" },
 };
 
 export const CustomLabel: Story = {
-  args: { status: 'Completed', label: 'Delivered to clinic' },
+  args: { status: "Completed", label: "Delivered to clinic" },
 };
 
 export const AllStatuses: Story = {

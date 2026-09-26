@@ -17,8 +17,8 @@ export class EnterprisePaginatorComponent {
 
   readonly pageChange = output<number>();
 
-  readonly firstRecord = computed(() =>
-    Math.max(0, this.page() - 1) * this.rows(),
+  readonly firstRecord = computed(
+    () => Math.max(0, this.page() - 1) * this.rows(),
   );
 
   readonly rangeStart = computed(() =>

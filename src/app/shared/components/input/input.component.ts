@@ -31,9 +31,7 @@ export class AppTextFieldComponent implements ControlValueAccessor {
   readonly id = input<string>("");
   readonly type = input<
     "text" | "email" | "password" | "tel" | "number" | "date" | "search"
-  >(
-    "text",
-  );
+  >("text");
   readonly label = input<string>("");
   readonly placeholder = input<string>("");
   readonly ariaLabel = input<string>("");
@@ -63,6 +61,14 @@ export class AppTextFieldComponent implements ControlValueAccessor {
 
   readonly hintId = computed(() => `${this.controlId()}-hint`);
   readonly errorId = computed(() => `${this.controlId()}-error`);
+  readonly resolvedAriaLabel = computed(() => {
+    const explicit = this.ariaLabel().trim();
+    if (explicit) return explicit;
+    const label = this.label().trim();
+    if (label) return label;
+    const placeholder = this.placeholder().trim();
+    return placeholder || null;
+  });
 
   readonly inputClasses = computed(() => {
     const horizontalPadding =
@@ -75,11 +81,11 @@ export class AppTextFieldComponent implements ControlValueAccessor {
             : "px-3";
     const readonlyClass = this.readOnly() ? "cursor-not-allowed bg-muted" : "";
     if (this.unstyled()) {
-      return `${this.inputClass()} ${this.isDisabled() ? "opacity-50 cursor-not-allowed" : ""} ${readonlyClass}`;
+      return `${this.inputClass()} ${this.isDisabled() ? "opacity-[var(--disabled-opacity)] cursor-not-allowed" : ""} ${readonlyClass}`;
     }
     return `
     input-base ${horizontalPadding} py-2.5
-    ${this.isDisabled() ? "opacity-50 cursor-not-allowed" : ""}
+    ${this.isDisabled() ? "opacity-[var(--disabled-opacity)] cursor-not-allowed" : ""}
     ${readonlyClass}
     ${this.inputClass()}
   `;

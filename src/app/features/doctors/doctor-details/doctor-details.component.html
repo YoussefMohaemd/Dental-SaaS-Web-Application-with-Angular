@@ -205,9 +205,13 @@
             <ng-template pTemplate="body" let-o>
               <tr
                 class="border-b border-border last:border-0 hover:bg-muted/20 cursor-pointer"
-                (click)="navigationService.navigate('viewOrder', { orderId: o.id })"
+                (click)="
+                  navigationService.navigate('viewOrder', { orderId: o.id })
+                "
               >
-                <td class="px-4 py-3 font-mono text-xs text-primary font-semibold">
+                <td
+                  class="px-4 py-3 font-mono text-xs text-primary font-semibold"
+                >
                   {{ o.orderNumber }}
                 </td>
                 <td class="px-4 py-3 text-xs">{{ o.patientName }}</td>

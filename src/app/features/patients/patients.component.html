@@ -196,42 +196,60 @@
             >
               <td>
                 <div class="flex min-w-0 items-center gap-3">
-                  <app-avatar [name]="p.name" [size]="'sm'" [variant]="'primary'" />
+                  <app-avatar
+                    [name]="p.name"
+                    [size]="'sm'"
+                    [variant]="'primary'"
+                  />
                   <div class="enterprise-cell-stack">
-                    <span class="enterprise-cell-primary truncate-1" [title]="p.name"
+                    <span
+                      class="enterprise-cell-primary truncate-1"
+                      [title]="p.name"
                       >{{ p.name }}</span
                     >
-                    <span class="enterprise-cell-secondary font-mono">ID: {{ p.id }}</span>
+                    <span class="enterprise-cell-secondary font-mono"
+                      >ID: {{ p.id }}</span
+                    >
                   </div>
                 </div>
               </td>
-              <td class="text-xs text-muted-foreground font-mono whitespace-nowrap">
+              <td
+                class="text-xs text-muted-foreground font-mono whitespace-nowrap"
+              >
                 {{ p.dob }}
               </td>
               <td class="text-xs text-muted-foreground">
                 {{ getGenderLabel(p.gender) }}
               </td>
-              <td class="text-xs text-muted-foreground font-mono whitespace-nowrap">
+              <td
+                class="text-xs text-muted-foreground font-mono whitespace-nowrap"
+              >
                 {{ p.phone }}
               </td>
               <td class="text-xs text-muted-foreground max-w-44">
                 <span class="truncate-1" [title]="p.email">{{ p.email }}</span>
               </td>
               <td class="text-xs text-muted-foreground max-w-40">
-                <span class="truncate-1" [title]="p.clinicName">{{ p.clinicName }}</span>
+                <span class="truncate-1" [title]="p.clinicName">{{
+                  p.clinicName
+                }}</span>
               </td>
               <td class="text-xs text-muted-foreground max-w-40">
                 <span class="truncate-1" [title]="p.doctorName">{{
                   p.doctorName.replace("Dr. ", "")
                 }}</span>
               </td>
-              <td class="text-center text-xs font-mono font-semibold text-foreground">
+              <td
+                class="text-center text-xs font-mono font-semibold text-foreground"
+              >
                 {{ p.ordersCount }}
               </td>
               <td>
                 <app-status-badge [status]="p.status" size="xs" />
               </td>
-              <td class="text-xs font-mono text-muted-foreground whitespace-nowrap">
+              <td
+                class="text-xs font-mono text-muted-foreground whitespace-nowrap"
+              >
                 {{ p.lastVisit }}
               </td>
             </tr>

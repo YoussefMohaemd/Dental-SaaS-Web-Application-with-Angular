@@ -2,11 +2,16 @@
 
 ## Session log (fact-only)
 
-| Date | Session / scope | Prompt summary | AI output summary | Verification method + result | Rejected/changed items |
-| --- | --- | --- | --- | --- | --- |
-| 2026-09-26 | IMP-FE-003 gap-audit assistance | Audit repo vs assignment requirements and map gaps to actions | Gap list, risk list, remediation plan draft | Manual source verification + evidence file checks; accepted as planning aid only | Any unverified claims removed or marked pending |
-| 2026-09-26 | Documentation drafting | Draft matrix/protocol/licensing/scope docs in current Angular POC context | Draft markdown files and template structures | Cross-checked against repository code and cited external sources; factual sections retained | Any non-evidenced score/output left pending |
-| 2026-09-26 | Implementation support | Apply targeted refactors and tests per plan tasks | Code edits for naming, a11y, states, shared utilities | `npm run lint`, unit tests, and build/storybook checks (run in repository) | Failing variants iterated; no fabricated pass claims |
+| Date | Owner | Session / scope | Prompt summary | AI output summary | Verification method + result | Rejected/changed items |
+| --- | --- | --- | --- | --- | --- | --- |
+| 2026-09-26 | Repository author | IMP-FE-003 gap-audit assistance | Audit repo vs assignment requirements and map gaps to actions | Gap list, risk list, remediation plan draft | Manual source verification + evidence file checks; accepted as planning aid only | Any unverified claims removed or marked pending |
+| 2026-09-26 | Repository author | Documentation drafting | Draft matrix/protocol/licensing/scope docs in current Angular POC context | Draft markdown files and template structures | Cross-checked against repository code and cited external sources; factual sections retained | Any non-evidenced score/output left pending |
+| 2026-09-26 | Repository author | Implementation support | Apply targeted refactors and tests per plan tasks | Code edits for naming, a11y, states, shared utilities | `npm run lint`, unit tests, and build/storybook checks (run in repository) | Failing variants iterated; no fabricated pass claims |
+
+Prompt provenance:
+
+- The frozen base prompt text is stored verbatim in [`docs/ai-comparison-protocol.md`](./docs/ai-comparison-protocol.md) section 1.2.
+- Historical session prompts in this log are archived as summaries (not verbatim transcripts).
 
 ## Controlled AI comparison runs
 

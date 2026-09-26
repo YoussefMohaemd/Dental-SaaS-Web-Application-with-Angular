@@ -106,7 +106,8 @@ describe("BillingComponent sortable headers a11y", () => {
     ) as HTMLElement[];
     const byLabel = (label: string): HTMLElement | undefined =>
       headers.find(
-        (th) => th.querySelector("button")?.getAttribute("aria-label") === label,
+        (th) =>
+          th.querySelector("button")?.getAttribute("aria-label") === label,
       );
 
     expect(

@@ -86,16 +86,6 @@ describe("OrdersComponent", () => {
     expect(component.sortIconSvg("receivedAt")).not.toBe(active);
   });
 
-  it("should window pagination around the current page", () => {
-    component.pageSize.set(10);
-    component.page.set(1);
-    const first = component.visiblePageNumbers();
-    expect(first.length).toBeLessThanOrEqual(7);
-    expect(first[0]).toBe(1);
-    component.goToPage(9999);
-    expect(component.page()).toBe(component.totalPages());
-  });
-
   it("should manage multi-select status filters", () => {
     component.addStatusFilter("New");
     component.addStatusFilter("New");
@@ -169,19 +159,15 @@ describe("OrdersComponent", () => {
     });
   });
 
-  it("should export the filtered orders as CSV and support first/last pagination", () => {
-    component.firstPage();
-    expect(component.page()).toBe(1);
-    component.lastPage();
-    expect(component.page()).toBe(component.totalPages());
+  it("should expose configured pagination size choices", () => {
     expect(component.pageSizes).toEqual([10, 20, 30, 40, 50]);
   });
 
   it("should clamp pagination within valid bounds", () => {
-    component.prevPage();
+    component.goToPage(0);
     expect(component.page()).toBe(1);
-    component.nextPage();
-    expect(component.page()).toBeLessThanOrEqual(component.totalPages());
+    component.goToPage(9999);
+    expect(component.page()).toBe(component.totalPages());
   });
 
   it("should show the loading state while the service is loading", () => {
@@ -195,7 +181,9 @@ describe("OrdersComponent", () => {
     orderService.previewState("error");
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.textContent).toContain("Failed to load orders");
+    expect(fixture.nativeElement.textContent).toContain(
+      "Failed to load orders",
+    );
     expect(fixture.nativeElement.textContent).toContain("Try Again");
   });
 
@@ -205,10 +193,10 @@ describe("OrdersComponent", () => {
     spyOn(orderService, "reload");
 
     const retryButton = Array.from(
-      fixture.nativeElement.querySelectorAll("button") as NodeListOf<HTMLButtonElement>,
-    ).find((button) =>
-      button.textContent?.trim().includes("Try Again"),
-    );
+      fixture.nativeElement.querySelectorAll(
+        "button",
+      ) as NodeListOf<HTMLButtonElement>,
+    ).find((button) => button.textContent?.trim().includes("Try Again"));
 
     expect(retryButton).toBeDefined();
     retryButton?.click();
@@ -252,5 +240,113 @@ describe("OrdersComponent", () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector("p-treetable")).toBeTruthy();
+  });
+
+  it("should render the shared data-table toolbar as the page header", () => {
+    orderService.previewState("empty");
+    orderService.createOrder({
+      patientId: "pt-1",
+      patientName: "Alice Johnson",
+      doctorId: "dr-1",
+      doctorName: "Dr. Park",
+      clinicId: "cl-1",
+      clinicName: "Bright Smile Dental",
+      scanCenterId: "scan-1",
+      scanCenterName: "Main Scan Center",
+      status: "New",
+      priority: "High",
+      restoration: "Crown",
+      arch: "Maxilla",
+      format: "STL",
+      shade: "A2",
+      units: 2,
+      amount: 500,
+      billed: false,
+      billTo: "Bright Smile Dental",
+      vouchers: 0,
+      isLocked: false,
+      hasNotes: false,
+      notes: "",
+      dueDate: "2026-12-24",
+    });
+    fixture.detectChanges();
+
+    const toolbars = fixture.nativeElement.querySelectorAll(
+      "app-data-table-toolbar",
+    );
+    expect(toolbars.length).toBe(1);
+    expect(fixture.nativeElement.textContent).toContain("Orders");
+  });
+
+  it("should render a status badge with assistive semantics for every rendered row", () => {
+    orderService.previewState("empty");
+    orderService.createOrder({
+      patientId: "pt-1",
+      patientName: "Alice Johnson",
+      doctorId: "dr-1",
+      doctorName: "Dr. Park",
+      clinicId: "cl-1",
+      clinicName: "Bright Smile Dental",
+      scanCenterId: "scan-1",
+      scanCenterName: "Main Scan Center",
+      status: "New",
+      priority: "High",
+      restoration: "Crown",
+      arch: "Maxilla",
+      format: "STL",
+      shade: "A2",
+      units: 2,
+      amount: 500,
+      billed: false,
+      billTo: "Bright Smile Dental",
+      vouchers: 0,
+      isLocked: false,
+      hasNotes: false,
+      notes: "",
+      dueDate: "2026-12-24",
+    });
+    fixture.detectChanges();
+
+    const badges = Array.from(
+      fixture.nativeElement.querySelectorAll("app-status-badge"),
+    ) as HTMLElement[];
+    expect(badges.length).toBeGreaterThan(0);
+    badges.forEach((badge) => {
+      expect(badge.querySelector('[role="status"]')).toBeTruthy();
+    });
+  });
+
+  it("should render the shared empty state when filters match nothing", () => {
+    orderService.previewState("empty");
+    orderService.createOrder({
+      patientId: "pt-1",
+      patientName: "Alice Johnson",
+      doctorId: "dr-1",
+      doctorName: "Dr. Park",
+      clinicId: "cl-1",
+      clinicName: "Bright Smile Dental",
+      scanCenterId: "scan-1",
+      scanCenterName: "Main Scan Center",
+      status: "New",
+      priority: "High",
+      restoration: "Crown",
+      arch: "Maxilla",
+      format: "STL",
+      shade: "A2",
+      units: 2,
+      amount: 500,
+      billed: false,
+      billTo: "Bright Smile Dental",
+      vouchers: 0,
+      isLocked: false,
+      hasNotes: false,
+      notes: "",
+      dueDate: "2026-12-24",
+    });
+    component.onSearchInput("zzz-no-match");
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector("app-empty-state")).toBeTruthy();
+    expect(fixture.nativeElement.textContent).toContain("No matching orders");
   });
 });

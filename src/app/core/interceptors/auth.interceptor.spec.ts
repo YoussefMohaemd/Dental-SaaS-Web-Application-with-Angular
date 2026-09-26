@@ -24,10 +24,12 @@ describe("authInterceptor", () => {
       ) as jasmine.Spy<HttpHandlerFn>;
     const request = new HttpRequest("GET", "/api/orders");
 
-    TestBed.runInInjectionContext(() => authInterceptor(request, next)).subscribe();
+    TestBed.runInInjectionContext(() =>
+      authInterceptor(request, next),
+    ).subscribe();
 
     const forwarded = next.calls.mostRecent().args[0] as HttpRequest<unknown>;
-    expect(forwarded.headers.has("Authorization")).toBeTrue();
+    expect(forwarded.headers.get("Authorization")).toBe("Bearer token-value");
   });
 
   it("forwards the original request when no token exists", () => {
@@ -41,7 +43,9 @@ describe("authInterceptor", () => {
       ) as jasmine.Spy<HttpHandlerFn>;
     const request = new HttpRequest("GET", "/api/orders");
 
-    TestBed.runInInjectionContext(() => authInterceptor(request, next)).subscribe();
+    TestBed.runInInjectionContext(() =>
+      authInterceptor(request, next),
+    ).subscribe();
 
     const forwarded = next.calls.mostRecent().args[0] as HttpRequest<unknown>;
     expect(forwarded.headers.has("Authorization")).toBeFalse();

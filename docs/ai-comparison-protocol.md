@@ -11,16 +11,17 @@ This protocol is frozen before execution. No outputs or scores are pre-filled.
 
 Build a **Promo Banners** management slice with these required elements:
 
-1. Reusable component `PromoBannerCard` (title, discount, validity, status badge, enable/disable toggle).
-2. Routed page `/promo-banners` reachable from navigation.
-3. Header with title, record count, and primary action.
-4. Toolbar with search input and status filter.
-5. **Data table** view for banner records (sortable by at least status and validity).
-6. **Confirmation dialog** for destructive or disabling actions.
-7. Responsive layout (desktop/tablet/mobile).
-8. Loading state and empty state.
-9. In-memory fixture data service (minimum 8 records).
-10. Build/test/a11y constraints:
+1. Reusable primary/secondary button component (with disabled and loading states).
+2. Reusable component `PromoBannerCard` (title, discount, validity, status badge, enable/disable toggle).
+3. Routed page `/promo-banners` reachable from navigation.
+4. Header with title, record count, and primary action.
+5. Toolbar with search input and status filter.
+6. **Data table** view for banner records (sortable by at least status and validity).
+7. **Confirmation dialog** for destructive or disabling actions.
+8. Responsive layout (desktop/tablet/mobile).
+9. Loading state and empty state.
+10. In-memory fixture data service (minimum 8 records).
+11. Build/test/a11y constraints:
    - green `npm run build`
    - green `npm test -- --watch=false --browsers=ChromeHeadless`
    - axe-core clean for the page
@@ -67,18 +68,29 @@ The weighted-comparison matrix consumes this via:
 
 All code outputs are produced in candidate-specific sandbox projects (out of this repository). Only sanitized evidence artifacts are copied here.
 
-| Candidate key | Assigned stack | Run metadata |
-| --- | --- | --- |
-| `react-kendo` | React + KendoReact | Pending human execution |
-| `react-mui` | React + Material UI | Pending human execution |
-| `vue-vuetify` | Vue 3 + Vuetify | Pending human execution |
+### react-kendo
 
-Each candidate folder must record:
+- Run date:
+- Tool + model:
+- Iterations used:
+- Elapsed:
+- Notes:
 
-- run date/time,
-- exact tool+model string,
-- iteration log,
-- elapsed time.
+### react-mui
+
+- Run date:
+- Tool + model:
+- Iterations used:
+- Elapsed:
+- Notes:
+
+### vue-vuetify
+
+- Run date:
+- Tool + model:
+- Iterations used:
+- Elapsed:
+- Notes:
 
 ## 4) Evidence slots
 

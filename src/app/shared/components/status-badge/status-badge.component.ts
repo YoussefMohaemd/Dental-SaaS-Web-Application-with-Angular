@@ -22,7 +22,8 @@ export class StatusBadgeComponent {
   );
 
   readonly badgeClasses = computed(() => {
-    const base = "inline-flex items-center px-1.5 py-0.5 rounded font-semibold";
+    const base =
+      "inline-flex items-center px-1.5 py-0.5 rounded-full font-semibold";
     const sizes = { xs: "text-[10px]", sm: "text-xs", md: "text-sm" };
     return `${base} ${sizes[this.size()]}`;
   });

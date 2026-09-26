@@ -67,25 +67,4 @@ export interface Order {
   };
 }
 
-export interface OrderFilters {
-  search?: string;
-  statusFilter?: OrderStatus[];
-  priorityFilter?: Priority;
-  sortColumn?: keyof Order;
-  sortDirection?: "asc" | "desc";
-  page?: number;
-  pageSize?: number;
-}
-
-export interface OrderTableState {
-  filteredOrders: Order[];
-  selectedIds: Set<string>;
-  currentPage: number;
-  pageSize: number;
-  totalPages: number;
-  sortColumn: keyof Order | "";
-  sortDirection: "asc" | "desc";
-  viewState: OrdersViewState;
-}
-
 export type OrdersViewState = "normal" | "loading" | "empty" | "error";

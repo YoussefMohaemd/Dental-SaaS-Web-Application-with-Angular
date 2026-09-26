@@ -31,9 +31,7 @@ describe("IconActionButtonComponent", () => {
 
   it("should apply the aria-label to the underlying button", () => {
     const button = fixture.debugElement.query(By.css("button"));
-    expect(button.nativeElement.getAttribute("aria-label")).toBe(
-      "Edit order",
-    );
+    expect(button.nativeElement.getAttribute("aria-label")).toBe("Edit order");
   });
 
   it("should fall back the title to the aria-label", () => {

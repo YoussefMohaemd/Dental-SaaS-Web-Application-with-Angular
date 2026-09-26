@@ -116,7 +116,10 @@ export class EditOrderComponent {
     { value: "Both", label: "Both Arches" },
   ] as const;
   readonly statusSelectOptions = computed(() =>
-    this.statusOptions.map((opt) => ({ value: opt, label: this.statusLabel(opt) })),
+    this.statusOptions.map((opt) => ({
+      value: opt,
+      label: this.statusLabel(opt),
+    })),
   );
 
   constructor() {

@@ -84,7 +84,9 @@ export class PatientDetailsComponent implements OnInit {
 
     const patientName = this.normalize(patient.name);
     const patientDoctor = this.normalize(patient.doctorName);
-    const patientOrderIds = new Set(this.patientOrders().map((order) => order.id));
+    const patientOrderIds = new Set(
+      this.patientOrders().map((order) => order.id),
+    );
 
     return (this.documentService.documents() as PatientDocument[])
       .filter((doc) => {
@@ -228,7 +230,9 @@ export class PatientDetailsComponent implements OnInit {
 
   openDocumentContext(document: PatientDocument): void {
     if (document.orderId) {
-      this.navigationService.navigate("viewOrder", { orderId: document.orderId });
+      this.navigationService.navigate("viewOrder", {
+        orderId: document.orderId,
+      });
       return;
     }
     this.navigateToDocumentsPage();

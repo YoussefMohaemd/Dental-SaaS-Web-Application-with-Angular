@@ -32,7 +32,7 @@ Current project fit: excellent.
 
 Role: enterprise UI component library.
 
-Strengths: provides complex widgets such as TreeTable, dialogs, cards, badges, tables, and form elements that reduce custom implementation effort.
+Strengths: provides complex widgets such as TreeTable, dialogs, tables, paginator controls, and form elements that reduce custom implementation effort (cards and badges are provided by PrimeNG but not used in this POC).
 
 Limitations: visual defaults need theming alignment to match the project system.
 

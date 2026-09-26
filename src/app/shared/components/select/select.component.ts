@@ -64,9 +64,9 @@ export class AppSelectComponent implements ControlValueAccessor {
 
   readonly classes = computed(() => {
     if (this.unstyled()) {
-      return `${this.selectClass()} ${this.isDisabled() ? "opacity-50 cursor-not-allowed" : ""}`;
+      return `${this.selectClass()} ${this.isDisabled() ? "opacity-[var(--disabled-opacity)] cursor-not-allowed" : ""}`;
     }
-    return `select-base py-2 text-sm ${this.isDisabled() ? "opacity-50 cursor-not-allowed" : ""} ${this.selectClass()}`;
+    return `select-base py-2 text-sm ${this.isDisabled() ? "opacity-[var(--disabled-opacity)] cursor-not-allowed" : ""} ${this.selectClass()}`;
   });
 
   onChange(event: Event): void {

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-26T09:41:34.525Z",
+  "generatedAt": "2026-09-26T15:53:09.768Z",
   "method": "Playwright: Toggle sidebar button then backdrop click (mobile only; tablet sidebar is persistent at >=640px)",
   "results": [
     {
@@ -7,14 +7,14 @@
       "initialX": 0,
       "openedX": 0,
       "closedX": 0,
-      "drawerOpens": true,
+      "drawerOpens": false,
       "backdropCloses": false
     },
     {
       "viewport": "mobile-375",
       "initialX": -252,
-      "openedX": 0,
-      "closedX": -252,
+      "openedX": -8,
+      "closedX": -249,
       "drawerOpens": true,
       "backdropCloses": true
     }

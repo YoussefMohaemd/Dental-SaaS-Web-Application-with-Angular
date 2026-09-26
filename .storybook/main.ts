@@ -1,4 +1,5 @@
 import type { StorybookConfig } from '@storybook/angular-vite';
+import { mergeConfig } from 'vite';
 
 const config: StorybookConfig = {
   "stories": [
@@ -11,6 +12,18 @@ const config: StorybookConfig = {
     "@storybook/addon-docs",
     "@storybook/addon-onboarding"
   ],
-  "framework": "@storybook/angular-vite"
+  "framework": "@storybook/angular-vite",
+  viteFinal: async (viteConfig) =>
+    mergeConfig(viteConfig, {
+      build: {
+        cssMinify: 'esbuild',
+        chunkSizeWarningLimit: 1800,
+        rolldownOptions: {
+          checks: {
+            bundlerTimings: false
+          }
+        }
+      }
+    })
 };
 export default config;

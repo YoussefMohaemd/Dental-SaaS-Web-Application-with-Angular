@@ -35,4 +35,4 @@
 
 - `change-requests` contains no sortable headers (grep-verified); there was nothing to convert there.
 - Axe scans render each route's default state; interactive states (dialogs, expanded rows, validation errors) are covered only where they render by default — human walkthrough items above cover the rest.
-- Latest gate: `npm run build` = 0, `npm test -- --watch=false --browsers=ChromeHeadless` = 336/336, `npx tsc --noEmit -p tsconfig.lint.json` = 0.
+- Latest gate: `npm run build` = 0, `npm test -- --watch=false --browsers=ChromeHeadless` = 363/363, `npm run lint` = 0.

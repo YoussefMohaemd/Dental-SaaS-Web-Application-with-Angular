@@ -16,7 +16,12 @@ type ClinicTab = "overview" | "doctors" | "orders" | "activity";
 @Component({
   selector: "app-clinic-details",
   standalone: true,
-  imports: [CommonModule, TableModule, AvatarComponent, IconActionButtonComponent],
+  imports: [
+    CommonModule,
+    TableModule,
+    AvatarComponent,
+    IconActionButtonComponent,
+  ],
   templateUrl: "./clinic-details.component.html",
   styleUrl: "./clinic-details.component.scss",
 })

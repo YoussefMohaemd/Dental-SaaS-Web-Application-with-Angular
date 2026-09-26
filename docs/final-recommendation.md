@@ -46,3 +46,10 @@ Formula for later use:
 - Procurement decision / license purchase
 - Security or compliance certification
 - Organization-wide framework standardization
+
+## Next validation steps
+
+1. Execute the three controlled AI comparison runs exactly as defined in [`ai-comparison-protocol.md`](./ai-comparison-protocol.md).
+2. Obtain mentor checkpoint sign-off for DEV-1 through DEV-6 in [`scope-exceptions.md`](./scope-exceptions.md).
+3. Deliver the live demo/presentation flow and capture stakeholder feedback.
+4. Run any production-path architecture/security/licensing review as a separate, out-of-POC decision track.

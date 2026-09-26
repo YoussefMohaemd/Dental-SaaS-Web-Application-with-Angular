@@ -45,17 +45,6 @@
       font-size: $font-size-base !important;
     }
 
-    .p-button {
-      font-weight: $font-weight-semibold !important;
-      border-radius: $radius-lg !important;
-      transition: all $transition-fast !important;
-    }
-
-    .p-button-sm {
-      padding: 0.375rem 0.75rem !important;
-      font-size: $font-size-xs !important;
-    }
-
     .p-inputtext,
     .p-inputwrapper input,
     .p-dropdown,
@@ -243,10 +232,15 @@
   app-orders .orders-treetable.p-treetable .p-treetable-thead > tr > th {
     font-size: 11px;
     font-weight: 600;
-    background: color-mix(in srgb, var(--color-muted) 76%, var(--color-card)) !important;
+    background: color-mix(
+      in srgb,
+      var(--color-muted) 76%,
+      var(--color-card)
+    ) !important;
     color: var(--color-muted-foreground);
     padding: 0.95rem 0.875rem;
-    border-bottom: 1px solid color-mix(in srgb, var(--color-border) 80%, var(--color-card)) !important;
+    border-bottom: 1px solid
+      color-mix(in srgb, var(--color-border) 80%, var(--color-card)) !important;
     white-space: nowrap;
     position: sticky;
     top: 0;
@@ -281,7 +275,8 @@
     > tr
     > th {
     background: color-mix(in srgb, var(--color-card) 86%, #0b1220) !important;
-    border-bottom: 1px solid color-mix(in srgb, var(--color-border) 78%, #0b1220) !important;
+    border-bottom: 1px solid
+      color-mix(in srgb, var(--color-border) 78%, #0b1220) !important;
     color: color-mix(in srgb, var(--color-muted-foreground) 90%, #f8fafc);
   }
 

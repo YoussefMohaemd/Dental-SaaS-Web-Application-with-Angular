@@ -1,6 +1,26 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
+import { Component } from "@angular/core";
 import { By } from "@angular/platform-browser";
+import { FormControl, ReactiveFormsModule, Validators } from "@angular/forms";
 import { AppTextFieldComponent } from "./input.component";
+
+@Component({
+  standalone: true,
+  imports: [AppTextFieldComponent, ReactiveFormsModule],
+  template: `
+    <app-input
+      [formControl]="fc"
+      label="Email"
+      [error]="fc.touched && fc.hasError('required') ? 'Email is required' : ''"
+    />
+  `,
+})
+class ReactiveInputHostComponent {
+  readonly fc = new FormControl("", {
+    nonNullable: true,
+    validators: [Validators.required],
+  });
+}
 
 describe("AppTextFieldComponent", () => {
   let component: AppTextFieldComponent;
@@ -8,7 +28,7 @@ describe("AppTextFieldComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppTextFieldComponent],
+      imports: [AppTextFieldComponent, ReactiveInputHostComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(AppTextFieldComponent);
@@ -62,6 +82,21 @@ describe("AppTextFieldComponent", () => {
 
     const input = fixture.debugElement.query(By.css("input"));
     expect(input.nativeElement.getAttribute("aria-invalid")).toBe("true");
+  });
+
+  it("should link the input to its error message via aria-describedby", () => {
+    fixture.componentRef.setInput("hint", "Enter your email");
+    fixture.componentRef.setInput("error", "Invalid email");
+    fixture.detectChanges();
+
+    const input = fixture.debugElement.query(By.css("input")).nativeElement;
+    const error = fixture.debugElement.query(
+      By.css(".field-error"),
+    ).nativeElement;
+    const hint = fixture.debugElement.query(By.css(".field-hint"));
+
+    expect(input.getAttribute("aria-describedby")).toBe(error.id);
+    expect(hint).toBeFalsy();
   });
 
   it("should show hint when provided and no error", () => {
@@ -133,5 +168,25 @@ describe("AppTextFieldComponent", () => {
     const input = fixture.debugElement.query(By.css("input"));
     expect(input.nativeElement.required).toBeTrue();
     expect(input.nativeElement.getAttribute("aria-required")).toBe("true");
+  });
+
+  it("should surface a required-validator error through a reactive form host", () => {
+    const hostFixture = TestBed.createComponent(ReactiveInputHostComponent);
+    hostFixture.componentInstance.fc.markAsTouched();
+    hostFixture.componentInstance.fc.updateValueAndValidity();
+    hostFixture.detectChanges();
+
+    const input = hostFixture.debugElement.query(By.css("input")).nativeElement;
+    const error = hostFixture.debugElement.query(
+      By.css(".field-error"),
+    ).nativeElement;
+    expect(input.getAttribute("aria-invalid")).toBe("true");
+    expect(error.textContent.trim()).toBe("Email is required");
+
+    hostFixture.componentInstance.fc.setValue("a@b.c");
+    hostFixture.componentInstance.fc.updateValueAndValidity();
+    hostFixture.detectChanges();
+
+    expect(input.getAttribute("aria-invalid")).not.toBe("true");
   });
 });

@@ -30,21 +30,19 @@ export class SidebarComponent {
   readonly userName = "Jessica Ruiz";
   readonly userRole = "Lab Manager";
 
-  readonly sidebarClasses = computed(
-    () => {
-      if (this.isMobile()) {
-        return `fixed inset-y-0 left-0 z-50 flex h-screen w-72 max-w-[82vw] shrink-0 flex-col border-r border-border bg-background text-foreground sidebar-surface-separator transition-transform duration-300 ${
-          this.sidebarOpen()
-            ? "translate-x-0"
-            : "-translate-x-full pointer-events-none"
-        }`;
-      }
-
-      return `relative z-10 flex h-full shrink-0 flex-col border-r border-border bg-background text-foreground sidebar-surface-separator transition-all duration-300 ${
-        this.sidebarOpen() ? "w-56" : "w-14"
+  readonly sidebarClasses = computed(() => {
+    if (this.isMobile()) {
+      return `fixed inset-y-0 left-0 z-50 flex h-screen w-72 max-w-[82vw] shrink-0 flex-col border-r border-border bg-background text-foreground sidebar-surface-separator transition-transform duration-300 ${
+        this.sidebarOpen()
+          ? "translate-x-0"
+          : "-translate-x-full pointer-events-none"
       }`;
-    },
-  );
+    }
+
+    return `relative z-10 flex h-full shrink-0 flex-col border-r border-border bg-background text-foreground sidebar-surface-separator transition-all duration-300 ${
+      this.sidebarOpen() ? "w-56" : "w-14"
+    }`;
+  });
 
   closeSidebarOnMobile(): void {
     if (this.isMobile()) {
