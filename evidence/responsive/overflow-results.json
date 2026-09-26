@@ -1,0 +1,233 @@
+{
+  "generatedAt": "2026-09-26T09:39:05.110Z",
+  "notes": [
+    "states: orders-normal.png captured via state toggle",
+    "states: orders-loading.png captured via state toggle",
+    "states: orders-empty.png captured via state toggle",
+    "states: orders-error.png captured via state toggle",
+    "desktop-1440/layout-shell: aside visible=true, toggle visible=true",
+    "desktop-1440/orders-table: aside visible=true, toggle visible=true",
+    "desktop-1440/forms: aside visible=true, toggle visible=true",
+    "desktop-1440/toolbars: aside visible=true, toggle visible=true",
+    "desktop-1440: dialog opened, role check = pn_id_1_header",
+    "desktop-1440/workflow-board: aside visible=true, toggle visible=true",
+    "tablet-768/layout-shell: aside visible=true, toggle visible=true",
+    "tablet-768/orders-table: aside visible=true, toggle visible=true",
+    "tablet-768/forms: aside visible=true, toggle visible=true",
+    "tablet-768/toolbars: aside visible=true, toggle visible=true",
+    "tablet-768: dialog opened, role check = pn_id_1_header",
+    "tablet-768/workflow-board: aside visible=true, toggle visible=true",
+    "mobile-375/layout-shell: aside visible=true, toggle visible=true",
+    "mobile-375/orders-table: aside visible=true, toggle visible=true",
+    "mobile-375/forms: aside visible=true, toggle visible=true",
+    "mobile-375/toolbars: aside visible=true, toggle visible=true",
+    "mobile-375: dialog opened, role check = pn_id_1_header",
+    "mobile-375/workflow-board: aside visible=true, toggle visible=true"
+  ],
+  "overflow": [
+    {
+      "viewport": "desktop-1440",
+      "page": "/dashboard",
+      "scrollWidth": 1440,
+      "innerWidth": 1440,
+      "horizontalOverflow": false,
+      "offenders": []
+    },
+    {
+      "viewport": "desktop-1440",
+      "page": "/orders",
+      "scrollWidth": 1440,
+      "innerWidth": 1440,
+      "horizontalOverflow": false,
+      "offenders": [
+        "table (right=2492)",
+        "thead.p-treetable-thead (right=2492)",
+        "tr (right=2492)",
+        "th (right=1495)",
+        "button (right=1447)",
+        "span.sort-icon (right=1447)"
+      ]
+    },
+    {
+      "viewport": "desktop-1440",
+      "page": "/forms",
+      "scrollWidth": 1440,
+      "innerWidth": 1440,
+      "horizontalOverflow": false,
+      "offenders": []
+    },
+    {
+      "viewport": "desktop-1440",
+      "page": "/patients",
+      "scrollWidth": 1440,
+      "innerWidth": 1440,
+      "horizontalOverflow": false,
+      "offenders": []
+    },
+    {
+      "viewport": "desktop-1440",
+      "page": "/workflow-board",
+      "scrollWidth": 1440,
+      "innerWidth": 1440,
+      "horizontalOverflow": false,
+      "offenders": [
+        "div.workflow-board-lanes.flex.gap-4 (right=1754)",
+        "div.cdk-drop-list.workflow-lane.flex (right=1572)",
+        "div.flex.items-center.gap-2 (right=1572)",
+        "span.bg-emerald-100.font-bold.ml-auto (right=1572)",
+        "div.flex-1.rounded-xl.p-2 (right=1572)",
+        "div.cdk-drag.bg-card.border (right=1563)"
+      ]
+    },
+    {
+      "viewport": "tablet-768",
+      "page": "/dashboard",
+      "scrollWidth": 768,
+      "innerWidth": 768,
+      "horizontalOverflow": false,
+      "offenders": [
+        "table.p-datatable-table (right=946)",
+        "thead.p-datatable-thead (right=946)",
+        "tr.border-b.border-border.bg-muted/40 (right=946)",
+        "th.px-3.py-2.5.text-left (right=837)",
+        "th.px-5.py-2.5.text-left (right=946)",
+        "tbody.p-datatable-tbody (right=946)"
+      ]
+    },
+    {
+      "viewport": "tablet-768",
+      "page": "/orders",
+      "scrollWidth": 768,
+      "innerWidth": 768,
+      "horizontalOverflow": false,
+      "offenders": [
+        "table (right=2492)",
+        "thead.p-treetable-thead (right=2492)",
+        "tr (right=2492)",
+        "th (right=830)",
+        "button (right=781)",
+        "span.sort-icon (right=781)"
+      ]
+    },
+    {
+      "viewport": "tablet-768",
+      "page": "/forms",
+      "scrollWidth": 768,
+      "innerWidth": 768,
+      "horizontalOverflow": false,
+      "offenders": [
+        "app-button (right=814)",
+        "button.!bg-transparent.!font-medium.!px-3 (right=814)",
+        "app-button (right=910)",
+        "button.!bg-transparent.!font-medium.!px-3 (right=910)",
+        "span.shrink-0 (right=841)",
+        "svg (right=841)"
+      ]
+    },
+    {
+      "viewport": "tablet-768",
+      "page": "/patients",
+      "scrollWidth": 768,
+      "innerWidth": 768,
+      "horizontalOverflow": false,
+      "offenders": [
+        "p-table.enterprise-data-table.enterprise-prime-table.p-component (right=1189)",
+        "div.p-datatable-table-container (right=1189)",
+        "table.p-datatable-table (right=1189)",
+        "thead.p-datatable-thead (right=1189)",
+        "tr (right=1189)",
+        "th (right=783)"
+      ]
+    },
+    {
+      "viewport": "tablet-768",
+      "page": "/workflow-board",
+      "scrollWidth": 768,
+      "innerWidth": 768,
+      "horizontalOverflow": false,
+      "offenders": [
+        "div.workflow-board-lanes.flex.gap-4 (right=1754)",
+        "div.cdk-drop-list.workflow-lane.flex (right=788)",
+        "div.flex.items-center.gap-2 (right=788)",
+        "span.bg-cyan-50.font-bold.ml-auto (right=788)",
+        "div.flex-1.rounded-xl.p-2 (right=788)",
+        "div.cdk-drag.bg-card.border (right=779)"
+      ]
+    },
+    {
+      "viewport": "mobile-375",
+      "page": "/dashboard",
+      "scrollWidth": 375,
+      "innerWidth": 375,
+      "horizontalOverflow": false,
+      "offenders": [
+        "table.p-datatable-table (right=750)",
+        "thead.p-datatable-thead (right=750)",
+        "tr.border-b.border-border.bg-muted/40 (right=750)",
+        "th.px-3.py-2.5.text-left (right=420)",
+        "th.px-3.py-2.5.text-left (right=547)",
+        "th.px-3.py-2.5.text-left (right=641)"
+      ]
+    },
+    {
+      "viewport": "mobile-375",
+      "page": "/orders",
+      "scrollWidth": 375,
+      "innerWidth": 375,
+      "horizontalOverflow": false,
+      "offenders": [
+        "table (right=2296)",
+        "thead.p-treetable-thead (right=2296)",
+        "tr (right=2296)",
+        "th (right=413)",
+        "th (right=524)",
+        "button (right=508)"
+      ]
+    },
+    {
+      "viewport": "mobile-375",
+      "page": "/forms",
+      "scrollWidth": 375,
+      "innerWidth": 375,
+      "horizontalOverflow": false,
+      "offenders": [
+        "app-button (right=480)",
+        "button.!bg-transparent.!font-medium.!px-3 (right=480)",
+        "span.shrink-0 (right=393)",
+        "svg (right=393)",
+        "path (right=391)",
+        "path (right=389)"
+      ]
+    },
+    {
+      "viewport": "mobile-375",
+      "page": "/patients",
+      "scrollWidth": 375,
+      "innerWidth": 375,
+      "horizontalOverflow": false,
+      "offenders": [
+        "p-table.enterprise-data-table.enterprise-prime-table.p-component (right=992)",
+        "div.p-datatable-table-container (right=992)",
+        "table.p-datatable-table (right=992)",
+        "thead.p-datatable-thead (right=992)",
+        "tr (right=992)",
+        "th (right=431)"
+      ]
+    },
+    {
+      "viewport": "mobile-375",
+      "page": "/workflow-board",
+      "scrollWidth": 375,
+      "innerWidth": 375,
+      "horizontalOverflow": false,
+      "offenders": [
+        "div.workflow-board-lanes.flex.gap-4 (right=1827)",
+        "div.cdk-drop-list.workflow-lane.flex (right=514)",
+        "div.flex.items-center.gap-2 (right=514)",
+        "span.bg-amber-50.font-bold.ml-auto (right=514)",
+        "div.flex-1.rounded-xl.p-2 (right=514)",
+        "div.cdk-drag.bg-card.border (right=505)"
+      ]
+    }
+  ]
+}

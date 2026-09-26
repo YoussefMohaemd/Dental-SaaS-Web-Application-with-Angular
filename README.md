@@ -57,11 +57,21 @@ npx tsc -p tsconfig.spec.json --noEmit
 - Forms, scan/file, patient, doctor, clinic, billing, change-request, report, notification, and settings pages
 - Shared reusable controls such as buttons, inputs, search input, status badges, avatars, and loading/empty states
 
+## Evidence
+
+Verified artifacts live under `evidence/`:
+
+- `evidence/build/` - build and lint logs (`build.log`, `lint.log`)
+- `evidence/tests/` - full test run log (`test.log`, 336/336 passing)
+- `evidence/storybook/` - `build-storybook` log plus per-story screenshots
+- `evidence/states/` - Order Management screenshots for normal, loading, empty, and error states
+- `evidence/responsive/` - screenshots at 1440/768/375 for layout shell, sidebar behavior, orders table, forms, toolbars, cards, dialog, and workflow board, plus `responsive-checklist.md` and overflow results
+- `evidence/accessibility/` - axe-core report (0 violations across 24 route-states), keyboard walkthrough artifacts, and a manual checklist whose browser-only items are marked REQUIRES HUMAN VALIDATION
+
 ## Limitations
 
 - This is a POC with in-memory/static JSON data, not a production backend.
 - Controlled AI-comparison evidence is not yet present in the repository snapshot.
-- Storybook is not yet configured in the repository snapshot.
 - Some submission evidence must remain human-generated and cannot be fabricated.
 
 ## Demo Notes
