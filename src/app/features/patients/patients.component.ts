@@ -18,6 +18,11 @@ import { StatusBadgeComponent } from "@shared/components/status-badge/status-bad
 import { SafeHtmlPipe } from "../../shared/pipes/safe-html.pipe";
 import { filterTableRows } from "@shared/utils/table-state";
 import {
+  buildSortAriaLabel,
+  sortAriaValue,
+  SortAriaValue,
+} from "@shared/utils/sort-a11y";
+import {
   paginateTableRows,
   sortTableRows,
   tableTotalPages,
@@ -93,6 +98,14 @@ export class PatientsComponent {
       this.sortCol.set(col);
       this.sortDir.set("asc");
     }
+  }
+
+  sortAriaSort(col: keyof Patient): SortAriaValue {
+    return sortAriaValue(this.sortCol() === col, this.sortDir());
+  }
+
+  sortAriaLabel(col: keyof Patient, label: string): string {
+    return buildSortAriaLabel(label, this.sortCol() === col, this.sortDir());
   }
 
   onSearchChange(event: Event): void {

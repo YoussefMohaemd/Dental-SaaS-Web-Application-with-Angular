@@ -50,77 +50,136 @@
         >
           <ng-template pTemplate="header">
             <tr>
-              <th class="enterprise-th-sort" (click)="toggleSort('name')">
-                <span class="enterprise-th-label"
-                  >Name
-                  <span
-                    [innerHTML]="getIconSvg('arrow-up-down') | safeHtml"
-                    class="inline"
-                    [class.text-primary]="sortCol() === 'name'"
-                    [class.text-muted-foreground/40]="sortCol() !== 'name'"
-                    style="width: 10px; height: 10px"
-                  ></span>
-                </span>
-              </th>
-              <th class="enterprise-th-sort" (click)="toggleSort('dob')">
-                <span class="enterprise-th-label"
-                  >Date of Birth
-                  <span
-                    [innerHTML]="getIconSvg('arrow-up-down') | safeHtml"
-                    class="inline"
-                    [class.text-primary]="sortCol() === 'dob'"
-                    [class.text-muted-foreground/40]="sortCol() !== 'dob'"
-                    style="width: 10px; height: 10px"
-                  ></span>
-                </span>
-              </th>
-              <th>Gender</th>
-              <th>Phone</th>
-              <th>Email</th>
-              <th class="enterprise-th-sort" (click)="toggleSort('clinicName')">
-                <span class="enterprise-th-label"
-                  >Clinic
-                  <span
-                    [innerHTML]="getIconSvg('arrow-up-down') | safeHtml"
-                    class="inline"
-                    [class.text-primary]="sortCol() === 'clinicName'"
-                    [class.text-muted-foreground/40]="
-                      sortCol() !== 'clinicName'
-                    "
-                    style="width: 10px; height: 10px"
-                  ></span>
-                </span>
-              </th>
-              <th>Doctor</th>
               <th
-                class="enterprise-th-sort text-center"
-                (click)="toggleSort('ordersCount')"
+                scope="col"
+                class="enterprise-th-sort"
+                [attr.aria-sort]="sortAriaSort('name')"
               >
-                <span class="enterprise-th-label"
-                  >Orders
-                  <span
-                    [innerHTML]="getIconSvg('arrow-up-down') | safeHtml"
-                    class="inline"
-                    [class.text-primary]="sortCol() === 'ordersCount'"
-                    [class.text-muted-foreground/40]="
-                      sortCol() !== 'ordersCount'
-                    "
-                    style="width: 10px; height: 10px"
-                  ></span>
-                </span>
+                <button
+                  type="button"
+                  class="enterprise-th-sort-btn"
+                  (click)="toggleSort('name')"
+                  [attr.aria-label]="sortAriaLabel('name', 'Name')"
+                >
+                  <span class="enterprise-th-label"
+                    >Name
+                    <span
+                      aria-hidden="true"
+                      [innerHTML]="getIconSvg('arrow-up-down') | safeHtml"
+                      class="inline"
+                      [class.text-primary]="sortCol() === 'name'"
+                      [class.text-muted-foreground/40]="sortCol() !== 'name'"
+                      style="width: 10px; height: 10px"
+                    ></span>
+                  </span>
+                </button>
               </th>
-              <th>Status</th>
-              <th class="enterprise-th-sort" (click)="toggleSort('lastVisit')">
-                <span class="enterprise-th-label"
-                  >Last Visit
-                  <span
-                    [innerHTML]="getIconSvg('arrow-up-down') | safeHtml"
-                    class="inline"
-                    [class.text-primary]="sortCol() === 'lastVisit'"
-                    [class.text-muted-foreground/40]="sortCol() !== 'lastVisit'"
-                    style="width: 10px; height: 10px"
-                  ></span>
-                </span>
+              <th
+                scope="col"
+                class="enterprise-th-sort"
+                [attr.aria-sort]="sortAriaSort('dob')"
+              >
+                <button
+                  type="button"
+                  class="enterprise-th-sort-btn"
+                  (click)="toggleSort('dob')"
+                  [attr.aria-label]="sortAriaLabel('dob', 'Date of Birth')"
+                >
+                  <span class="enterprise-th-label"
+                    >Date of Birth
+                    <span
+                      aria-hidden="true"
+                      [innerHTML]="getIconSvg('arrow-up-down') | safeHtml"
+                      class="inline"
+                      [class.text-primary]="sortCol() === 'dob'"
+                      [class.text-muted-foreground/40]="sortCol() !== 'dob'"
+                      style="width: 10px; height: 10px"
+                    ></span>
+                  </span>
+                </button>
+              </th>
+              <th scope="col">Gender</th>
+              <th scope="col">Phone</th>
+              <th scope="col">Email</th>
+              <th
+                scope="col"
+                class="enterprise-th-sort"
+                [attr.aria-sort]="sortAriaSort('clinicName')"
+              >
+                <button
+                  type="button"
+                  class="enterprise-th-sort-btn"
+                  (click)="toggleSort('clinicName')"
+                  [attr.aria-label]="sortAriaLabel('clinicName', 'Clinic')"
+                >
+                  <span class="enterprise-th-label"
+                    >Clinic
+                    <span
+                      aria-hidden="true"
+                      [innerHTML]="getIconSvg('arrow-up-down') | safeHtml"
+                      class="inline"
+                      [class.text-primary]="sortCol() === 'clinicName'"
+                      [class.text-muted-foreground/40]="
+                        sortCol() !== 'clinicName'
+                      "
+                      style="width: 10px; height: 10px"
+                    ></span>
+                  </span>
+                </button>
+              </th>
+              <th scope="col">Doctor</th>
+              <th
+                scope="col"
+                class="enterprise-th-sort text-center"
+                [attr.aria-sort]="sortAriaSort('ordersCount')"
+              >
+                <button
+                  type="button"
+                  class="enterprise-th-sort-btn"
+                  (click)="toggleSort('ordersCount')"
+                  [attr.aria-label]="sortAriaLabel('ordersCount', 'Orders')"
+                >
+                  <span class="enterprise-th-label"
+                    >Orders
+                    <span
+                      aria-hidden="true"
+                      [innerHTML]="getIconSvg('arrow-up-down') | safeHtml"
+                      class="inline"
+                      [class.text-primary]="sortCol() === 'ordersCount'"
+                      [class.text-muted-foreground/40]="
+                        sortCol() !== 'ordersCount'
+                      "
+                      style="width: 10px; height: 10px"
+                    ></span>
+                  </span>
+                </button>
+              </th>
+              <th scope="col">Status</th>
+              <th
+                scope="col"
+                class="enterprise-th-sort"
+                [attr.aria-sort]="sortAriaSort('lastVisit')"
+              >
+                <button
+                  type="button"
+                  class="enterprise-th-sort-btn"
+                  (click)="toggleSort('lastVisit')"
+                  [attr.aria-label]="sortAriaLabel('lastVisit', 'Last Visit')"
+                >
+                  <span class="enterprise-th-label"
+                    >Last Visit
+                    <span
+                      aria-hidden="true"
+                      [innerHTML]="getIconSvg('arrow-up-down') | safeHtml"
+                      class="inline"
+                      [class.text-primary]="sortCol() === 'lastVisit'"
+                      [class.text-muted-foreground/40]="
+                        sortCol() !== 'lastVisit'
+                      "
+                      style="width: 10px; height: 10px"
+                    ></span>
+                  </span>
+                </button>
               </th>
             </tr>
           </ng-template>

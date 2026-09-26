@@ -17,6 +17,11 @@ import { TableFeedbackComponent } from "@shared/components/table-feedback/table-
 import { StatusBadgeComponent } from "@shared/components/status-badge/status-badge.component";
 import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
 import { filterTableRows, sortTableRows } from "@shared/utils/table-state";
+import {
+  buildSortAriaLabel,
+  sortAriaValue,
+  SortAriaValue,
+} from "@shared/utils/sort-a11y";
 
 interface SortConfig {
   label: string;
@@ -95,6 +100,14 @@ export class DoctorsComponent {
       this.sortCol.set(col);
       this.sortDir.set("asc");
     }
+  }
+
+  sortAriaSort(col: keyof Doctor): SortAriaValue {
+    return sortAriaValue(this.sortCol() === col, this.sortDir());
+  }
+
+  sortAriaLabel(col: keyof Doctor, label: string): string {
+    return buildSortAriaLabel(label, this.sortCol() === col, this.sortDir());
   }
 
   onSearchChange(event: Event): void {

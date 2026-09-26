@@ -51,19 +51,31 @@
           <ng-template pTemplate="header">
             <tr>
               @for (config of sortConfigs; track config.col) {
-                <th class="enterprise-th-sort" (click)="toggleSort(config.col)">
-                  <span class="enterprise-th-label"
-                    >{{ config.label }}
-                    <span
-                      [innerHTML]="getIconSvg('arrow-up-down') | safeHtml"
-                      class="inline"
-                      [class.text-primary]="sortCol() === config.col"
-                      [class.text-muted-foreground/40]="
-                        sortCol() !== config.col
-                      "
-                      style="width: 10px; height: 10px"
-                    ></span>
-                  </span>
+                <th
+                  scope="col"
+                  class="enterprise-th-sort"
+                  [attr.aria-sort]="sortAriaSort(config.col)"
+                >
+                  <button
+                    type="button"
+                    class="enterprise-th-sort-btn"
+                    (click)="toggleSort(config.col)"
+                    [attr.aria-label]="sortAriaLabel(config.col, config.label)"
+                  >
+                    <span class="enterprise-th-label"
+                      >{{ config.label }}
+                      <span
+                        aria-hidden="true"
+                        [innerHTML]="getIconSvg('arrow-up-down') | safeHtml"
+                        class="inline"
+                        [class.text-primary]="sortCol() === config.col"
+                        [class.text-muted-foreground/40]="
+                          sortCol() !== config.col
+                        "
+                        style="width: 10px; height: 10px"
+                      ></span>
+                    </span>
+                  </button>
                 </th>
               }
             </tr>

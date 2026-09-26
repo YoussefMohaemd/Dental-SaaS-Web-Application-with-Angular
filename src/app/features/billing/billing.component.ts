@@ -13,6 +13,11 @@ import { EnterprisePaginatorComponent } from "@shared/components/enterprise-pagi
 import { DataTableToolbarComponent } from "@shared/components/data-table-toolbar/data-table-toolbar.component";
 import { TableFeedbackComponent } from "@shared/components/table-feedback/table-feedback.component";
 import { SafeHtmlPipe } from "../../shared/pipes/safe-html.pipe";
+import {
+  buildSortAriaLabel,
+  sortAriaValue,
+  SortAriaValue,
+} from "@shared/utils/sort-a11y";
 
 type BillingSortColumn =
   "orderNumber" | "patientName" | "amount" | "dueDate" | "invoiceDate";
@@ -116,6 +121,18 @@ export class BillingComponent {
       this.sortColumn.set(column);
       this.sortDirection.set("asc");
     }
+  }
+
+  sortAriaSort(column: BillingSortColumn): SortAriaValue {
+    return sortAriaValue(this.sortColumn() === column, this.sortDirection());
+  }
+
+  sortAriaLabel(column: BillingSortColumn, label: string): string {
+    return buildSortAriaLabel(
+      label,
+      this.sortColumn() === column,
+      this.sortDirection(),
+    );
   }
 
   sortIcon(column: BillingSortColumn): string {

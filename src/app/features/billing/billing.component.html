@@ -108,11 +108,12 @@
         >
           <ng-template pTemplate="header">
             <tr>
-              <th>
+              <th scope="col" [attr.aria-sort]="sortAriaSort('orderNumber')">
                 <button
                   type="button"
                   (click)="toggleSort('orderNumber')"
                   class="billing-sort-button"
+                  [attr.aria-label]="sortAriaLabel('orderNumber', 'Order Number')"
                 >
                   Order #
                   <span
@@ -123,11 +124,12 @@
                   ></span>
                 </button>
               </th>
-              <th>
+              <th scope="col" [attr.aria-sort]="sortAriaSort('patientName')">
                 <button
                   type="button"
                   (click)="toggleSort('patientName')"
                   class="billing-sort-button"
+                  [attr.aria-label]="sortAriaLabel('patientName', 'Patient')"
                 >
                   Patient
                   <span
@@ -138,14 +140,15 @@
                   ></span>
                 </button>
               </th>
-              <th>Doctor</th>
-              <th>Clinic</th>
-              <th>Invoice #</th>
-              <th>
+              <th scope="col">Doctor</th>
+              <th scope="col">Clinic</th>
+              <th scope="col">Invoice #</th>
+              <th scope="col" [attr.aria-sort]="sortAriaSort('amount')">
                 <button
                   type="button"
                   (click)="toggleSort('amount')"
                   class="billing-sort-button"
+                  [attr.aria-label]="sortAriaLabel('amount', 'Amount')"
                 >
                   Amount
                   <span
@@ -156,12 +159,13 @@
                   ></span>
                 </button>
               </th>
-              <th>Status</th>
-              <th>
+              <th scope="col">Status</th>
+              <th scope="col" [attr.aria-sort]="sortAriaSort('invoiceDate')">
                 <button
                   type="button"
                   (click)="toggleSort('invoiceDate')"
                   class="billing-sort-button"
+                  [attr.aria-label]="sortAriaLabel('invoiceDate', 'Invoice Date')"
                 >
                   Invoice Date
                   <span
@@ -172,11 +176,12 @@
                   ></span>
                 </button>
               </th>
-              <th>
+              <th scope="col" [attr.aria-sort]="sortAriaSort('dueDate')">
                 <button
                   type="button"
                   (click)="toggleSort('dueDate')"
                   class="billing-sort-button"
+                  [attr.aria-label]="sortAriaLabel('dueDate', 'Due Date')"
                 >
                   Due Date
                   <span
@@ -187,7 +192,7 @@
                   ></span>
                 </button>
               </th>
-              <th class="text-center">Vouchers</th>
+              <th scope="col" class="text-center">Vouchers</th>
             </tr>
           </ng-template>
           <ng-template pTemplate="body" let-record>
