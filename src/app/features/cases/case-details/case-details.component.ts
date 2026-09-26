@@ -2,22 +2,17 @@ import { Component, computed, inject, signal, OnInit } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { ActivatedRoute } from "@angular/router";
 import { CaseDataService } from "@core/services/case-data.service";
+import { DocumentDataService } from "@core/services/document-data.service";
 import { OrderDataService } from "@core/services/order-data.service";
 import { NavigationService } from "@core/services/navigation.service";
 import { FormatUtils } from "@core/services/format-utils.service";
-import { Case, Order } from "@core/models";
+import { Case, LabDocument, Order } from "@core/models";
 import { StatusBadgeComponent } from "@shared/components/status-badge/status-badge.component";
 import { AppButtonComponent } from "@shared/components/button/button.component";
 import { IconActionButtonComponent } from "@shared/components/icon-action-button/icon-action-button.component";
 import { PriorityBadgeComponent } from "@shared/components/priority-badge/priority-badge.component";
 import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
-
-interface FileItem {
-  name: string;
-  type: string;
-  size: string;
-  date: string;
-}
+import { getCaseDocuments, getCaseOrders } from "../case-relations";
 
 interface ActivityItem {
   user: string;
@@ -43,70 +38,62 @@ export class CaseDetailsComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly caseService = inject(CaseDataService);
   private readonly orderService = inject(OrderDataService);
+  private readonly documentService = inject(DocumentDataService);
   protected readonly navigationService = inject(NavigationService);
   protected readonly formatUtils = inject(FormatUtils);
 
-  readonly case = signal<Case | null>(null);
-  readonly caseOrders = signal<Order[]>([]);
+  readonly case = computed<Case | null>(() => {
+    const caseId = this.caseId();
+    if (!caseId) return null;
+    return this.caseService.getCaseById(caseId) ?? null;
+  });
+  readonly caseOrders = computed<Order[]>(() => {
+    const currentCase = this.case();
+    if (!currentCase) return [];
+    return getCaseOrders(currentCase, this.orderService.orders());
+  });
+  readonly caseFiles = computed<LabDocument[]>(() => {
+    const currentCase = this.case();
+    if (!currentCase) return [];
+    return getCaseDocuments(
+      currentCase,
+      this.caseOrders(),
+      this.documentService.documents(),
+    );
+  });
 
   readonly tabs = ["Overview", "Files", "Notes", "Activity"];
   readonly activeTab = signal<string>("Overview");
+  readonly activityItems = computed<ActivityItem[]>(() => {
+    const currentCase = this.case();
+    if (!currentCase) return [];
 
-  readonly dummyFiles: FileItem[] = [
-    {
-      name: "full_arch_upper.stl",
-      type: "STL",
-      size: "4.2 MB",
-      date: "2024-12-10",
-    },
-    {
-      name: "full_arch_lower.stl",
-      type: "STL",
-      size: "3.8 MB",
-      date: "2024-12-10",
-    },
-    { name: "bite_scan.stl", type: "STL", size: "1.1 MB", date: "2024-12-10" },
-    {
-      name: "patient_photos.zip",
-      type: "ZIP",
-      size: "14.2 MB",
-      date: "2024-12-08",
-    },
-  ];
+    const filesCount = this.caseFiles().length;
+    const filesLabel = filesCount === 1 ? "file" : "files";
 
-  readonly activityItems = signal<ActivityItem[]>([]);
+    return [
+      {
+        user: "K. Patel",
+        action: `uploaded ${filesCount} scan ${filesLabel}`,
+        time: currentCase.updatedAt,
+      },
+      {
+        user: "T. Anderson",
+        action: "reviewed case details",
+        time: currentCase.createdAt,
+      },
+      {
+        user: "Jessica R.",
+        action: "created case",
+        time: currentCase.createdAt,
+      },
+    ];
+  });
 
-  private caseId = "";
+  private readonly caseId = signal("");
 
   ngOnInit(): void {
-    this.caseId = this.route.snapshot.paramMap.get("caseId") || "";
-    this.loadCase();
-  }
-
-  private loadCase(): void {
-    const c = this.caseService.getCaseById(this.caseId);
-    if (c) {
-      this.case.set(c);
-
-      const patientOrders = this.orderService
-        .getOrdersByPatient(c.patientId)
-        .slice(0, c.ordersCount);
-      this.caseOrders.set(patientOrders);
-
-      this.activityItems.set([
-        {
-          user: "K. Patel",
-          action: "uploaded 4 scan files",
-          time: c.updatedAt,
-        },
-        {
-          user: "T. Anderson",
-          action: "reviewed case details",
-          time: c.createdAt,
-        },
-        { user: "Jessica R.", action: "created case", time: c.createdAt },
-      ]);
-    }
+    this.caseId.set(this.route.snapshot.paramMap.get("caseId") || "");
   }
 
   setActiveTab(tab: string): void {
@@ -131,6 +118,14 @@ export class CaseDetailsComponent implements OnInit {
 
   navigateToOrder(orderId: string): void {
     this.navigationService.navigate("viewOrder", { orderId });
+  }
+
+  getOrdersCount(): number {
+    return this.caseOrders().length;
+  }
+
+  getFilesCount(): number {
+    return this.caseFiles().length;
   }
 
   getStatusColors(status: string): string {

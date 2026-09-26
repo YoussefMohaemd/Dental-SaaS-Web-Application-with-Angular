@@ -2,7 +2,9 @@ import { Component, computed, inject, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { TableModule } from "primeng/table";
 import { CaseDataService } from "@core/services/case-data.service";
+import { DocumentDataService } from "@core/services/document-data.service";
 import { NavigationService } from "@core/services/navigation.service";
+import { OrderDataService } from "@core/services/order-data.service";
 import { FormatUtils } from "@core/services/format-utils.service";
 import { Case, CaseStatus, Priority } from "@core/models";
 import { StatusBadgeComponent } from "@shared/components/status-badge/status-badge.component";
@@ -13,6 +15,7 @@ import { AppSelectComponent } from "@shared/components/select/select.component";
 import { EnterprisePaginatorComponent } from "@shared/components/enterprise-paginator/enterprise-paginator.component";
 import { TableFeedbackComponent } from "@shared/components/table-feedback/table-feedback.component";
 import { SafeHtmlPipe } from "../../shared/pipes/safe-html.pipe";
+import { getCaseDocuments, getCaseOrders } from "./case-relations";
 
 type ViewMode = "table" | "grid";
 
@@ -36,6 +39,8 @@ type ViewMode = "table" | "grid";
 })
 export class CasesComponent {
   private readonly caseService = inject(CaseDataService);
+  private readonly orderService = inject(OrderDataService);
+  private readonly documentService = inject(DocumentDataService);
   protected readonly navigationService = inject(NavigationService);
   protected readonly formatUtils = inject(FormatUtils);
 
@@ -82,6 +87,25 @@ export class CasesComponent {
       this.page() * this.pageSize,
     ),
   );
+  readonly caseMetrics = computed(() => {
+    const orders = this.orderService.orders();
+    const documents = this.documentService.documents();
+    const metrics = new Map<
+      string,
+      { ordersCount: number; filesCount: number }
+    >();
+
+    for (const item of this.cases()) {
+      const caseOrders = getCaseOrders(item, orders);
+      const caseDocuments = getCaseDocuments(item, caseOrders, documents);
+      metrics.set(item.id, {
+        ordersCount: caseOrders.length,
+        filesCount: caseDocuments.length,
+      });
+    }
+
+    return metrics;
+  });
 
   setView(mode: ViewMode): void {
     this.view.set(mode);
@@ -119,6 +143,18 @@ export class CasesComponent {
 
   navigateToCase(caseId: string): void {
     this.navigationService.navigate("caseDetails", { caseId });
+  }
+
+  getOrdersCount(caseItem: Case): number {
+    return (
+      this.caseMetrics().get(caseItem.id)?.ordersCount ?? caseItem.ordersCount
+    );
+  }
+
+  getFilesCount(caseItem: Case): number {
+    return (
+      this.caseMetrics().get(caseItem.id)?.filesCount ?? caseItem.filesCount
+    );
   }
 
   getIconSvg(name: string): string {

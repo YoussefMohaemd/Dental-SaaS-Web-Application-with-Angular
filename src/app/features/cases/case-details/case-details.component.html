@@ -152,8 +152,8 @@
                 @for (
                   item of [
                     { label: "Priority", value: "" },
-                    { label: "Orders", value: case()!.ordersCount },
-                    { label: "Files", value: case()!.filesCount },
+                    { label: "Orders", value: getOrdersCount() },
+                    { label: "Files", value: getFilesCount() },
                     {
                       label: "Created",
                       value: formatUtils.formatDate(case()!.createdAt),
@@ -192,11 +192,11 @@
           <div class="bg-card border border-border rounded-xl overflow-hidden">
             <div class="px-5 py-3.5 border-b border-border bg-muted/30">
               <h2 class="font-display font-semibold text-sm">
-                Case Files ({{ dummyFiles.length }})
+                Case Files ({{ caseFiles().length }})
               </h2>
             </div>
             <div class="divide-y divide-border">
-              @for (f of dummyFiles; track f.name) {
+              @for (f of caseFiles(); track f.id) {
                 <div class="px-5 py-3 flex items-center gap-4">
                   <div
                     class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center"

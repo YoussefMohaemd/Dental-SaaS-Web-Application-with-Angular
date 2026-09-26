@@ -9,6 +9,10 @@ export interface LabDocument {
   size: string;
   date: string;
   doctor: string;
+  patientName?: string;
+  orderId?: string;
+  orderNumber?: string;
+  subOrderId?: string;
 }
 
 export const DOCUMENT_CATEGORIES: ReadonlyArray<"All" | DocumentCategory> = [

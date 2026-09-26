@@ -4,9 +4,11 @@ import { signal } from "@angular/core";
 import { provideRouter } from "@angular/router";
 import { CasesComponent } from "./cases.component";
 import { CaseDataService } from "@core/services/case-data.service";
+import { DocumentDataService } from "@core/services/document-data.service";
 import { NavigationService } from "@core/services/navigation.service";
+import { OrderDataService } from "@core/services/order-data.service";
 import { FormatUtils } from "@core/services/format-utils.service";
-import { Case } from "@core/models";
+import { Case, LabDocument, Order } from "@core/models";
 
 const MOCK_CASES: Case[] = [
   {
@@ -65,6 +67,96 @@ const MOCK_CASES: Case[] = [
   },
 ];
 
+const MOCK_ORDERS: Order[] = [
+  {
+    id: "ord-1",
+    orderNumber: "DL-024001",
+    patientId: "pt1",
+    patientName: "Alice Johnson",
+    doctorId: "dr1",
+    doctorName: "Dr. Allison Park",
+    clinicId: "cl1",
+    clinicName: "Bright Smile Dental",
+    scanCenterId: "sc1",
+    scanCenterName: "SC-LA Central",
+    status: "New",
+    priority: "Normal",
+    restoration: "Crown",
+    arch: "Maxilla",
+    format: "STL",
+    shade: "A2",
+    units: 1,
+    amount: 450,
+    billed: false,
+    billTo: "Bright Smile Dental",
+    vouchers: 0,
+    isLocked: false,
+    hasNotes: false,
+    notes: "",
+    receivedAt: "2024-12-10T10:00:00Z",
+    updatedAt: "2024-12-10T10:00:00Z",
+    dueDate: "2024-12-24",
+  },
+  {
+    id: "ord-2",
+    orderNumber: "DL-024002",
+    patientId: "pt2",
+    patientName: "Benjamin Clarke",
+    doctorId: "dr2",
+    doctorName: "Dr. Marcus Webb",
+    clinicId: "cl1",
+    clinicName: "Bright Smile Dental",
+    scanCenterId: "sc1",
+    scanCenterName: "SC-LA Central",
+    status: "Review",
+    priority: "High",
+    restoration: "Bridge",
+    arch: "Mandible",
+    format: "STL",
+    shade: "B1",
+    units: 3,
+    amount: 1200,
+    billed: true,
+    billedAmount: 1200,
+    billTo: "Benjamin Clarke",
+    vouchers: 1,
+    isLocked: false,
+    hasNotes: true,
+    notes: "Shade verified",
+    receivedAt: "2024-12-08T14:30:00Z",
+    sentAt: "2024-12-09T09:00:00Z",
+    updatedAt: "2024-12-09T09:00:00Z",
+    chargedAt: "2024-12-09T09:00:00Z",
+    dueDate: "2024-12-22",
+    changeRequest: "Pending Review",
+    csTask: "Follow Up",
+    technicianName: "M. Rivera",
+  },
+];
+
+const MOCK_DOCUMENTS: LabDocument[] = [
+  {
+    id: "d1",
+    name: "alice_scan.stl",
+    category: "Scan Files",
+    type: "STL",
+    size: "4 MB",
+    date: "2024-12-10",
+    doctor: "Dr. Allison Park",
+    patientName: "Alice Johnson",
+  },
+  {
+    id: "d2",
+    name: "benjamin_scan.stl",
+    category: "Scan Files",
+    type: "STL",
+    size: "3 MB",
+    date: "2024-12-09",
+    doctor: "Dr. Marcus Webb",
+    patientName: "Benjamin Clarke",
+  },
+];
+
 describe("CasesComponent", () => {
   let component: CasesComponent;
   let fixture: ComponentFixture<CasesComponent>;
@@ -75,6 +167,12 @@ describe("CasesComponent", () => {
       cases: signal(MOCK_CASES),
       loading: signal(false),
     });
+    const orderSpy = jasmine.createSpyObj("OrderDataService", [], {
+      orders: signal(MOCK_ORDERS),
+    });
+    const documentSpy = jasmine.createSpyObj("DocumentDataService", [], {
+      documents: signal(MOCK_DOCUMENTS),
+    });
     const navSpy = jasmine.createSpyObj("NavigationService", ["navigate"]);
     const formatSpy = jasmine.createSpyObj("FormatUtils", ["timeAgo"]);
     formatSpy.timeAgo.and.returnValue("1d ago");
@@ -84,6 +182,8 @@ describe("CasesComponent", () => {
       providers: [
         provideRouter([]),
         { provide: CaseDataService, useValue: caseSpy },
+        { provide: OrderDataService, useValue: orderSpy },
+        { provide: DocumentDataService, useValue: documentSpy },
         { provide: NavigationService, useValue: navSpy },
         { provide: FormatUtils, useValue: formatSpy },
       ],
@@ -151,5 +251,12 @@ describe("CasesComponent", () => {
     component.onPageNumberChange(1);
     expect(component.page()).toBe(1);
     expect(component.pageData().length).toBe(3);
+  });
+
+  it("should derive orders and files counts from linked datasets", () => {
+    expect(component.getOrdersCount(MOCK_CASES[0])).toBe(1);
+    expect(component.getFilesCount(MOCK_CASES[0])).toBe(1);
+    expect(component.getOrdersCount(MOCK_CASES[2])).toBe(0);
+    expect(component.getFilesCount(MOCK_CASES[2])).toBe(0);
   });
 });
