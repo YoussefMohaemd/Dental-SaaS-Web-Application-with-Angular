@@ -111,18 +111,18 @@ export class HeaderComponent {
 
   getIconSvg(name: string): string {
     const sizes: Record<string, number> = {
-      menu: 18,
-      "chevron-right": 14,
-      search: 14,
-      sun: 18,
-      moon: 18,
-      bell: 18,
-      "chevron-down": 14,
-      user: 14,
-      settings: 14,
-      "log-out": 14,
+      menu: 20,
+      "chevron-right": 16,
+      search: 16,
+      sun: 20,
+      moon: 20,
+      bell: 20,
+      "chevron-down": 16,
+      user: 16,
+      settings: 16,
+      "log-out": 16,
     };
-    if (name === "dot") return lucideSvg("dot", 16);
-    return lucideSvg(name, sizes[name] ?? 16);
+    if (name === "dot") return lucideSvg("dot", 18);
+    return lucideSvg(name, sizes[name] ?? 18);
   }
 }

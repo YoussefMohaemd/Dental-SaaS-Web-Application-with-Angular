@@ -21,6 +21,15 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
+  html {
+    font-size: 15px;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+
   html,
   body,
   app-root {

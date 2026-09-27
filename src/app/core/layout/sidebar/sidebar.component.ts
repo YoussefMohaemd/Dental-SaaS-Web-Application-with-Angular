@@ -68,6 +68,6 @@ export class SidebarComponent {
   }
 
   getIconSvg(name: string): string {
-    return lucideSvg(name, 16);
+    return lucideSvg(name, 18);
   }
 }
