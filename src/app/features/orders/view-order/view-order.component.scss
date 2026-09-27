@@ -8,3 +8,36 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+.order-stage-progress {
+  min-width: 0;
+}
+
+@media (max-width: 640px) {
+  .order-stage-progress {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 0.25rem;
+  }
+
+  .order-stage-track {
+    min-width: 30rem;
+    padding-right: 0.25rem;
+  }
+
+  .order-stage-item {
+    min-width: 4.125rem;
+  }
+
+  .order-stage-label {
+    white-space: normal;
+    text-align: center;
+    line-height: 1.1;
+    max-width: 4.25rem;
+  }
+
+  .order-stage-connector {
+    min-width: 1rem;
+  }
+}

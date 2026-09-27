@@ -6,7 +6,10 @@
       title="Orders"
       [subtitle]="filtered().length + ' orders total'"
     >
-      <div header-actions class="flex flex-wrap items-center gap-2 sm:gap-3">
+      <div
+        header-actions
+        class="orders-header-actions ml-auto flex w-full flex-wrap items-center justify-end gap-2 sm:gap-3 lg:w-auto lg:flex-nowrap"
+      >
         <app-button
           variant="primary"
           size="md"
@@ -37,7 +40,7 @@
           <span [innerHTML]="getIconSvg('refresh') | safeHtml"></span>
         </app-button>
         <div
-          class="flex overflow-hidden rounded-lg border border-border"
+          class="orders-view-state-toggle flex overflow-hidden rounded-lg border border-border"
           role="group"
           aria-label="Preview data states (POC control)"
         >
@@ -1264,14 +1267,14 @@
             </p-treetable>
           </div>
           <div
-            class="mt-2 flex flex-wrap items-center justify-between gap-2 px-4 py-3 sm:px-6"
+            class="mt-2 flex flex-wrap items-center justify-end gap-2 px-4 py-3 sm:px-6"
           >
             <app-enterprise-paginator
-              class="w-full"
+              class="orders-paginator w-full"
               [totalRecords]="filtered().length"
               [rows]="pageSize()"
               [page]="page()"
-              [pageLinkSize]="7"
+              [pageLinkSize]="5"
               (pageChange)="onPageNumberChange($event)"
             ></app-enterprise-paginator>
           </div>

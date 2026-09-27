@@ -9,8 +9,81 @@
   -webkit-overflow-scrolling: touch;
 }
 
+:host ::ng-deep .orders-paginator .enterprise-pagination {
+  justify-content: space-between !important;
+  align-items: center !important;
+  flex-direction: row !important;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+:host ::ng-deep .orders-paginator .enterprise-pagination > span {
+  text-align: left;
+  margin-right: auto;
+  margin-left: 0;
+  white-space: nowrap;
+}
+
+:host ::ng-deep .orders-paginator .enterprise-prime-paginator {
+  margin-left: auto;
+}
+
+@media (max-width: 1024px) {
+  .orders-header-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .orders-view-state-toggle {
+    margin-left: auto;
+  }
+}
+
+@media (min-width: 1024px) {
+  .orders-header-actions {
+    margin-left: auto;
+    width: fit-content;
+    justify-content: flex-end;
+    flex-wrap: nowrap;
+  }
+
+  .orders-view-state-toggle {
+    flex-shrink: 0;
+  }
+}
+
 @media (max-width: 640px) {
   :host ::ng-deep .orders-treetable.p-treetable .p-treetable-table {
     min-width: 120rem !important;
+  }
+
+  .orders-header-actions {
+    gap: 0.5rem;
+  }
+
+  :host ::ng-deep .orders-paginator .enterprise-pagination {
+    display: grid !important;
+    grid-template-columns: 1fr;
+    justify-items: stretch;
+    align-items: start !important;
+    row-gap: 0.375rem;
+  }
+
+  :host ::ng-deep .orders-paginator .enterprise-prime-paginator {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    margin-left: 0;
+  }
+
+  :host ::ng-deep .orders-paginator .enterprise-prime-paginator .p-paginator-content {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    min-width: max-content;
+  }
+
+  :host ::ng-deep .orders-paginator .enterprise-pagination > span {
+    white-space: nowrap;
+    font-size: 0.6875rem;
   }
 }

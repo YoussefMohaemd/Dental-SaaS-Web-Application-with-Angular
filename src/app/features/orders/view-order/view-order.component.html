@@ -148,11 +148,11 @@
             <p class="text-xs text-muted-foreground">Services Completed</p>
           </div>
         </div>
-        <div class="flex-1 min-w-56">
-          <div class="flex items-end gap-0">
+        <div class="order-stage-progress flex-1 min-w-0 sm:min-w-56">
+          <div class="order-stage-track flex items-end gap-0">
             @for (stage of stages; track stage; let i = $index) {
-              <div class="flex items-center flex-1">
-                <div class="flex flex-col items-center gap-1 shrink-0">
+              <div class="order-stage-item flex items-center flex-1">
+                <div class="order-stage-node flex flex-col items-center gap-1 shrink-0">
                   <div
                     class="w-6 h-6 rounded-full flex items-center justify-center text-xs"
                     [class]="
@@ -182,7 +182,7 @@
                     }
                   </div>
                   <span
-                    class="text-[9px] whitespace-nowrap"
+                    class="order-stage-label text-[9px] whitespace-nowrap"
                     [class]="
                       i === currentStage
                         ? 'text-primary font-semibold'
@@ -196,7 +196,7 @@
                 </div>
                 @if (i !== stages.length - 1) {
                   <div
-                    class="flex-1 h-px mx-0.5 mb-4"
+                    class="order-stage-connector flex-1 h-px mx-0.5 mb-4"
                     [class]="i < currentStage ? 'bg-success' : 'bg-border'"
                   ></div>
                 }

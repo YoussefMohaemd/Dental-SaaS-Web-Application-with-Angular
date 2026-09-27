@@ -9,7 +9,7 @@
   ></app-icon-action-button>
 
   <nav
-    class="hidden sm:flex items-center gap-1 text-sm min-w-0"
+    class="hidden lg:flex items-center gap-1 text-sm min-w-0"
     aria-label="Breadcrumb"
   >
     @for (crumb of breadcrumbs(); track $index) {
@@ -36,15 +36,15 @@
     }
   </nav>
 
-  <div class="sm:hidden min-w-0 flex-1">
+  <div class="lg:hidden min-w-0 flex-1">
     <span class="block truncate text-sm font-semibold text-foreground">
       {{ currentPageLabel() }}
     </span>
   </div>
 
-  <div class="hidden sm:block flex-1"></div>
+  <div class="hidden lg:block flex-1"></div>
 
-  <div class="hidden md:block w-56 shrink-0">
+  <div class="hidden xl:block w-56 shrink-0">
     <app-search-input
       placeholder="Search orders, patients..."
       [showShortcut]="true"
@@ -131,10 +131,10 @@
           [size]="'sm'"
           [variant]="'primary'"
         />
-        <span class="text-sm font-medium hidden sm:block">Jessica R.</span>
+        <span class="text-sm font-medium hidden xl:block">Jessica R.</span>
         <span
           [innerHTML]="getIconSvg('chevron-down') | safeHtml"
-          class="hidden sm:inline-flex text-muted-foreground"
+          class="hidden xl:inline-flex text-muted-foreground"
         ></span>
       </button>
       @if (profileOpen()) {
