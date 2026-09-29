@@ -1,19 +1,42 @@
 <div
-  class="teeth-sheet"
+  class="tooth-chart"
   role="group"
   aria-label="FDI tooth chart"
   [class.is-read-only]="readOnly()"
 >
-  @if (!readOnly()) {
-    <div class="teeth-sheet-toolbar">
-      <div class="jaw-filter" role="group" aria-label="Jaw filter">
+  <header class="chart-header">
+    <div class="chart-title-wrap">
+      <p class="chart-overline">Tooth Chart</p>
+      <p class="chart-title">
+        {{
+          readOnly()
+            ? "Selected Teeth Anatomical Overview"
+            : "Interactive Dental Tooth Chart"
+        }}
+      </p>
+      <p class="chart-subtitle">
+        Anatomical FDI layout with upper/lower arches and clear tooth position
+        mapping.
+      </p>
+    </div>
+    <div class="selected-chip" [class.is-empty]="selected().length === 0">
+      <span class="selected-chip-count">{{ selected().length }}</span>
+      <span>{{
+        selected().length === 1 ? "Tooth selected" : "Teeth selected"
+      }}</span>
+    </div>
+  </header>
+
+  <div class="chart-toolbar">
+    @if (!readOnly()) {
+      <div class="jaw-switcher" role="group" aria-label="Jaw filter">
         @for (jaw of jaws; track jaw) {
           <button
             type="button"
-            (click)="setJaw(jaw)"
-            class="jaw-pill"
+            class="jaw-switch"
             [class.is-active]="activeJaw() === jaw"
             [attr.aria-pressed]="activeJaw() === jaw"
+            (click)="setJaw(jaw)"
           >
             {{
               jaw === "both" ? "Both Jaws" : jaw === "upper" ? "Upper" : "Lower"
@@ -21,100 +44,111 @@
           </button>
         }
       </div>
-      @if (selected().length > 0) {
-        <p class="selected-teeth-text">
-          <span class="selected-count">{{ selected().length }}</span>
-          selected:
-          <span class="selected-list">{{ selected().join(", ") }}</span>
-        </p>
-      }
-    </div>
-  }
+    } @else {
+      <p class="readonly-hint">Read-only mode</p>
+    }
 
-  <div class="teeth-sheet-surface">
-    <div class="jaw-scene">
-      @if (activeJaw() === "both" || activeJaw() === "upper") {
-        <section class="jaw-card upper-jaw">
-          <div class="jaw-card-head">
-            <span>Upper Jaw</span>
-          </div>
-          <div class="quadrant-hints" aria-hidden="true">
-            <span>18-11</span>
-            <span>21-28</span>
-          </div>
-          <div class="teeth-strip">
-            <div class="teeth-group">
-              <div class="teeth-half">
-                @for (n of upperTeeth.slice(0, 8); track n) {
-                  <ng-container
-                    *ngTemplateOutlet="
-                      toothTpl;
-                      context: { $implicit: n, isUpper: true }
-                    "
-                  ></ng-container>
-                }
-              </div>
-              <div class="teeth-divider" aria-hidden="true"></div>
-              <div class="teeth-half">
-                @for (n of upperTeeth.slice(8); track n) {
-                  <ng-container
-                    *ngTemplateOutlet="
-                      toothTpl;
-                      context: { $implicit: n, isUpper: true }
-                    "
-                  ></ng-container>
-                }
-              </div>
-            </div>
-          </div>
-        </section>
-      }
+    @if (selected().length > 0) {
+      <p class="selected-list">
+        <span>{{ selected().length }} selected:</span> {{ selected().join(", ") }}
+      </p>
+    }
+  </div>
 
-      @if (activeJaw() === "both") {
-        <div class="gumline">
-          <div class="gumline-line"></div>
-          <span>Gum Line</span>
-          <div class="gumline-line"></div>
+  <div class="anatomy-surface">
+    <div class="patient-orientation">Patient Right ← → Patient Left</div>
+
+    @if (activeJaw() === "both" || activeJaw() === "upper") {
+      <section class="arch-card">
+        <div class="arch-head">
+          <span class="arch-name">Upper Jaw</span>
+          <span class="arch-range" aria-hidden="true">18-11 · 21-28</span>
         </div>
-      }
+        <div class="arch-row upper">
+          <div class="quadrant">
+            @for (n of upperRightTeeth; track n; let i = $index) {
+              <ng-container
+                *ngTemplateOutlet="
+                  toothTpl;
+                  context: {
+                    $implicit: n,
+                    isUpper: true,
+                    idx: i,
+                    total: upperRightTeeth.length,
+                    side: 'right'
+                  }
+                "
+              ></ng-container>
+            }
+          </div>
+          <div class="midline" aria-hidden="true"></div>
+          <div class="quadrant">
+            @for (n of upperLeftTeeth; track n; let i = $index) {
+              <ng-container
+                *ngTemplateOutlet="
+                  toothTpl;
+                  context: {
+                    $implicit: n,
+                    isUpper: true,
+                    idx: i,
+                    total: upperLeftTeeth.length,
+                    side: 'left'
+                  }
+                "
+              ></ng-container>
+            }
+          </div>
+        </div>
+      </section>
+    }
 
-      @if (activeJaw() === "both" || activeJaw() === "lower") {
-        <section class="jaw-card lower-jaw">
-          <div class="jaw-card-head">
-            <span>Lower Jaw</span>
+    @if (activeJaw() === "both") {
+      <div class="jaw-gap"><span>Occlusal Plane</span></div>
+    }
+
+    @if (activeJaw() === "both" || activeJaw() === "lower") {
+      <section class="arch-card">
+        <div class="arch-head">
+          <span class="arch-name">Lower Jaw</span>
+          <span class="arch-range" aria-hidden="true">48-41 · 31-38</span>
+        </div>
+        <div class="arch-row lower">
+          <div class="quadrant">
+            @for (n of lowerRightTeeth; track n; let i = $index) {
+              <ng-container
+                *ngTemplateOutlet="
+                  toothTpl;
+                  context: {
+                    $implicit: n,
+                    isUpper: false,
+                    idx: i,
+                    total: lowerRightTeeth.length,
+                    side: 'right'
+                  }
+                "
+              ></ng-container>
+            }
           </div>
-          <div class="quadrant-hints" aria-hidden="true">
-            <span>48-41</span>
-            <span>31-38</span>
+          <div class="midline" aria-hidden="true"></div>
+          <div class="quadrant">
+            @for (n of lowerLeftTeeth; track n; let i = $index) {
+              <ng-container
+                *ngTemplateOutlet="
+                  toothTpl;
+                  context: {
+                    $implicit: n,
+                    isUpper: false,
+                    idx: i,
+                    total: lowerLeftTeeth.length,
+                    side: 'left'
+                  }
+                "
+              ></ng-container>
+            }
           </div>
-          <div class="teeth-strip">
-            <div class="teeth-group">
-              <div class="teeth-half">
-                @for (n of lowerTeeth.slice(0, 8); track n) {
-                  <ng-container
-                    *ngTemplateOutlet="
-                      toothTpl;
-                      context: { $implicit: n, isUpper: false }
-                    "
-                  ></ng-container>
-                }
-              </div>
-              <div class="teeth-divider" aria-hidden="true"></div>
-              <div class="teeth-half">
-                @for (n of lowerTeeth.slice(8); track n) {
-                  <ng-container
-                    *ngTemplateOutlet="
-                      toothTpl;
-                      context: { $implicit: n, isUpper: false }
-                    "
-                  ></ng-container>
-                }
-              </div>
-            </div>
-          </div>
-        </section>
-      }
-    </div>
+        </div>
+      </section>
+    }
 
     <div class="legend-row">
       @for (l of legend; track l.label) {
@@ -129,7 +163,7 @@
           <span class="legend-label">{{ l.label }}</span>
         </div>
       }
-      <div class="legend-item selected-key">
+      <div class="legend-item">
         <span class="legend-dot selected-dot"></span>
         <span class="legend-label">Selected</span>
       </div>
@@ -153,9 +187,17 @@
   </div>
 </div>
 
-<ng-template #toothTpl let-num let-isUpper="isUpper">
+<ng-template
+  #toothTpl
+  let-num
+  let-isUpper="isUpper"
+  let-idx="idx"
+  let-total="total"
+  let-side="side"
+>
   <button
     type="button"
+    class="tooth"
     (click)="onToggle(num)"
     (mouseenter)="onHover(num)"
     (mouseleave)="onLeave()"
@@ -166,13 +208,17 @@
     [attr.role]="readOnly() ? null : 'checkbox'"
     [attr.aria-checked]="readOnly() ? null : isSelected(num)"
     [attr.aria-label]="'Tooth ' + num"
-    class="tooth"
     [class.is-upper]="isUpper"
     [class.is-selected]="isSelected(num)"
     [class.is-missing]="statusOf(num) === 'missing'"
     [style.--tooth-fill]="fillOf(num)"
     [style.--tooth-border]="borderOf(num)"
     [style.--tooth-glow]="glowOf(num)"
+    [style.marginTop.px]="isUpper ? getArchCurveOffset(idx, total, side) : 0"
+    [style.marginBottom.px]="
+      isUpper ? 0 : getArchCurveOffset(idx, total, side)
+    "
+    [attr.title]="'Tooth ' + num"
     [class.is-interactive]="!readOnly()"
   >
     @if (isUpper) {
@@ -186,6 +232,7 @@
         [class.is-upper]="isUpper"
         [style.width.px]="getToothWidth(num)"
         [style.height.px]="getToothHeight(num, isUpper)"
+        [style.borderRadius]="getCrownRadius(num, isUpper)"
       >
         @if (statusOf(num) === "extract") {
           <div class="tooth-overlay">

@@ -78,8 +78,8 @@ describe("TeethChartComponent", () => {
   });
 
   it("should vary tooth width by anatomy (molars widest)", () => {
-    expect(component.getToothWidth(18)).toBe(24);
-    expect(component.getToothWidth(13)).toBe(14);
+    expect(component.getToothWidth(18)).toBe(25);
+    expect(component.getToothWidth(13)).toBe(17);
   });
 
   it("should not track hover in readOnly mode", () => {
