@@ -4,7 +4,6 @@ import { TreeTableModule } from "primeng/treetable";
 import { TreeNode } from "primeng/api";
 import { OrderDataService } from "@core/services/order-data.service";
 import { SubOrderDataService } from "@core/services/sub-order-data.service";
-import { SubOrderColorService } from "@core/services/sub-order-color.service";
 import { NavigationService } from "@core/services/navigation.service";
 import { FormatUtils } from "@core/services/format-utils.service";
 import {
@@ -148,7 +147,6 @@ export function compareOrderValues(a: unknown, b: unknown): number {
 export class OrdersComponent {
   private readonly orderService = inject(OrderDataService);
   private readonly subOrderService = inject(SubOrderDataService);
-  private readonly subOrderColorService = inject(SubOrderColorService);
   protected readonly navigationService = inject(NavigationService);
   protected readonly formatUtils = inject(FormatUtils);
 
@@ -655,14 +653,11 @@ export class OrdersComponent {
     return "Pending";
   }
 
-  subOrderServiceBlockStyle(subOrder: SubOrder): Record<string, string> {
-    const background = this.subOrderColorService.colorForServiceLabel(
-      subOrder.service,
-    );
-    return {
-      "background-color": background,
-      color: this.contrastText(background),
-    };
+  subOrderPriorityClasses(priority: SubOrder["priority"]): string {
+    if (priority === "Urgent") return "is-urgent";
+    if (priority === "High") return "is-high";
+    if (priority === "Low") return "is-low";
+    return "is-normal";
   }
 
   subOrderProgress(sub: SubOrder): number {
@@ -673,30 +668,6 @@ export class OrdersComponent {
 
   shorten(value: string, maxLength: number): string {
     return value.length > maxLength ? `${value.slice(0, maxLength)}…` : value;
-  }
-
-  private contrastText(hex: string): string {
-    const parsed = this.parseHex(hex);
-    if (!parsed) return "#0F172A";
-    const { r, g, b } = parsed;
-    const luminance = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
-    return luminance > 0.62 ? "#0F172A" : "#FFFFFF";
-  }
-
-  private parseHex(hex: string): { r: number; g: number; b: number } | null {
-    const raw = hex.replace("#", "").trim();
-    if (raw.length !== 6) return null;
-    const r = Number.parseInt(raw.slice(0, 2), 16);
-    const g = Number.parseInt(raw.slice(2, 4), 16);
-    const b = Number.parseInt(raw.slice(4, 6), 16);
-    if (![r, g, b].every(Number.isFinite)) return null;
-    return { r, g, b };
-  }
-
-  changeRequestClasses(changeRequest: string): string {
-    if (changeRequest === "Pending Review") return "bg-amber-50 text-amber-700";
-    if (changeRequest === "In Progress") return "bg-blue-50 text-blue-700";
-    return "bg-emerald-50 text-emerald-700";
   }
 
   getIconSvg(name: string): string {

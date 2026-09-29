@@ -21,11 +21,11 @@ export const SERVICE_COLORS = [
 ];
 
 const STATUS_STYLE: Record<ToothStatus, { fill: string; border: string }> = {
-  normal: { fill: "#f8fafc", border: "#cbd5e1" },
-  planned: { fill: "#dbeafe", border: "#2563EB" },
-  implant: { fill: "#d1fae5", border: "#10B981" },
-  missing: { fill: "transparent", border: "#94a3b8" },
-  extract: { fill: "#fee2e2", border: "#ef4444" },
+  normal: { fill: "#FFFFFF", border: "#94A3B8" },
+  planned: { fill: "#DBEAFE", border: "#2563EB" },
+  implant: { fill: "#D1FAE5", border: "#059669" },
+  missing: { fill: "transparent", border: "#64748B" },
+  extract: { fill: "#FEE2E2", border: "#DC2626" },
 };
 
 @Component({
@@ -33,7 +33,7 @@ const STATUS_STYLE: Record<ToothStatus, { fill: string; border: string }> = {
   standalone: true,
   imports: [CommonModule],
   templateUrl: "./teeth-chart.component.html",
-  styleUrl: "./teeth-chart.component.scss",
+  styleUrls: ["./teeth-chart.component.scss"],
 })
 export class TeethChartComponent {
   readonly selected = input<number[]>([]);
@@ -111,67 +111,46 @@ export class TeethChartComponent {
     const t = num % 10;
     if (t === 8 || t === 7) return 24;
     if (t === 6) return 22;
-    if (t === 5 || t === 4) return 16;
+    if (t === 5 || t === 4) return 18;
     if (t === 3) return 14;
-    if (t === 1) return 15;
-    return 13;
+    if (t === 2 || t === 1) return 15;
+    return 16;
   }
 
   getToothHeight(num: number, isUpper: boolean): number {
     const t = num % 10;
-    if (t === 8 || t === 7 || t === 6) return isUpper ? 30 : 28;
-    if (t === 5 || t === 4) return isUpper ? 32 : 30;
-    if (t === 3) return isUpper ? 36 : 34;
-    if (t === 1 || t === 2) return isUpper ? 38 : 36;
-    return 30;
-  }
-
-  getRotation(num: number): number {
-    const t = num % 10;
-    const q = Math.floor(num / 10);
-    const isRight = q === 1 || q === 4;
-    const rotations: Record<number, number> = {
-      8: 8,
-      7: 5,
-      6: 2,
-      5: 0,
-      4: 0,
-      3: 0,
-      2: 0,
-      1: 0,
-    };
-    const base = rotations[t] ?? 0;
-    return isRight ? -base : base;
+    if (t >= 6) return isUpper ? 32 : 30;
+    if (t === 5 || t === 4) return isUpper ? 34 : 32;
+    if (t === 3) return isUpper ? 38 : 36;
+    if (t === 1 || t === 2) return isUpper ? 37 : 35;
+    return 32;
   }
 
   fillOf(num: number): string {
     const status = this.statusOf(num);
     if (status === "missing") return "transparent";
     if (this.isSelected(num)) return this.serviceColorOf(num) ?? "#2563EB";
-    if (this.hoveredTooth() === num && !this.readOnly()) return "#eff6ff";
+    if (this.hoveredTooth() === num && !this.readOnly()) return "#EFF6FF";
     return STATUS_STYLE[status].fill;
   }
 
   borderOf(num: number): string {
     const status = this.statusOf(num);
     if (this.isSelected(num)) return this.serviceColorOf(num) ?? "#2563EB";
-    if (this.hoveredTooth() === num && !this.readOnly()) return "#2563EB";
+    if (this.hoveredTooth() === num && !this.readOnly()) return "#1D4ED8";
     return STATUS_STYLE[status].border;
   }
 
-  crownRadius(num: number, isUpper: boolean): string {
-    const isMolar = num % 10 >= 6;
-    return isUpper
-      ? `4px 4px ${isMolar ? 6 : 8}px ${isMolar ? 6 : 8}px`
-      : `${isMolar ? 6 : 8}px ${isMolar ? 6 : 8}px 4px 4px`;
-  }
-
   glowOf(num: number): string {
-    if (this.isSelected(num))
-      return `0 0 0 2px ${this.serviceColorOf(num) ?? "#2563EB"}40`;
-    if (this.hoveredTooth() === num && !this.readOnly())
-      return "0 0 0 2px #2563EB20";
-    return "none";
+    if (this.isSelected(num)) {
+      return `0 0 0 2px rgb(255 255 255 / 0.92), 0 9px 20px ${
+        this.serviceColorOf(num) ?? "#2563EB"
+      }33`;
+    }
+    if (this.hoveredTooth() === num && !this.readOnly()) {
+      return "0 0 0 2px rgb(255 255 255 / 0.9), 0 8px 18px rgb(37 99 235 / 0.25)";
+    }
+    return "0 0 0 1px rgb(255 255 255 / 0.92), 0 2px 5px rgb(15 23 42 / 0.14)";
   }
 
   serviceColorAt(index: number): string {
