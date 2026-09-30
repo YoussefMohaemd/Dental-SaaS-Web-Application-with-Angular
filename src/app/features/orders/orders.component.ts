@@ -10,7 +10,6 @@ import {
   Order,
   OrdersViewState,
   OrderStatus,
-  Priority,
   SubOrder,
 } from "@core/models";
 import { ArchBadgeComponent } from "@shared/components/arch-badge/arch-badge.component";
@@ -37,10 +36,19 @@ export interface OrderTreeRowData {
 
 type OrderFilterType =
   | "status"
-  | "priority"
-  | "patient"
-  | "doctor"
+  | "duration"
   | "service";
+
+type DurationFilterValue =
+  | ""
+  | "today"
+  | "week"
+  | "month"
+  | "2-months"
+  | "3-months"
+  | "6-months";
+
+type DurationWindow = Exclude<DurationFilterValue, "">;
 
 interface ActiveOrderFilter {
   type: OrderFilterType;
@@ -89,7 +97,14 @@ const STATUS_OPTIONS: OrderStatus[] = [
   "Completed",
   "Cancelled",
 ];
-const PRIORITY_OPTIONS: Priority[] = ["Low", "Normal", "High", "Urgent"];
+const DURATION_FILTER_OPTIONS = [
+  { label: "Today", value: "today" },
+  { label: "Last week", value: "week" },
+  { label: "Last month", value: "month" },
+  { label: "Last 2 months", value: "2-months" },
+  { label: "Last 3 months", value: "3-months" },
+  { label: "Last 6 months", value: "6-months" },
+] as const;
 
 const SORT_COLUMN_LABELS: Partial<Record<keyof Order, string>> = {
   orderNumber: "Order number",
@@ -121,6 +136,43 @@ export function compareOrderValues(a: unknown, b: unknown): number {
   const bTime = Date.parse(String(b));
   if (!Number.isNaN(aTime) && !Number.isNaN(bTime)) return aTime - bTime;
   return String(a).localeCompare(String(b));
+}
+
+function durationToMonths(
+  duration: Exclude<DurationWindow, "today" | "week">,
+): number {
+  if (duration === "month") return 1;
+  if (duration === "2-months") return 2;
+  if (duration === "3-months") return 3;
+  return 6;
+}
+
+export function matchesOrderDuration(
+  receivedAt: string,
+  duration: DurationWindow,
+  now: Date = new Date(),
+): boolean {
+  const receivedDate = new Date(receivedAt);
+  if (Number.isNaN(receivedDate.getTime())) return false;
+  if (receivedDate > now) return false;
+
+  if (duration === "today") {
+    return (
+      receivedDate.getFullYear() === now.getFullYear() &&
+      receivedDate.getMonth() === now.getMonth() &&
+      receivedDate.getDate() === now.getDate()
+    );
+  }
+
+  const cutoff = new Date(now);
+  if (duration === "week") {
+    cutoff.setDate(cutoff.getDate() - 7);
+    return receivedDate >= cutoff;
+  }
+
+  const monthsBack = durationToMonths(duration);
+  cutoff.setMonth(cutoff.getMonth() - monthsBack);
+  return receivedDate >= cutoff;
 }
 
 @Component({
@@ -155,10 +207,8 @@ export class OrdersComponent {
 
   readonly search = signal("");
   readonly statusFilter = signal<OrderStatus[]>([]);
-  readonly priorityFilter = signal<Priority | "">("");
-  readonly patientFilter = signal("");
-  readonly doctorFilter = signal("");
-  readonly serviceFilter = signal("");
+  readonly durationFilter = signal<DurationFilterValue>("");
+  readonly serviceFilter = signal<string[]>([]);
   readonly selectedIds = signal<Set<string>>(new Set());
   readonly page = signal(1);
   readonly pageSize = signal(10);
@@ -172,24 +222,17 @@ export class OrdersComponent {
   });
   readonly advancedFilters = signal(false);
   readonly draftStatusFilter = signal<OrderStatus[]>([]);
-  readonly draftPriorityFilter = signal<Priority | "">("");
-  readonly draftPatientFilter = signal("");
-  readonly draftDoctorFilter = signal("");
-  readonly draftServiceFilter = signal("");
+  readonly draftDurationFilter = signal<DurationFilterValue>("");
+  readonly draftServiceFilter = signal<string[]>([]);
+  readonly draftServiceSelectValue = signal("");
 
   readonly pageSizes = PAGE_SIZES;
   readonly statusOptions = STATUS_OPTIONS;
-  readonly priorityOptions = PRIORITY_OPTIONS;
+  readonly durationOptions = DURATION_FILTER_OPTIONS;
   readonly pageSizeSelectOptions = PAGE_SIZES.map((size) => ({
     value: String(size),
     label: `${size} / page`,
   }));
-  readonly patientOptions = computed(() =>
-    this.uniqueSorted(this.orders().map((order) => order.patientName)),
-  );
-  readonly doctorOptions = computed(() =>
-    this.uniqueSorted(this.orders().map((order) => order.doctorName)),
-  );
   readonly subOrderServiceOptions = computed(() =>
     this.uniqueSorted(this.subOrders().map((subOrder) => subOrder.service)),
   );
@@ -217,21 +260,17 @@ export class OrdersComponent {
       result = result.filter((order) =>
         this.statusFilter().includes(order.status),
       );
-    if (this.priorityFilter())
-      result = result.filter(
-        (order) => order.priority === this.priorityFilter(),
-      );
-    if (this.patientFilter())
-      result = result.filter(
-        (order) => order.patientName === this.patientFilter(),
-      );
-    if (this.doctorFilter())
-      result = result.filter((order) => order.doctorName === this.doctorFilter());
-    if (this.serviceFilter())
+    const duration = this.durationFilter();
+    if (duration)
       result = result.filter((order) =>
-        this.subOrderServicesByOrderId().get(order.id)?.has(this.serviceFilter()) ??
-        false,
+        matchesOrderDuration(order.receivedAt, duration),
       );
+    if (this.serviceFilter().length > 0)
+      result = result.filter((order) => {
+        const orderServices = this.subOrderServicesByOrderId().get(order.id);
+        if (!orderServices) return false;
+        return this.serviceFilter().some((service) => orderServices.has(service));
+      });
     const column = this.sortColumn();
     if (column) {
       const direction = this.sortDirection() === "asc" ? 1 : -1;
@@ -321,49 +360,32 @@ export class OrdersComponent {
     );
   });
 
-  readonly activeFilters = computed<ActiveOrderFilter[]>(() => [
-    ...this.statusFilter().map((status) => ({
-      type: "status" as const,
+  readonly activeFilters = computed<ActiveOrderFilter[]>(() => {
+    const filters: ActiveOrderFilter[] = this.statusFilter().map((status) => ({
+      type: "status",
       value: status,
       label: `Status: ${statusDisplayLabel(status)}`,
-    })),
-    ...(this.priorityFilter()
-      ? [
-          {
-            type: "priority" as const,
-            value: this.priorityFilter() as string,
-            label: `Priority: ${this.priorityFilter()}`,
-          },
-        ]
-      : []),
-    ...(this.patientFilter()
-      ? [
-          {
-            type: "patient" as const,
-            value: this.patientFilter(),
-            label: `Patient: ${this.patientFilter()}`,
-          },
-        ]
-      : []),
-    ...(this.doctorFilter()
-      ? [
-          {
-            type: "doctor" as const,
-            value: this.doctorFilter(),
-            label: `Doctor: ${this.doctorFilter()}`,
-          },
-        ]
-      : []),
-    ...(this.serviceFilter()
-      ? [
-          {
-            type: "service" as const,
-            value: this.serviceFilter(),
-            label: `Service: ${this.serviceFilter()}`,
-          },
-        ]
-      : []),
-  ]);
+    }));
+
+    const duration = this.durationFilter();
+    if (duration) {
+      filters.push({
+        type: "duration",
+        value: duration,
+        label: `Duration: ${this.durationFilterLabel(duration)}`,
+      });
+    }
+
+    this.serviceFilter().forEach((service) => {
+      filters.push({
+        type: "service",
+        value: service,
+        label: `Service: ${service}`,
+      });
+    });
+
+    return filters;
+  });
   readonly activeFilterCount = computed(
     () => this.activeFilters().length + (this.search().trim() ? 1 : 0),
   );
@@ -458,20 +480,20 @@ export class OrdersComponent {
       this.statusFilter.update((current) =>
         current.filter((status) => status !== value),
       );
-    if (type === "priority") this.priorityFilter.set("");
-    if (type === "patient") this.patientFilter.set("");
-    if (type === "doctor") this.doctorFilter.set("");
-    if (type === "service") this.serviceFilter.set("");
+    if (type === "duration") this.durationFilter.set("");
+    if (type === "service" && value)
+      this.serviceFilter.update((current) =>
+        current.filter((service) => service !== value),
+      );
+    if (type === "service" && !value) this.serviceFilter.set([]);
     this.page.set(1);
   }
 
   clearAllFilters(): void {
     this.search.set("");
     this.statusFilter.set([]);
-    this.priorityFilter.set("");
-    this.patientFilter.set("");
-    this.doctorFilter.set("");
-    this.serviceFilter.set("");
+    this.durationFilter.set("");
+    this.serviceFilter.set([]);
     this.page.set(1);
   }
 
@@ -528,36 +550,38 @@ export class OrdersComponent {
     return this.draftStatusFilter().includes(status);
   }
 
-  onDraftPriorityValueChange(value: string): void {
-    this.draftPriorityFilter.set(value as Priority | "");
+  onDraftDurationValueChange(value: string): void {
+    this.draftDurationFilter.set(value as DurationFilterValue);
   }
 
-  onDraftPatientValueChange(value: string): void {
-    this.draftPatientFilter.set(value);
+  toggleDraftService(service: string): void {
+    if (!service) return;
+    if (this.draftServiceFilter().includes(service)) {
+      this.draftServiceFilter.update((current) =>
+        current.filter((item) => item !== service),
+      );
+      return;
+    }
+    this.draftServiceFilter.update((current) => [...current, service]);
   }
 
-  onDraftDoctorValueChange(value: string): void {
-    this.draftDoctorFilter.set(value);
-  }
-
-  onDraftServiceValueChange(value: string): void {
-    this.draftServiceFilter.set(value);
+  onDraftServiceSelectValueChange(value: string): void {
+    if (!value) return;
+    this.toggleDraftService(value);
+    this.draftServiceSelectValue.set("");
   }
 
   clearAdvancedFiltersDraft(): void {
     this.draftStatusFilter.set([]);
-    this.draftPriorityFilter.set("");
-    this.draftPatientFilter.set("");
-    this.draftDoctorFilter.set("");
-    this.draftServiceFilter.set("");
+    this.draftDurationFilter.set("");
+    this.draftServiceFilter.set([]);
+    this.draftServiceSelectValue.set("");
   }
 
   applyAdvancedFilters(): void {
     this.statusFilter.set([...this.draftStatusFilter()]);
-    this.priorityFilter.set(this.draftPriorityFilter());
-    this.patientFilter.set(this.draftPatientFilter());
-    this.doctorFilter.set(this.draftDoctorFilter());
-    this.serviceFilter.set(this.draftServiceFilter());
+    this.durationFilter.set(this.draftDurationFilter());
+    this.serviceFilter.set([...this.draftServiceFilter()]);
     this.page.set(1);
     this.advancedFilters.set(false);
   }
@@ -694,6 +718,11 @@ export class OrdersComponent {
     return lucideSvg(entry.icon, entry.size);
   }
 
+  private durationFilterLabel(duration: Exclude<DurationFilterValue, "">): string {
+    const option = DURATION_FILTER_OPTIONS.find((item) => item.value === duration);
+    return option?.label ?? duration;
+  }
+
   private uniqueSorted(values: string[]): string[] {
     return Array.from(
       new Set(values.map((value) => value.trim()).filter((value) => !!value)),
@@ -702,9 +731,8 @@ export class OrdersComponent {
 
   private resetDraftFiltersFromCurrent(): void {
     this.draftStatusFilter.set([...this.statusFilter()]);
-    this.draftPriorityFilter.set(this.priorityFilter());
-    this.draftPatientFilter.set(this.patientFilter());
-    this.draftDoctorFilter.set(this.doctorFilter());
-    this.draftServiceFilter.set(this.serviceFilter());
+    this.draftDurationFilter.set(this.durationFilter());
+    this.draftServiceFilter.set([...this.serviceFilter()]);
+    this.draftServiceSelectValue.set("");
   }
 }

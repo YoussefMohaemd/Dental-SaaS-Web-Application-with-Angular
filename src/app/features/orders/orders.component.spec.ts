@@ -2,7 +2,11 @@ import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideHttpClient } from "@angular/common/http";
 import { provideHttpClientTesting } from "@angular/common/http/testing";
 import { provideRouter } from "@angular/router";
-import { OrdersComponent, compareOrderValues } from "./orders.component";
+import {
+  OrdersComponent,
+  compareOrderValues,
+  matchesOrderDuration,
+} from "./orders.component";
 import { NavigationService } from "@core/services/navigation.service";
 import { OrderDataService } from "@core/services/order-data.service";
 
@@ -103,30 +107,47 @@ describe("OrdersComponent", () => {
 
   it("should clear all filters and reset pagination", () => {
     component.page.set(3);
-    component.patientFilter.set("Alice Johnson");
-    component.doctorFilter.set("Dr. Park");
-    component.serviceFilter.set("Crown");
+    component.durationFilter.set("month");
+    component.serviceFilter.set(["Crown", "Bridge"]);
     component.clearAllFilters();
     expect(component.page()).toBe(1);
     expect(component.activeFilters()).toEqual([]);
-    expect(component.patientFilter()).toBe("");
-    expect(component.doctorFilter()).toBe("");
-    expect(component.serviceFilter()).toBe("");
+    expect(component.durationFilter()).toBe("");
+    expect(component.serviceFilter()).toEqual([]);
   });
 
-  it("should remove patient, doctor, and service filters individually", () => {
-    component.patientFilter.set("Alice Johnson");
-    component.doctorFilter.set("Dr. Park");
-    component.serviceFilter.set("Crown");
+  it("should remove duration and service filters individually", () => {
+    component.durationFilter.set("month");
+    component.serviceFilter.set(["Crown", "Bridge"]);
 
-    component.removeFilter("patient", "Alice Johnson");
-    expect(component.patientFilter()).toBe("");
-
-    component.removeFilter("doctor", "Dr. Park");
-    expect(component.doctorFilter()).toBe("");
+    component.removeFilter("duration", "month");
+    expect(component.durationFilter()).toBe("");
 
     component.removeFilter("service", "Crown");
-    expect(component.serviceFilter()).toBe("");
+    expect(component.serviceFilter()).toEqual(["Bridge"]);
+  });
+
+  it("should evaluate order dates against duration windows", () => {
+    const now = new Date("2026-09-30T12:00:00Z");
+
+    expect(
+      matchesOrderDuration("2026-09-30T08:00:00Z", "today", now),
+    ).toBeTrue();
+    expect(
+      matchesOrderDuration("2026-09-29T08:00:00Z", "today", now),
+    ).toBeFalse();
+    expect(
+      matchesOrderDuration("2026-09-20T08:00:00Z", "week", now),
+    ).toBeFalse();
+    expect(
+      matchesOrderDuration("2026-08-31T08:00:00Z", "month", now),
+    ).toBeTrue();
+    expect(
+      matchesOrderDuration("2026-06-30T08:00:00Z", "2-months", now),
+    ).toBeFalse();
+    expect(
+      matchesOrderDuration("2026-06-30T13:00:00Z", "3-months", now),
+    ).toBeTrue();
   });
 
   it("should update search and reset pagination (immediate + debounced paths)", () => {
