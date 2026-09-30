@@ -21,6 +21,10 @@ export type PageId =
   | "billing"
   | "changeRequests"
   | "reports"
+  | "reportsOrdersRange"
+  | "reportsQuarterlyTargets"
+  | "reportsQuarterDetail"
+  | "reportsTeamPerformance"
   | "notifications"
   | "settings"
   | "grid"
@@ -35,6 +39,8 @@ export interface NavParams {
   caseId?: string;
   subOrderId?: string;
   subOrderTab?: string;
+  reportYear?: number;
+  reportQuarter?: number;
 }
 
 export interface BreadcrumbItem {
@@ -97,6 +103,13 @@ export const BREADCRUMB_MAP: Partial<
   billing: { label: "Billing" },
   changeRequests: { label: "Change Requests" },
   reports: { label: "Reports" },
+  reportsOrdersRange: { label: "Orders by Date", parent: "reports" },
+  reportsQuarterlyTargets: { label: "Quarter Targets", parent: "reports" },
+  reportsQuarterDetail: {
+    label: "Quarter Details",
+    parent: "reportsQuarterlyTargets",
+  },
+  reportsTeamPerformance: { label: "Team Performance", parent: "reports" },
   notifications: { label: "Notifications" },
   settings: { label: "Settings" },
   grid: { label: "Grid" },

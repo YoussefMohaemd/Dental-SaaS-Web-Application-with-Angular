@@ -1,5 +1,6 @@
 import { Component, computed, inject } from "@angular/core";
 import { CommonModule } from "@angular/common";
+import { RouterModule } from "@angular/router";
 import { OrderDataService } from "@core/services/order-data.service";
 import { CaseDataService } from "@core/services/case-data.service";
 import { BillingDataService } from "@core/services/billing-data.service";
@@ -22,7 +23,7 @@ import {
 @Component({
   selector: "app-reports",
   standalone: true,
-  imports: [CommonModule, BaseChartDirective],
+  imports: [CommonModule, RouterModule, BaseChartDirective],
   providers: [provideCharts(withDefaultRegisterables())],
   templateUrl: "./reports.component.html",
   styleUrl: "./reports.component.scss",

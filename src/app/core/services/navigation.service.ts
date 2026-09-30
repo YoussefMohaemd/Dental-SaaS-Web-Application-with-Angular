@@ -46,6 +46,15 @@ export class NavigationService {
     if (["patients", "patientDetails"].includes(page)) return "patients";
     if (["doctors", "doctorDetails"].includes(page)) return "doctors";
     if (["clinics", "clinicDetails"].includes(page)) return "clinics";
+    if (
+      [
+        "reportsOrdersRange",
+        "reportsQuarterlyTargets",
+        "reportsQuarterDetail",
+        "reportsTeamPerformance",
+      ].includes(page)
+    )
+      return "reports";
     return page;
   });
 
@@ -168,6 +177,39 @@ export class NavigationService {
       return;
     }
 
+    if (firstSegment === "reports") {
+      if (segments[1] === "orders-range") {
+        this.currentPage.set("reportsOrdersRange");
+        this.currentParams.set({});
+        return;
+      }
+      if (segments[1] === "quarterly-targets") {
+        if (segments[2] && segments[3]) {
+          const reportYear = Number(segments[2]);
+          const reportQuarter = Number(segments[3]);
+          this.currentPage.set("reportsQuarterDetail");
+          this.currentParams.set({
+            reportYear: Number.isFinite(reportYear) ? reportYear : undefined,
+            reportQuarter: Number.isFinite(reportQuarter)
+              ? reportQuarter
+              : undefined,
+          });
+          return;
+        }
+        this.currentPage.set("reportsQuarterlyTargets");
+        this.currentParams.set({});
+        return;
+      }
+      if (segments[1] === "team-performance") {
+        this.currentPage.set("reportsTeamPerformance");
+        this.currentParams.set({});
+        return;
+      }
+      this.currentPage.set("reports");
+      this.currentParams.set({});
+      return;
+    }
+
     const pageId = pageMap[firstSegment] || "dashboard";
     this.currentPage.set(pageId);
 
@@ -215,6 +257,11 @@ export class NavigationService {
       billing: () => "/billing",
       changeRequests: () => "/change-requests",
       reports: () => "/reports",
+      reportsOrdersRange: () => "/reports/orders-range",
+      reportsQuarterlyTargets: () => "/reports/quarterly-targets",
+      reportsQuarterDetail: (p) =>
+        `/reports/quarterly-targets/${p.reportYear}/${p.reportQuarter}`,
+      reportsTeamPerformance: () => "/reports/team-performance",
       notifications: () => "/notifications",
       settings: () => "/settings",
       grid: () => "/grid",

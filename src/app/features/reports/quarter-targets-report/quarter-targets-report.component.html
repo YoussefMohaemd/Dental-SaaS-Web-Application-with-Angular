@@ -1,0 +1,150 @@
+<div class="enterprise-table-page">
+  <app-data-table-toolbar
+    title="Quarter Targets"
+    [subtitle]="'Service performance by quarter for ' + selectedYear()"
+  ></app-data-table-toolbar>
+
+  <section class="rounded-2xl border border-border bg-card p-4 sm:p-5">
+    <div class="grid grid-cols-1 gap-3 lg:grid-cols-12">
+      <div class="lg:col-span-3">
+        <label
+          for="quarter-target-year"
+          class="mb-1 block text-xs font-semibold text-muted-foreground"
+          >Year</label
+        >
+        <app-select
+          id="quarter-target-year"
+          [unstyled]="true"
+          selectClass="enterprise-toolbar-select w-full cursor-pointer focus:outline-none"
+          placeholder="Select year"
+          [options]="yearOptions()"
+          [value]="selectedYear()"
+          ariaLabel="Select reporting year"
+          (valueChange)="onYearChange($event)"
+        ></app-select>
+      </div>
+      <div class="lg:col-span-9">
+        <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <article class="rounded-xl border border-border bg-background p-3">
+            <p class="text-[11px] text-muted-foreground">Annual Orders</p>
+            <p class="font-display mt-1 text-lg font-bold text-foreground">
+              {{ annualTotals().ordersCount }}
+            </p>
+          </article>
+          <article class="rounded-xl border border-border bg-background p-3">
+            <p class="text-[11px] text-muted-foreground">Annual Revenue</p>
+            <p class="font-display mt-1 text-lg font-bold text-success">
+              {{ formatUtils.formatCurrency(annualTotals().totalRevenue) }}
+            </p>
+          </article>
+          <article class="rounded-xl border border-border bg-background p-3">
+            <p class="text-[11px] text-muted-foreground">Quarter Count</p>
+            <p class="font-display mt-1 text-lg font-bold text-primary">4</p>
+          </article>
+          <article class="rounded-xl border border-border bg-background p-3">
+            <p class="text-[11px] text-muted-foreground">Service Count</p>
+            <p class="font-display mt-1 text-lg font-bold text-accent">
+              {{ quarterReports()[0]?.services?.length ?? 0 }}
+            </p>
+          </article>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  @if (loading()) {
+    <div class="enterprise-table-panel">
+      <app-table-feedback mode="loading" message="Loading quarter targets..." />
+    </div>
+  } @else if (quarterReports().length === 0) {
+    <div class="enterprise-table-panel">
+      <app-table-feedback
+        mode="empty"
+        message="No quarter data available for this year."
+      />
+    </div>
+  } @else {
+    <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
+      @for (quarterReport of quarterReports(); track quarterReport.quarter) {
+        <section class="rounded-2xl border border-border bg-card">
+          <header
+            class="flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-3 sm:px-5"
+          >
+            <div>
+              <h2 class="font-display text-base font-semibold text-foreground">
+                {{ quarterReport.quarterLabel }} {{ quarterReport.year }}
+              </h2>
+              <p class="mt-1 text-xs text-muted-foreground">
+                {{ monthLabel(quarterReport) }}
+              </p>
+            </div>
+            <div class="text-right text-xs">
+              <p class="font-semibold text-primary">
+                {{ quarterReport.ordersCount }} services delivered
+              </p>
+              <p class="mt-1 font-semibold text-success">
+                {{ formatUtils.formatCurrency(quarterReport.totalRevenue) }}
+              </p>
+            </div>
+          </header>
+
+          <div class="p-4 sm:p-5">
+            <table class="w-full">
+              <thead>
+                <tr class="border-b border-border text-left">
+                  <th class="pb-2 text-[11px] font-semibold text-muted-foreground">
+                    Service
+                  </th>
+                  <th
+                    class="pb-2 text-right text-[11px] font-semibold text-muted-foreground"
+                  >
+                    Count
+                  </th>
+                  <th
+                    class="pb-2 text-right text-[11px] font-semibold text-muted-foreground"
+                  >
+                    Avg
+                  </th>
+                  <th
+                    class="pb-2 text-right text-[11px] font-semibold text-muted-foreground"
+                  >
+                    Revenue
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (service of quarterReport.services; track service.serviceKey) {
+                  <tr class="border-b border-border/60 last:border-b-0">
+                    <td class="py-2 pr-3 text-xs text-foreground">
+                      {{ service.serviceName }}
+                    </td>
+                    <td class="py-2 text-right text-xs text-muted-foreground">
+                      {{ service.ordersCount }}
+                    </td>
+                    <td class="py-2 text-right text-xs text-muted-foreground">
+                      {{ formatUtils.formatCurrency(service.averageUnitPrice) }}
+                    </td>
+                    <td class="py-2 text-right text-xs font-semibold text-success">
+                      {{ formatUtils.formatCurrency(service.totalRevenue) }}
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+
+            <div class="mt-4">
+              <app-button
+                variant="outline"
+                size="sm"
+                [ariaLabel]="'Open details for ' + quarterReport.quarterLabel"
+                (onClick)="openQuarterDetails(quarterReport.quarter)"
+              >
+                Open {{ quarterReport.quarterLabel }} details
+              </app-button>
+            </div>
+          </div>
+        </section>
+      }
+    </div>
+  }
+</div>

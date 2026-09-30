@@ -172,6 +172,34 @@ export const appRoutes: Routes = [
           ),
       },
       {
+        path: "reports/orders-range",
+        loadComponent: () =>
+          import(
+            "./features/reports/orders-range-report/orders-range-report.component"
+          ).then((m) => m.OrdersRangeReportComponent),
+      },
+      {
+        path: "reports/quarterly-targets",
+        loadComponent: () =>
+          import(
+            "./features/reports/quarter-targets-report/quarter-targets-report.component"
+          ).then((m) => m.QuarterTargetsReportComponent),
+      },
+      {
+        path: "reports/quarterly-targets/:year/:quarter",
+        loadComponent: () =>
+          import(
+            "./features/reports/quarter-detail-report/quarter-detail-report.component"
+          ).then((m) => m.QuarterDetailReportComponent),
+      },
+      {
+        path: "reports/team-performance",
+        loadComponent: () =>
+          import(
+            "./features/reports/team-performance-report/team-performance-report.component"
+          ).then((m) => m.TeamPerformanceReportComponent),
+      },
+      {
         path: "notifications",
         loadComponent: () =>
           import("./features/notifications/notifications.component").then(

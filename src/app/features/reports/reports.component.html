@@ -6,6 +6,46 @@
     </p>
   </div>
 
+  <section class="rounded-xl border border-border bg-card p-4 sm:p-5">
+    <div class="mb-4">
+      <h2 class="font-display text-base font-semibold text-foreground">
+        Report Workflow
+      </h2>
+      <p class="mt-1 text-xs text-muted-foreground">
+        New CP-style screens added to the reporting flow.
+      </p>
+    </div>
+    <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
+      <a
+        routerLink="/reports/orders-range"
+        class="rounded-lg border border-border bg-background p-4 transition-colors hover:bg-muted/30"
+      >
+        <p class="text-sm font-semibold text-foreground">Orders by Date</p>
+        <p class="mt-1 text-xs text-muted-foreground">
+          From/To filter with monthly order groups and totals.
+        </p>
+      </a>
+      <a
+        routerLink="/reports/quarterly-targets"
+        class="rounded-lg border border-border bg-background p-4 transition-colors hover:bg-muted/30"
+      >
+        <p class="text-sm font-semibold text-foreground">Quarter Targets</p>
+        <p class="mt-1 text-xs text-muted-foreground">
+          Four quarters with service revenue and drill-down details.
+        </p>
+      </a>
+      <a
+        routerLink="/reports/team-performance"
+        class="rounded-lg border border-border bg-background p-4 transition-colors hover:bg-muted/30"
+      >
+        <p class="text-sm font-semibold text-foreground">Team Performance</p>
+        <p class="mt-1 text-xs text-muted-foreground">
+          Paginated employee table with revenue and turnaround metrics.
+        </p>
+      </a>
+    </div>
+  </section>
+
   <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
     <div class="rounded-xl border border-border bg-card p-4">
       <p class="text-xs text-muted-foreground">Revenue Collected</p>

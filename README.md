@@ -90,6 +90,7 @@ Raw logs live under `evidence/`.
 - Order detail, sub-order detail, and create-order flows
 - Workflow board drag/drop transitions
 - Forms, scan/file, patient, doctor, clinic, billing, change-request, report, notification, and settings pages
+- Reports workflow extensions: Orders by Date Range, Quarter Targets + Quarter Detail drill-down, and Team Performance roster
 - Shared controls such as buttons, inputs, search input, status badges, avatars, and loading/empty states
 
 ## Evidence
