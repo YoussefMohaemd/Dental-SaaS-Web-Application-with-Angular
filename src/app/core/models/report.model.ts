@@ -28,9 +28,9 @@ export interface ReportsData {
 
 export const BREAKDOWN_COLORS = [
   "#2563EB",
-  "#06B6D4",
-  "#10B981",
+  "#1D4ED8",
+  "#0EA5E9",
   "#F59E0B",
-  "#8B5CF6",
+  "#7C3AED",
   "#94A3B8",
 ];

@@ -2,7 +2,78 @@
   <app-data-table-toolbar
     title="Team Performance"
     [subtitle]="filtered().length + ' employees in reporting roster'"
-  ></app-data-table-toolbar>
+  >
+    <div header-actions>
+      <app-button variant="outline" size="sm" (onClick)="goToReportsHub()">
+        Back to reports hub
+      </app-button>
+    </div>
+  </app-data-table-toolbar>
+
+  <section class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+    <article class="rounded-2xl border border-border bg-card p-4 sm:p-5">
+      <p class="text-xs text-muted-foreground">Team Members</p>
+      <p class="font-display mt-1 text-xl font-bold text-foreground">
+        {{ summary().members }}
+      </p>
+      <p class="mt-2 text-xs text-muted-foreground">
+        {{ summary().active }} active members
+      </p>
+    </article>
+
+    <article class="rounded-2xl border border-border bg-card p-4 sm:p-5">
+      <p class="text-xs text-muted-foreground">Completed Orders</p>
+      <p class="font-display mt-1 text-xl font-bold text-primary">
+        {{ summary().totalCompleted }}
+      </p>
+      <p class="mt-2 text-xs text-muted-foreground">Completed workload</p>
+    </article>
+
+    <article class="rounded-2xl border border-border bg-card p-4 sm:p-5">
+      <p class="text-xs text-muted-foreground">Revenue Collected</p>
+      <p class="font-display mt-1 text-xl font-bold text-foreground">
+        {{ formatUtils.formatCurrency(summary().totalRevenue) }}
+      </p>
+      <p class="mt-2 text-xs text-muted-foreground">Total team contribution</p>
+    </article>
+
+    <article class="rounded-2xl border border-border bg-card p-4 sm:p-5">
+      <p class="text-xs text-muted-foreground">Average On-Time</p>
+      <p class="font-display mt-1 text-xl font-bold text-foreground">
+        {{ summary().averageOnTime }}%
+      </p>
+      <div class="mt-3 h-2 rounded-full bg-muted/70">
+        <div
+          class="h-2 rounded-full transition-all"
+          [style.background]="progressColor(summary().averageOnTime, 'onTime')"
+          [style.width.%]="clampedPercent(summary().averageOnTime)"
+        ></div>
+      </div>
+    </article>
+  </section>
+
+  @if (topPerformer()) {
+    <section class="rounded-2xl border border-border bg-card p-4 sm:p-5">
+      <div class="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <p class="text-xs uppercase tracking-wide text-primary">
+            Top performer
+          </p>
+          <h2 class="font-display mt-1 text-lg font-semibold text-foreground">
+            {{ topPerformer()!.fullName }}
+          </h2>
+          <p class="mt-1 text-xs text-muted-foreground">
+            {{ roleLabel(topPerformer()!.type) }} ·
+            {{ formatUtils.formatCurrency(topPerformer()!.revenueCollected) }}
+          </p>
+        </div>
+        <p-tag
+          [severity]="topPerformer()!.status === 'Active' ? 'info' : 'warn'"
+          [value]="topPerformer()!.onTimeRate + '% on-time'"
+        />
+      </div>
+    </section>
+  }
 
   <app-search-filter-toolbar
     searchId="team-performance-search"
@@ -25,126 +96,232 @@
 
   @if (loading()) {
     <div class="enterprise-table-panel">
-      <app-table-feedback mode="loading" message="Loading team performance..." />
+      <app-table-feedback
+        mode="loading"
+        message="Loading team performance..."
+      />
     </div>
   } @else if (filtered().length === 0) {
     <div class="enterprise-table-panel">
       <app-table-feedback mode="empty" message="No matching employees found." />
     </div>
   } @else {
-    <section class="rounded-2xl border border-border bg-card">
-      <div class="hidden md:block overflow-hidden">
-        <table class="w-full table-fixed">
-          <thead>
-            <tr class="border-b border-border bg-muted/30 text-left">
-              <th class="px-4 py-2 text-xs font-semibold text-muted-foreground">
-                User #
-              </th>
-              <th class="px-4 py-2 text-xs font-semibold text-muted-foreground">
-                Type
-              </th>
-              <th class="px-4 py-2 text-xs font-semibold text-muted-foreground">
-                Full Name
-              </th>
-              <th
-                class="px-4 py-2 text-right text-xs font-semibold text-muted-foreground"
-              >
-                Completed
-              </th>
-              <th
-                class="px-4 py-2 text-right text-xs font-semibold text-muted-foreground"
-              >
-                Revenue
-              </th>
-              <th
-                class="px-4 py-2 text-right text-xs font-semibold text-muted-foreground"
-              >
-                Avg TAT
-              </th>
-              <th
-                class="px-4 py-2 text-right text-xs font-semibold text-muted-foreground"
-              >
-                On-Time
-              </th>
-              <th class="px-4 py-2 text-right text-xs font-semibold text-muted-foreground">
-                Status
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (record of pagedRows(); track record.userId) {
-              <tr class="border-b border-border/70 align-middle last:border-b-0">
-                <td class="px-4 py-3 font-mono text-xs text-muted-foreground">
-                  {{ record.userId }}
-                </td>
-                <td class="px-4 py-3 text-xs text-muted-foreground">
-                  {{ record.type }}
-                </td>
-                <td class="px-4 py-3 text-xs font-semibold text-foreground">
-                  {{ record.fullName }}
-                </td>
-                <td class="px-4 py-3 text-right text-xs text-muted-foreground">
-                  {{ record.completedOrders }}
-                </td>
-                <td class="px-4 py-3 text-right text-xs font-semibold text-success">
-                  {{ formatUtils.formatCurrency(record.revenueCollected) }}
-                </td>
-                <td class="px-4 py-3 text-right text-xs text-muted-foreground">
-                  {{ record.avgTurnaroundDays }}d
-                </td>
-                <td class="px-4 py-3 text-right text-xs text-muted-foreground">
-                  {{ record.onTimeRate }}%
-                </td>
-                <td class="px-4 py-3 text-right">
-                  <app-status-badge [status]="record.status" size="xs" />
-                </td>
+    <section class="grid grid-cols-1 gap-4 xl:grid-cols-3">
+      <div class="rounded-2xl border border-border bg-card xl:col-span-2">
+        <div class="hidden overflow-x-auto md:block">
+          <table class="w-full min-w-[720px] table-fixed">
+            <thead>
+              <tr class="border-b border-border bg-muted/20 text-left">
+                <th
+                  class="px-4 py-2 text-xs font-semibold text-muted-foreground"
+                >
+                  Employee
+                </th>
+                <th
+                  class="px-4 py-2 text-xs font-semibold text-muted-foreground"
+                >
+                  Role
+                </th>
+                <th
+                  class="px-4 py-2 text-right text-xs font-semibold text-muted-foreground"
+                >
+                  Completed
+                </th>
+                <th
+                  class="px-4 py-2 text-right text-xs font-semibold text-muted-foreground"
+                >
+                  Revenue
+                </th>
+                <th
+                  class="px-4 py-2 text-right text-xs font-semibold text-muted-foreground"
+                >
+                  Avg TAT
+                </th>
+                <th
+                  class="px-4 py-2 text-right text-xs font-semibold text-muted-foreground"
+                >
+                  On-Time
+                </th>
+                <th
+                  class="px-4 py-2 text-right text-xs font-semibold text-muted-foreground"
+                >
+                  Score
+                </th>
+                <th
+                  class="px-4 py-2 text-right text-xs font-semibold text-muted-foreground"
+                >
+                  Status
+                </th>
               </tr>
-            }
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              @for (record of pagedRows(); track record.userId) {
+                <tr
+                  class="border-b border-border/70 align-middle last:border-b-0"
+                >
+                  <td class="px-4 py-3">
+                    <p class="text-xs font-semibold text-foreground">
+                      {{ record.fullName }}
+                    </p>
+                    <p class="mt-1 font-mono text-[11px] text-muted-foreground">
+                      #{{ record.userId }}
+                    </p>
+                  </td>
+                  <td class="px-4 py-3 text-xs text-muted-foreground">
+                    <p class="text-foreground">{{ roleLabel(record.type) }}</p>
+                    <p class="mt-0.5 text-[11px] text-muted-foreground">
+                      {{ record.type }}
+                    </p>
+                  </td>
+                  <td class="px-4 py-3 text-right text-xs text-foreground">
+                    {{ record.completedOrders }}
+                  </td>
+                  <td class="px-4 py-3 text-right text-xs text-foreground">
+                    {{ formatUtils.formatCurrency(record.revenueCollected) }}
+                  </td>
+                  <td
+                    class="px-4 py-3 text-right text-xs text-muted-foreground"
+                  >
+                    {{ record.avgTurnaroundDays }}d
+                  </td>
+                  <td
+                    class="px-4 py-3 text-right text-xs text-muted-foreground"
+                  >
+                    {{ record.onTimeRate }}%
+                  </td>
+                  <td
+                    class="px-4 py-3 text-right text-xs font-semibold text-primary"
+                  >
+                    {{ performanceScore(record) }}%
+                  </td>
+                  <td class="px-4 py-3 text-right">
+                    <p-tag
+                      [severity]="record.status === 'Active' ? 'info' : 'warn'"
+                      [value]="record.status"
+                    />
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
 
-      <div class="space-y-2 p-3 md:hidden">
-        @for (record of pagedRows(); track record.userId) {
-          <article class="rounded-xl border border-border bg-background p-3">
-            <div class="flex items-start justify-between gap-2">
-              <div>
-                <p class="font-mono text-xs text-muted-foreground">
-                  #{{ record.userId }} · {{ record.type }}
+        <div class="space-y-2 p-3 md:hidden">
+          @for (record of pagedRows(); track record.userId) {
+            <article class="rounded-xl border border-border bg-background p-3">
+              <div class="flex items-start justify-between gap-2">
+                <div>
+                  <p class="font-mono text-xs text-muted-foreground">
+                    #{{ record.userId }} · {{ roleLabel(record.type) }}
+                  </p>
+                  <p class="mt-1 text-sm font-semibold text-foreground">
+                    {{ record.fullName }}
+                  </p>
+                </div>
+                <p-tag
+                  [severity]="record.status === 'Active' ? 'info' : 'warn'"
+                  [value]="record.status"
+                />
+              </div>
+              <div class="mt-3 grid grid-cols-2 gap-2 text-xs">
+                <p class="text-muted-foreground">
+                  Completed:
+                  <span class="font-semibold text-foreground">{{
+                    record.completedOrders
+                  }}</span>
                 </p>
-                <p class="mt-1 text-sm font-semibold text-foreground">
-                  {{ record.fullName }}
+                <p class="text-muted-foreground">
+                  Revenue:
+                  <span class="font-semibold text-foreground">{{
+                    formatUtils.formatCurrency(record.revenueCollected)
+                  }}</span>
+                </p>
+                <p class="text-muted-foreground">
+                  Avg TAT:
+                  <span class="font-semibold text-foreground"
+                    >{{ record.avgTurnaroundDays }}d</span
+                  >
+                </p>
+                <p class="text-muted-foreground">
+                  Score:
+                  <span class="font-semibold text-primary"
+                    >{{ performanceScore(record) }}%</span
+                  >
                 </p>
               </div>
-              <app-status-badge [status]="record.status" size="xs" />
-            </div>
-            <div class="mt-3 grid grid-cols-2 gap-2 text-xs">
-              <p class="text-muted-foreground">
-                Completed: <span class="font-semibold">{{ record.completedOrders }}</span>
-              </p>
-              <p class="text-muted-foreground">
-                Revenue:
-                <span class="font-semibold text-success">{{
-                  formatUtils.formatCurrency(record.revenueCollected)
-                }}</span>
-              </p>
-              <p class="text-muted-foreground">
-                Avg TAT: <span class="font-semibold">{{ record.avgTurnaroundDays }}d</span>
-              </p>
-              <p class="text-muted-foreground">
-                On-Time: <span class="font-semibold">{{ record.onTimeRate }}%</span>
-              </p>
-            </div>
-          </article>
-        }
+            </article>
+          }
+        </div>
       </div>
+
+      <aside class="rounded-2xl border border-border bg-card p-4 sm:p-5">
+        <h2 class="font-display text-base font-semibold text-foreground">
+          Role Distribution
+        </h2>
+        <p class="mt-1 text-xs text-muted-foreground">
+          Revenue share and reliability grouped by team function.
+        </p>
+
+        <div class="mt-4 space-y-3">
+          @for (role of roleSummaries(); track role.type) {
+            <div class="space-y-2 rounded-xl border border-border/70 bg-muted/20 p-3">
+              <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0">
+                  <p class="truncate text-xs font-semibold text-foreground">
+                    {{ roleLabel(role.type) }}
+                  </p>
+                  <p class="mt-1 text-[11px] text-muted-foreground">
+                    {{ roleDescription(role.type) }}
+                  </p>
+                </div>
+                <p class="font-mono text-xs text-muted-foreground">
+                  {{ role.members }} members
+                </p>
+              </div>
+              <div class="grid grid-cols-2 gap-2 text-xs">
+                <p class="text-muted-foreground">
+                  Revenue:
+                  <span class="font-semibold text-foreground">{{
+                    formatUtils.formatCurrency(role.totalRevenue)
+                  }}</span>
+                </p>
+                <p class="text-muted-foreground">
+                  On-time:
+                  <span class="font-semibold text-foreground"
+                    >{{ role.averageOnTime }}%</span
+                  >
+                </p>
+              </div>
+              <div class="space-y-1">
+                <div class="flex items-center justify-between gap-2 text-[11px]">
+                  <p class="text-muted-foreground">Role revenue share</p>
+                  <p class="font-mono text-muted-foreground">
+                    {{ roleRevenueShare(role) }}%
+                  </p>
+                </div>
+                <div class="h-2 rounded-full bg-muted/70">
+                  <div
+                    class="h-2 rounded-full transition-all"
+                    [style.background]="
+                      progressColor(roleRevenueShare(role), 'share')
+                    "
+                    [style.width.%]="clampedPercent(roleRevenueShare(role))"
+                  ></div>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </aside>
     </section>
 
-    <app-enterprise-paginator
-      [totalRecords]="filtered().length"
-      [rows]="pageSize"
-      [page]="page()"
-      (pageChange)="onPageNumberChange($event)"
-    />
+    @if (showPaginator()) {
+      <app-enterprise-paginator
+        [totalRecords]="filtered().length"
+        [rows]="pageSize"
+        [page]="page()"
+        (pageChange)="onPageNumberChange($event)"
+      />
+    }
   }
 </div>

@@ -1,30 +1,69 @@
 <div class="enterprise-table-page">
-  <app-data-table-toolbar
-    [title]="title()"
-    [subtitle]="subtitle()"
-  ></app-data-table-toolbar>
-
-  <section class="rounded-2xl border border-border bg-card p-4 sm:p-5">
-    <div class="flex flex-wrap items-center gap-2">
-      <app-button
-        variant="outline"
-        size="sm"
-        ariaLabel="Back to quarter overview"
-        (onClick)="goBack()"
-      >
+  <app-data-table-toolbar [title]="title()" [subtitle]="subtitle()">
+    <div header-actions class="flex items-center gap-2">
+      <app-button variant="outline" size="sm" (onClick)="goBack()">
         Back to quarter overview
       </app-button>
-      @for (quarterOption of [1, 2, 3, 4]; track quarterOption) {
-        <app-button
-          [variant]="quarterOption === quarter() ? 'primary' : 'ghost'"
-          size="sm"
-          [ariaLabel]="'Open quarter ' + quarterOption"
-          (onClick)="openQuarter(quarterOption)"
-        >
-          Q{{ quarterOption }}
-        </app-button>
-      }
+      <app-button variant="ghost" size="sm" (onClick)="goToReportsHub()">
+        Reports hub
+      </app-button>
     </div>
+  </app-data-table-toolbar>
+
+  <section class="rounded-2xl border border-border bg-card p-4 sm:p-5">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <div class="flex flex-wrap items-center gap-2">
+        @for (quarterOption of [1, 2, 3, 4]; track quarterOption) {
+          <app-button
+            [variant]="quarterOption === quarter() ? 'primary' : 'ghost'"
+            size="sm"
+            [ariaLabel]="'Open quarter ' + quarterOption"
+            [disabled]="isFutureQuarter(quarterOption)"
+            [title]="
+              isFutureQuarter(quarterOption)
+                ? 'Quarter data is not available yet'
+                : ''
+            "
+            (onClick)="openQuarter(quarterOption)"
+          >
+            Q{{ quarterOption }}
+          </app-button>
+        }
+      </div>
+      <p-tag
+        [value]="'FY ' + year()"
+        [severity]="quarterReport() ? 'info' : 'warn'"
+      />
+    </div>
+
+    @if (quarterReport()) {
+      <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <article class="rounded-xl border border-border bg-background p-3">
+          <p class="text-[11px] text-muted-foreground">Quarter</p>
+          <p class="font-display mt-1 text-lg font-bold text-foreground">
+            {{ quarterReport()!.quarterLabel }}
+          </p>
+        </article>
+        <article class="rounded-xl border border-border bg-background p-3">
+          <p class="text-[11px] text-muted-foreground">Total Services</p>
+          <p class="font-display mt-1 text-lg font-bold text-primary">
+            {{ quarterReport()!.ordersCount }}
+          </p>
+        </article>
+        <article class="rounded-xl border border-border bg-background p-3">
+          <p class="text-[11px] text-muted-foreground">Total Revenue</p>
+          <p class="font-display mt-1 text-lg font-bold text-foreground">
+            {{ formatUtils.formatCurrency(quarterReport()!.totalRevenue) }}
+          </p>
+        </article>
+        <article class="rounded-xl border border-border bg-background p-3">
+          <p class="text-[11px] text-muted-foreground">Avg Ticket</p>
+          <p class="font-display mt-1 text-lg font-bold text-accent">
+            {{ formatUtils.formatCurrency(quarterAverageTicket()) }}
+          </p>
+        </article>
+      </div>
+    }
   </section>
 
   @if (loading()) {
@@ -35,102 +74,94 @@
     <div class="enterprise-table-panel">
       <app-table-feedback
         mode="empty"
-        message="No details available for this quarter."
+        [message]="quarterFeedbackMessage()"
       />
     </div>
   } @else {
-    <section class="grid grid-cols-2 gap-3 sm:grid-cols-4">
-      <article class="rounded-xl border border-border bg-card p-4">
-        <p class="text-xs text-muted-foreground">Quarter</p>
-        <p class="font-display mt-1 text-xl font-bold text-foreground">
-          {{ quarterReport()!.quarterLabel }}
-        </p>
-      </article>
-      <article class="rounded-xl border border-border bg-card p-4">
-        <p class="text-xs text-muted-foreground">Total Services</p>
-        <p class="font-display mt-1 text-xl font-bold text-primary">
-          {{ quarterReport()!.ordersCount }}
-        </p>
-      </article>
-      <article class="rounded-xl border border-border bg-card p-4">
-        <p class="text-xs text-muted-foreground">Total Revenue</p>
-        <p class="font-display mt-1 text-xl font-bold text-success">
-          {{ formatUtils.formatCurrency(quarterReport()!.totalRevenue) }}
-        </p>
-      </article>
-      <article class="rounded-xl border border-border bg-card p-4">
-        <p class="text-xs text-muted-foreground">Months Included</p>
-        <p class="font-display mt-1 text-xl font-bold text-accent">
-          {{ quarterReport()!.months.length }}
-        </p>
-      </article>
-    </section>
-
-    <div class="space-y-4">
-      @for (month of quarterReport()!.months; track month.month) {
-        <section class="rounded-2xl border border-border bg-card">
-          <header
-            class="flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-3 sm:px-5"
-          >
+    <section class="grid grid-cols-1 gap-4 xl:grid-cols-2">
+      @for (panel of monthPanels(); track panel.month.month) {
+        <article class="rounded-2xl border border-border bg-card p-4 sm:p-5">
+          <div class="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h2 class="font-display text-base font-semibold text-foreground">
-                {{ month.monthLabel }}
+                {{ panel.month.monthLabel }}
               </h2>
               <p class="mt-1 text-xs text-muted-foreground">
-                {{ month.ordersCount }} completed services
+                {{ panel.month.ordersCount }} completed services
               </p>
             </div>
-            <p class="text-sm font-semibold text-success">
-              {{ formatUtils.formatCurrency(month.totalRevenue) }}
-            </p>
-          </header>
-
-          <div class="p-4 sm:p-5">
-            <table class="w-full">
-              <thead>
-                <tr class="border-b border-border text-left">
-                  <th class="pb-2 text-[11px] font-semibold text-muted-foreground">
-                    Service
-                  </th>
-                  <th
-                    class="pb-2 text-right text-[11px] font-semibold text-muted-foreground"
-                  >
-                    Count
-                  </th>
-                  <th
-                    class="pb-2 text-right text-[11px] font-semibold text-muted-foreground"
-                  >
-                    Avg Price
-                  </th>
-                  <th
-                    class="pb-2 text-right text-[11px] font-semibold text-muted-foreground"
-                  >
-                    Revenue
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (service of month.services; track service.serviceKey) {
-                  <tr class="border-b border-border/60 last:border-b-0">
-                    <td class="py-2 pr-3 text-xs text-foreground">
-                      {{ service.serviceName }}
-                    </td>
-                    <td class="py-2 text-right text-xs text-muted-foreground">
-                      {{ service.ordersCount }}
-                    </td>
-                    <td class="py-2 text-right text-xs text-muted-foreground">
-                      {{ formatUtils.formatCurrency(service.averageUnitPrice) }}
-                    </td>
-                    <td class="py-2 text-right text-xs font-semibold text-success">
-                      {{ formatUtils.formatCurrency(service.totalRevenue) }}
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
+            <p-tag
+              [value]="panel.revenueSharePercent + '% quarter share'"
+              [severity]="panel.revenueSharePercent >= 35 ? 'info' : 'warn'"
+            />
           </div>
-        </section>
+
+          <div class="mt-4 grid grid-cols-2 gap-3">
+            <div class="rounded-lg border border-border bg-background p-3">
+              <p class="text-[11px] text-muted-foreground">Revenue</p>
+              <p class="mt-1 text-sm font-semibold text-foreground">
+                {{ formatUtils.formatCurrency(panel.month.totalRevenue) }}
+              </p>
+            </div>
+            <div class="rounded-lg border border-border bg-background p-3">
+              <p class="text-[11px] text-muted-foreground">Top Service</p>
+              <p class="mt-1 text-sm font-semibold text-foreground">
+                {{ panel.topService?.serviceName ?? "No active service" }}
+              </p>
+            </div>
+          </div>
+
+          <div class="mt-4">
+            <div class="mb-1.5 flex items-center justify-between gap-3 text-xs">
+              <p class="text-muted-foreground">Month contribution</p>
+              <p class="font-mono font-semibold text-foreground">
+                {{ panel.revenueSharePercent }}%
+              </p>
+            </div>
+            <div class="h-1.5 rounded-full bg-muted/70">
+              <div
+                class="h-1.5 rounded-full bg-primary/85 transition-all"
+                [style.width.%]="clampedPercent(panel.revenueSharePercent)"
+              ></div>
+            </div>
+          </div>
+
+          <div class="mt-4 space-y-2">
+            <p class="text-xs text-muted-foreground">Service contribution</p>
+            @if (panel.activeServices.length === 0) {
+              <p
+                class="rounded-lg bg-muted/30 px-3 py-2 text-xs text-muted-foreground"
+              >
+                No service records for this month.
+              </p>
+            } @else {
+              @for (service of panel.activeServices; track service.serviceKey) {
+                <div class="space-y-1 rounded-lg bg-muted/20 px-3 py-2">
+                  <div class="flex items-center justify-between gap-3 text-xs">
+                    <p class="truncate text-foreground">
+                      {{ service.serviceName }}
+                    </p>
+                    <p class="font-mono text-muted-foreground">
+                      {{ service.ordersCount }} ·
+                      {{ formatUtils.formatCurrency(service.totalRevenue) }}
+                    </p>
+                  </div>
+                  <div class="h-1.5 rounded-full bg-muted/70">
+                    <div
+                      class="h-1.5 rounded-full bg-accent/80 transition-all"
+                      [style.width.%]="
+                        clampedPercent(
+                          serviceContributionPercent(service, panel.month)
+                        )
+                      "
+                    ></div>
+                  </div>
+                </div>
+              }
+            }
+          </div>
+        </article>
       }
-    </div>
+    </section>
   }
 </div>

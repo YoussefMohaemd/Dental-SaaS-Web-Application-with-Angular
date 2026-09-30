@@ -53,8 +53,7 @@ export class ReportingDataService {
   );
 
   readonly availableYears = computed(() => {
-    const startYear = this.seed().startYear;
-    const endYear = this.seed().endYear;
+    const { startYear, endYear } = this.activeYearRange(this.seed());
     const years: number[] = [];
     for (let year = endYear; year >= startYear; year -= 1) {
       years.push(year);
@@ -100,7 +99,9 @@ export class ReportingDataService {
     year: number,
     quarter: number,
   ): QuarterReportDetail | undefined {
-    return this.getQuarterReports(year).find((report) => report.quarter === quarter);
+    return this.getQuarterReports(year).find(
+      (report) => report.quarter === quarter,
+    );
   }
 
   private buildQuarterReport(
@@ -120,7 +121,10 @@ export class ReportingDataService {
       .filter((month): month is QuarterMonthDetail => month !== null);
 
     const services = this.aggregateServiceMetrics(yearMetrics);
-    const ordersCount = services.reduce((sum, item) => sum + item.ordersCount, 0);
+    const ordersCount = services.reduce(
+      (sum, item) => sum + item.ordersCount,
+      0,
+    );
     const totalRevenue = services.reduce(
       (sum, item) => sum + item.totalRevenue,
       0,
@@ -148,7 +152,10 @@ export class ReportingDataService {
     if (monthMetrics.length === 0) return null;
 
     const services = this.aggregateServiceMetrics(monthMetrics);
-    const ordersCount = services.reduce((sum, item) => sum + item.ordersCount, 0);
+    const ordersCount = services.reduce(
+      (sum, item) => sum + item.ordersCount,
+      0,
+    );
     const totalRevenue = services.reduce(
       (sum, item) => sum + item.totalRevenue,
       0,
@@ -200,25 +207,48 @@ export class ReportingDataService {
     });
   }
 
-  private generateOrderArchiveRecords(seed: ReportingSeedData): OrderArchiveRecord[] {
+  private generateOrderArchiveRecords(
+    seed: ReportingSeedData,
+  ): OrderArchiveRecord[] {
     const records: OrderArchiveRecord[] = [];
     let sequence = 1;
+    const now = new Date();
+    const { startYear, endYear } = this.activeYearRange(seed);
+    const currentMonth = now.getUTCMonth() + 1;
+    const currentDay = Math.max(1, now.getUTCDate());
 
-    for (let year = seed.startYear; year <= seed.endYear; year += 1) {
-      for (let month = 1; month <= 12; month += 1) {
-        const ordersInMonth = 5 + ((year + month) % 3);
+    for (let year = startYear; year <= endYear; year += 1) {
+      const maxMonth = year === endYear ? currentMonth : 12;
+      for (let month = 1; month <= maxMonth; month += 1) {
+        const ordersInMonth = 24 + ((year + month) % 15);
+        const maxDayInMonth =
+          year === endYear && month === currentMonth ? currentDay : 28;
         for (let index = 0; index < ordersInMonth; index += 1) {
           const service =
-            seed.services[(month + index + year) % seed.services.length];
+            seed.services[(month * 3 + index + year) % seed.services.length];
           const unitCount = 1 + ((year + month + index) % 4);
-          const day = Math.min(25, 2 + index * 4 + ((year + month) % 2));
+          const day = Math.max(
+            1,
+            Math.min(
+              maxDayInMonth,
+              1 + ((index * 2 + year + month) % maxDayInMonth),
+            ),
+          );
           const receivedDate = new Date(
             Date.UTC(year, month - 1, day, 8 + (index % 5), 15, 0),
           );
           const sentDate = new Date(receivedDate);
-          sentDate.setUTCDate(sentDate.getUTCDate() + 1 + ((index + month) % 4));
+          sentDate.setUTCDate(
+            sentDate.getUTCDate() + 1 + ((index + month) % 4),
+          );
+          if (sentDate.getTime() > now.getTime()) {
+            sentDate.setTime(now.getTime());
+          }
           const chargedDate = new Date(sentDate);
           chargedDate.setUTCHours(chargedDate.getUTCHours() + 3);
+          if (chargedDate.getTime() > now.getTime()) {
+            chargedDate.setTime(now.getTime());
+          }
 
           let maxillary = (month + index) % 2 === 0;
           const mandibular = (month + index + year) % 3 === 0;
@@ -230,13 +260,16 @@ export class ReportingDataService {
             service.basePrice * 12 + ((month + year + index) % 5) * 7;
           const amount = pricePerUnit * unitCount;
           const shouldBeCharged = (index + month + year) % 5 !== 0;
-          const doctorName = seed.doctors[sequence % seed.doctors.length] ?? "N/A";
+          const doctorName =
+            seed.doctors[sequence % seed.doctors.length] ?? "N/A";
           const firstName =
-            seed.patientsFirstNames[sequence % seed.patientsFirstNames.length] ??
-            "Patient";
+            seed.patientsFirstNames[
+              sequence % seed.patientsFirstNames.length
+            ] ?? "Patient";
           const lastName =
-            seed.patientsLastNames[(sequence + month) % seed.patientsLastNames.length] ??
-            "Name";
+            seed.patientsLastNames[
+              (sequence + month) % seed.patientsLastNames.length
+            ] ?? "Name";
 
           records.push({
             id: `archive-${sequence}`,
@@ -254,7 +287,8 @@ export class ReportingDataService {
             receivedAt: receivedDate.toISOString(),
             sentAt: sentDate.toISOString(),
             operator:
-              seed.operators[(sequence + year) % seed.operators.length] ?? "operator",
+              seed.operators[(sequence + year) % seed.operators.length] ??
+              "operator",
             archiveDate: sentDate.toISOString().slice(0, 10),
             chargedAt: shouldBeCharged ? chargedDate.toISOString() : null,
           });
@@ -266,7 +300,8 @@ export class ReportingDataService {
 
     return records.sort(
       (left, right) =>
-        new Date(right.receivedAt).getTime() - new Date(left.receivedAt).getTime(),
+        new Date(right.receivedAt).getTime() -
+        new Date(left.receivedAt).getTime(),
     );
   }
 
@@ -274,11 +309,14 @@ export class ReportingDataService {
     seed: ReportingSeedData,
   ): MonthlyServiceMetric[] {
     const metrics: MonthlyServiceMetric[] = [];
-    const yearSpan = seed.endYear - seed.startYear + 1;
+    const { startYear, endYear } = this.activeYearRange(seed);
+    const yearSpan = endYear - startYear + 1;
+    const currentMonth = new Date().getUTCMonth() + 1;
 
-    for (let year = seed.startYear; year <= seed.endYear; year += 1) {
-      const yearOffset = year - seed.startYear;
-      for (let month = 1; month <= 12; month += 1) {
+    for (let year = startYear; year <= endYear; year += 1) {
+      const yearOffset = year - startYear;
+      const maxMonth = year === endYear ? currentMonth : 12;
+      for (let month = 1; month <= maxMonth; month += 1) {
         for (
           let serviceIndex = 0;
           serviceIndex < seed.services.length;
@@ -286,12 +324,12 @@ export class ReportingDataService {
         ) {
           const service = seed.services[serviceIndex];
           const baseline =
-            18 + ((month * 5 + serviceIndex * 7 + yearOffset * 11) % 40);
-          const quarterBoost = Math.ceil(month / 3) * 2;
-          const growthBoost = Math.floor((yearOffset / yearSpan) * 6);
+            42 + ((month * 7 + serviceIndex * 9 + yearOffset * 13) % 75);
+          const quarterBoost = Math.ceil(month / 3) * 4;
+          const growthBoost = Math.floor((yearOffset / yearSpan) * 9);
           const ordersCount = baseline + quarterBoost + growthBoost;
           const averagePrice =
-            service.basePrice + ((month + serviceIndex + yearOffset) % 6);
+            service.basePrice + ((month + serviceIndex + yearOffset) % 7);
           const totalRevenue = ordersCount * averagePrice;
 
           metrics.push({
@@ -315,11 +353,14 @@ export class ReportingDataService {
     return seed.employeeNames.map((name, index) => {
       const completedOrders = 70 + ((index * 13) % 210);
       const revenueCollected = completedOrders * (38 + ((index + 3) % 11) * 4);
-      const avgTurnaroundDays = Number((1.8 + ((index + 2) % 8) * 0.22).toFixed(1));
+      const avgTurnaroundDays = Number(
+        (1.8 + ((index + 2) % 8) * 0.22).toFixed(1),
+      );
       const onTimeRate = 80 + ((index * 3) % 19);
       return {
         userId: 120 + index,
-        type: seed.employeeTypes[index % seed.employeeTypes.length] ?? "Planner",
+        type:
+          seed.employeeTypes[index % seed.employeeTypes.length] ?? "Planner",
         fullName: name,
         completedOrders,
         revenueCollected,
@@ -333,5 +374,15 @@ export class ReportingDataService {
   private getMonthsForQuarter(quarter: number): number[] {
     const start = (quarter - 1) * 3 + 1;
     return [start, start + 1, start + 2];
+  }
+
+  private activeYearRange(seed: ReportingSeedData): {
+    startYear: number;
+    endYear: number;
+  } {
+    const currentYear = new Date().getUTCFullYear();
+    const endYear = Math.min(seed.endYear, currentYear);
+    const startYear = Math.min(seed.startYear, endYear);
+    return { startYear, endYear };
   }
 }
