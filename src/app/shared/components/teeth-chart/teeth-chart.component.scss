@@ -37,7 +37,6 @@
   text-transform: uppercase;
   letter-spacing: 0.14em;
   font-weight: 700;
-  color: var(--muted-foreground);
 }
 
 .chart-title {
@@ -51,6 +50,23 @@
   margin: 0.2rem 0 0;
   font-size: 0.67rem;
   color: var(--muted-foreground);
+}
+
+.chart-overline,
+.chart-subtitle,
+.readonly-hint,
+.patient-orientation,
+.arch-name,
+.arch-range,
+.legend-label,
+.jaw-gap span {
+  color: var(--muted-foreground);
+}
+
+.tooth-number,
+.selected-list,
+.arch-range {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 .selected-chip {
@@ -77,12 +93,9 @@
   height: 1.15rem;
   border-radius: 999px;
   display: inline-flex;
-  align-items: center;
-  justify-content: center;
   font-size: 0.64rem;
   font-weight: 700;
   color: var(--primary-foreground);
-  background: linear-gradient(135deg, var(--primary), #0ea5e9);
 }
 
 .selected-chip.is-empty .selected-chip-count {
@@ -127,8 +140,12 @@
 
 .jaw-switch.is-active {
   color: var(--primary-foreground);
-  background: linear-gradient(135deg, var(--primary), #0ea5e9);
   box-shadow: 0 5px 12px rgb(37 99 235 / 0.3);
+}
+
+.selected-chip-count,
+.jaw-switch.is-active {
+  background: linear-gradient(135deg, var(--primary), #0ea5e9);
 }
 
 .readonly-hint {
@@ -139,7 +156,6 @@
   padding: 0.28rem 0.6rem;
   font-size: 0.66rem;
   font-weight: 600;
-  color: var(--muted-foreground);
 }
 
 .selected-list {
@@ -147,7 +163,6 @@
   color: var(--foreground);
   font-size: 0.7rem;
   font-weight: 600;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 .anatomy-surface {
@@ -163,7 +178,6 @@
   margin: 0 0 0.55rem;
   font-size: 0.62rem;
   font-weight: 700;
-  color: var(--muted-foreground);
   letter-spacing: 0.06em;
 }
 
@@ -190,15 +204,12 @@
   font-size: 0.65rem;
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  color: var(--muted-foreground);
   font-weight: 700;
 }
 
 .arch-range {
   font-size: 0.56rem;
-  color: var(--muted-foreground);
   opacity: 0.9;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 .arch-row {
@@ -239,7 +250,6 @@
   text-transform: uppercase;
   letter-spacing: 0.12em;
   font-weight: 700;
-  color: var(--muted-foreground);
   padding: 0.05rem 0.36rem;
 }
 
@@ -274,7 +284,6 @@
 
 .legend-label {
   font-size: 0.62rem;
-  color: var(--muted-foreground);
 }
 
 .selected-dot {
@@ -301,10 +310,6 @@
   cursor: pointer;
 }
 
-.tooth:disabled {
-  cursor: default;
-}
-
 .tooth:focus-visible {
   outline: none;
 }
@@ -314,7 +319,6 @@
   font-size: 0.62rem;
   font-weight: 700;
   color: color-mix(in srgb, var(--foreground) 92%, var(--muted-foreground));
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 .tooth-number.is-selected {
@@ -355,9 +359,13 @@
   border-radius: 58% 58% 40% 40% / 74% 74% 26% 26%;
 }
 
-.tooth-crown::before {
+.tooth-crown::before,
+.tooth-crown::after {
   content: "";
   position: absolute;
+}
+
+.tooth-crown::before {
   left: 50%;
   top: 12%;
   width: 2px;
@@ -368,8 +376,6 @@
 }
 
 .tooth-crown::after {
-  content: "";
-  position: absolute;
   left: 18%;
   right: 18%;
   top: 8%;
@@ -387,6 +393,10 @@
   position: absolute;
   inset: 0;
   display: flex;
+}
+
+.selected-chip-count,
+.tooth-overlay {
   align-items: center;
   justify-content: center;
 }
