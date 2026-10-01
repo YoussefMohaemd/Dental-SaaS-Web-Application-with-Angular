@@ -181,7 +181,11 @@
               All Orders ({{ doctorOrders().length }})
             </h2>
           </div>
-          <p-table [value]="doctorOrders()" styleClass="w-full text-sm">
+          <p-table
+            [value]="doctorOrders()"
+            styleClass="w-full text-sm"
+            [tableStyle]="{ 'min-width': '52rem' }"
+          >
             <ng-template pTemplate="header">
               <tr class="bg-muted/40 border-b border-border">
                 @for (

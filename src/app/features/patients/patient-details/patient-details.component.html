@@ -223,7 +223,11 @@
               Open Orders Board
             </button>
           </div>
-          <p-table [value]="patientOrders()" styleClass="w-full text-sm">
+          <p-table
+            [value]="patientOrders()"
+            styleClass="w-full text-sm"
+            [tableStyle]="{ 'min-width': '52rem' }"
+          >
             <ng-template pTemplate="header">
               <tr class="bg-muted/40 border-b border-border">
                 @for (
@@ -303,7 +307,11 @@
               </p>
             </div>
           } @else {
-            <p-table [value]="patientCases()" styleClass="w-full text-sm">
+            <p-table
+              [value]="patientCases()"
+              styleClass="w-full text-sm"
+              [tableStyle]="{ 'min-width': '52rem' }"
+            >
               <ng-template pTemplate="header">
                 <tr class="bg-muted/40 border-b border-border">
                   @for (
@@ -388,7 +396,11 @@
               </p>
             </div>
           } @else {
-            <p-table [value]="patientDocuments()" styleClass="w-full text-sm">
+            <p-table
+              [value]="patientDocuments()"
+              styleClass="w-full text-sm"
+              [tableStyle]="{ 'min-width': '56rem' }"
+            >
               <ng-template pTemplate="header">
                 <tr class="bg-muted/40 border-b border-border">
                   @for (

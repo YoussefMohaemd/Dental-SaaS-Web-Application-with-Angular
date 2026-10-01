@@ -1,5 +1,6 @@
 :host {
   display: block;
+  --orders-table-min-width: 76rem;
 }
 
 .orders-table-scroll {
@@ -9,21 +10,16 @@
   -webkit-overflow-scrolling: touch;
 }
 
-@media (min-width: 1280px) {
-  .orders-table-scroll {
-    overflow-x: hidden;
-  }
-
-  :host ::ng-deep .orders-treetable.p-treetable .p-treetable-table {
-    width: 100%;
-    min-width: 0 !important;
-  }
+:host ::ng-deep .orders-treetable.p-treetable .p-treetable-table-container {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
-@media (max-width: 1279px) {
-  :host ::ng-deep .orders-treetable.p-treetable .p-treetable-table {
-    min-width: 74rem !important;
-  }
+:host ::ng-deep .orders-treetable.p-treetable .p-treetable-table {
+  width: 100%;
+  min-width: var(--orders-table-min-width) !important;
+  table-layout: auto;
 }
 
 :host ::ng-deep .orders-paginator .enterprise-pagination {
@@ -70,10 +66,6 @@
 }
 
 @media (max-width: 640px) {
-  :host ::ng-deep .orders-treetable.p-treetable .p-treetable-table {
-    min-width: 68rem !important;
-  }
-
   .orders-header-actions {
     gap: 0.5rem;
   }

@@ -201,7 +201,7 @@
 .enterprise-table-scroll {
   flex: 0 0 auto;
   min-height: auto;
-  overflow-x: auto;
+  overflow-x: visible;
   overflow-y: visible;
 }
 
@@ -490,7 +490,29 @@
   border-bottom: 0 !important;
 }
 
+@media (max-width: #{$breakpoint-lg}) {
+  .p-datatable .p-datatable-table-container,
+  .p-treetable .p-treetable-table-container,
+  .p-treetable .p-treetable-wrapper {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .p-datatable .p-datatable-table,
+  .p-treetable .p-treetable-table {
+    width: max-content;
+    min-width: 100%;
+  }
+}
+
 @media (max-width: 1024px) {
+  .enterprise-table-scroll {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+
   .enterprise-table-page {
     padding: 0.875rem;
   }

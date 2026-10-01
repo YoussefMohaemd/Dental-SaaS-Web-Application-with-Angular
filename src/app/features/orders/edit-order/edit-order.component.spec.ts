@@ -42,8 +42,33 @@ describe("EditOrderComponent", () => {
   });
 
   it("should flag invalid required fields", () => {
-    component.editForm.controls.patientId.setValue("");
-    component.editForm.controls.patientId.markAsTouched();
-    expect(component.fieldInvalid("patientId")).toBeTrue();
+    component.editForm.controls.patientName.setValue("");
+    component.editForm.controls.patientName.markAsTouched();
+    expect(component.fieldInvalid("patientName")).toBeTrue();
+  });
+
+  it("should keep doctor and clinic optional", () => {
+    component.editForm.controls.patientName.setValue("Alice Johnson");
+    component.editForm.controls.doctorName.setValue("");
+    component.editForm.controls.clinicId.setValue("");
+    expect(component.editForm.valid).toBeTrue();
+  });
+
+  it("should require teeth for services that need them", () => {
+    component.editForm.controls.patientName.setValue("Alice Johnson");
+    component.toggleService("surgical-guide");
+    expect(component.canSave()).toBeFalse();
+    component.setServiceTeethInput("surgical-guide", "11, 12");
+    expect(component.canSave()).toBeTrue();
+  });
+
+  it("should allow removing and adding teeth interactively in edit mode", () => {
+    component.toggleService("gfmr");
+    component.setServiceTeethInput("gfmr", "11, 12");
+    component.toggleServiceTooth("gfmr", 12);
+    component.toggleServiceTooth("gfmr", 21);
+    expect(component.teethInputValue("gfmr")).toBe("11, 21");
+    component.clearServiceTeeth("gfmr");
+    expect(component.teethInputValue("gfmr")).toBe("");
   });
 });

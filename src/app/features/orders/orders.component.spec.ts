@@ -6,6 +6,7 @@ import {
   OrdersComponent,
   compareOrderValues,
   matchesOrderDuration,
+  resolveDurationReferenceDate,
 } from "./orders.component";
 import { NavigationService } from "@core/services/navigation.service";
 import { OrderDataService } from "@core/services/order-data.service";
@@ -134,8 +135,14 @@ describe("OrdersComponent", () => {
       matchesOrderDuration("2026-09-30T08:00:00Z", "today", now),
     ).toBeTrue();
     expect(
+      matchesOrderDuration("2026-09-30T23:45:00Z", "today", now),
+    ).toBeTrue();
+    expect(
       matchesOrderDuration("2026-09-29T08:00:00Z", "today", now),
     ).toBeFalse();
+    expect(
+      matchesOrderDuration("2026-09-24T00:00:00Z", "week", now),
+    ).toBeTrue();
     expect(
       matchesOrderDuration("2026-09-20T08:00:00Z", "week", now),
     ).toBeFalse();
@@ -148,6 +155,24 @@ describe("OrdersComponent", () => {
     expect(
       matchesOrderDuration("2026-06-30T13:00:00Z", "3-months", now),
     ).toBeTrue();
+  });
+
+  it("should fallback duration anchor to latest order date when all data is stale", () => {
+    const now = new Date("2026-09-30T12:00:00Z");
+    const reference = resolveDurationReferenceDate(
+      ["2024-12-01T10:00:00Z", "2024-12-15T08:00:00Z"],
+      now,
+    );
+    expect(reference.toISOString()).toBe("2024-12-15T08:00:00.000Z");
+  });
+
+  it("should keep the current time anchor when recent data exists", () => {
+    const now = new Date("2026-09-30T12:00:00Z");
+    const reference = resolveDurationReferenceDate(
+      ["2026-09-29T10:00:00Z", "2026-09-15T08:00:00Z"],
+      now,
+    );
+    expect(reference).toBe(now);
   });
 
   it("should update search and reset pagination (immediate + debounced paths)", () => {

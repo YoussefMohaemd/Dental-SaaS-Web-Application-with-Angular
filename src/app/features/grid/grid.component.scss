@@ -45,7 +45,7 @@
 }
 
 .table-scroll-wrap {
-  overflow-x: auto;
+  overflow-x: visible;
 }
 
 .showcase-native-table,
@@ -230,6 +230,12 @@
 }
 
 @media (max-width: 1024px) {
+  .table-scroll-wrap {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+
   .showcase-toolbar {
     grid-template-columns: 1fr 1fr;
   }

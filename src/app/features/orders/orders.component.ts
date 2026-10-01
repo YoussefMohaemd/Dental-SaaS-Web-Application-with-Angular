@@ -147,6 +147,19 @@ function durationToMonths(
   return 6;
 }
 
+function startOfUtcDay(date: Date): Date {
+  return new Date(
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()),
+  );
+}
+
+function endOfUtcDay(date: Date): Date {
+  const start = startOfUtcDay(date);
+  start.setUTCDate(start.getUTCDate() + 1);
+  start.setUTCMilliseconds(start.getUTCMilliseconds() - 1);
+  return start;
+}
+
 export function matchesOrderDuration(
   receivedAt: string,
   duration: DurationWindow,
@@ -154,25 +167,39 @@ export function matchesOrderDuration(
 ): boolean {
   const receivedDate = new Date(receivedAt);
   if (Number.isNaN(receivedDate.getTime())) return false;
-  if (receivedDate > now) return false;
+  const windowEnd = endOfUtcDay(now);
+  if (receivedDate > windowEnd) return false;
 
   if (duration === "today") {
-    return (
-      receivedDate.getFullYear() === now.getFullYear() &&
-      receivedDate.getMonth() === now.getMonth() &&
-      receivedDate.getDate() === now.getDate()
-    );
+    const start = startOfUtcDay(now);
+    return receivedDate >= start && receivedDate <= windowEnd;
   }
 
-  const cutoff = new Date(now);
+  const cutoff = startOfUtcDay(now);
   if (duration === "week") {
-    cutoff.setDate(cutoff.getDate() - 7);
-    return receivedDate >= cutoff;
+    cutoff.setUTCDate(cutoff.getUTCDate() - 6);
+    return receivedDate >= cutoff && receivedDate <= windowEnd;
   }
 
   const monthsBack = durationToMonths(duration);
-  cutoff.setMonth(cutoff.getMonth() - monthsBack);
-  return receivedDate >= cutoff;
+  cutoff.setUTCMonth(cutoff.getUTCMonth() - monthsBack);
+  return receivedDate >= cutoff && receivedDate <= windowEnd;
+}
+
+export function resolveDurationReferenceDate(
+  receivedDates: readonly string[],
+  now: Date = new Date(),
+): Date {
+  const validTimes = receivedDates
+    .map((receivedAt) => new Date(receivedAt).getTime())
+    .filter((time) => Number.isFinite(time) && time > 0);
+  if (validTimes.length === 0) return now;
+
+  const latestTime = Math.max(...validTimes);
+  const latestDate = new Date(latestTime);
+  const fallbackCutoff = new Date(now);
+  fallbackCutoff.setMonth(fallbackCutoff.getMonth() - 6);
+  return latestDate < fallbackCutoff ? latestDate : now;
 }
 
 @Component({
@@ -236,6 +263,11 @@ export class OrdersComponent {
   readonly subOrderServiceOptions = computed(() =>
     this.uniqueSorted(this.subOrders().map((subOrder) => subOrder.service)),
   );
+  readonly durationReferenceDate = computed(() =>
+    resolveDurationReferenceDate(
+      this.orders().map((order) => order.receivedAt),
+    ),
+  );
   readonly subOrderServicesByOrderId = computed(() => {
     const byOrderId = new Map<string, Set<string>>();
     for (const subOrder of this.subOrders()) {
@@ -263,7 +295,11 @@ export class OrdersComponent {
     const duration = this.durationFilter();
     if (duration)
       result = result.filter((order) =>
-        matchesOrderDuration(order.receivedAt, duration),
+        matchesOrderDuration(
+          order.receivedAt,
+          duration,
+          this.durationReferenceDate(),
+        ),
       );
     if (this.serviceFilter().length > 0)
       result = result.filter((order) => {
@@ -551,7 +587,10 @@ export class OrdersComponent {
   }
 
   onDraftDurationValueChange(value: string): void {
-    this.draftDurationFilter.set(value as DurationFilterValue);
+    const next = value as DurationFilterValue;
+    this.draftDurationFilter.set(next);
+    this.durationFilter.set(next);
+    this.page.set(1);
   }
 
   toggleDraftService(service: string): void {
@@ -659,6 +698,7 @@ export class OrdersComponent {
   }
 
   openDoctor(doctorId: string): void {
+    if (!doctorId.trim()) return;
     this.navigationService.navigate("doctorDetails", { doctorId });
   }
 

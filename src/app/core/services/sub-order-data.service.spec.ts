@@ -51,7 +51,7 @@ describe("SubOrderDataService", () => {
     expect(created[0].creationData?.selectedTeeth).toEqual([11, 12]);
     expect(created[0].creationData?.fileReferences).toEqual(["upper-scan.stl"]);
     expect(service.getByOrderId("ord-42").length).toBe(1);
-    expect(service.getDetailById(created[0].id)?.forms.length).toBe(1);
+    expect(service.getDetailById(created[0].id)?.forms.length).toBe(3);
   });
 
   it("should synthesize detail records from the summary counts for the exact sub-order id", async () => {
@@ -85,5 +85,34 @@ describe("SubOrderDataService", () => {
       service.getDetailByContext("ord-33", "missing-sub-order"),
     ).toBeUndefined();
     expect(service.getDetailByContext("ord-99", "so-58")).toBeUndefined();
+  });
+
+  it("should replace existing sub-orders for an order when editing", () => {
+    httpMock.expectOne("/data/sub-orders.json").flush([]);
+
+    service.replaceForOrder("ord-1", [
+      {
+        serviceId: "final-restoration",
+        service: "Final Restoration",
+        icon: "✨",
+        priority: "High",
+        dueDate: "2024-12-29",
+        notes: "Edited from order page",
+        teeth: [11, 21],
+        scanRequirements: ["Prep scan"],
+        creationData: {
+          serviceId: "final-restoration",
+          serviceDetails: {},
+          serviceForm: {},
+          selectedTeeth: [11, 21],
+          scanRequirements: ["Prep scan"],
+          fileReferences: [],
+        },
+      },
+    ]);
+
+    const rows = service.getByOrderId("ord-1");
+    expect(rows.length).toBe(1);
+    expect(rows[0].service).toBe("Final Restoration");
   });
 });

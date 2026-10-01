@@ -338,6 +338,52 @@ const DEFAULT_FORM_VALUES: SubOrderFormDraftValue = {
   specialInstructions: "",
 };
 
+interface ServiceFormTemplate {
+  label: string;
+  required: boolean;
+}
+
+const SERVICE_FORM_TEMPLATES: Record<string, ServiceFormTemplate[]> = {
+  "treatment-plan": [
+    { label: "Diagnostic Findings Summary", required: true },
+    { label: "Phased Treatment Roadmap", required: true },
+    { label: "Risk & Consent Notes", required: false },
+  ],
+  "surgical-guide": [
+    { label: "Implant Positioning Plan", required: true },
+    { label: "Guide Support & Anchor Strategy", required: true },
+    { label: "Drilling Sequence Checklist", required: true },
+  ],
+  gfmr: [
+    { label: "OVD & Centric Relation Record", required: true },
+    { label: "Occlusal Scheme Definition", required: true },
+    { label: "Provisional-to-Final Transition Plan", required: true },
+  ],
+  fmb: [
+    { label: "Span and Connector Design", required: true },
+    { label: "Pontic Emergence & Tissue Profile", required: true },
+    { label: "Delivery Sequencing", required: false },
+  ],
+  "temp-restoration": [
+    { label: "Provisional Contour Requirements", required: true },
+    { label: "Soft Tissue Conditioning Goals", required: true },
+  ],
+  "final-restoration": [
+    { label: "Definitive Prep & Margin Mapping", required: true },
+    { label: "Shade and Characterization Plan", required: true },
+    { label: "Occlusal Finishing Notes", required: false },
+  ],
+  "full-guide": [
+    { label: "Surgery-to-Prosthetic Workflow Plan", required: true },
+    { label: "Immediate Loading Criteria", required: true },
+    { label: "Cross-team Handoff Checklist", required: true },
+  ],
+  other: [
+    { label: "Custom Service Scope", required: true },
+    { label: "Acceptance Criteria", required: true },
+  ],
+};
+
 export interface CreateSubOrderInput {
   serviceId: string;
   service: string;
@@ -439,14 +485,7 @@ export class SubOrderDataService {
 
     for (const row of rows) {
       const id = `so-${nextId++}`;
-      const detailForms = [
-        {
-          id: `${id}-form-clinical`,
-          label: `${row.service} Clinical Form`,
-          required: true,
-          status: "incomplete" as const,
-        },
-      ];
+      const detailForms = this.buildDetailFormsForService(id, row);
       const detailScans = row.scanRequirements.map((label, index) => ({
         id: `${id}-scan-${index + 1}`,
         label,
@@ -490,6 +529,29 @@ export class SubOrderDataService {
     this._details.update((current) => ({ ...details, ...current }));
     this.refreshSubOrderCounts(created.map((item) => item.id));
     return created;
+  }
+
+  replaceForOrder(orderId: string, rows: CreateSubOrderInput[]): SubOrder[] {
+    if (!orderId) return [];
+
+    const existingIds = this._subOrders()
+      .filter((subOrder) => subOrder.orderId === orderId)
+      .map((subOrder) => subOrder.id);
+
+    if (existingIds.length > 0) {
+      this._subOrders.update((current) =>
+        current.filter((subOrder) => subOrder.orderId !== orderId),
+      );
+      this._details.update((current) => {
+        const next = { ...current };
+        for (const id of existingIds) {
+          delete next[id];
+        }
+        return next;
+      });
+    }
+
+    return this.createForOrder(orderId, rows);
   }
 
   saveFormItem(
@@ -594,6 +656,27 @@ export class SubOrderDataService {
   getByOrderId(orderId: string): SubOrder[] {
     if (!orderId) return [];
     return this._subOrders().filter((s) => s.orderId === orderId);
+  }
+
+  private buildDetailFormsForService(
+    subOrderId: string,
+    row: CreateSubOrderInput,
+  ): SubOrderDetail["forms"] {
+    const serviceId = this.normalizeServiceId(row.serviceId);
+    const templates = SERVICE_FORM_TEMPLATES[serviceId] ?? [
+      { label: `${row.service} Clinical Form`, required: true },
+    ];
+
+    return templates.map((template, index) => ({
+      id: `${subOrderId}-form-${index + 1}`,
+      label: template.label,
+      required: template.required,
+      status: "incomplete" as const,
+    }));
+  }
+
+  private normalizeServiceId(value: string): string {
+    return value.trim().toLowerCase();
   }
 
   private refreshSubOrderCounts(subOrderIds: string[]): void {

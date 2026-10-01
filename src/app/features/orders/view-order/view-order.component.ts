@@ -283,7 +283,7 @@ export class ViewOrderComponent implements OnInit {
 
   navigateToDoctor(): void {
     const current = this.order();
-    if (!current) return;
+    if (!current || !current.doctorId.trim()) return;
     this.navigationService.navigate("doctorDetails", {
       doctorId: current.doctorId,
     });
@@ -291,7 +291,7 @@ export class ViewOrderComponent implements OnInit {
 
   navigateToClinic(): void {
     const current = this.order();
-    if (!current) return;
+    if (!current || !current.clinicId.trim()) return;
     this.navigationService.navigate("clinicDetails", {
       clinicId: current.clinicId,
     });

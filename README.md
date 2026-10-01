@@ -87,7 +87,7 @@ Raw logs live under `evidence/`.
 ## Supported Scenarios
 
 - Orders page with shared header toolbar, shared status badges, and service-driven preview states (normal/loading/empty/error)
-- Order detail, sub-order detail, and create-order flows
+- Order detail, sub-order detail, and create/edit order flows with patient/doctor autocomplete, service-specific form capture, and teeth-aware validation
 - Workflow board drag/drop transitions
 - Forms, scan/file, patient, doctor, clinic, billing, change-request, report, notification, and settings pages
 - Reports workflow extensions: Orders by Date Range (month-scoped record pagination), Quarter Targets + Quarter Detail drill-down (Q1-Q4 rendering), and Team Performance roster with role-based distribution insights

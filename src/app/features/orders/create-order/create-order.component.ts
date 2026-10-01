@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from "@angular/core";
+import { Component, computed, inject, OnDestroy, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { PatientDataService } from "@core/services/patient-data.service";
@@ -13,30 +13,32 @@ import {
   CreateOrderService,
   ServiceTeethMapping,
 } from "@core/models/create-order.model";
-import { ArchType, RestoType } from "@core/models";
+import { Clinic, Doctor, Patient } from "@core/models";
 import { SubOrderCreationData } from "@core/models/sub-order.model";
 import { AppButtonComponent } from "@shared/components/button/button.component";
 import { AppTextFieldComponent } from "@shared/components/input/input.component";
 import { AppSelectComponent } from "@shared/components/select/select.component";
 import { TeethChartComponent } from "@shared/components/teeth-chart/teeth-chart.component";
 import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
-
-export interface ServiceDetail {
-  shade: string;
-  arch: string;
-  occlusalConcept: string;
-  implantSystem: string;
-  fileFormat: string;
-  serviceNotes: string;
-}
-
-export interface ServiceClinicalForm {
-  clinicalNotes: string;
-  occlusalContact: string;
-  marginType: string;
-  material: string;
-  specialInstructions: string;
-}
+import {
+  defaultServiceClinicalForm,
+  defaultServiceDetail,
+  deriveArchFromSelection,
+  FILE_FORMATS,
+  IMPLANT_SYSTEMS,
+  mapServiceToRestoration,
+  MARGIN_TYPES,
+  MATERIALS,
+  needsShadeArch,
+  normalizeLookup,
+  OCCLUSAL_CONCEPTS,
+  OCCLUSAL_CONTACTS,
+  resolveNameSuggestions,
+  ServiceClinicalForm,
+  ServiceDetail,
+  serviceRequiresTeeth,
+  SHADES,
+} from "../order-flow.utils";
 
 const STEPS = [
   { id: 1, label: "Patient & Clinic", short: "Patient" },
@@ -47,45 +49,6 @@ const STEPS = [
   { id: 6, label: "Scans & Files", short: "Files" },
   { id: 7, label: "Review", short: "Review" },
 ];
-
-const SHADES = ["A1", "A2", "A3", "A3.5", "B1", "B2", "C2", "D3", "BL1", "BL2"];
-const FILE_FORMATS = ["STL", "PLY", "OBJ", "DICOM", "STL+OBJ"];
-const OCCLUSAL_CONCEPTS = [
-  "Mutually Protected",
-  "Group Function",
-  "Full Balanced",
-];
-const IMPLANT_SYSTEMS = [
-  "Straumann",
-  "Nobel Biocare",
-  "Zimmer Biomet",
-  "Neodent",
-  "Other",
-];
-const OCCLUSAL_CONTACTS = ["Light contact", "Full contact", "No contact"];
-const MARGIN_TYPES = ["Chamfer", "Shoulder", "Feather edge", "Knife edge"];
-const MATERIALS = ["Zirconia (Multilayer)", "PFM", "E-max", "PMMA", "Titanium"];
-
-function defaultDetail(): ServiceDetail {
-  return {
-    shade: "A2",
-    arch: "Both",
-    occlusalConcept: "Mutually Protected",
-    implantSystem: "Straumann",
-    fileFormat: "STL",
-    serviceNotes: "",
-  };
-}
-
-function defaultClinicalForm(): ServiceClinicalForm {
-  return {
-    clinicalNotes: "",
-    occlusalContact: "Light contact",
-    marginType: "Chamfer",
-    material: "Zirconia (Multilayer)",
-    specialInstructions: "",
-  };
-}
 
 @Component({
   selector: "app-create-order",
@@ -102,7 +65,10 @@ function defaultClinicalForm(): ServiceClinicalForm {
   templateUrl: "./create-order.component.html",
   styleUrl: "./create-order.component.scss",
 })
-export class CreateOrderComponent {
+export class CreateOrderComponent implements OnDestroy {
+  private static readonly AUTOCOMPLETE_LIMIT = 6;
+  private static readonly AUTOCOMPLETE_DEBOUNCE_MS = 120;
+
   private readonly patientService = inject(PatientDataService);
   private readonly doctorService = inject(DoctorDataService);
   private readonly clinicService = inject(ClinicDataService);
@@ -121,10 +87,16 @@ export class CreateOrderComponent {
   readonly selectedTeeth = signal<number[]>([]);
   readonly serviceTeeth = signal<ServiceTeethMapping>({});
   readonly activeServiceForTeeth = signal<string | null>(null);
+  readonly patientAutocompleteOpen = signal(false);
+  readonly doctorAutocompleteOpen = signal(false);
+  readonly patientAutocompleteQuery = signal("");
+  readonly doctorAutocompleteQuery = signal("");
+  private patientAutocompleteTimer: number | null = null;
+  private doctorAutocompleteTimer: number | null = null;
 
   readonly form = signal({
-    patientId: "",
-    doctorId: "",
+    patientName: "",
+    doctorName: "",
     clinicId: "",
     priority: "Normal",
     dueDate: "",
@@ -142,30 +114,31 @@ export class CreateOrderComponent {
   readonly uploadedRequirementFiles = signal<Record<string, string[]>>({});
 
   readonly selectedPatient = computed(() =>
-    this.patients().find((p) => p.id === this.form().patientId),
-  );
-  readonly patientOptions = computed(() =>
-    this.patients().map((p) => ({
-      value: p.id,
-      label: `${p.name} · ${p.clinicName}`,
-    })),
+    this.matchPatientByName(this.form().patientName),
   );
   readonly selectedDoctor = computed(() =>
-    this.doctors().find((d) => d.id === this.form().doctorId),
+    this.matchDoctorByName(this.form().doctorName),
   );
-  readonly doctorOptions = computed(() => {
-    const clinicId = this.form().clinicId;
-    const rows = clinicId
-      ? this.doctors().filter((d) => d.clinicId === clinicId)
-      : this.doctors();
-    return rows.map((d) => ({ value: d.id, label: d.name }));
-  });
   readonly selectedClinic = computed(() =>
-    this.clinics().find((c) => c.id === this.form().clinicId),
+    this.resolveClinicById(this.form().clinicId),
+  );
+  readonly patientNameSuggestions = computed(() =>
+    resolveNameSuggestions(
+      this.patients().map((patient) => patient.name),
+      this.patientAutocompleteQuery(),
+      CreateOrderComponent.AUTOCOMPLETE_LIMIT,
+    ),
+  );
+  readonly doctorNameSuggestions = computed(() =>
+    resolveNameSuggestions(
+      this.doctors().map((doctor) => doctor.name),
+      this.doctorAutocompleteQuery(),
+      CreateOrderComponent.AUTOCOMPLETE_LIMIT,
+    ),
   );
   readonly clinicOptions = computed(() =>
     this.clinics()
-      .filter((c) => c.status === "Active")
+      .filter((c) => c.status === "Active" || c.id === this.form().clinicId)
       .map((c) => ({ value: c.id, label: c.name })),
   );
   readonly priorityOptions = ["Low", "Normal", "High", "Urgent"] as const;
@@ -200,16 +173,6 @@ export class CreateOrderComponent {
   readonly marginTypes = MARGIN_TYPES;
   readonly materials = MATERIALS;
 
-  readonly activeClinics = computed(() =>
-    this.clinics().filter((c) => c.status === "Active"),
-  );
-
-  readonly doctorsForClinic = computed(() => {
-    const clinicId = this.form().clinicId;
-    if (!clinicId) return this.doctors();
-    return this.doctors().filter((d) => d.clinicId === clinicId);
-  });
-
   readonly allTeethCombined = computed(() => {
     const set = new Set<number>(this.selectedTeeth());
     for (const teeth of Object.values(this.serviceTeeth())) {
@@ -223,14 +186,55 @@ export class CreateOrderComponent {
       this.selectedTeeth().length > 0 ||
       Object.values(this.serviceTeeth()).some((v) => v.length > 0),
   );
+  readonly missingRequiredTeethServices = computed(() =>
+    this.selectedServiceObjects()
+      .filter((service) => serviceRequiresTeeth(service.id))
+      .filter((service) => this.teethForServiceWithFallback(service.id).length === 0)
+      .map((service) => service.name),
+  );
 
   setField(key: string, value: string): void {
     this.form.update((f) => ({ ...f, [key]: value }));
   }
 
-  setClinicAndResetDoctor(clinicId: string): void {
-    this.setField("clinicId", clinicId);
-    this.setField("doctorId", "");
+  onPatientInput(value: string): void {
+    this.setField("patientName", value);
+    this.scheduleAutocomplete("patient", value);
+  }
+
+  onDoctorInput(value: string): void {
+    this.setField("doctorName", value);
+    this.scheduleAutocomplete("doctor", value);
+  }
+
+  onPatientFocus(): void {
+    this.patientAutocompleteOpen.set(true);
+    this.scheduleAutocomplete("patient", this.form().patientName);
+  }
+
+  onDoctorFocus(): void {
+    this.doctorAutocompleteOpen.set(true);
+    this.scheduleAutocomplete("doctor", this.form().doctorName);
+  }
+
+  onPatientBlur(): void {
+    window.setTimeout(() => this.patientAutocompleteOpen.set(false), 120);
+  }
+
+  onDoctorBlur(): void {
+    window.setTimeout(() => this.doctorAutocompleteOpen.set(false), 120);
+  }
+
+  selectPatientSuggestion(name: string): void {
+    this.setField("patientName", name);
+    this.patientAutocompleteQuery.set(name);
+    this.patientAutocompleteOpen.set(false);
+  }
+
+  selectDoctorSuggestion(name: string): void {
+    this.setField("doctorName", name);
+    this.doctorAutocompleteQuery.set(name);
+    this.doctorAutocompleteOpen.set(false);
   }
 
   toggleService(id: string): void {
@@ -241,13 +245,13 @@ export class CreateOrderComponent {
     if (!this.serviceDetails()[id]) {
       this.serviceDetails.update((prev) => ({
         ...prev,
-        [id]: defaultDetail(),
+        [id]: defaultServiceDetail(),
       }));
     }
     if (!this.serviceForms()[id]) {
       this.serviceForms.update((prev) => ({
         ...prev,
-        [id]: defaultClinicalForm(),
+        [id]: defaultServiceClinicalForm(id),
       }));
     }
   }
@@ -259,12 +263,15 @@ export class CreateOrderComponent {
   ): void {
     this.serviceDetails.update((prev) => ({
       ...prev,
-      [serviceId]: { ...(prev[serviceId] ?? defaultDetail()), [key]: value },
+      [serviceId]: {
+        ...(prev[serviceId] ?? defaultServiceDetail()),
+        [key]: value,
+      },
     }));
   }
 
   getServiceDetail(serviceId: string): ServiceDetail {
-    return this.serviceDetails()[serviceId] ?? defaultDetail();
+    return this.serviceDetails()[serviceId] ?? defaultServiceDetail();
   }
 
   setServiceForm(
@@ -275,22 +282,18 @@ export class CreateOrderComponent {
     this.serviceForms.update((prev) => ({
       ...prev,
       [serviceId]: {
-        ...(prev[serviceId] ?? defaultClinicalForm()),
+        ...(prev[serviceId] ?? defaultServiceClinicalForm(serviceId)),
         [key]: value,
       },
     }));
   }
 
   getServiceForm(serviceId: string): ServiceClinicalForm {
-    return this.serviceForms()[serviceId] ?? defaultClinicalForm();
+    return this.serviceForms()[serviceId] ?? defaultServiceClinicalForm(serviceId);
   }
 
   needsShadeArch(serviceId: string): boolean {
-    return (
-      serviceId === "fmb" ||
-      serviceId === "final-restoration" ||
-      serviceId === "temp-restoration"
-    );
+    return needsShadeArch(serviceId);
   }
 
   toggleTooth(num: number): void {
@@ -335,20 +338,18 @@ export class CreateOrderComponent {
 
   canProceed(): boolean {
     const step = this.step();
-    if (step === 1)
-      return (
-        !!this.form().patientId &&
-        !!this.form().doctorId &&
-        !!this.form().clinicId
-      );
+    if (step === 1) return this.form().patientName.trim().length > 0;
     if (step === 2) return this.selectedServices().length > 0;
+    if (step === 3) return this.missingRequiredTeethServices().length === 0;
     return true;
   }
 
   validationMessage(): string {
-    if (this.step() === 1)
-      return "Select a patient, doctor and clinic to continue.";
+    if (this.step() === 1) return "Enter a patient name to continue.";
     if (this.step() === 2) return "Select at least one service to continue.";
+    if (this.step() === 3 && this.missingRequiredTeethServices().length > 0) {
+      return `Select teeth for: ${this.missingRequiredTeethServices().join(", ")}.`;
+    }
     return "";
   }
 
@@ -386,26 +387,31 @@ export class CreateOrderComponent {
   }
 
   submitOrder(): void {
+    const patientInput = this.form().patientName.trim();
+    if (patientInput.length === 0 || this.selectedServiceObjects().length === 0) {
+      return;
+    }
+    if (this.missingRequiredTeethServices().length > 0) {
+      this.step.set(3);
+      return;
+    }
     const patient = this.selectedPatient();
     const doctor = this.selectedDoctor();
     const clinic = this.selectedClinic();
-    if (
-      !patient ||
-      !doctor ||
-      !clinic ||
-      this.selectedServiceObjects().length === 0
-    ) {
-      return;
-    }
+    const doctorInput = this.form().doctorName.trim();
+    const clinicName = clinic?.name ?? "";
+    const clinicId = clinic?.id ?? "";
+    const doctorName = doctor?.name || doctorInput;
+    const doctorId = doctor?.id || (doctorName ? this.syntheticEntityId("dr", doctorName) : "");
+    const patientName = patient?.name || patientInput;
+    const patientId = patient?.id || this.syntheticEntityId("pt", patientName);
 
     const scanCenter = this.scanCenters()[0];
     const dueDate = this.form().dueDate || this.defaultDueDate();
     const selectedServices = this.selectedServiceObjects();
     const allTeeth = this.allTeethCombined();
     const serviceRows = selectedServices.map((service) => {
-      const selectedTeeth = this.serviceTeeth()[service.id]?.length
-        ? [...this.serviceTeeth()[service.id]]
-        : [...allTeeth];
+      const selectedTeeth = this.teethForServiceWithFallback(service.id);
       const serviceDetails = this.getServiceDetail(service.id);
       const serviceForm = this.getServiceForm(service.id);
       const fileReferences = this.serviceFileReferences(service.id);
@@ -435,24 +441,24 @@ export class CreateOrderComponent {
     });
 
     const createdOrder = this.orderService.createOrder({
-      patientId: patient.id,
-      patientName: patient.name,
-      doctorId: doctor.id,
-      doctorName: doctor.name,
-      clinicId: clinic.id,
-      clinicName: clinic.name,
+      patientId,
+      patientName,
+      doctorId,
+      doctorName,
+      clinicId,
+      clinicName,
       scanCenterId: scanCenter?.id ?? "scan-local",
       scanCenterName: scanCenter?.name ?? "Local Session",
       status: "New",
       priority: this.form().priority as "Low" | "Normal" | "High" | "Urgent",
-      restoration: this.mapServiceToRestoration(selectedServices[0].id),
-      arch: this.deriveArchFromSelection(allTeeth),
+      restoration: mapServiceToRestoration(selectedServices[0].id),
+      arch: deriveArchFromSelection(allTeeth),
       format: this.form().format,
       shade: this.form().shade,
       units: Math.max(allTeeth.length, 1),
       amount: Math.max(selectedServices.length * 250, 250),
       billed: false,
-      billTo: clinic.name,
+      billTo: clinicName || patientName,
       vouchers: 0,
       isLocked: false,
       hasNotes: this.form().notes.trim().length > 0,
@@ -482,22 +488,66 @@ export class CreateOrderComponent {
     return `${serviceName} requested with ${teethLabel}.`;
   }
 
-  private mapServiceToRestoration(serviceId: string): RestoType {
-    if (serviceId === "surgical-guide") return "Implant Crown";
-    if (serviceId === "final-restoration" || serviceId === "fmb")
-      return "Bridge";
-    if (serviceId === "temp-restoration") return "Crown";
-    if (serviceId === "gfmr" || serviceId === "full-guide") return "Full Arch";
-    return "Crown";
+  private teethForServiceWithFallback(serviceId: string): number[] {
+    const serviceSpecific = this.serviceTeeth()[serviceId] ?? [];
+    if (serviceSpecific.length > 0) return [...serviceSpecific];
+    return [...this.selectedTeeth()];
   }
 
-  private deriveArchFromSelection(teeth: number[]): ArchType {
-    const hasUpper = teeth.some((tooth) => tooth >= 11 && tooth <= 28);
-    const hasLower = teeth.some((tooth) => tooth >= 31 && tooth <= 48);
-    if (hasUpper && hasLower) return "Both";
-    if (hasUpper) return "Maxilla";
-    if (hasLower) return "Mandible";
-    return "Both";
+  private resolveClinicById(clinicId: string): Clinic | undefined {
+    return this.clinics().find((clinic) => clinic.id === clinicId);
+  }
+
+  private matchPatientByName(name: string): Patient | undefined {
+    const needle = normalizeLookup(name);
+    return this.patients().find(
+      (patient) => normalizeLookup(patient.name) === needle,
+    );
+  }
+
+  private matchDoctorByName(name: string): Doctor | undefined {
+    const needle = normalizeLookup(name);
+    return this.doctors().find(
+      (doctor) => normalizeLookup(doctor.name) === needle,
+    );
+  }
+
+  private syntheticEntityId(prefix: string, value: string): string {
+    const slug = value
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
+    return `${prefix}-manual-${slug || "entry"}-${Date.now().toString().slice(-6)}`;
+  }
+
+  private scheduleAutocomplete(
+    type: "patient" | "doctor",
+    value: string,
+  ): void {
+    this.clearAutocompleteTimer(type);
+    const timer = window.setTimeout(() => {
+      if (type === "patient") this.patientAutocompleteQuery.set(value);
+      else this.doctorAutocompleteQuery.set(value);
+    }, CreateOrderComponent.AUTOCOMPLETE_DEBOUNCE_MS);
+
+    if (type === "patient") this.patientAutocompleteTimer = timer;
+    else this.doctorAutocompleteTimer = timer;
+  }
+
+  private clearAutocompleteTimer(type: "patient" | "doctor"): void {
+    const current =
+      type === "patient"
+        ? this.patientAutocompleteTimer
+        : this.doctorAutocompleteTimer;
+    if (current !== null) window.clearTimeout(current);
+    if (type === "patient") this.patientAutocompleteTimer = null;
+    else this.doctorAutocompleteTimer = null;
+  }
+
+  ngOnDestroy(): void {
+    this.clearAutocompleteTimer("patient");
+    this.clearAutocompleteTimer("doctor");
   }
 
   getStepConfig(stepId: number) {

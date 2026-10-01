@@ -85,7 +85,7 @@ describe("CreateOrderComponent", () => {
     expect(component.step()).toBe(1);
   });
 
-  it("should block proceeding without patient/doctor/clinic", () => {
+  it("should block proceeding without a patient name", () => {
     expect(component.canProceed()).toBeFalse();
   });
 
@@ -111,9 +111,7 @@ describe("CreateOrderComponent", () => {
   });
 
   it("should advance when step 1 is complete", () => {
-    component.setField("patientId", "p1");
-    component.setField("doctorId", "d1");
-    component.setField("clinicId", "c1");
+    component.setField("patientName", "Alice Johnson");
     expect(component.canProceed()).toBeTrue();
     component.nextStep();
     expect(component.step()).toBe(2);
@@ -125,9 +123,7 @@ describe("CreateOrderComponent", () => {
   });
 
   it("should block step 2 without a selected service", () => {
-    component.setField("patientId", "p1");
-    component.setField("doctorId", "d1");
-    component.setField("clinicId", "c1");
+    component.setField("patientName", "Alice Johnson");
     component.nextStep();
     expect(component.step()).toBe(2);
     expect(component.canProceed()).toBeFalse();
@@ -135,12 +131,21 @@ describe("CreateOrderComponent", () => {
     expect(component.step()).toBe(2);
   });
 
+  it("should block step 3 for services that require teeth", () => {
+    component.setField("patientName", "Alice Johnson");
+    component.nextStep();
+    component.toggleService("surgical-guide");
+    component.nextStep();
+    expect(component.step()).toBe(3);
+    expect(component.canProceed()).toBeFalse();
+    component.toggleTooth(11);
+    expect(component.canProceed()).toBeTrue();
+  });
+
   it("should not jump over invalid steps via the stepper", () => {
     component.goToStep(3);
     expect(component.step()).toBe(1);
-    component.setField("patientId", "p1");
-    component.setField("doctorId", "d1");
-    component.setField("clinicId", "c1");
+    component.setField("patientName", "Alice Johnson");
     component.goToStep(2);
     expect(component.step()).toBe(2);
     component.goToStep(4);
@@ -148,9 +153,7 @@ describe("CreateOrderComponent", () => {
   });
 
   it("should allow navigating back to completed steps", () => {
-    component.setField("patientId", "p1");
-    component.setField("doctorId", "d1");
-    component.setField("clinicId", "c1");
+    component.setField("patientName", "Alice Johnson");
     component.nextStep();
     component.toggleService("gfmr");
     component.nextStep();
@@ -165,7 +168,7 @@ describe("CreateOrderComponent", () => {
       "Straumann",
     );
     expect(component.getServiceForm("surgical-guide").marginType).toBe(
-      "Chamfer",
+      "Feather edge",
     );
     component.setServiceDetail("surgical-guide", "shade", "B1");
     expect(component.getServiceDetail("surgical-guide").shade).toBe("B1");
@@ -198,10 +201,11 @@ describe("CreateOrderComponent", () => {
   });
 
   it("should include selected file references for each service on submit", () => {
-    component.setField("patientId", "p1");
-    component.setField("doctorId", "d1");
+    component.setField("patientName", "Alice Johnson");
+    component.setField("doctorName", "Dr. Park");
     component.setField("clinicId", "c1");
     component.toggleService("gfmr");
+    component.toggleTooth(11);
 
     const input = document.createElement("input");
     const dataTransfer = new DataTransfer();
@@ -236,8 +240,8 @@ describe("CreateOrderComponent", () => {
   });
 
   it("should preserve service/form/tooth/file references on submit", () => {
-    component.setField("patientId", "p1");
-    component.setField("doctorId", "d1");
+    component.setField("patientName", "Alice Johnson");
+    component.setField("doctorName", "Dr. Park");
     component.setField("clinicId", "c1");
     component.toggleService("gfmr");
     component.setServiceDetail(
