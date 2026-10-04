@@ -17,6 +17,9 @@
             <p class="text-sm text-muted-foreground">
               {{ doctor.specialty }} &middot; {{ doctor.clinicName }}
             </p>
+            <p class="text-xs text-muted-foreground mt-1">
+              Doctor ID: {{ doctorLookupId() }}
+            </p>
           </div>
           <span
             class="px-2.5 py-1 rounded-full text-xs font-semibold"
@@ -176,15 +179,20 @@
         <div
           class="max-w-3xl bg-card border border-border rounded-xl overflow-hidden"
         >
-          <div class="px-5 py-3.5 border-b border-border bg-muted/30">
+          <div
+            class="px-5 py-3.5 border-b border-border bg-muted/30 flex items-center justify-between gap-3"
+          >
             <h2 class="font-display font-semibold text-sm">
               All Orders ({{ doctorOrders().length }})
             </h2>
+            <span class="text-xs text-muted-foreground"
+              >Doctor ID: {{ doctorLookupId() }}</span
+            >
           </div>
           <p-table
             [value]="doctorOrders()"
             styleClass="w-full text-sm"
-            [tableStyle]="{ 'min-width': '52rem' }"
+            [tableStyle]="tableStyle(52)"
           >
             <ng-template pTemplate="header">
               <tr class="bg-muted/40 border-b border-border">
@@ -194,7 +202,8 @@
                     "Patient",
                     "Restoration",
                     "Status",
-                    "Updated",
+                    "Amount",
+                    "Due",
                   ];
                   track header
                 ) {
@@ -225,8 +234,11 @@
                 <td class="px-4 py-3">
                   <app-status-badge [status]="o.status" size="xs" />
                 </td>
+                <td class="px-4 py-3 text-xs font-mono font-semibold">
+                  {{ formatUtils.formatCurrency(o.amount) }}
+                </td>
                 <td class="px-4 py-3 text-xs text-muted-foreground">
-                  {{ formatUtils.timeAgo(o.updatedAt) }}
+                  {{ formatUtils.formatDate(o.dueDate) }}
                 </td>
               </tr>
             </ng-template>

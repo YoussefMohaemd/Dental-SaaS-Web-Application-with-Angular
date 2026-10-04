@@ -226,17 +226,18 @@
           <p-table
             [value]="patientOrders()"
             styleClass="w-full text-sm"
-            [tableStyle]="{ 'min-width': '52rem' }"
+            [tableStyle]="tableStyle(52)"
           >
             <ng-template pTemplate="header">
               <tr class="bg-muted/40 border-b border-border">
                 @for (
                   header of [
                     "Order #",
+                    "Doctor",
                     "Restoration",
                     "Status",
                     "Amount",
-                    "Updated",
+                    "Due",
                   ];
                   track header
                 ) {
@@ -258,6 +259,7 @@
                 >
                   {{ o.orderNumber }}
                 </td>
+                <td class="px-4 py-3 text-xs">{{ o.doctorName }}</td>
                 <td class="px-4 py-3 text-xs">{{ o.restoration }}</td>
                 <td class="px-4 py-3">
                   <app-status-badge [status]="o.status" size="xs" />
@@ -266,7 +268,7 @@
                   {{ formatUtils.formatCurrency(o.amount) }}
                 </td>
                 <td class="px-4 py-3 text-xs text-muted-foreground">
-                  {{ formatUtils.timeAgo(o.updatedAt) }}
+                  {{ formatUtils.formatDate(o.dueDate) }}
                 </td>
               </tr>
             </ng-template>
@@ -310,7 +312,7 @@
             <p-table
               [value]="patientCases()"
               styleClass="w-full text-sm"
-              [tableStyle]="{ 'min-width': '52rem' }"
+              [tableStyle]="tableStyle(52)"
             >
               <ng-template pTemplate="header">
                 <tr class="bg-muted/40 border-b border-border">
@@ -399,7 +401,7 @@
             <p-table
               [value]="patientDocuments()"
               styleClass="w-full text-sm"
-              [tableStyle]="{ 'min-width': '56rem' }"
+              [tableStyle]="tableStyle(56)"
             >
               <ng-template pTemplate="header">
                 <tr class="bg-muted/40 border-b border-border">

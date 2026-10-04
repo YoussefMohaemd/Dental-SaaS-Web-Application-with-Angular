@@ -2,6 +2,7 @@ export type DoctorStatus = "Active" | "Inactive";
 
 export interface Doctor {
   id: string;
+  lookupId?: string;
   name: string;
   specialty: string;
   clinicId: string;

@@ -3,6 +3,8 @@ export interface CreateOrderService {
   name: string;
   description: string;
   icon: string;
+  basePrice: number;
+  turnaroundDays: number;
   scanRequirements: string[];
 }
 
@@ -38,6 +40,8 @@ export const AVAILABLE_SERVICES: CreateOrderService[] = [
     description:
       "Comprehensive treatment planning with diagnostic data and clinical workflow.",
     icon: "📋",
+    basePrice: 250,
+    turnaroundDays: 5,
     scanRequirements: ["Full arch STL", "Bite registration"],
   },
   {
@@ -46,6 +50,8 @@ export const AVAILABLE_SERVICES: CreateOrderService[] = [
     description:
       "Precision-guided implant surgery using CT and digital planning.",
     icon: "🦷",
+    basePrice: 420,
+    turnaroundDays: 8,
     scanRequirements: [
       "CBCT / CT scan",
       "STL dental model",
@@ -58,6 +64,8 @@ export const AVAILABLE_SERVICES: CreateOrderService[] = [
     description:
       "Full-mouth rehabilitation with a guided functional occlusal approach.",
     icon: "⚙️",
+    basePrice: 580,
+    turnaroundDays: 12,
     scanRequirements: ["Upper arch scan", "Lower arch scan", "Bite scan"],
   },
   {
@@ -66,6 +74,8 @@ export const AVAILABLE_SERVICES: CreateOrderService[] = [
     description:
       "Full-mouth bridge or partial restoration fabricated to precision.",
     icon: "🔬",
+    basePrice: 540,
+    turnaroundDays: 10,
     scanRequirements: ["Upper arch STL", "Lower arch STL"],
   },
   {
@@ -74,6 +84,8 @@ export const AVAILABLE_SERVICES: CreateOrderService[] = [
     description:
       "Interim restorations to protect and maintain occlusion during treatment.",
     icon: "🛡️",
+    basePrice: 300,
+    turnaroundDays: 4,
     scanRequirements: ["Working model scan", "Antagonist scan"],
   },
   {
@@ -82,6 +94,8 @@ export const AVAILABLE_SERVICES: CreateOrderService[] = [
     description:
       "Definitive crowns, bridges, veneers, or full-arch restorations.",
     icon: "✨",
+    basePrice: 460,
+    turnaroundDays: 9,
     scanRequirements: ["Prep scan", "Antagonist scan", "Shade reference photo"],
   },
   {
@@ -90,6 +104,8 @@ export const AVAILABLE_SERVICES: CreateOrderService[] = [
     description:
       "End-to-end digital workflow with guided surgery and final prosthetics.",
     icon: "🔑",
+    basePrice: 640,
+    turnaroundDays: 12,
     scanRequirements: [
       "CBCT / CT scan",
       "Full arch STL",
@@ -103,6 +119,8 @@ export const AVAILABLE_SERVICES: CreateOrderService[] = [
     description:
       "Custom lab service or specialized dental work not listed above.",
     icon: "➕",
+    basePrice: 250,
+    turnaroundDays: 7,
     scanRequirements: ["As specified"],
   },
 ];

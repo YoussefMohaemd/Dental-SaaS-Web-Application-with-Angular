@@ -64,6 +64,13 @@ export interface Order {
   technicianName?: string;
   creationData?: {
     services: SubOrderCreationData[];
+    communication?: {
+      internalCaseNote: string;
+      internalCaseFiles: string[];
+      sendMailTo: string[];
+      sendIhTaskTo?: string;
+      rushTask: boolean;
+    };
   };
 }
 

@@ -139,7 +139,7 @@ export class ReportsComponent {
     const current = points[points.length - 1]?.revenue ?? 0;
     const previous = points[points.length - 2]?.revenue ?? 0;
     if (previous === 0) return 0;
-    return Math.round(((current - previous) / previous) * 100);
+    return Math.abs(Math.round(((current - previous) / previous) * 100));
   });
   readonly restorationLeader = computed(() => {
     if (this.restorationBreakdown.length === 0) {
@@ -196,6 +196,7 @@ export class ReportsComponent {
     const total = this.workflowTotalCount();
     return this.workflowShare.map((item) => ({
       ...item,
+      displayStage: this.workflowStageLabel(item.stage),
       contribution: total === 0 ? 0 : Math.round((item.count / total) * 100),
     }));
   });
@@ -417,6 +418,22 @@ export class ReportsComponent {
     if (percent >= 75) return "#2563EB";
     if (percent >= 45) return "#0EA5E9";
     return "#94A3B8";
+  }
+
+  workflowStageLabel(stage: string): string {
+    if (stage === "New") return "New Revenue Design";
+    return stage;
+  }
+
+  workflowProgressColor(stage: string, value: number): string {
+    if (stage === "New") return "#2563EB";
+    if (stage === "Review") return "#0EA5E9";
+    if (stage === "Design") return "#7C3AED";
+    if (stage === "Production") return "#F59E0B";
+    if (stage === "Quality Check") return "#14B8A6";
+    if (stage === "Ready") return "#16A34A";
+    if (stage === "Completed") return "#22C55E";
+    return this.progressColor(value, "informative");
   }
 
   private monthlyRevenueAxisMax(): number {

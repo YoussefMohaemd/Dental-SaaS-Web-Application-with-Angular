@@ -45,6 +45,7 @@ describe("CreateOrderComponent", () => {
     httpMock.expectOne("/data/doctors.json").flush([
       {
         id: "d1",
+        lookupId: "2077",
         name: "Dr. Park",
         specialty: "Prosthodontics",
         clinicId: "c1",
@@ -85,7 +86,7 @@ describe("CreateOrderComponent", () => {
     expect(component.step()).toBe(1);
   });
 
-  it("should block proceeding without a patient name", () => {
+  it("should block proceeding without required patient and doctor", () => {
     expect(component.canProceed()).toBeFalse();
   });
 
@@ -112,9 +113,16 @@ describe("CreateOrderComponent", () => {
 
   it("should advance when step 1 is complete", () => {
     component.setField("patientName", "Alice Johnson");
+    component.setField("doctorName", "Dr. Park");
     expect(component.canProceed()).toBeTrue();
     component.nextStep();
     expect(component.step()).toBe(2);
+  });
+
+  it("should allow matching doctor input by ID", () => {
+    component.setField("patientName", "Alice Johnson");
+    component.onDoctorInput("2077");
+    expect(component.canProceed()).toBeTrue();
   });
 
   it("should not advance when step 1 is incomplete", () => {
@@ -124,6 +132,7 @@ describe("CreateOrderComponent", () => {
 
   it("should block step 2 without a selected service", () => {
     component.setField("patientName", "Alice Johnson");
+    component.setField("doctorName", "Dr. Park");
     component.nextStep();
     expect(component.step()).toBe(2);
     expect(component.canProceed()).toBeFalse();
@@ -133,6 +142,7 @@ describe("CreateOrderComponent", () => {
 
   it("should block step 3 for services that require teeth", () => {
     component.setField("patientName", "Alice Johnson");
+    component.setField("doctorName", "Dr. Park");
     component.nextStep();
     component.toggleService("surgical-guide");
     component.nextStep();
@@ -146,6 +156,7 @@ describe("CreateOrderComponent", () => {
     component.goToStep(3);
     expect(component.step()).toBe(1);
     component.setField("patientName", "Alice Johnson");
+    component.setField("doctorName", "Dr. Park");
     component.goToStep(2);
     expect(component.step()).toBe(2);
     component.goToStep(4);
@@ -154,6 +165,7 @@ describe("CreateOrderComponent", () => {
 
   it("should allow navigating back to completed steps", () => {
     component.setField("patientName", "Alice Johnson");
+    component.setField("doctorName", "Dr. Park");
     component.nextStep();
     component.toggleService("gfmr");
     component.nextStep();
@@ -237,6 +249,73 @@ describe("CreateOrderComponent", () => {
       "upper-arch.stl",
       "bite-scan.obj",
     ]);
+  });
+
+  it("should persist communication metadata and auto pricing on submit", () => {
+    component.setField("patientName", "Alice Johnson");
+    component.setField("doctorName", "Dr. Park");
+    component.toggleService("gfmr");
+    component.toggleTooth(11);
+    component.setField("notes", "Call clinic after design approval.");
+    component.toggleMailRecipient("CS", true);
+    component.setIhTaskRecipient("Sales");
+    component.toggleRushTask(true);
+
+    const input = document.createElement("input");
+    const dataTransfer = new DataTransfer();
+    dataTransfer.items.add(new File(["note"], "internal-note.pdf"));
+    Object.defineProperty(input, "files", {
+      configurable: true,
+      value: dataTransfer.files,
+    });
+    component.onInternalCaseFilesSelected({ target: input } as unknown as Event);
+
+    const orderService = (component as any).orderService as {
+      createOrder: jasmine.Spy;
+    };
+    const subOrderService = (component as any).subOrderService as {
+      createForOrder: jasmine.Spy;
+    };
+    spyOn(orderService, "createOrder").and.callThrough();
+    spyOn(subOrderService, "createForOrder").and.returnValue([]);
+    spyOn((component as any).navigationService, "navigate");
+
+    component.submitOrder();
+
+    expect(orderService.createOrder).toHaveBeenCalled();
+    const createdOrderArg = orderService.createOrder.calls.mostRecent().args[0];
+    expect(createdOrderArg.amount).toBe(580);
+    expect(createdOrderArg.billTo).toBe("Doctor • Dr. Park");
+    expect(createdOrderArg.dueDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(createdOrderArg.creationData.communication.sendMailTo).toEqual(["CS"]);
+    expect(createdOrderArg.creationData.communication.sendIhTaskTo).toBe("Sales");
+    expect(createdOrderArg.creationData.communication.rushTask).toBeTrue();
+    expect(createdOrderArg.creationData.communication.internalCaseFiles).toEqual([
+      "internal-note.pdf",
+    ]);
+  });
+
+  it("should set bill-to as scan center when selected", () => {
+    component.setField("patientName", "Alice Johnson");
+    component.setField("doctorName", "Dr. Park");
+    component.setField("billToTarget", "scan-center");
+    component.toggleService("gfmr");
+    component.toggleTooth(11);
+
+    const orderService = (component as any).orderService as {
+      createOrder: jasmine.Spy;
+    };
+    const subOrderService = (component as any).subOrderService as {
+      createForOrder: jasmine.Spy;
+    };
+    spyOn(orderService, "createOrder").and.callThrough();
+    spyOn(subOrderService, "createForOrder").and.returnValue([]);
+    spyOn((component as any).navigationService, "navigate");
+
+    component.submitOrder();
+
+    const createdOrderArg = orderService.createOrder.calls.mostRecent().args[0];
+    expect(createdOrderArg.billTo).toBe("Scan Center • Main Scan Center");
   });
 
   it("should preserve service/form/tooth/file references on submit", () => {

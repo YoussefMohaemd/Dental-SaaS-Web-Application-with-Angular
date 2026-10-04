@@ -7,7 +7,7 @@
       </p>
     </div>
     <p-tag
-      [value]="topWorkflowStage().stage + ' leads workflow'"
+      [value]="workflowStageLabel(topWorkflowStage().stage) + ' leads workflow'"
       severity="info"
     />
   </header>
@@ -128,7 +128,7 @@
         @for (item of workflowContribution(); track item.stage) {
           <div class="rounded-xl border border-border/70 bg-muted/20 p-3">
             <div class="flex items-center justify-between gap-3 text-xs">
-              <p class="truncate text-foreground">{{ item.stage }}</p>
+              <p class="truncate text-foreground">{{ item.displayStage }}</p>
               <p class="shrink-0 font-mono text-muted-foreground">
                 {{ item.count }} orders · {{ item.contribution }}%
               </p>
@@ -136,9 +136,7 @@
             <div class="mt-2 h-1.5 rounded-full bg-muted/70">
               <div
                 class="h-1.5 rounded-full transition-all"
-                [style.background]="
-                  progressColor(item.contribution, 'informative')
-                "
+                [style.background]="workflowProgressColor(item.stage, item.contribution)"
                 [style.width.%]="clampedPercent(item.contribution)"
               ></div>
             </div>

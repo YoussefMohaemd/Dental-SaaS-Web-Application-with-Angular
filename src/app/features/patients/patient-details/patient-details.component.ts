@@ -1,4 +1,11 @@
-import { Component, computed, inject, signal, OnInit } from "@angular/core";
+import {
+  Component,
+  computed,
+  HostListener,
+  inject,
+  signal,
+  OnInit,
+} from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { ActivatedRoute } from "@angular/router";
 import { PatientDataService } from "@core/services/patient-data.service";
@@ -57,6 +64,8 @@ interface PatientActivityItem {
   styleUrl: "./patient-details.component.scss",
 })
 export class PatientDetailsComponent implements OnInit {
+  private static readonly TABLE_SCROLL_BREAKPOINT = 768;
+
   private readonly route = inject(ActivatedRoute);
   private readonly patientService = inject(PatientDataService);
   private readonly orderService = inject(OrderDataService);
@@ -138,6 +147,11 @@ export class PatientDetailsComponent implements OnInit {
   readonly activeTab = signal<PatientTab>("Overview");
 
   readonly contactItems = signal<ContactItem[]>([]);
+  readonly isSmallScreen = signal(
+    typeof window !== "undefined"
+      ? window.innerWidth < PatientDetailsComponent.TABLE_SCROLL_BREAKPOINT
+      : false,
+  );
 
   private patientId = "";
 
@@ -171,6 +185,20 @@ export class PatientDetailsComponent implements OnInit {
 
   setActiveTab(tab: PatientTab): void {
     this.activeTab.set(tab);
+  }
+
+  @HostListener("window:resize")
+  onWindowResize(): void {
+    this.isSmallScreen.set(
+      window.innerWidth < PatientDetailsComponent.TABLE_SCROLL_BREAKPOINT,
+    );
+  }
+
+  tableStyle(minWidthRem: number): Record<string, string> {
+    if (this.isSmallScreen()) {
+      return { "min-width": `${minWidthRem}rem` };
+    }
+    return {};
   }
 
   getTabCount(tab: PatientTab): number {

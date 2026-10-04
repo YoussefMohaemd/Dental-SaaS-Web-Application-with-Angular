@@ -1,4 +1,11 @@
-import { Component, computed, inject, signal, OnInit } from "@angular/core";
+import {
+  Component,
+  computed,
+  HostListener,
+  inject,
+  signal,
+  OnInit,
+} from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { ActivatedRoute } from "@angular/router";
 import { DoctorDataService } from "@core/services/doctor-data.service";
@@ -35,6 +42,8 @@ interface ContactItem {
   styleUrl: "./doctor-details.component.scss",
 })
 export class DoctorDetailsComponent implements OnInit {
+  private static readonly TABLE_SCROLL_BREAKPOINT = 768;
+
   private readonly route = inject(ActivatedRoute);
   private readonly doctorService = inject(DoctorDataService);
   private readonly orderService = inject(OrderDataService);
@@ -46,6 +55,11 @@ export class DoctorDetailsComponent implements OnInit {
 
   readonly tabs = ["Overview", "Orders", "Activity"];
   readonly activeTab = signal<string>("Overview");
+  readonly isSmallScreen = signal(
+    typeof window !== "undefined"
+      ? window.innerWidth < DoctorDetailsComponent.TABLE_SCROLL_BREAKPOINT
+      : false,
+  );
 
   readonly contactItems = signal<ContactItem[]>([]);
 
@@ -73,6 +87,26 @@ export class DoctorDetailsComponent implements OnInit {
 
   setActiveTab(tab: string): void {
     this.activeTab.set(tab);
+  }
+
+  @HostListener("window:resize")
+  onWindowResize(): void {
+    this.isSmallScreen.set(
+      window.innerWidth < DoctorDetailsComponent.TABLE_SCROLL_BREAKPOINT,
+    );
+  }
+
+  tableStyle(minWidthRem: number): Record<string, string> {
+    if (this.isSmallScreen()) {
+      return { "min-width": `${minWidthRem}rem` };
+    }
+    return {};
+  }
+
+  doctorLookupId(): string {
+    const doctor = this.doctor();
+    if (!doctor) return "";
+    return doctor.lookupId ?? doctor.id;
   }
 
   goBack(): void {

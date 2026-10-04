@@ -406,7 +406,12 @@
               </div>
             </button>
           } @else {
-            <p class="text-sm text-muted-foreground">&mdash;</p>
+            <div class="space-y-0.5">
+              <p class="text-sm font-semibold text-foreground">
+                {{ o.patientName || "—" }}
+              </p>
+              <p class="text-xs text-muted-foreground">Manual patient entry</p>
+            </div>
           }
         </div>
 
@@ -440,7 +445,7 @@
               </div>
             </button>
           } @else {
-            <p class="text-sm text-muted-foreground">&mdash;</p>
+            <p class="text-sm text-muted-foreground">{{ o.doctorName || "—" }}</p>
           }
         </div>
 
@@ -474,7 +479,7 @@
               </div>
             </button>
           } @else {
-            <p class="text-sm text-muted-foreground">&mdash;</p>
+            <p class="text-sm text-muted-foreground">{{ o.clinicName || "—" }}</p>
           }
         </div>
 

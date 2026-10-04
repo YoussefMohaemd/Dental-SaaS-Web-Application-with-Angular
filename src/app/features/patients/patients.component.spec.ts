@@ -3,6 +3,7 @@ import { signal } from "@angular/core";
 import { provideRouter } from "@angular/router";
 import { PatientsComponent } from "./patients.component";
 import { PatientDataService } from "@core/services/patient-data.service";
+import { OrderDataService } from "@core/services/order-data.service";
 import { Patient } from "@core/models";
 
 function makePatient(overrides: Partial<Patient>): Patient {
@@ -42,6 +43,16 @@ describe("PatientsComponent", () => {
             ]),
             loading: signal(false),
             addPatient: jasmine.createSpy("addPatient"),
+          },
+        },
+        {
+          provide: OrderDataService,
+          useValue: {
+            orders: signal([
+              { id: "o-1", patientId: "p-1", doctorId: "d-1" },
+              { id: "o-2", patientId: "p-1", doctorId: "d-2" },
+              { id: "o-3", patientId: "p-2", doctorId: "d-2" },
+            ]),
           },
         },
       ],
@@ -114,5 +125,13 @@ describe("PatientsComponent", () => {
         .querySelectorAll("th.enterprise-th-sort")[3]
         .getAttribute("aria-sort"),
     ).toBe("ascending");
+  });
+
+  it("should derive orders count from orders data", () => {
+    const [firstPatient, secondPatient] = component.filtered();
+    expect(firstPatient.id).toBe("p-1");
+    expect(firstPatient.ordersCount).toBe(2);
+    expect(secondPatient.id).toBe("p-2");
+    expect(secondPatient.ordersCount).toBe(1);
   });
 });

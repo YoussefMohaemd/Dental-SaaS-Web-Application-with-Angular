@@ -317,4 +317,12 @@ describe("ViewOrderComponent exact ord-33 flow", () => {
     expect(sub58?.scansComplete).toBe(1);
     expect(sub58?.scansTotal).toBe(1);
   });
+
+  it("should render order patient and doctor names when master data is missing", async () => {
+    await new Promise((resolve) => setTimeout(resolve, 250));
+    fixture.detectChanges();
+    const text = fixture.nativeElement.textContent as string;
+    expect(text).toContain("Hannah Lindqvist");
+    expect(text).toContain("Dr. Jennifer Walsh");
+  });
 });

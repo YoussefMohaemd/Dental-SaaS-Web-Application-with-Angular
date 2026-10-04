@@ -3,6 +3,7 @@ import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { TableModule } from "primeng/table";
 import { DoctorDataService } from "@core/services/doctor-data.service";
+import { OrderDataService } from "@core/services/order-data.service";
 import { NavigationService } from "@core/services/navigation.service";
 import { FormatUtils } from "@core/services/format-utils.service";
 import { Doctor, DoctorStatus } from "@core/models";
@@ -51,6 +52,7 @@ interface SortConfig {
 })
 export class DoctorsComponent {
   private readonly doctorService = inject(DoctorDataService);
+  private readonly orderService = inject(OrderDataService);
   protected readonly navigationService = inject(NavigationService);
   protected readonly formatUtils = inject(FormatUtils);
 
@@ -70,8 +72,27 @@ export class DoctorsComponent {
   readonly newEmail = signal("");
   readonly newPhone = signal("");
 
+  readonly orderCountByDoctorId = computed(() => {
+    const countByDoctorId = new Map<string, number>();
+    for (const order of this.orderService.orders()) {
+      countByDoctorId.set(
+        order.doctorId,
+        (countByDoctorId.get(order.doctorId) ?? 0) + 1,
+      );
+    }
+    return countByDoctorId;
+  });
+
+  readonly doctorsWithOrderStats = computed<Doctor[]>(() => {
+    const countByDoctorId = this.orderCountByDoctorId();
+    return this.doctors().map((doctor) => ({
+      ...doctor,
+      ordersCount: countByDoctorId.get(doctor.id) ?? 0,
+    }));
+  });
+
   readonly filtered = computed(() => {
-    let result = filterTableRows(this.doctors(), this.search(), [
+    let result = filterTableRows(this.doctorsWithOrderStats(), this.search(), [
       (doctor) => doctor.name,
       (doctor) => doctor.specialty,
       (doctor) => doctor.clinicName,
@@ -165,6 +186,10 @@ export class DoctorsComponent {
       avatar: initials,
     });
     this.showAddDialog.set(false);
+  }
+
+  doctorDisplayId(doctor: Doctor): string {
+    return doctor.lookupId ?? doctor.id;
   }
 
   getIconSvg(name: string): string {

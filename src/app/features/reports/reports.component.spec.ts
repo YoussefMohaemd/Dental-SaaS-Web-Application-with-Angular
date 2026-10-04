@@ -49,4 +49,11 @@ describe("ReportsComponent", () => {
       component.turnaround.length,
     );
   });
+
+  it("should expose absolute revenue momentum and workflow stage labeling", () => {
+    expect(component.revenueGrowthPercent()).toBe(33);
+    const firstWorkflowItem = component.workflowContribution()[0];
+    expect(firstWorkflowItem.displayStage).toBe("New Revenue Design");
+    expect(component.workflowProgressColor("Production", 38)).toBe("#F59E0B");
+  });
 });

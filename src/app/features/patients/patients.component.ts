@@ -3,6 +3,7 @@ import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { TableModule } from "primeng/table";
 import { PatientDataService } from "@core/services/patient-data.service";
+import { OrderDataService } from "@core/services/order-data.service";
 import { NavigationService } from "@core/services/navigation.service";
 import { FormatUtils } from "@core/services/format-utils.service";
 import { Patient, PatientStatus } from "@core/models";
@@ -52,6 +53,7 @@ import {
 })
 export class PatientsComponent {
   private readonly patientService = inject(PatientDataService);
+  private readonly orderService = inject(OrderDataService);
   protected readonly navigationService = inject(NavigationService);
   protected readonly formatUtils = inject(FormatUtils);
 
@@ -72,8 +74,29 @@ export class PatientsComponent {
   readonly newPhone = signal("");
   readonly newClinic = signal("Bright Smile Dental");
 
+  readonly orderCountByPatientId = computed(() => {
+    const countByPatientId = new Map<string, number>();
+    for (const order of this.orderService.orders()) {
+      countByPatientId.set(
+        order.patientId,
+        (countByPatientId.get(order.patientId) ?? 0) + 1,
+      );
+    }
+    return countByPatientId;
+  });
+
+  readonly patientsWithOrderStats = computed<Patient[]>(() =>
+    {
+      const countByPatientId = this.orderCountByPatientId();
+      return this.patients().map((patient) => ({
+        ...patient,
+        ordersCount: countByPatientId.get(patient.id) ?? 0,
+      }));
+    },
+  );
+
   readonly filtered = computed(() => {
-    let result = filterTableRows(this.patients(), this.search(), [
+    let result = filterTableRows(this.patientsWithOrderStats(), this.search(), [
       (patient) => patient.name,
       (patient) => patient.email,
       (patient) => patient.clinicName,
