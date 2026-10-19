@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/angular-vite";
 import { OrderSummaryCardComponent } from "./order-summary-card.component";
-import type { Order } from "@core/models";
+import type { Order } from "@core/interfaces";
 
 const MOCK_ORDER: Order = {
   id: "ord-024042",

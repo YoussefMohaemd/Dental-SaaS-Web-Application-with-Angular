@@ -1,6 +1,6 @@
 import { CommonModule } from "@angular/common";
 import { Component, input } from "@angular/core";
-import { Order } from "@core/models";
+import { Order } from "@core/interfaces";
 
 @Component({
   selector: "app-order-summary-card",

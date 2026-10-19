@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { SubOrder } from "@core/models/sub-order.model";
+import { SubOrder } from "@core/interfaces";
 
 @Injectable({ providedIn: "root" })
 export class SubOrderAdapter {

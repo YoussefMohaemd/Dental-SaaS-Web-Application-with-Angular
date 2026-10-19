@@ -1,8 +1,7 @@
 import { Injectable, signal, computed, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { catchError, map, throwError } from "rxjs";
-import { ChangeRequest } from "../models";
-import { ApiResponse } from "@core/interfaces/api-response.interface";
+import { ChangeRequest } from "../interfaces";
 import { ApiEndpoint } from "@core/enum/api.endpoint";
 import { ChangeRequestApi } from "@core/base/change-request.api";
 import { ChangeRequestAdapter } from "@core/adapters/change-request.adapter";
@@ -31,7 +30,6 @@ export class ChangeRequestDataService extends ChangeRequestApi {
 
   constructor() {
     super();
-    this.loadChangeRequests();
   }
 
   loadChangeRequests(): void {
@@ -60,7 +58,7 @@ export class ChangeRequestDataService extends ChangeRequestApi {
 
   getAllChangeRequests() {
     return this.http
-      .get<ApiResponse<ChangeRequest[]>>(this.API_URL)
+      .get<{ data: ChangeRequest[] }>(this.API_URL)
       .pipe(
         map((response) => response.data ?? []),
         map((rows) => this.changeRequestAdapter.ChangeRequestAdapter(rows)),

@@ -5,7 +5,7 @@ import {
   provideHttpClientTesting,
 } from "@angular/common/http/testing";
 import { DocumentDataService } from "./document-data.service";
-import { LabDocument } from "../models/document.model";
+import { LabDocument } from "../interfaces";
 
 describe("DocumentDataService", () => {
   let service: DocumentDataService;

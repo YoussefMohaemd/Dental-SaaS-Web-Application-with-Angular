@@ -1,9 +1,9 @@
 import { Injectable } from "@angular/core";
-import { ChangeRequest } from "@core/models";
+import { ChangeRequest } from "@core/interfaces";
 import {
   ApiChangeRequestItem,
   ApiChangeRequestResponse,
-} from "@core/interfaces/change-request.interface";
+} from "@core/interfaces";
 
 @Injectable({ providedIn: "root" })
 export class ChangeRequestAdapter {

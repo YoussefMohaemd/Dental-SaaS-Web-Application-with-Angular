@@ -11,28 +11,9 @@ import {
   SubOrderScanLocalFile,
   SubOrderScanItemStatus,
   SubOrderCreationData,
-} from "../models/sub-order.model";
+  SubOrderJson,
+} from "../interfaces";
 import { ApiEndpoint } from "@core/enum/api.endpoint";
-import { ApiResponse } from "@core/interfaces/api-response.interface";
-
-interface SubOrderJson {
-  id: string;
-  orderId?: string;
-  service: string;
-  icon: string;
-  status: SubOrder["status"];
-  formsComplete: number;
-  formsTotal: number;
-  scansComplete: number;
-  scansTotal: number;
-  teeth: number[];
-  priority: SubOrder["priority"];
-  dueDate: string;
-  notes: string;
-  forms?: SubOrderDetail["forms"];
-  scans?: SubOrderDetail["scans"];
-  activity?: SubOrderDetail["activity"];
-}
 
 function cloneDetail(detail: SubOrderDetail): SubOrderDetail {
   return {
@@ -257,10 +238,10 @@ const SUB_ORDER_DETAILS: Record<string, SubOrderDetail> = {
 };
 
 const ICON_MAP: Record<string, string> = {
-  tooth: "🦷",
-  settings: "⚙️",
-  sparkles: "✨",
-  clipboard: "📋",
+  tooth: "ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸Ãƒâ€šÃ‚Â¦Ãƒâ€šÃ‚Â·",
+  settings: "ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã‚Â¡ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã‚Â¯Ãƒâ€šÃ‚Â¸Ãƒâ€šÃ‚Â",
+  sparkles: "ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“Ãƒâ€šÃ‚Â¨",
+  clipboard: "ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¹",
 };
 
 const DEFAULT_FORM_VALUES: SubOrderFormDraftValue = {
@@ -350,14 +331,13 @@ export class SubOrderDataService {
   readonly count = computed(() => this._subOrders().length);
 
   constructor() {
-    this.load();
   }
 
   load(): void {
     this._loading.set(true);
     this._error.set(null);
     this.http
-      .get<ApiResponse<Array<{ id: string }>>>(this.URL)
+      .get<{ data: Array<{ id: string }> }>(this.URL)
       .pipe(
         map((response) => response.data ?? []),
         map((orders) => orders.map((order) => order.id).filter((id) => !!id)),
@@ -366,7 +346,7 @@ export class SubOrderDataService {
           return forkJoin(
             orderIds.map((orderId) =>
               this.http
-                .get<ApiResponse<SubOrderJson[]>>(
+                .get<{ data: SubOrderJson[] }>(
                   ApiEndpoint.orderSubOrders(orderId),
                 )
                 .pipe(map((response) => response.data ?? [])),
@@ -378,7 +358,7 @@ export class SubOrderDataService {
             (row) =>
               ({
                 ...row,
-                icon: ICON_MAP[row.icon] ?? row.icon ?? "🦷",
+                icon: ICON_MAP[row.icon] ?? row.icon ?? "Ã°Å¸Â¦Â·",
               }) as SubOrder,
           ),
         ),

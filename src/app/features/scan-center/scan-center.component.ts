@@ -5,16 +5,13 @@ import { ScanCenterDataService } from "@core/services/scan-center-data.service";
 import { OrderDataService } from "@core/services/order-data.service";
 import { NavigationService } from "@core/services/navigation.service";
 import { FormatUtils } from "@core/services/format-utils.service";
-import { Order, ScanCenter } from "@core/models";
+import { Order, ScanCenter } from "@core/interfaces";
+import { ScanOrderRow } from "@core/interfaces";
 import { StatusBadgeComponent } from "@shared/components/status-badge/status-badge.component";
 import { AppButtonComponent } from "@shared/components/button/button.component";
 import { AvatarComponent } from "@shared/components/avatar/avatar.component";
 import { AppTextFieldComponent } from "@shared/components/input/input.component";
 import { SafeHtmlPipe } from "../../shared/pipes/safe-html.pipe";
-
-interface ScanOrderRow extends Order {
-  scanStatus: "Active" | "Review" | "Done";
-}
 
 @Component({
   selector: "app-scan-center",

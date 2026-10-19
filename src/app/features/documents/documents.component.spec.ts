@@ -5,7 +5,7 @@ import {
   provideHttpClientTesting,
 } from "@angular/common/http/testing";
 import { DocumentsComponent } from "./documents.component";
-import { LabDocument } from "@core/models/document.model";
+import { LabDocument } from "@core/interfaces";
 
 const MOCK_DOCS: LabDocument[] = [
   {
@@ -33,7 +33,7 @@ const MOCK_DOCS: LabDocument[] = [
     type: "PDF",
     size: "142 KB",
     date: "2024-12-12",
-    doctor: "–",
+    doctor: "ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Å“",
   },
 ];
 

@@ -3,7 +3,7 @@ import { CommonModule } from "@angular/common";
 import { NotificationDataService } from "@core/services/notification-data.service";
 import { NavigationService } from "@core/services/navigation.service";
 import { FormatUtils } from "@core/services/format-utils.service";
-import { Notification, NotificationType } from "@core/models";
+import { Notification, NotificationType } from "@core/interfaces";
 import { AppButtonComponent } from "@shared/components/button/button.component";
 import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
 

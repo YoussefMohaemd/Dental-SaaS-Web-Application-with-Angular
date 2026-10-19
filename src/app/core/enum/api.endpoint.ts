@@ -14,6 +14,7 @@ export class ApiEndpoint {
   static readonly ORDERS = `${environment.apiBaseUrl}/v1/orders`;
   static readonly PATIENTS = `${environment.apiBaseUrl}/v1/patients`;
   static readonly REPORTS_OVERVIEW = `${environment.apiBaseUrl}/v1/reports/overview`;
+  static readonly REPORTING_SEED = `${environment.apiBaseUrl}/v1/reports/seed`;
   static readonly SCAN_CENTERS = `${environment.apiBaseUrl}/v1/scan-centers`;
 
   static orderSubOrders(orderId: string): string {

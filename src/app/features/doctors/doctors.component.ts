@@ -6,7 +6,8 @@ import { DoctorDataService } from "@core/services/doctor-data.service";
 import { OrderDataService } from "@core/services/order-data.service";
 import { NavigationService } from "@core/services/navigation.service";
 import { FormatUtils } from "@core/services/format-utils.service";
-import { Doctor, DoctorStatus } from "@core/models";
+import { Doctor, DoctorStatus } from "@core/interfaces";
+import { SortConfig } from "@core/interfaces";
 import { AppButtonComponent } from "@shared/components/button/button.component";
 import { AvatarComponent } from "@shared/components/avatar/avatar.component";
 import { AppTextFieldComponent } from "@shared/components/input/input.component";
@@ -23,11 +24,6 @@ import {
   sortAriaValue,
   SortAriaValue,
 } from "@shared/utils/sort-a11y";
-
-interface SortConfig {
-  label: string;
-  col: keyof Doctor;
-}
 
 @Component({
   selector: "app-doctors",

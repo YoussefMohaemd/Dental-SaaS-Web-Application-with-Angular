@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
-import { Doctor } from "@core/models";
-import { ApiDoctorItem, ApiDoctorResponse } from "@core/interfaces/doctor.interface";
+import { Doctor } from "@core/interfaces";
+import { ApiDoctorItem, ApiDoctorResponse } from "@core/interfaces";
 
 @Injectable({ providedIn: "root" })
 export class DoctorAdapter {

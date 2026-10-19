@@ -1,8 +1,7 @@
 import { Injectable, inject, signal } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { catchError, map, throwError } from "rxjs";
-import { ReportsData } from "../models/report.model";
-import { ApiResponse } from "@core/interfaces/api-response.interface";
+import { ReportsData } from "../interfaces";
 import { ApiEndpoint } from "@core/enum/api.endpoint";
 import { ReportsApi } from "@core/base/reports.api";
 import { ReportsAdapter } from "@core/adapters/reports.adapter";
@@ -30,7 +29,6 @@ export class ReportsDataService extends ReportsApi {
 
   constructor() {
     super();
-    this.loadReports();
   }
 
   loadReports(): void {
@@ -59,7 +57,7 @@ export class ReportsDataService extends ReportsApi {
 
   getReportsOverview() {
     return this.http
-      .get<ApiResponse<ReportsData>>(this.API_URL)
+      .get<{ data: ReportsData }>(this.API_URL)
       .pipe(
         map((response) => response.data ?? EMPTY_REPORTS),
         map((response) => this.reportsAdapter.ReportsAdapter(response)),

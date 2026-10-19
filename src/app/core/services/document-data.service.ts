@@ -1,8 +1,7 @@
 import { Injectable, inject, signal } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { catchError, map, throwError } from "rxjs";
-import { LabDocument } from "../models/document.model";
-import { ApiResponse } from "@core/interfaces/api-response.interface";
+import { LabDocument } from "../interfaces";
 import { ApiEndpoint } from "@core/enum/api.endpoint";
 import { DocumentApi } from "@core/base/document.api";
 import { DocumentAdapter } from "@core/adapters/document.adapter";
@@ -23,7 +22,6 @@ export class DocumentDataService extends DocumentApi {
 
   constructor() {
     super();
-    this.loadDocuments();
   }
 
   loadDocuments(): void {
@@ -52,7 +50,7 @@ export class DocumentDataService extends DocumentApi {
 
   getAllDocuments() {
     return this.http
-      .get<ApiResponse<LabDocument[]>>(this.API_URL)
+      .get<{ data: LabDocument[] }>(this.API_URL)
       .pipe(
         map((response) => response.data ?? []),
         map((rows) => this.documentAdapter.DocumentAdapter(rows)),

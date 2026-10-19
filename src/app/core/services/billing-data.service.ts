@@ -1,8 +1,7 @@
 import { Injectable, signal, computed, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { catchError, map, throwError } from "rxjs";
-import { BillingRecord } from "../models";
-import { ApiResponse } from "@core/interfaces/api-response.interface";
+import { BillingRecord } from "../interfaces";
 import { ApiEndpoint } from "@core/enum/api.endpoint";
 import { BillingApi } from "@core/base/billing.api";
 import { BillingAdapter } from "@core/adapters/billing.adapter";
@@ -34,7 +33,6 @@ export class BillingDataService extends BillingApi {
 
   constructor() {
     super();
-    this.loadRecords();
   }
 
   loadRecords(): void {
@@ -63,7 +61,7 @@ export class BillingDataService extends BillingApi {
 
   getAllBillingRecords() {
     return this.http
-      .get<ApiResponse<BillingRecord[]>>(this.API_URL)
+      .get<{ data: BillingRecord[] }>(this.API_URL)
       .pipe(
         map((response) => response.data ?? []),
         map((records) => this.billingAdapter.BillingAdapter(records)),

@@ -6,7 +6,8 @@ import {
   QuarterMonthDetail,
   QuarterReportDetail,
   ServiceQuarterMetric,
-} from "@core/models";
+} from "@core/interfaces";
+import { MonthPanelViewModel } from "@core/interfaces";
 import { FormatUtils } from "@core/services/format-utils.service";
 import { NavigationService } from "@core/services/navigation.service";
 import { ReportingDataService } from "@core/services/reporting-data.service";
@@ -14,13 +15,6 @@ import { AppButtonComponent } from "@shared/components/button/button.component";
 import { DataTableToolbarComponent } from "@shared/components/data-table-toolbar/data-table-toolbar.component";
 import { TableFeedbackComponent } from "@shared/components/table-feedback/table-feedback.component";
 import { TagModule } from "primeng/tag";
-
-interface MonthPanelViewModel {
-  month: QuarterMonthDetail;
-  revenueSharePercent: number;
-  topService: ServiceQuarterMetric | null;
-  activeServices: ServiceQuarterMetric[];
-}
 
 @Component({
   selector: "app-quarter-detail-report",
@@ -59,7 +53,7 @@ export class QuarterDetailReportComponent {
   readonly subtitle = computed(() => {
     const report = this.quarterReport();
     if (!report) return "No report data found for this quarter.";
-    return `${report.ordersCount} service entries • ${this.formatUtils.formatCurrency(report.totalRevenue)}`;
+    return `${report.ordersCount} service entries ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ ${this.formatUtils.formatCurrency(report.totalRevenue)}`;
   });
   readonly quarterFeedbackMessage = computed(() => {
     if (this.isFutureQuarter(this.quarter())) {

@@ -22,8 +22,8 @@ import { AppSelectComponent } from "@shared/components/select/select.component";
 import { TeethChartComponent } from "@shared/components/teeth-chart/teeth-chart.component";
 import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
 import { statusDisplayLabel } from "@shared/utils/status-label";
-import { ArchType, Order, Patient, Doctor, SubOrderCreationData } from "@core/models";
-import { AVAILABLE_SERVICES } from "@core/models/create-order.model";
+import { ArchType, Order, Patient, Doctor, SubOrderCreationData } from "@core/interfaces";
+import { AVAILABLE_SERVICES } from "@core/interfaces";
 import {
   defaultServiceClinicalForm,
   defaultServiceDetail,

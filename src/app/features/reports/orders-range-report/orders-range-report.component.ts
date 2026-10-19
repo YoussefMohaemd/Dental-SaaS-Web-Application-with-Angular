@@ -1,6 +1,10 @@
 import { CommonModule } from "@angular/common";
 import { Component, computed, inject, signal } from "@angular/core";
-import { OrderArchiveRecord } from "@core/models";
+import { OrderArchiveRecord } from "@core/interfaces";
+import {
+  MonthlyOrderGroup,
+  ServiceMixItem,
+} from "@core/interfaces";
 import { FormatUtils } from "@core/services/format-utils.service";
 import { NavigationService } from "@core/services/navigation.service";
 import { ReportingDataService } from "@core/services/reporting-data.service";
@@ -11,27 +15,6 @@ import { AppTextFieldComponent } from "@shared/components/input/input.component"
 import { TableFeedbackComponent } from "@shared/components/table-feedback/table-feedback.component";
 import { paginateTableRows, tableTotalPages } from "@shared/utils/table-state";
 import { TagModule } from "primeng/tag";
-
-interface ServiceMixItem {
-  serviceName: string;
-  ordersCount: number;
-  totalRevenue: number;
-  sharePercent: number;
-}
-
-interface MonthlyOrderGroup {
-  monthKey: string;
-  monthLabel: string;
-  ordersCount: number;
-  totalRevenue: number;
-  chargedRevenue: number;
-  chargedOrders: number;
-  chargeRate: number;
-  averageOrderValue: number;
-  topServiceName: string;
-  serviceMix: ServiceMixItem[];
-  orders: OrderArchiveRecord[];
-}
 
 @Component({
   selector: "app-orders-range-report",

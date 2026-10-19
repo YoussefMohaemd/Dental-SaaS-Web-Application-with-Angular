@@ -14,7 +14,12 @@ import { CaseDataService } from "@core/services/case-data.service";
 import { DocumentDataService } from "@core/services/document-data.service";
 import { NavigationService } from "@core/services/navigation.service";
 import { FormatUtils } from "@core/services/format-utils.service";
-import { Case, LabDocument, Order, Patient } from "@core/models";
+import { Case, LabDocument, Order, Patient } from "@core/interfaces";
+import {
+  ContactItem,
+  PatientActivityItem,
+  PatientDocument,
+} from "@core/interfaces";
 import { StatusBadgeComponent } from "@shared/components/status-badge/status-badge.component";
 import { AppButtonComponent } from "@shared/components/button/button.component";
 import { AvatarComponent } from "@shared/components/avatar/avatar.component";
@@ -23,29 +28,7 @@ import { PriorityBadgeComponent } from "@shared/components/priority-badge/priori
 import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
 import { TableModule } from "primeng/table";
 
-interface ContactItem {
-  icon: string;
-  label: string;
-  value: string;
-}
-
 type PatientTab = "Overview" | "Orders" | "Cases" | "Documents" | "Activity";
-
-interface PatientDocument extends LabDocument {
-  patientName?: string;
-  orderId?: string;
-  orderNumber?: string;
-  subOrderId?: string;
-}
-
-interface PatientActivityItem {
-  kind: "order" | "case" | "document";
-  title: string;
-  details: string;
-  at: string;
-  orderId?: string;
-  caseId?: string;
-}
 
 @Component({
   selector: "app-patient-details",

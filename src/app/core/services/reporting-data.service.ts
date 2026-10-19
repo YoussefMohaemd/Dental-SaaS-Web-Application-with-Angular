@@ -1,8 +1,7 @@
 import { Injectable, computed, inject, signal } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import { catchError, of } from "rxjs";
+import { catchError, throwError } from "rxjs";
 import {
-  FALLBACK_REPORTING_SEED,
   MonthlyServiceMetric,
   OrderArchiveRecord,
   QuarterMonthDetail,
@@ -10,7 +9,8 @@ import {
   ReportingSeedData,
   ServiceQuarterMetric,
   TeamPerformanceRecord,
-} from "../models";
+} from "../interfaces";
+import { ApiEndpoint } from "@core/enum/api.endpoint";
 
 const MONTH_NAMES = [
   "January",
@@ -30,9 +30,21 @@ const MONTH_NAMES = [
 @Injectable({ providedIn: "root" })
 export class ReportingDataService {
   private readonly http = inject(HttpClient);
-  private readonly API_URL = "/data/reporting-seed.json";
+  private readonly API_URL = ApiEndpoint.REPORTING_SEED;
+  private readonly EMPTY_SEED: ReportingSeedData = {
+    startYear: new Date().getUTCFullYear(),
+    endYear: new Date().getUTCFullYear(),
+    services: [],
+    scanCenters: [],
+    doctors: [],
+    patientsFirstNames: [],
+    patientsLastNames: [],
+    operators: [],
+    employeeTypes: [],
+    employeeNames: [],
+  };
 
-  private readonly _seed = signal<ReportingSeedData>(FALLBACK_REPORTING_SEED);
+  private readonly _seed = signal<ReportingSeedData>(this.EMPTY_SEED);
   private readonly _loading = signal<boolean>(false);
   private readonly _error = signal<string | null>(null);
 
@@ -62,7 +74,6 @@ export class ReportingDataService {
   });
 
   constructor() {
-    this.loadSeedData();
   }
 
   loadSeedData(): void {
@@ -75,7 +86,7 @@ export class ReportingDataService {
         catchError((err) => {
           this._error.set("Failed to load reporting seed data");
           console.error("Error loading reporting seed data:", err);
-          return of(FALLBACK_REPORTING_SEED);
+          return throwError(() => err);
         }),
       )
       .subscribe({
@@ -84,6 +95,7 @@ export class ReportingDataService {
           this._loading.set(false);
         },
         error: () => {
+          this._seed.set(this.EMPTY_SEED);
           this._loading.set(false);
         },
       });
@@ -210,6 +222,17 @@ export class ReportingDataService {
   private generateOrderArchiveRecords(
     seed: ReportingSeedData,
   ): OrderArchiveRecord[] {
+    if (
+      seed.services.length === 0 ||
+      seed.scanCenters.length === 0 ||
+      seed.doctors.length === 0 ||
+      seed.patientsFirstNames.length === 0 ||
+      seed.patientsLastNames.length === 0 ||
+      seed.operators.length === 0
+    ) {
+      return [];
+    }
+
     const records: OrderArchiveRecord[] = [];
     let sequence = 1;
     const now = new Date();

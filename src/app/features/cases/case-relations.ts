@@ -1,4 +1,4 @@
-import { Case, LabDocument, Order } from "@core/models";
+import { Case, LabDocument, Order } from "@core/interfaces";
 
 export function getCaseOrders(caseItem: Case, orders: Order[]): Order[] {
   return orders

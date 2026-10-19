@@ -18,7 +18,7 @@ import { DoctorDataService } from "@core/services/doctor-data.service";
 import { ClinicDataService } from "@core/services/clinic-data.service";
 import { NavigationService } from "@core/services/navigation.service";
 import { FormatUtils } from "@core/services/format-utils.service";
-import { Order, Patient, Doctor, Clinic, SubOrder } from "@core/models";
+import { Order, Patient, Doctor, Clinic, SubOrder } from "@core/interfaces";
 import { AvatarComponent } from "@shared/components/avatar/avatar.component";
 import { AppButtonComponent } from "@shared/components/button/button.component";
 import { EntityDialogComponent } from "@shared/components/entity-dialog/entity-dialog.component";

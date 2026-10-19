@@ -12,19 +12,14 @@ import { DoctorDataService } from "@core/services/doctor-data.service";
 import { OrderDataService } from "@core/services/order-data.service";
 import { NavigationService } from "@core/services/navigation.service";
 import { FormatUtils } from "@core/services/format-utils.service";
-import { Doctor, Order } from "@core/models";
+import { Doctor, Order } from "@core/interfaces";
+import { ContactItem } from "@core/interfaces";
 import { StatusBadgeComponent } from "@shared/components/status-badge/status-badge.component";
 import { AppButtonComponent } from "@shared/components/button/button.component";
 import { AvatarComponent } from "@shared/components/avatar/avatar.component";
 import { IconActionButtonComponent } from "@shared/components/icon-action-button/icon-action-button.component";
 import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
 import { TableModule } from "primeng/table";
-
-interface ContactItem {
-  icon: string;
-  label: string;
-  value: string;
-}
 
 @Component({
   selector: "app-doctor-details",

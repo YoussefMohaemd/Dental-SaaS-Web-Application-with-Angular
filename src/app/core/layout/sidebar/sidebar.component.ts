@@ -3,7 +3,7 @@ import { CommonModule } from "@angular/common";
 import { RouterModule } from "@angular/router";
 import { NavigationService } from "../../../core/services/navigation.service";
 import { ThemeService } from "../../../core/services/theme.service";
-import { NAV_ITEMS } from "../../../core/models/navigation.model";
+import { NAV_ITEMS } from "../../../core/interfaces/navigation.interface";
 import { AvatarComponent } from "../../../shared/components/avatar/avatar.component";
 import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
 import { lucideSvg } from "../../../shared/icons/lucide-icons";

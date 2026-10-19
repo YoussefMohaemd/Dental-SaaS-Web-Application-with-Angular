@@ -1,13 +1,6 @@
+import { WorkflowTimelineStage } from '@core/interfaces';
 import { CommonModule } from "@angular/common";
 import { Component, input } from "@angular/core";
-
-export interface WorkflowTimelineStage {
-  label: string;
-  status: string;
-  owner: string;
-  description: string;
-  actions: readonly string[];
-}
 
 @Component({
   selector: "app-workflow-timeline",

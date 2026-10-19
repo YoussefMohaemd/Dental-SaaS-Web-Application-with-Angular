@@ -9,11 +9,7 @@ import {
 } from "@angular/core";
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from "@angular/forms";
 import { TuiLabel } from "@taiga-ui/core/components/label";
-
-export interface SelectOption {
-  label: string;
-  value: unknown;
-}
+import { SelectOption } from "@core/interfaces";
 
 type SelectOptionInput = string | SelectOption;
 

@@ -1,8 +1,7 @@
 import { Injectable, signal, computed, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { catchError, map, throwError } from "rxjs";
-import { Case } from "../models";
-import { ApiResponse } from "@core/interfaces/api-response.interface";
+import { Case } from "../interfaces";
 import { ApiEndpoint } from "@core/enum/api.endpoint";
 import { CaseApi } from "@core/base/case.api";
 import { CaseAdapter } from "@core/adapters/case.adapter";
@@ -28,7 +27,6 @@ export class CaseDataService extends CaseApi {
 
   constructor() {
     super();
-    this.loadCases();
   }
 
   loadCases(): void {
@@ -57,7 +55,7 @@ export class CaseDataService extends CaseApi {
 
   getAllCases() {
     return this.http
-      .get<ApiResponse<Case[]>>(this.API_URL)
+      .get<{ data: Case[] }>(this.API_URL)
       .pipe(
         map((response) => response.data ?? []),
         map((rows) => this.caseAdapter.CaseAdapter(rows)),

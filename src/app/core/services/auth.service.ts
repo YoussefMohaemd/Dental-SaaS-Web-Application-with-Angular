@@ -1,7 +1,6 @@
 import { Injectable, computed, inject, signal } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { catchError, map, Observable, of, tap, throwError } from "rxjs";
-import { ApiResponse } from "@core/interfaces/api-response.interface";
 import { ApiEndpoint } from "@core/enum/api.endpoint";
 import { environment } from "../../../environments/environment";
 
@@ -44,7 +43,7 @@ export class AuthService {
     rememberMe?: boolean;
   }): Observable<AuthenticatedUser> {
     return this.http
-      .post<ApiResponse<LoginResponse>>(
+      .post<{ data: LoginResponse }>(
         ApiEndpoint.AUTH_LOGIN,
         {
           tenantId: environment.defaultTenantId,

@@ -15,17 +15,10 @@ import {
 import { OrderDataService } from "@core/services/order-data.service";
 import { NavigationService } from "@core/services/navigation.service";
 import { FormatUtils } from "@core/services/format-utils.service";
-import { Order, OrderStatus } from "@core/models";
+import { Order, OrderStatus } from "@core/interfaces";
+import { ColumnConfig } from "@core/interfaces";
 import { PriorityBadgeComponent } from "@shared/components/priority-badge/priority-badge.component";
 import { SafeHtmlPipe } from "../../shared/pipes/safe-html.pipe";
-
-interface ColumnConfig {
-  id: OrderStatus;
-  label: string;
-  dotColor: string;
-  badgeColor: string;
-  dropListId: string;
-}
 
 export function workflowStatusFromDropListId(
   columns: readonly ColumnConfig[],

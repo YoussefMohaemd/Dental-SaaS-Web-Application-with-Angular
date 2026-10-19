@@ -9,4 +9,3 @@ export interface VolumeWeek {
   weekLabel: string;
   days: VolumeDay[];
 }
-

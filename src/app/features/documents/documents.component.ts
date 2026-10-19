@@ -11,7 +11,7 @@ import {
   DOCUMENT_CATEGORIES,
   DocumentCategory,
   LabDocument,
-} from "@core/models/document.model";
+} from "@core/interfaces";
 import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
 
 export type { DocumentCategory, LabDocument };

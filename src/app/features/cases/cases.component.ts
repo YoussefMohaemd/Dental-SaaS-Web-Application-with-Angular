@@ -6,7 +6,7 @@ import { DocumentDataService } from "@core/services/document-data.service";
 import { NavigationService } from "@core/services/navigation.service";
 import { OrderDataService } from "@core/services/order-data.service";
 import { FormatUtils } from "@core/services/format-utils.service";
-import { Case, CaseStatus, Priority } from "@core/models";
+import { Case, CaseStatus, Priority } from "@core/interfaces";
 import { StatusBadgeComponent } from "@shared/components/status-badge/status-badge.component";
 import { PriorityBadgeComponent } from "@shared/components/priority-badge/priority-badge.component";
 import { AppButtonComponent } from "@shared/components/button/button.component";

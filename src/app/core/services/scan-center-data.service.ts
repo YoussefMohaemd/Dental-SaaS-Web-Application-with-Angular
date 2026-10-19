@@ -1,8 +1,7 @@
 import { Injectable, signal, computed, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { catchError, map, throwError } from "rxjs";
-import { ScanCenter } from "../models";
-import { ApiResponse } from "@core/interfaces/api-response.interface";
+import { ScanCenter } from "../interfaces";
 import { ApiEndpoint } from "@core/enum/api.endpoint";
 import { ScanCenterApi } from "@core/base/scan-center.api";
 import { ScanCenterAdapter } from "@core/adapters/scan-center.adapter";
@@ -29,7 +28,6 @@ export class ScanCenterDataService extends ScanCenterApi {
 
   constructor() {
     super();
-    this.loadCenters();
   }
 
   loadCenters(): void {
@@ -58,7 +56,7 @@ export class ScanCenterDataService extends ScanCenterApi {
 
   getAllScanCenters() {
     return this.http
-      .get<ApiResponse<ScanCenter[]>>(this.API_URL)
+      .get<{ data: ScanCenter[] }>(this.API_URL)
       .pipe(
         map((response) => response.data ?? []),
         map((rows) => this.scanCenterAdapter.ScanCenterAdapter(rows)),

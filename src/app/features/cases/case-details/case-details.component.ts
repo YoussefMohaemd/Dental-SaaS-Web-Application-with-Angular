@@ -6,19 +6,14 @@ import { DocumentDataService } from "@core/services/document-data.service";
 import { OrderDataService } from "@core/services/order-data.service";
 import { NavigationService } from "@core/services/navigation.service";
 import { FormatUtils } from "@core/services/format-utils.service";
-import { Case, LabDocument, Order } from "@core/models";
+import { Case, LabDocument, Order } from "@core/interfaces";
+import { CaseActivityItem } from "@core/interfaces";
 import { StatusBadgeComponent } from "@shared/components/status-badge/status-badge.component";
 import { AppButtonComponent } from "@shared/components/button/button.component";
 import { IconActionButtonComponent } from "@shared/components/icon-action-button/icon-action-button.component";
 import { PriorityBadgeComponent } from "@shared/components/priority-badge/priority-badge.component";
 import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
 import { getCaseDocuments, getCaseOrders } from "../case-relations";
-
-interface ActivityItem {
-  user: string;
-  action: string;
-  time: string;
-}
 
 @Component({
   selector: "app-case-details",
@@ -64,7 +59,7 @@ export class CaseDetailsComponent implements OnInit {
 
   readonly tabs = ["Overview", "Files", "Notes", "Activity"];
   readonly activeTab = signal<string>("Overview");
-  readonly activityItems = computed<ActivityItem[]>(() => {
+  readonly activityItems = computed<CaseActivityItem[]>(() => {
     const currentCase = this.case();
     if (!currentCase) return [];
 

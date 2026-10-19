@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { VolumeWeek } from "@core/models";
+import { VolumeWeek } from "@core/interfaces";
 
 @Injectable({ providedIn: "root" })
 export class DashboardAdapter {

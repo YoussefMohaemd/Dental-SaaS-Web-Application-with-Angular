@@ -5,7 +5,7 @@ import { TableModule } from "primeng/table";
 import { BillingDataService } from "@core/services/billing-data.service";
 import { NavigationService } from "@core/services/navigation.service";
 import { FormatUtils } from "@core/services/format-utils.service";
-import { BillingRecord } from "@core/models";
+import { BillingRecord } from "@core/interfaces";
 import { AppButtonComponent } from "@shared/components/button/button.component";
 import { EnterprisePaginatorComponent } from "@shared/components/enterprise-paginator/enterprise-paginator.component";
 import { DataTableToolbarComponent } from "@shared/components/data-table-toolbar/data-table-toolbar.component";

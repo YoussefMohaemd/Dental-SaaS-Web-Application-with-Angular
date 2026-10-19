@@ -1,6 +1,7 @@
 import { CommonModule } from "@angular/common";
 import { Component, computed, inject, signal } from "@angular/core";
-import { TeamPerformanceRecord } from "@core/models";
+import { TeamPerformanceRecord } from "@core/interfaces";
+import { RoleSummary } from "@core/interfaces";
 import { FormatUtils } from "@core/services/format-utils.service";
 import { NavigationService } from "@core/services/navigation.service";
 import { ReportingDataService } from "@core/services/reporting-data.service";
@@ -11,13 +12,6 @@ import { SearchFilterToolbarComponent } from "@shared/components/search-filter-t
 import { TableFeedbackComponent } from "@shared/components/table-feedback/table-feedback.component";
 import { paginateTableRows, tableTotalPages } from "@shared/utils/table-state";
 import { TagModule } from "primeng/tag";
-
-interface RoleSummary {
-  type: string;
-  members: number;
-  totalRevenue: number;
-  averageOnTime: number;
-}
 
 @Component({
   selector: "app-team-performance-report",

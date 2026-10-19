@@ -6,6 +6,10 @@ import { CaseDataService } from "@core/services/case-data.service";
 import { FormatUtils } from "@core/services/format-utils.service";
 import { OrderDataService } from "@core/services/order-data.service";
 import { ReportsDataService } from "@core/services/reports-data.service";
+import {
+  ReportCardSeverity,
+  ReportNavigationCard,
+} from "@core/interfaces";
 import { AppButtonComponent } from "@shared/components/button/button.component";
 import { ChartConfiguration, ChartData, TooltipItem } from "chart.js";
 import {
@@ -20,17 +24,7 @@ import {
   RevenuePoint,
   StageShare,
   TurnaroundPoint,
-} from "@core/models/report.model";
-
-type ReportCardSeverity = "info" | "warn";
-
-interface ReportNavigationCard {
-  title: string;
-  description: string;
-  route: string;
-  cta: string;
-  severity: ReportCardSeverity;
-}
+} from "@core/interfaces";
 
 @Component({
   selector: "app-reports",

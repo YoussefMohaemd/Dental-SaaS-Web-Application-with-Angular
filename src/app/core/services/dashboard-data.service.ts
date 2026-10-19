@@ -1,20 +1,8 @@
 import { Injectable, signal, computed, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { catchError, map, throwError } from "rxjs";
-import { ApiResponse } from "@core/interfaces/api-response.interface";
 import { ApiEndpoint } from "@core/enum/api.endpoint";
-
-export interface VolumeDay {
-  day: string;
-  orders: number;
-  completed: number;
-}
-
-export interface VolumeWeek {
-  weekStart: string;
-  weekLabel: string;
-  days: VolumeDay[];
-}
+import { VolumeDay, VolumeWeek } from "@core/interfaces";
 
 const EMPTY_WEEK: VolumeWeek = {
   weekStart: "",
@@ -51,7 +39,6 @@ export class DashboardDataService {
   );
 
   constructor() {
-    this.loadVolume();
   }
 
   loadVolume(): void {
@@ -59,7 +46,7 @@ export class DashboardDataService {
     this._error.set(null);
 
     this.http
-      .get<ApiResponse<{ weeks?: VolumeWeek[] | Array<{ week: string; orders: number; completed: number }> }>>(this.API_URL)
+      .get<{ data: { weeks?: VolumeWeek[] | Array<{ week: string; orders: number; completed: number }> } }>(this.API_URL)
       .pipe(
         map((response) => this.normalizeWeeksPayload(response.data)),
         catchError((err) => {

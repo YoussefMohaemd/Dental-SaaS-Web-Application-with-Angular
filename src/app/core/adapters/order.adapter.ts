@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
-import { Order } from "@core/models";
-import { ApiOrderItem, ApiOrderResponse } from "@core/interfaces/order.interface";
+import { Order } from "@core/interfaces";
+import { ApiOrderItem, ApiOrderResponse } from "@core/interfaces";
 
 @Injectable({ providedIn: "root" })
 export class OrderAdapter {

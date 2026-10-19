@@ -1,25 +1,13 @@
 import { Component, computed, input, output, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
-import { LOWER_JAW_TEETH, UPPER_JAW_TEETH } from "@core/models/tooth.model";
-
-export type ToothStatus =
-  "normal" | "planned" | "implant" | "missing" | "extract";
-export type JawFilter = "both" | "upper" | "lower";
-export type ArchSide = "right" | "left";
-
-export const UPPER_TEETH = UPPER_JAW_TEETH.map((tooth) => tooth.number);
-export const LOWER_TEETH = LOWER_JAW_TEETH.map((tooth) => tooth.number);
-
-export const SERVICE_COLORS = [
-  "#2563EB",
-  "#06B6D4",
-  "#10B981",
-  "#F59E0B",
-  "#8B5CF6",
-  "#EF4444",
-  "#F97316",
-  "#6366F1",
-];
+import {
+  ArchSide,
+  JawFilter,
+  LOWER_TEETH,
+  ToothStatus,
+  TOOTH_SERVICE_COLORS,
+  UPPER_TEETH,
+} from "@core/interfaces";
 
 const STATUS_STYLE: Record<ToothStatus, { fill: string; border: string }> = {
   normal: { fill: "#FFFFFF", border: "#64748B" },
@@ -62,7 +50,7 @@ export class TeethChartComponent {
     const teethByService = this.serviceTeeth();
     this.services().forEach((svc, i) => {
       (teethByService[svc] || []).forEach((n) => {
-        map[n] = SERVICE_COLORS[i % SERVICE_COLORS.length];
+        map[n] = TOOTH_SERVICE_COLORS[i % TOOTH_SERVICE_COLORS.length];
       });
     });
     return map;
@@ -189,7 +177,7 @@ export class TeethChartComponent {
   }
 
   serviceColorAt(index: number): string {
-    return SERVICE_COLORS[index % SERVICE_COLORS.length];
+    return TOOTH_SERVICE_COLORS[index % TOOTH_SERVICE_COLORS.length];
   }
 
   serviceTeethCount(service: string): number {

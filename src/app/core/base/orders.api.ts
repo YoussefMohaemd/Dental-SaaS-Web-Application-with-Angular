@@ -1,5 +1,5 @@
 import { Observable } from "rxjs";
-import { Order } from "@core/models";
+import { Order } from "@core/interfaces";
 
 export abstract class OrdersApi {
   abstract getAllOrders(): Observable<Order[]>;

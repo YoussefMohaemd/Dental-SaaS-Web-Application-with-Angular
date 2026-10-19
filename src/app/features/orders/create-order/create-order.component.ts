@@ -11,11 +11,16 @@ import { SubOrderDataService } from "@core/services/sub-order-data.service";
 import { FormatUtils } from "@core/services/format-utils.service";
 import {
   AVAILABLE_SERVICES,
+  CREATE_ORDER_STEPS,
   CreateOrderService,
+  CreateOrderFormState,
+  IH_TASK_RECIPIENTS,
+  MAIL_RECIPIENTS,
   ServiceTeethMapping,
-} from "@core/models/create-order.model";
-import { Clinic, Doctor, Patient } from "@core/models";
-import { SubOrderCreationData } from "@core/models/sub-order.model";
+} from "@core/interfaces";
+import { Clinic, Doctor, Patient } from "@core/interfaces";
+import { SubOrderCreationData } from "@core/interfaces";
+import { DoctorSuggestion } from "@core/interfaces";
 import { AppButtonComponent } from "@shared/components/button/button.component";
 import { AppSelectComponent } from "@shared/components/select/select.component";
 import { TeethChartComponent } from "@shared/components/teeth-chart/teeth-chart.component";
@@ -39,62 +44,6 @@ import {
   serviceRequiresTeeth,
   SHADES,
 } from "../order-flow.utils";
-
-const STEPS = [
-  { id: 1, label: "Patient & Clinic", short: "Patient" },
-  { id: 2, label: "Services", short: "Services" },
-  { id: 3, label: "Teeth Selection", short: "Teeth" },
-  { id: 4, label: "Service Details", short: "Details" },
-  { id: 5, label: "Forms", short: "Forms" },
-  { id: 6, label: "Scans & Files", short: "Files" },
-  { id: 7, label: "Review", short: "Review" },
-];
-
-const MAIL_RECIPIENTS = [
-  "CS",
-  "Sales",
-  "TP",
-  "Ops",
-  "Finance",
-  "Guides",
-  "Restorations",
-  "Production",
-  "Boston",
-  "Scanning Techs",
-  "CAD/CAM",
-  "QMS",
-] as const;
-
-const IH_TASK_RECIPIENTS = [
-  "CS",
-  "Sales",
-  "TP",
-  "Ops",
-  "Finance",
-  "Guides assembly",
-  "Restorations EG",
-  "Production",
-  "Boston",
-  "Scanning Techs",
-  "CAD/CAM",
-] as const;
-
-type CreateOrderFormState = {
-  patientName: string;
-  doctorName: string;
-  doctorId: string;
-  clinicId: string;
-  billToTarget: "doctor" | "scan-center";
-  notes: string;
-  shade: string;
-  format: string;
-};
-
-interface DoctorSuggestion {
-  id: string;
-  name: string;
-  label: string;
-}
 
 @Component({
   selector: "app-create-order",
@@ -250,7 +199,7 @@ export class CreateOrderComponent implements OnDestroy {
     }
     return out;
   });
-  readonly steps = STEPS;
+  readonly steps = CREATE_ORDER_STEPS;
   readonly services: CreateOrderService[] = AVAILABLE_SERVICES;
   readonly shades = SHADES;
   readonly fileFormats = FILE_FORMATS;
@@ -268,15 +217,15 @@ export class CreateOrderComponent implements OnDestroy {
   readonly selectedDoctorDisplay = computed(() => {
     const doctor = this.selectedDoctor();
     if (doctor) return doctor.name;
-    return this.form().doctorName || "—";
+    return this.form().doctorName || "ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â";
   });
   readonly selectedBillToLabel = computed(() => {
     if (this.form().billToTarget === "scan-center") {
       const centerName = this.scanCenters()[0]?.name ?? "Local Session";
-      return `Scan Center • ${centerName}`;
+      return `Scan Center ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ ${centerName}`;
     }
     const doctor = this.selectedDoctor();
-    return doctor ? `Doctor • ${doctor.name}` : "Doctor";
+    return doctor ? `Doctor ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ ${doctor.name}` : "Doctor";
   });
 
   readonly allTeethCombined = computed(() => {
@@ -500,7 +449,7 @@ export class CreateOrderComponent implements OnDestroy {
   }
 
   nextStep(): void {
-    if (this.canProceed() && this.step() < STEPS.length) {
+    if (this.canProceed() && this.step() < this.steps.length) {
       this.step.update((s) => s + 1);
     }
   }
@@ -596,8 +545,8 @@ export class CreateOrderComponent implements OnDestroy {
       billed: false,
       billTo:
         this.form().billToTarget === "scan-center"
-          ? `Scan Center • ${scanCenter?.name ?? "Local Session"}`
-          : `Doctor • ${doctorName}`,
+          ? `Scan Center ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ ${scanCenter?.name ?? "Local Session"}`
+          : `Doctor ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ ${doctorName}`,
       vouchers: 0,
       isLocked: false,
       hasNotes: internalCaseNote.length > 0 || internalCaseFiles.length > 0,
@@ -794,7 +743,7 @@ export class CreateOrderComponent implements OnDestroy {
 
   selectedServiceNames(): string {
     const names = this.selectedServiceObjects().map((service) => service.name);
-    return names.length > 0 ? names.join(", ") : "—";
+    return names.length > 0 ? names.join(", ") : "ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â";
   }
 
   getIconSvg(name: string): string {

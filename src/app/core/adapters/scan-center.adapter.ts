@@ -1,9 +1,9 @@
 import { Injectable } from "@angular/core";
-import { ScanCenter } from "@core/models";
+import { ScanCenter } from "@core/interfaces";
 import {
   ApiScanCenterItem,
   ApiScanCenterResponse,
-} from "@core/interfaces/scan-center.interface";
+} from "@core/interfaces";
 
 @Injectable({ providedIn: "root" })
 export class ScanCenterAdapter {

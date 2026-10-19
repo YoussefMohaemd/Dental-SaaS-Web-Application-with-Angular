@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { ReportsData } from "@core/models/report.model";
+import { ReportsData } from "@core/interfaces";
 
 @Injectable({ providedIn: "root" })
 export class ReportsAdapter {

@@ -3,24 +3,13 @@ import { CommonModule } from "@angular/common";
 import { ActivatedRoute } from "@angular/router";
 import { OrderDataService } from "@core/services/order-data.service";
 import { NavigationService } from "@core/services/navigation.service";
+import { OrderFileEntry } from "@core/interfaces";
 import { AppButtonComponent } from "@shared/components/button/button.component";
 import { EntityDialogComponent } from "@shared/components/entity-dialog/entity-dialog.component";
 import { IconActionButtonComponent } from "@shared/components/icon-action-button/icon-action-button.component";
 import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
 
 export type FileStatus = "uploaded" | "uploading" | "failed";
-
-export interface OrderFileEntry {
-  id: string;
-  name: string;
-  type: string;
-  size: string;
-  sizeBytes: number;
-  status: FileStatus;
-  progress: number;
-  uploadedAt: string;
-  uploadedBy: string;
-}
 
 const INITIAL_FILES: OrderFileEntry[] = [
   {
@@ -197,7 +186,7 @@ export class OrderFilesComponent {
           uploadedBy: "You",
         };
       });
-    this.uploadMessage.set(rejected.length > 0 ? rejected.join(" · ") : null);
+    this.uploadMessage.set(rejected.length > 0 ? rejected.join(" Ã‚Â· ") : null);
     if (additions.length === 0) return;
     this.files.update((current) => [...additions, ...current]);
     for (const entry of additions) this.simulateUpload(entry.id);

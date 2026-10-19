@@ -14,35 +14,17 @@ import { FormatUtils } from "@core/services/format-utils.service";
 import { NavigationService } from "@core/services/navigation.service";
 import { NotificationDataService } from "@core/services/notification-data.service";
 import { OrderDataService } from "@core/services/order-data.service";
+import {
+  QuickStatData,
+  StatCardData,
+  WorkflowDataPoint,
+} from "@core/interfaces";
 import { EmptyStateComponent } from "@shared/components/empty-state/empty-state.component";
 import { LoadingStateComponent } from "@shared/components/loading-state/loading-state.component";
 import { PriorityBadgeComponent } from "@shared/components/priority-badge/priority-badge.component";
 import { StatusBadgeComponent } from "@shared/components/status-badge/status-badge.component";
 import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
 import { lucideSvg } from "@shared/icons/lucide-icons";
-
-interface WorkflowDataPoint {
-  name: string;
-  count: number;
-  color: string;
-}
-
-interface StatCardData {
-  label: string;
-  value: number | string;
-  sub: string;
-  icon: string;
-  color: string;
-  route: string;
-}
-
-interface QuickStatData {
-  label: string;
-  value: string;
-  sub: string;
-  icon: string;
-  color: string;
-}
 
 const WORKFLOW_STAGES: { name: string; color: string; statuses: string[] }[] = [
   { name: "New", color: "#94A3B8", statuses: ["New"] },

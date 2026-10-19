@@ -1,4 +1,12 @@
 export type ToothJaw = "upper" | "lower";
+export type ToothStatus =
+  | "normal"
+  | "planned"
+  | "implant"
+  | "missing"
+  | "extract";
+export type JawFilter = "both" | "upper" | "lower";
+export type ArchSide = "right" | "left";
 
 export interface DentalTooth {
   id: string;
@@ -23,7 +31,7 @@ export const FDI_LOWER_NUMBERS = [
   48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38,
 ] as const;
 
-function toothTypeFromPosition(position: number): DentalTooth["type"] {
+export function toothTypeFromPosition(position: number): DentalTooth["type"] {
   const map: Record<number, DentalTooth["type"]> = {
     1: "central-incisor",
     2: "lateral-incisor",
@@ -60,3 +68,17 @@ export const UPPER_JAW_TEETH = PERMANENT_TEETH.filter(
 export const LOWER_JAW_TEETH = PERMANENT_TEETH.filter(
   (tooth) => tooth.jaw === "lower",
 );
+
+export const UPPER_TEETH = UPPER_JAW_TEETH.map((tooth) => tooth.number);
+export const LOWER_TEETH = LOWER_JAW_TEETH.map((tooth) => tooth.number);
+
+export const TOOTH_SERVICE_COLORS = [
+  "#2563EB",
+  "#06B6D4",
+  "#10B981",
+  "#F59E0B",
+  "#8B5CF6",
+  "#EF4444",
+  "#F97316",
+  "#6366F1",
+] as const;

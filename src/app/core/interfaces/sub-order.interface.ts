@@ -135,3 +135,66 @@ export interface SubOrderFormItemValue {
 }
 
 export type SubOrderTab = "overview" | "forms" | "scans" | "activity";
+
+export const SUB_ORDER_TABS: SubOrderTab[] = [
+  "overview",
+  "forms",
+  "scans",
+  "activity",
+];
+
+export const DEFAULT_SUB_ORDER_FORM_VALUES: SubOrderFormDraftValue = {
+  clinicalNotes: "",
+  occlusalContact: "Light contact",
+  marginType: "Chamfer",
+  material: "Zirconia (Multilayer)",
+  shade: "A2",
+  specialInstructions: "",
+};
+
+export const OCCLUSAL_CONTACT_OPTIONS = [
+  "Light contact",
+  "Full contact",
+  "No contact",
+] as const;
+
+export const MARGIN_TYPE_OPTIONS = [
+  "Chamfer",
+  "Shoulder",
+  "Feather edge",
+  "Knife edge",
+] as const;
+
+export const MATERIAL_OPTIONS = [
+  "Zirconia (Multilayer)",
+  "PFM",
+  "E-max",
+  "PMMA",
+  "Titanium",
+] as const;
+
+export const EMPTY_SUB_ORDER_DETAIL: SubOrderDetail = {
+  id: "",
+  forms: [],
+  scans: [],
+  activity: [],
+};
+
+export interface SubOrderJson {
+  id: string;
+  orderId?: string;
+  service: string;
+  icon: string;
+  status: SubOrder["status"];
+  formsComplete: number;
+  formsTotal: number;
+  scansComplete: number;
+  scansTotal: number;
+  teeth: number[];
+  priority: SubOrder["priority"];
+  dueDate: string;
+  notes: string;
+  forms?: SubOrderDetail["forms"];
+  scans?: SubOrderDetail["scans"];
+  activity?: SubOrderDetail["activity"];
+}

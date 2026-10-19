@@ -5,7 +5,7 @@ import { provideHttpClientTesting } from "@angular/common/http/testing";
 import { provideRouter } from "@angular/router";
 import { BillingComponent } from "./billing.component";
 import { BillingDataService } from "@core/services/billing-data.service";
-import { BillingRecord } from "@core/models";
+import { BillingRecord } from "@core/interfaces";
 
 describe("BillingComponent", () => {
   let component: BillingComponent;

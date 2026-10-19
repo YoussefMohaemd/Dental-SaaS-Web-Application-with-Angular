@@ -6,7 +6,7 @@ import { PatientDataService } from "@core/services/patient-data.service";
 import { OrderDataService } from "@core/services/order-data.service";
 import { NavigationService } from "@core/services/navigation.service";
 import { FormatUtils } from "@core/services/format-utils.service";
-import { Patient, PatientStatus } from "@core/models";
+import { Patient, PatientStatus } from "@core/interfaces";
 import { AppButtonComponent } from "@shared/components/button/button.component";
 import { AvatarComponent } from "@shared/components/avatar/avatar.component";
 import { AppTextFieldComponent } from "@shared/components/input/input.component";

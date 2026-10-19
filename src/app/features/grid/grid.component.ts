@@ -10,79 +10,17 @@ import { PriorityBadgeComponent } from "@shared/components/priority-badge/priori
 import { LoadingStateComponent } from "@shared/components/loading-state/loading-state.component";
 import { EmptyStateComponent } from "@shared/components/empty-state/empty-state.component";
 import { filterTableRows } from "@shared/utils/table-state";
+import {
+  OrderGridRow,
+  PatientGridRow,
+  PatientSnapshot,
+  ServiceGridRow,
+  ServiceShowcaseCard,
+  WorkflowGridRow,
+} from "@core/interfaces";
 
 type WorkflowStatus = "New" | "Review" | "Design" | "Production" | "Done";
 type WorkflowPriority = "Low" | "Normal" | "High" | "Urgent";
-
-interface OrderGridRow {
-  id: string;
-  orderNumber: string;
-  patient: string;
-  patientId: string;
-  doctor: string;
-  service: string;
-  stage: WorkflowStatus;
-  createdDate: string;
-  dueDate: string;
-}
-
-interface PatientGridRow {
-  id: string;
-  patient: string;
-  patientId: string;
-  doctor: string;
-  age: number;
-  lastVisit: string;
-  status: "Active" | "Follow-up" | "On Hold";
-}
-
-interface ServiceGridRow {
-  id: string;
-  serviceName: string;
-  category: string;
-  orders: number;
-  status: "Active" | "Under Review" | "Paused";
-  updated: string;
-}
-
-interface WorkflowGridRow {
-  id: string;
-  orderNumber: string;
-  patient: string;
-  assignedTo: string;
-  currentStage: WorkflowStatus;
-  priority: WorkflowPriority;
-  dueDate: string;
-  status: "On Track" | "Attention" | "Blocked";
-  subOrders: readonly {
-    id: string;
-    service: string;
-    forms: string;
-    status: "Done" | "In Progress" | "Pending";
-    eta: string;
-  }[];
-}
-
-interface ServiceShowcaseCard {
-  id: string;
-  serviceName: string;
-  category: string;
-  openOrders: number;
-  completedToday: number;
-  utilization: string;
-  owner: string;
-  status: "Healthy" | "Needs Review" | "Blocked";
-}
-
-interface PatientSnapshot {
-  id: string;
-  patient: string;
-  patientId: string;
-  doctor: string;
-  stage: WorkflowStatus;
-  nextStep: string;
-  dueDate: string;
-}
 
 @Component({
   selector: "app-grid",

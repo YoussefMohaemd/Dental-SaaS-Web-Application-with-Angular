@@ -1,4 +1,4 @@
-import { ArchType, RestoType } from "@core/models";
+import { ArchType, RestoType } from "@core/interfaces";
 
 export interface ServiceDetail {
   shade: string;

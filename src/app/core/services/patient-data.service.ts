@@ -1,9 +1,8 @@
 import { Injectable, signal, computed, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { catchError, map, throwError } from "rxjs";
-import { Patient, PatientFilters } from "../models";
+import { Patient, PatientFilters } from "../interfaces";
 import { filterTableRows, sortTableRows } from "@shared/utils/table-state";
-import { ApiResponse } from "@core/interfaces/api-response.interface";
 import { ApiEndpoint } from "@core/enum/api.endpoint";
 import { PatientApi } from "@core/base/patient.api";
 import { PatientAdapter } from "@core/adapters/patient.adapter";
@@ -29,7 +28,6 @@ export class PatientDataService extends PatientApi {
 
   constructor() {
     super();
-    this.loadPatients();
   }
 
   loadPatients(): void {
@@ -58,7 +56,7 @@ export class PatientDataService extends PatientApi {
 
   getAllPatients() {
     return this.http
-      .get<ApiResponse<Patient[]>>(this.API_URL)
+      .get<{ data: Patient[] }>(this.API_URL)
       .pipe(
         map((response) => response.data ?? []),
         map((rows) => this.patientAdapter.PatientAdapter(rows)),

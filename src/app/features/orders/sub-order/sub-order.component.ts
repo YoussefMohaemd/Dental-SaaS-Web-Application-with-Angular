@@ -7,55 +7,24 @@ import { OrderDataService } from "@core/services/order-data.service";
 import { SubOrderDataService } from "@core/services/sub-order-data.service";
 import { NavigationService } from "@core/services/navigation.service";
 import {
+  DEFAULT_SUB_ORDER_FORM_VALUES,
+  EMPTY_SUB_ORDER_DETAIL,
+  MATERIAL_OPTIONS,
+  MARGIN_TYPE_OPTIONS,
+  OCCLUSAL_CONTACT_OPTIONS,
   SubOrderContextSnapshot,
   SubOrderFormDraftValue,
   SubOrderFormItem,
   SubOrderScanItem,
   SubOrderScanLocalFile,
   SubOrderTab,
-  SubOrderDetail,
-} from "@core/models/sub-order.model";
+  SUB_ORDER_TABS,
+} from "@core/interfaces";
 import { AppTextFieldComponent } from "@shared/components/input/input.component";
 import { AppSelectComponent } from "@shared/components/select/select.component";
 import { TeethChartComponent } from "@shared/components/teeth-chart/teeth-chart.component";
 import { IconActionButtonComponent } from "@shared/components/icon-action-button/icon-action-button.component";
 import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
-
-const TABS: SubOrderTab[] = ["overview", "forms", "scans", "activity"];
-
-const DEFAULT_FORM_VALUES: SubOrderFormDraftValue = {
-  clinicalNotes: "",
-  occlusalContact: "Light contact",
-  marginType: "Chamfer",
-  material: "Zirconia (Multilayer)",
-  shade: "A2",
-  specialInstructions: "",
-};
-
-const OCCLUSAL_CONTACT_OPTIONS = [
-  "Light contact",
-  "Full contact",
-  "No contact",
-];
-const MARGIN_TYPE_OPTIONS = [
-  "Chamfer",
-  "Shoulder",
-  "Feather edge",
-  "Knife edge",
-];
-const MATERIAL_OPTIONS = [
-  "Zirconia (Multilayer)",
-  "PFM",
-  "E-max",
-  "PMMA",
-  "Titanium",
-];
-const EMPTY_DETAIL: SubOrderDetail = {
-  id: "",
-  forms: [],
-  scans: [],
-  activity: [],
-};
 
 @Component({
   selector: "app-sub-order",
@@ -101,7 +70,7 @@ export class SubOrderComponent {
       this.subOrderService.getDetailByContext(
         this.orderId(),
         this.subOrderId(),
-      ) ?? EMPTY_DETAIL
+      ) ?? EMPTY_SUB_ORDER_DETAIL
     );
   });
 
@@ -110,7 +79,7 @@ export class SubOrderComponent {
   );
   readonly note = signal("");
   readonly activeFormId = signal<string | null>(null);
-  readonly formDraft = signal<SubOrderFormDraftValue>(DEFAULT_FORM_VALUES);
+  readonly formDraft = signal(DEFAULT_SUB_ORDER_FORM_VALUES);
   readonly formMessage = signal<string | null>(null);
   readonly scanMessage = signal<string | null>(null);
   readonly dragOver = signal(false);
@@ -118,7 +87,7 @@ export class SubOrderComponent {
   readonly maxLocalFileBytes = 100 * 1024 * 1024;
   readonly maxFilesPerScan = 10;
 
-  readonly tabs: SubOrderTab[] = TABS;
+  readonly tabs: SubOrderTab[] = SUB_ORDER_TABS;
   readonly occlusalContactOptions = OCCLUSAL_CONTACT_OPTIONS;
   readonly marginTypeOptions = MARGIN_TYPE_OPTIONS;
   readonly materialOptions = MATERIAL_OPTIONS;
@@ -209,7 +178,7 @@ export class SubOrderComponent {
     this.formMessage.set(null);
     const fromSaved = form.value?.values;
     this.formDraft.set({
-      ...DEFAULT_FORM_VALUES,
+      ...DEFAULT_SUB_ORDER_FORM_VALUES,
       ...fromSaved,
       clinicalNotes: fromSaved?.clinicalNotes || this.subOrder()?.notes || "",
       shade: fromSaved?.shade || this.order()?.shade || "A2",

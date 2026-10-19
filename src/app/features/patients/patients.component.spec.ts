@@ -4,7 +4,7 @@ import { provideRouter } from "@angular/router";
 import { PatientsComponent } from "./patients.component";
 import { PatientDataService } from "@core/services/patient-data.service";
 import { OrderDataService } from "@core/services/order-data.service";
-import { Patient } from "@core/models";
+import { Patient } from "@core/interfaces";
 
 function makePatient(overrides: Partial<Patient>): Patient {
   return {

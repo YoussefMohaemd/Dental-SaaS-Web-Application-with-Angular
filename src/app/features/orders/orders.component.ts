@@ -11,7 +11,11 @@ import {
   OrdersViewState,
   OrderStatus,
   SubOrder,
-} from "@core/models";
+} from "@core/interfaces";
+import {
+  ActiveOrderFilter,
+  OrderTreeRowData,
+} from "@core/interfaces";
 import { ArchBadgeComponent } from "@shared/components/arch-badge/arch-badge.component";
 import { AppButtonComponent } from "@shared/components/button/button.component";
 import { DataTableToolbarComponent } from "@shared/components/data-table-toolbar/data-table-toolbar.component";
@@ -28,12 +32,6 @@ import { buildSortAriaLabel, sortAriaValue } from "@shared/utils/sort-a11y";
 import { statusDisplayLabel } from "@shared/utils/status-label";
 import { filterTableRows } from "@shared/utils/table-state";
 
-export interface OrderTreeRowData {
-  kind: "order" | "service";
-  order: Order;
-  subOrder?: SubOrder;
-}
-
 type OrderFilterType =
   | "status"
   | "duration"
@@ -49,12 +47,6 @@ type DurationFilterValue =
   | "6-months";
 
 type DurationWindow = Exclude<DurationFilterValue, "">;
-
-interface ActiveOrderFilter {
-  type: OrderFilterType;
-  value: string;
-  label: string;
-}
 
 export function mapSubOrderToTreeNode(
   order: Order,
@@ -731,7 +723,7 @@ export class OrdersComponent {
   }
 
   shorten(value: string, maxLength: number): string {
-    return value.length > maxLength ? `${value.slice(0, maxLength)}…` : value;
+    return value.length > maxLength ? `${value.slice(0, maxLength)}ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦` : value;
   }
 
   getIconSvg(name: string): string {

@@ -1,8 +1,7 @@
 import { Injectable, signal, computed, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { catchError, map, throwError } from "rxjs";
-import { Notification } from "../models";
-import { ApiResponse } from "@core/interfaces/api-response.interface";
+import { Notification } from "../interfaces";
 import { ApiEndpoint } from "@core/enum/api.endpoint";
 import { NotificationApi } from "@core/base/notification.api";
 import { NotificationAdapter } from "@core/adapters/notification.adapter";
@@ -31,7 +30,6 @@ export class NotificationDataService extends NotificationApi {
 
   constructor() {
     super();
-    this.loadNotifications();
   }
 
   loadNotifications(): void {
@@ -60,7 +58,7 @@ export class NotificationDataService extends NotificationApi {
 
   getAllNotifications() {
     return this.http
-      .get<ApiResponse<Notification[]>>(this.API_URL)
+      .get<{ data: Notification[] }>(this.API_URL)
       .pipe(
         map((response) => response.data ?? []),
         map((rows) => this.notificationAdapter.NotificationAdapter(rows)),

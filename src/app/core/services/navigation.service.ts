@@ -8,7 +8,7 @@ import {
   BreadcrumbItem,
   NAV_ITEMS,
   BREADCRUMB_MAP,
-} from "../models";
+} from "../interfaces";
 
 @Injectable({ providedIn: "root" })
 export class NavigationService {

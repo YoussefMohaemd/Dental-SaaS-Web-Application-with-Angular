@@ -1,8 +1,7 @@
 import { Injectable, signal, computed, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { catchError, map, throwError } from "rxjs";
-import { Order, OrdersViewState } from "../models";
-import { ApiResponse } from "@core/interfaces/api-response.interface";
+import { Order, OrdersViewState } from "../interfaces";
 import { ApiEndpoint } from "@core/enum/api.endpoint";
 import { OrdersApi } from "@core/base/orders.api";
 import { OrderAdapter } from "@core/adapters/order.adapter";
@@ -32,7 +31,6 @@ export class OrderDataService extends OrdersApi {
 
   constructor() {
     super();
-    this.loadOrders();
   }
 
   loadOrders(): void {
@@ -63,7 +61,7 @@ export class OrderDataService extends OrdersApi {
 
   getAllOrders() {
     return this.http
-      .get<ApiResponse<Order[]>>(this.API_URL)
+      .get<{ data: Order[] }>(this.API_URL)
       .pipe(
         map((response) => response.data ?? []),
         map((orders) => this.orderAdapter.OrdersAdapter(orders)),

@@ -1,6 +1,7 @@
 import { CommonModule } from "@angular/common";
 import { Component, computed, effect, inject, signal } from "@angular/core";
-import { QuarterReportDetail, ServiceQuarterMetric } from "@core/models";
+import { QuarterReportDetail, ServiceQuarterMetric } from "@core/interfaces";
+import { QuarterCardViewModel } from "@core/interfaces";
 import { FormatUtils } from "@core/services/format-utils.service";
 import { NavigationService } from "@core/services/navigation.service";
 import { ReportingDataService } from "@core/services/reporting-data.service";
@@ -11,16 +12,6 @@ import { TableFeedbackComponent } from "@shared/components/table-feedback/table-
 import { TagModule } from "primeng/tag";
 
 const ALL_QUARTERS = [1, 2, 3, 4] as const;
-
-interface QuarterCardViewModel {
-  report: QuarterReportDetail;
-  hasData: boolean;
-  contributionPercent: number;
-  quarterTargetProgress: number;
-  averageTicket: number;
-  topService: ServiceQuarterMetric | null;
-  topServices: ServiceQuarterMetric[];
-}
 
 @Component({
   selector: "app-quarter-targets-report",
@@ -154,7 +145,7 @@ export class QuarterTargetsReportComponent {
 
   monthLabel(quarterReport: QuarterReportDetail): string {
     if (quarterReport.months.length === 0) return "No month activity recorded";
-    return quarterReport.months.map((month) => month.monthLabel).join(" • ");
+    return quarterReport.months.map((month) => month.monthLabel).join(" ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ ");
   }
 
   serviceContributionPercent(
