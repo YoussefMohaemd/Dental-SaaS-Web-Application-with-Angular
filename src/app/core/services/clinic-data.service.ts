@@ -1,12 +1,17 @@
 import { Injectable, signal, computed, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import { Observable, of, catchError } from "rxjs";
+import { catchError, map, throwError } from "rxjs";
 import { Clinic } from "../models";
+import { ApiResponse } from "@core/interface/api-response.interface";
+import { ApiEndpoint } from "@core/enum/api.endpoint";
+import { ClinicApi } from "@core/base/clinic.api";
+import { ClinicAdapter } from "@core/adapters/clinic.adapter";
 
 @Injectable({ providedIn: "root" })
-export class ClinicDataService {
+export class ClinicDataService extends ClinicApi {
   private readonly http = inject(HttpClient);
-  private readonly API_URL = "/data/clinics.json";
+  private readonly clinicAdapter = inject(ClinicAdapter);
+  private readonly API_URL = ApiEndpoint.CLINICS;
 
   private readonly _clinics = signal<Clinic[]>([]);
   private readonly _loading = signal<boolean>(false);
@@ -22,6 +27,7 @@ export class ClinicDataService {
   );
 
   constructor() {
+    super();
     this.loadClinics();
   }
 
@@ -29,13 +35,11 @@ export class ClinicDataService {
     this._loading.set(true);
     this._error.set(null);
 
-    this.http
-      .get<Clinic[]>(this.API_URL)
+    this.getAllClinics()
       .pipe(
-        catchError((err) => {
-          this._error.set("Failed to load clinics");
-          console.error("Error loading clinics:", err);
-          return of([] as Clinic[]);
+        catchError((apiError) => {
+          console.error("Error loading clinics:", apiError);
+          return throwError(() => apiError);
         }),
       )
       .subscribe({
@@ -44,9 +48,20 @@ export class ClinicDataService {
           this._loading.set(false);
         },
         error: () => {
+          this._error.set("Failed to load clinics");
+          this._clinics.set([]);
           this._loading.set(false);
         },
       });
+  }
+
+  getAllClinics() {
+    return this.http
+      .get<ApiResponse<Clinic[]>>(this.API_URL)
+      .pipe(
+        map((response) => response.data ?? []),
+        map((rows) => this.clinicAdapter.ClinicAdapter(rows)),
+      );
   }
 
   getClinicById(id: string): Clinic | undefined {

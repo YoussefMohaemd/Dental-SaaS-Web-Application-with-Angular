@@ -1,12 +1,17 @@
 import { Injectable, signal, computed, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import { Observable, of, catchError } from "rxjs";
+import { catchError, map, throwError } from "rxjs";
 import { ChangeRequest } from "../models";
+import { ApiResponse } from "@core/interface/api-response.interface";
+import { ApiEndpoint } from "@core/enum/api.endpoint";
+import { ChangeRequestApi } from "@core/base/change-request.api";
+import { ChangeRequestAdapter } from "@core/adapters/change-request.adapter";
 
 @Injectable({ providedIn: "root" })
-export class ChangeRequestDataService {
+export class ChangeRequestDataService extends ChangeRequestApi {
   private readonly http = inject(HttpClient);
-  private readonly API_URL = "/data/change-requests.json";
+  private readonly changeRequestAdapter = inject(ChangeRequestAdapter);
+  private readonly API_URL = ApiEndpoint.CHANGE_REQUESTS;
 
   private readonly _changeRequests = signal<ChangeRequest[]>([]);
   private readonly _loading = signal<boolean>(false);
@@ -25,6 +30,7 @@ export class ChangeRequestDataService {
   );
 
   constructor() {
+    super();
     this.loadChangeRequests();
   }
 
@@ -32,13 +38,11 @@ export class ChangeRequestDataService {
     this._loading.set(true);
     this._error.set(null);
 
-    this.http
-      .get<ChangeRequest[]>(this.API_URL)
+    this.getAllChangeRequests()
       .pipe(
-        catchError((err) => {
-          this._error.set("Failed to load change requests");
-          console.error("Error loading change requests:", err);
-          return of([] as ChangeRequest[]);
+        catchError((apiError) => {
+          console.error("Error loading change requests:", apiError);
+          return throwError(() => apiError);
         }),
       )
       .subscribe({
@@ -47,9 +51,20 @@ export class ChangeRequestDataService {
           this._loading.set(false);
         },
         error: () => {
+          this._error.set("Failed to load change requests");
+          this._changeRequests.set([]);
           this._loading.set(false);
         },
       });
+  }
+
+  getAllChangeRequests() {
+    return this.http
+      .get<ApiResponse<ChangeRequest[]>>(this.API_URL)
+      .pipe(
+        map((response) => response.data ?? []),
+        map((rows) => this.changeRequestAdapter.ChangeRequestAdapter(rows)),
+      );
   }
 
   getChangeRequestById(id: string): ChangeRequest | undefined {

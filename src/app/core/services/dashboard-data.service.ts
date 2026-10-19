@@ -1,6 +1,8 @@
 import { Injectable, signal, computed, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import { of, catchError } from "rxjs";
+import { catchError, map, throwError } from "rxjs";
+import { ApiResponse } from "@core/interface/api-response.interface";
+import { ApiEndpoint } from "@core/enum/api.endpoint";
 
 export interface VolumeDay {
   day: string;
@@ -14,27 +16,17 @@ export interface VolumeWeek {
   days: VolumeDay[];
 }
 
+const EMPTY_WEEK: VolumeWeek = {
+  weekStart: "",
+  weekLabel: "",
+  days: [],
+};
+
 @Injectable({ providedIn: "root" })
 export class DashboardDataService {
   private readonly http = inject(HttpClient);
 
-  private readonly API_URL = "data/dashboard-volume.json";
-
-  private static readonly FALLBACK_WEEKS: VolumeWeek[] = [
-    {
-      weekStart: "2024-12-16",
-      weekLabel: "W51",
-      days: [
-        { day: "Mon", orders: 14, completed: 11 },
-        { day: "Tue", orders: 18, completed: 15 },
-        { day: "Wed", orders: 12, completed: 10 },
-        { day: "Thu", orders: 21, completed: 18 },
-        { day: "Fri", orders: 16, completed: 13 },
-        { day: "Sat", orders: 8, completed: 7 },
-        { day: "Sun", orders: 5, completed: 5 },
-      ],
-    },
-  ];
+  private readonly API_URL = ApiEndpoint.DASHBOARD_VOLUME;
 
   private readonly _weeks = signal<VolumeWeek[]>([]);
   private readonly _loading = signal<boolean>(false);
@@ -46,9 +38,7 @@ export class DashboardDataService {
 
   readonly currentWeek = computed<VolumeWeek>(() => {
     const weeks = this._weeks();
-    return weeks.length > 0
-      ? weeks[weeks.length - 1]
-      : DashboardDataService.FALLBACK_WEEKS[0];
+    return weeks.length > 0 ? weeks[weeks.length - 1] : EMPTY_WEEK;
   });
 
   readonly currentDays = computed<VolumeDay[]>(() => this.currentWeek().days);
@@ -69,28 +59,62 @@ export class DashboardDataService {
     this._error.set(null);
 
     this.http
-      .get<{ weeks: VolumeWeek[] }>(this.API_URL)
+      .get<ApiResponse<{ weeks?: VolumeWeek[] | Array<{ week: string; orders: number; completed: number }> }>>(this.API_URL)
       .pipe(
+        map((response) => this.normalizeWeeksPayload(response.data)),
         catchError((err) => {
-          console.warn(
-            `Could not load ${this.API_URL} (status ${err?.status}). Using fallback volume data.`,
-          );
-          return of({ weeks: DashboardDataService.FALLBACK_WEEKS });
+          this._error.set("Failed to load dashboard volume");
+          console.error("Error loading dashboard volume:", err);
+          return throwError(() => err);
         }),
       )
       .subscribe({
-        next: (payload) => {
-          this._weeks.set(
-            payload?.weeks?.length
-              ? payload.weeks
-              : DashboardDataService.FALLBACK_WEEKS,
-          );
+        next: (weeks) => {
+          this._weeks.set(weeks);
           this._loading.set(false);
         },
         error: () => {
-          this._weeks.set(DashboardDataService.FALLBACK_WEEKS);
+          this._weeks.set([]);
           this._loading.set(false);
         },
       });
   }
+
+  private normalizeWeeksPayload(
+    payload:
+      | { weeks?: VolumeWeek[] | Array<{ week: string; orders: number; completed: number }> }
+      | undefined,
+  ): VolumeWeek[] {
+    const weeks = payload?.weeks ?? [];
+    if (weeks.length === 0) return [];
+
+    const first = weeks[0] as unknown;
+    if (isVolumeWeek(first)) {
+      return weeks as VolumeWeek[];
+    }
+
+    const compactWeeks = weeks as Array<{ week: string; orders: number; completed: number }>;
+    const sorted = [...compactWeeks].slice(-7);
+    const days: VolumeDay[] = sorted.map((weekPoint) => ({
+      day: weekPoint.week,
+      orders: weekPoint.orders,
+      completed: weekPoint.completed,
+    }));
+
+    return [
+      {
+        weekStart: new Date().toISOString().slice(0, 10),
+        weekLabel: "Recent Weeks",
+        days,
+      },
+    ];
+  }
+}
+
+function isVolumeWeek(value: unknown): value is VolumeWeek {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    Array.isArray((value as { days?: unknown[] }).days)
+  );
 }

@@ -1,11 +1,14 @@
 import { Component, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
+import { HttpErrorResponse } from "@angular/common/http";
 import { FormsModule } from "@angular/forms";
 import { Router } from "@angular/router";
+import { firstValueFrom } from "rxjs";
 import { AppButtonComponent } from "../../../shared/components/button/button.component";
 import { AppTextFieldComponent } from "../../../shared/components/input/input.component";
 import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
 import { lucideSvg } from "../../../shared/icons/lucide-icons";
+import { AuthService } from "@core/services/auth.service";
 
 @Component({
   selector: "app-login",
@@ -21,11 +24,12 @@ import { lucideSvg } from "../../../shared/icons/lucide-icons";
   styleUrl: "./login.component.scss",
 })
 export class LoginComponent {
-  readonly email = signal("jessica.ruiz@dentalab.com");
-  readonly password = signal("••••••••••");
+  readonly email = signal("dev-admin@example.test");
+  readonly password = signal("ChangeMe123!");
   readonly showPassword = signal(false);
   readonly loading = signal(false);
   readonly rememberMe = signal(true);
+  readonly errorMessage = signal<string | null>(null);
 
   readonly DENTAL_IMAGE =
     "https://images.unsplash.com/photo-1562330743-fbc6ef07ca78?w=1200&h=1600&fit=crop&auto=format&q=80";
@@ -36,15 +40,44 @@ export class LoginComponent {
     { label: "Partner clinics", value: "50+" },
   ];
 
-  constructor(private readonly router: Router) {}
+  constructor(
+    private readonly router: Router,
+    private readonly authService: AuthService,
+  ) {}
 
   async handleLogin(event: Event): Promise<void> {
     event.preventDefault();
     this.loading.set(true);
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    localStorage.setItem("dentalab-auth", "true");
-    localStorage.setItem("dentalab-auth-token", "mock-jwt-token");
-    this.router.navigate(["/dashboard"]);
+    this.errorMessage.set(null);
+    try {
+      await firstValueFrom(
+        this.authService.login({
+          email: this.email(),
+          password: this.password(),
+          rememberMe: this.rememberMe(),
+        }),
+      );
+      await this.router.navigate(["/dashboard"]);
+    } catch (error) {
+      console.error("Login failed", error);
+      this.errorMessage.set(this.resolveLoginErrorMessage(error));
+    } finally {
+      this.loading.set(false);
+    }
+  }
+
+  private resolveLoginErrorMessage(error: unknown): string {
+    if (error instanceof HttpErrorResponse) {
+      if (error.status === 0) {
+        return "Cannot reach the backend API. Make sure the backend and MongoDB are running, then try again.";
+      }
+      if (error.status === 401) {
+        return "Invalid email or password.";
+      }
+      return "Sign-in failed. Please try again.";
+    }
+
+    return "Sign-in failed. Please try again.";
   }
 
   togglePasswordVisibility(): void {

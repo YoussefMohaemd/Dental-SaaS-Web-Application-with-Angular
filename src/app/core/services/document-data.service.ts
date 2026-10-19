@@ -1,12 +1,17 @@
 import { Injectable, inject, signal } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import { of, catchError } from "rxjs";
+import { catchError, map, throwError } from "rxjs";
 import { LabDocument } from "../models/document.model";
+import { ApiResponse } from "@core/interface/api-response.interface";
+import { ApiEndpoint } from "@core/enum/api.endpoint";
+import { DocumentApi } from "@core/base/document.api";
+import { DocumentAdapter } from "@core/adapters/document.adapter";
 
 @Injectable({ providedIn: "root" })
-export class DocumentDataService {
+export class DocumentDataService extends DocumentApi {
   private readonly http = inject(HttpClient);
-  private readonly API_URL = "/data/documents.json";
+  private readonly documentAdapter = inject(DocumentAdapter);
+  private readonly API_URL = ApiEndpoint.DOCUMENTS;
 
   private readonly _documents = signal<LabDocument[]>([]);
   private readonly _loading = signal<boolean>(false);
@@ -17,6 +22,7 @@ export class DocumentDataService {
   readonly error = this._error.asReadonly();
 
   constructor() {
+    super();
     this.loadDocuments();
   }
 
@@ -24,13 +30,11 @@ export class DocumentDataService {
     this._loading.set(true);
     this._error.set(null);
 
-    this.http
-      .get<LabDocument[]>(this.API_URL)
+    this.getAllDocuments()
       .pipe(
-        catchError((err) => {
-          this._error.set("Failed to load documents");
-          console.error("Error loading documents:", err);
-          return of([] as LabDocument[]);
+        catchError((apiError) => {
+          console.error("Error loading documents:", apiError);
+          return throwError(() => apiError);
         }),
       )
       .subscribe({
@@ -39,9 +43,20 @@ export class DocumentDataService {
           this._loading.set(false);
         },
         error: () => {
+          this._error.set("Failed to load documents");
+          this._documents.set([]);
           this._loading.set(false);
         },
       });
+  }
+
+  getAllDocuments() {
+    return this.http
+      .get<ApiResponse<LabDocument[]>>(this.API_URL)
+      .pipe(
+        map((response) => response.data ?? []),
+        map((rows) => this.documentAdapter.DocumentAdapter(rows)),
+      );
   }
 
   getDocumentById(id: string): LabDocument | undefined {

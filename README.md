@@ -1,6 +1,6 @@
 # Dental SaaS Web Application with Angular
 
-Angular 21 proof-of-concept for a dental SaaS UI foundation. The repository demonstrates reusable UI components, routed business screens, in-memory JSON-backed services, and a design system built with PrimeNG, Taiga UI, Angular CDK, Tailwind CSS, and signals-based Angular patterns.
+Angular 21 proof-of-concept for a dental SaaS UI foundation. The repository demonstrates reusable UI components, routed business screens, backend API-connected services, and a design system built with PrimeNG, Taiga UI, Angular CDK, Tailwind CSS, and signals-based Angular patterns.
 
 ## Scope
 
@@ -45,6 +45,21 @@ npm run tailwind:build
 npm start
 ```
 
+### Backend dependency for login/API
+
+The frontend now calls backend APIs. Before signing in, run the backend service and MongoDB:
+
+```text
+# terminal 1 (backend)
+cd ../dental-saas-backend
+npm install
+npm run dev
+
+# terminal 2 (optional seed users/data)
+cd ../dental-saas-backend
+npm run seed:dev
+```
+
 ## Tests
 
 ```text
@@ -83,6 +98,8 @@ Raw logs live under `evidence/`.
 - `src/styles/theme.scss` maps token values into the browser/Tailwind theme layer.
 - `src/styles.scss` applies global styles and component overrides.
 - `src/app/app.config.ts` wires routing, HTTP, animations, and UI providers.
+- `src/environments/environment*.ts` sets backend API base URL and default tenant ID (`/api` in production, `http://localhost:3000/api` in development).
+- `proxy.conf.json` forwards `/api` during `ng serve` to `http://localhost:3000` (backend).
 
 ## Supported Scenarios
 
@@ -105,7 +122,7 @@ Raw logs live under `evidence/`.
 
 ## Limitations
 
-- This is a POC with in-memory/static JSON data, not a production backend.
+- This is still a frontend POC; core data/auth services call backend APIs, while selected report/sub-order prototyping flows may still require backend contract alignment.
 - Controlled AI-comparison evidence is pending human execution.
 - Mentor checkpoint approvals are pending for recorded deviations.
 - Some evidence items are intentionally human-validated and must not be fabricated.

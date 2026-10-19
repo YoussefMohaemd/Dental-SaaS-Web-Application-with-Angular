@@ -1,12 +1,17 @@
 import { Injectable, signal, computed, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import { Observable, of, catchError } from "rxjs";
+import { catchError, map, throwError } from "rxjs";
 import { BillingRecord } from "../models";
+import { ApiResponse } from "@core/interface/api-response.interface";
+import { ApiEndpoint } from "@core/enum/api.endpoint";
+import { BillingApi } from "@core/base/billing.api";
+import { BillingAdapter } from "@core/adapters/billing.adapter";
 
 @Injectable({ providedIn: "root" })
-export class BillingDataService {
+export class BillingDataService extends BillingApi {
   private readonly http = inject(HttpClient);
-  private readonly API_URL = "/data/billing.json";
+  private readonly billingAdapter = inject(BillingAdapter);
+  private readonly API_URL = ApiEndpoint.BILLING;
 
   private readonly _records = signal<BillingRecord[]>([]);
   private readonly _loading = signal<boolean>(false);
@@ -28,6 +33,7 @@ export class BillingDataService {
   );
 
   constructor() {
+    super();
     this.loadRecords();
   }
 
@@ -35,13 +41,11 @@ export class BillingDataService {
     this._loading.set(true);
     this._error.set(null);
 
-    this.http
-      .get<BillingRecord[]>(this.API_URL)
+    this.getAllBillingRecords()
       .pipe(
-        catchError((err) => {
-          this._error.set("Failed to load billing records");
-          console.error("Error loading billing records:", err);
-          return of([] as BillingRecord[]);
+        catchError((apiError) => {
+          console.error("Error loading billing records:", apiError);
+          return throwError(() => apiError);
         }),
       )
       .subscribe({
@@ -50,9 +54,20 @@ export class BillingDataService {
           this._loading.set(false);
         },
         error: () => {
+          this._error.set("Failed to load billing records");
+          this._records.set([]);
           this._loading.set(false);
         },
       });
+  }
+
+  getAllBillingRecords() {
+    return this.http
+      .get<ApiResponse<BillingRecord[]>>(this.API_URL)
+      .pipe(
+        map((response) => response.data ?? []),
+        map((records) => this.billingAdapter.BillingAdapter(records)),
+      );
   }
 
   getRecordById(id: string): BillingRecord | undefined {

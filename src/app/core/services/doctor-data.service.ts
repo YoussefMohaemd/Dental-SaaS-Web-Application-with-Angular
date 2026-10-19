@@ -1,12 +1,17 @@
 import { Injectable, signal, computed, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import { Observable, of, catchError } from "rxjs";
+import { catchError, map, throwError } from "rxjs";
 import { Doctor } from "../models";
+import { ApiResponse } from "@core/interface/api-response.interface";
+import { ApiEndpoint } from "@core/enum/api.endpoint";
+import { DoctorApi } from "@core/base/doctor.api";
+import { DoctorAdapter } from "@core/adapters/doctor.adapter";
 
 @Injectable({ providedIn: "root" })
-export class DoctorDataService {
+export class DoctorDataService extends DoctorApi {
   private readonly http = inject(HttpClient);
-  private readonly API_URL = "/data/doctors.json";
+  private readonly doctorAdapter = inject(DoctorAdapter);
+  private readonly API_URL = ApiEndpoint.DOCTORS;
 
   private readonly _doctors = signal<Doctor[]>([]);
   private readonly _loading = signal<boolean>(false);
@@ -22,6 +27,7 @@ export class DoctorDataService {
   );
 
   constructor() {
+    super();
     this.loadDoctors();
   }
 
@@ -29,13 +35,11 @@ export class DoctorDataService {
     this._loading.set(true);
     this._error.set(null);
 
-    this.http
-      .get<Doctor[]>(this.API_URL)
+    this.getAllDoctors()
       .pipe(
-        catchError((err) => {
-          this._error.set("Failed to load doctors");
-          console.error("Error loading doctors:", err);
-          return of([] as Doctor[]);
+        catchError((apiError) => {
+          console.error("Error loading doctors:", apiError);
+          return throwError(() => apiError);
         }),
       )
       .subscribe({
@@ -44,9 +48,20 @@ export class DoctorDataService {
           this._loading.set(false);
         },
         error: () => {
+          this._error.set("Failed to load doctors");
+          this._doctors.set([]);
           this._loading.set(false);
         },
       });
+  }
+
+  getAllDoctors() {
+    return this.http
+      .get<ApiResponse<Doctor[]>>(this.API_URL)
+      .pipe(
+        map((response) => response.data ?? []),
+        map((rows) => this.doctorAdapter.DoctorAdapter(rows)),
+      );
   }
 
   getDoctorById(id: string): Doctor | undefined {

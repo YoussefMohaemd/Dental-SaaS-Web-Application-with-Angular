@@ -4,6 +4,7 @@ import { RouterModule } from "@angular/router";
 import { NavigationService } from "../../../core/services/navigation.service";
 import { ThemeService } from "../../../core/services/theme.service";
 import { NotificationDataService } from "../../../core/services/notification-data.service";
+import { AuthService } from "@core/services/auth.service";
 import { SearchInputComponent } from "../../../shared/components/search-input/search-input.component";
 import { AvatarComponent } from "../../../shared/components/avatar/avatar.component";
 import { IconActionButtonComponent } from "@shared/components/icon-action-button/icon-action-button.component";
@@ -28,6 +29,7 @@ export class HeaderComponent {
   readonly navigationService = inject(NavigationService);
   private readonly themeService = inject(ThemeService);
   private readonly notificationService = inject(NotificationDataService);
+  private readonly authService = inject(AuthService);
 
   readonly breadcrumbs = this.navigationService.breadcrumbs;
   readonly isDark = this.themeService.isDark;
@@ -80,12 +82,16 @@ export class HeaderComponent {
   }
 
   logout(): void {
-    try {
-      localStorage.removeItem("dentalab-auth");
-      localStorage.removeItem("dentalab-auth-token");
-    } catch {}
-    this.navigationService.navigate("login");
-    this.closeDropdowns();
+    this.authService.logout().subscribe({
+      next: () => {
+        this.navigationService.navigate("login");
+        this.closeDropdowns();
+      },
+      error: () => {
+        this.navigationService.navigate("login");
+        this.closeDropdowns();
+      },
+    });
   }
 
   markNotificationRead(notification: any): void {

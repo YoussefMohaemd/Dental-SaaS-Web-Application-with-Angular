@@ -1,13 +1,18 @@
 import { Injectable, signal, computed, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import { Observable, of, catchError } from "rxjs";
+import { catchError, map, throwError } from "rxjs";
 import { Patient, PatientFilters } from "../models";
 import { filterTableRows, sortTableRows } from "@shared/utils/table-state";
+import { ApiResponse } from "@core/interface/api-response.interface";
+import { ApiEndpoint } from "@core/enum/api.endpoint";
+import { PatientApi } from "@core/base/patient.api";
+import { PatientAdapter } from "@core/adapters/patient.adapter";
 
 @Injectable({ providedIn: "root" })
-export class PatientDataService {
+export class PatientDataService extends PatientApi {
   private readonly http = inject(HttpClient);
-  private readonly API_URL = "/data/patients.json";
+  private readonly patientAdapter = inject(PatientAdapter);
+  private readonly API_URL = ApiEndpoint.PATIENTS;
 
   private readonly _patients = signal<Patient[]>([]);
   private readonly _loading = signal<boolean>(false);
@@ -23,6 +28,7 @@ export class PatientDataService {
   );
 
   constructor() {
+    super();
     this.loadPatients();
   }
 
@@ -30,13 +36,11 @@ export class PatientDataService {
     this._loading.set(true);
     this._error.set(null);
 
-    this.http
-      .get<Patient[]>(this.API_URL)
+    this.getAllPatients()
       .pipe(
-        catchError((err) => {
-          this._error.set("Failed to load patients");
-          console.error("Error loading patients:", err);
-          return of([] as Patient[]);
+        catchError((apiError) => {
+          console.error("Error loading patients:", apiError);
+          return throwError(() => apiError);
         }),
       )
       .subscribe({
@@ -45,9 +49,20 @@ export class PatientDataService {
           this._loading.set(false);
         },
         error: () => {
+          this._error.set("Failed to load patients");
+          this._patients.set([]);
           this._loading.set(false);
         },
       });
+  }
+
+  getAllPatients() {
+    return this.http
+      .get<ApiResponse<Patient[]>>(this.API_URL)
+      .pipe(
+        map((response) => response.data ?? []),
+        map((rows) => this.patientAdapter.PatientAdapter(rows)),
+      );
   }
 
   getPatientById(id: string): Patient | undefined {

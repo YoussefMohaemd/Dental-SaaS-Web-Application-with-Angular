@@ -191,6 +191,10 @@
         >
           {{ loading() ? "Signing in..." : "Sign in" }}
         </app-button>
+
+        @if (errorMessage(); as message) {
+          <p class="text-sm text-red-600" role="alert">{{ message }}</p>
+        }
       </form>
 
       <div class="mt-6 pt-6 border-t border-border">

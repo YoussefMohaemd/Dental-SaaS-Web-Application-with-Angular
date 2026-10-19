@@ -1,12 +1,17 @@
 import { Injectable, signal, computed, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import { Observable, of, catchError } from "rxjs";
+import { catchError, map, throwError } from "rxjs";
 import { Case } from "../models";
+import { ApiResponse } from "@core/interface/api-response.interface";
+import { ApiEndpoint } from "@core/enum/api.endpoint";
+import { CaseApi } from "@core/base/case.api";
+import { CaseAdapter } from "@core/adapters/case.adapter";
 
 @Injectable({ providedIn: "root" })
-export class CaseDataService {
+export class CaseDataService extends CaseApi {
   private readonly http = inject(HttpClient);
-  private readonly API_URL = "/data/cases.json";
+  private readonly caseAdapter = inject(CaseAdapter);
+  private readonly API_URL = ApiEndpoint.CASES;
 
   private readonly _cases = signal<Case[]>([]);
   private readonly _loading = signal<boolean>(false);
@@ -22,6 +27,7 @@ export class CaseDataService {
   );
 
   constructor() {
+    super();
     this.loadCases();
   }
 
@@ -29,13 +35,11 @@ export class CaseDataService {
     this._loading.set(true);
     this._error.set(null);
 
-    this.http
-      .get<Case[]>(this.API_URL)
+    this.getAllCases()
       .pipe(
-        catchError((err) => {
-          this._error.set("Failed to load cases");
-          console.error("Error loading cases:", err);
-          return of([] as Case[]);
+        catchError((apiError) => {
+          console.error("Error loading cases:", apiError);
+          return throwError(() => apiError);
         }),
       )
       .subscribe({
@@ -44,9 +48,20 @@ export class CaseDataService {
           this._loading.set(false);
         },
         error: () => {
+          this._error.set("Failed to load cases");
+          this._cases.set([]);
           this._loading.set(false);
         },
       });
+  }
+
+  getAllCases() {
+    return this.http
+      .get<ApiResponse<Case[]>>(this.API_URL)
+      .pipe(
+        map((response) => response.data ?? []),
+        map((rows) => this.caseAdapter.CaseAdapter(rows)),
+      );
   }
 
   getCaseById(id: string): Case | undefined {

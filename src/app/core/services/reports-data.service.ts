@@ -1,50 +1,26 @@
 import { Injectable, inject, signal } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import { of, catchError } from "rxjs";
+import { catchError, map, throwError } from "rxjs";
 import { ReportsData } from "../models/report.model";
+import { ApiResponse } from "@core/interface/api-response.interface";
+import { ApiEndpoint } from "@core/enum/api.endpoint";
+import { ReportsApi } from "@core/base/reports.api";
+import { ReportsAdapter } from "@core/adapters/reports.adapter";
 
-const FALLBACK_REPORTS: ReportsData = {
-  monthlyRevenue: [
-    { month: "Jul", revenue: 48200 },
-    { month: "Aug", revenue: 52800 },
-    { month: "Sep", revenue: 44600 },
-    { month: "Oct", revenue: 61300 },
-    { month: "Nov", revenue: 58900 },
-    { month: "Dec", revenue: 39200 },
-  ],
-  restorationBreakdown: [
-    { name: "Crown", value: 38 },
-    { name: "Bridge", value: 22 },
-    { name: "Veneer", value: 15 },
-    { name: "Implant", value: 12 },
-    { name: "Full Arch", value: 8 },
-    { name: "Other", value: 5 },
-  ],
-  turnaround: [
-    { day: "Mon", days: 2.1 },
-    { day: "Tue", days: 2.4 },
-    { day: "Wed", days: 1.9 },
-    { day: "Thu", days: 2.8 },
-    { day: "Fri", days: 2.2 },
-    { day: "Sat", days: 1.5 },
-    { day: "Sun", days: 1.2 },
-  ],
-  workflowShare: [
-    { stage: "New", count: 8, percent: 25 },
-    { stage: "Review", count: 5, percent: 15.6 },
-    { stage: "Design", count: 7, percent: 21.9 },
-    { stage: "Production", count: 12, percent: 37.5 },
-    { stage: "Quality Check", count: 4, percent: 12.5 },
-    { stage: "Ready", count: 6, percent: 18.8 },
-  ],
+const EMPTY_REPORTS: ReportsData = {
+  monthlyRevenue: [],
+  restorationBreakdown: [],
+  turnaround: [],
+  workflowShare: [],
 };
 
 @Injectable({ providedIn: "root" })
-export class ReportsDataService {
+export class ReportsDataService extends ReportsApi {
   private readonly http = inject(HttpClient);
-  private readonly API_URL = "/data/reports.json";
+  private readonly reportsAdapter = inject(ReportsAdapter);
+  private readonly API_URL = ApiEndpoint.REPORTS_OVERVIEW;
 
-  private readonly _reports = signal<ReportsData>(FALLBACK_REPORTS);
+  private readonly _reports = signal<ReportsData>(EMPTY_REPORTS);
   private readonly _loading = signal<boolean>(false);
   private readonly _error = signal<string | null>(null);
 
@@ -53,6 +29,7 @@ export class ReportsDataService {
   readonly error = this._error.asReadonly();
 
   constructor() {
+    super();
     this.loadReports();
   }
 
@@ -60,13 +37,12 @@ export class ReportsDataService {
     this._loading.set(true);
     this._error.set(null);
 
-    this.http
-      .get<ReportsData>(this.API_URL)
+    this.getReportsOverview()
       .pipe(
-        catchError((err) => {
+        catchError((apiError) => {
           this._error.set("Failed to load reports data");
-          console.error("Error loading reports data:", err);
-          return of(FALLBACK_REPORTS);
+          console.error("Error loading reports data:", apiError);
+          return throwError(() => apiError);
         }),
       )
       .subscribe({
@@ -75,8 +51,18 @@ export class ReportsDataService {
           this._loading.set(false);
         },
         error: () => {
+          this._reports.set(EMPTY_REPORTS);
           this._loading.set(false);
         },
       });
+  }
+
+  getReportsOverview() {
+    return this.http
+      .get<ApiResponse<ReportsData>>(this.API_URL)
+      .pipe(
+        map((response) => response.data ?? EMPTY_REPORTS),
+        map((response) => this.reportsAdapter.ReportsAdapter(response)),
+      );
   }
 }

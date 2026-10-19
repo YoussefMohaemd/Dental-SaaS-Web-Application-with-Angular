@@ -1,7 +1,6 @@
 import { Injectable, inject, signal, computed } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import { of } from "rxjs";
-import { catchError, delay, map } from "rxjs/operators";
+import { catchError, forkJoin, map, of, switchMap, throwError } from "rxjs";
 import {
   SubOrder,
   SubOrderContextSnapshot,
@@ -13,6 +12,8 @@ import {
   SubOrderScanItemStatus,
   SubOrderCreationData,
 } from "../models/sub-order.model";
+import { ApiEndpoint } from "@core/enum/api.endpoint";
+import { ApiResponse } from "@core/interface/api-response.interface";
 
 interface SubOrderJson {
   id: string;
@@ -91,73 +92,6 @@ function buildDetailFromSummary(
 
   return { id: row.id, forms, scans, activity: [] };
 }
-
-const FALLBACK_SUB_ORDERS: SubOrder[] = [
-  {
-    id: "so-1",
-    orderId: "ord-1",
-    service: "Surgical Guide",
-    icon: "🦷",
-    status: "done",
-    formsComplete: 3,
-    formsTotal: 3,
-    scansComplete: 3,
-    scansTotal: 3,
-    teeth: [14, 15, 24, 25],
-    priority: "High",
-    dueDate: "2024-03-15",
-    notes:
-      "Standard surgical guide for dual implant placement at sites 14, 15, 24, 25. Straumann BLT Ø4.1mm.",
-  },
-  {
-    id: "so-2",
-    orderId: "ord-1",
-    service: "GFMR",
-    icon: "⚙️",
-    status: "in-progress",
-    formsComplete: 2,
-    formsTotal: 3,
-    scansComplete: 1,
-    scansTotal: 3,
-    teeth: [11, 12, 13, 21, 22, 23],
-    priority: "High",
-    dueDate: "2024-03-20",
-    notes:
-      "Full mouth rehabilitation. Occlusal vertical dimension (OVD) increase of 3mm confirmed by Dr. Kim. Mutually protected occlusion concept.",
-  },
-  {
-    id: "so-3",
-    orderId: "ord-1",
-    service: "Final Restoration",
-    icon: "✨",
-    status: "pending",
-    formsComplete: 0,
-    formsTotal: 2,
-    scansComplete: 0,
-    scansTotal: 2,
-    teeth: [16, 17, 26, 27],
-    priority: "Normal",
-    dueDate: "2024-04-01",
-    notes:
-      "Posterior zirconia crowns with shade A2 and internal characterization. Confirm margin type with Dr. Kim before fabrication.",
-  },
-  {
-    id: "so-4",
-    orderId: "ord-1",
-    service: "Treatment Plan",
-    icon: "📋",
-    status: "pending",
-    formsComplete: 1,
-    formsTotal: 2,
-    scansComplete: 0,
-    scansTotal: 1,
-    teeth: [],
-    priority: "Normal",
-    dueDate: "2024-03-10",
-    notes:
-      "Full treatment plan document to be reviewed by lab and clinic team jointly before proceeding.",
-  },
-];
 
 const SUB_ORDER_DETAILS: Record<string, SubOrderDetail> = {
   "so-1": {
@@ -399,9 +333,9 @@ export interface CreateSubOrderInput {
 @Injectable({ providedIn: "root" })
 export class SubOrderDataService {
   private readonly http = inject(HttpClient);
-  private readonly URL = "/data/sub-orders.json";
+  private readonly URL = ApiEndpoint.ORDERS;
 
-  private readonly _subOrders = signal<SubOrder[]>(FALLBACK_SUB_ORDERS);
+  private readonly _subOrders = signal<SubOrder[]>([]);
   private readonly _details = signal<Record<string, SubOrderDetail>>(
     structuredClone(SUB_ORDER_DETAILS),
   );
@@ -423,9 +357,22 @@ export class SubOrderDataService {
     this._loading.set(true);
     this._error.set(null);
     this.http
-      .get<SubOrderJson[]>(this.URL)
+      .get<ApiResponse<Array<{ id: string }>>>(this.URL)
       .pipe(
-        delay(150),
+        map((response) => response.data ?? []),
+        map((orders) => orders.map((order) => order.id).filter((id) => !!id)),
+        switchMap((orderIds) => {
+          if (orderIds.length === 0) return of([] as SubOrderJson[]);
+          return forkJoin(
+            orderIds.map((orderId) =>
+              this.http
+                .get<ApiResponse<SubOrderJson[]>>(
+                  ApiEndpoint.orderSubOrders(orderId),
+                )
+                .pipe(map((response) => response.data ?? [])),
+            ),
+          ).pipe(map((groups) => groups.flat()));
+        }),
         map((rows) =>
           rows.map(
             (row) =>
@@ -438,23 +385,26 @@ export class SubOrderDataService {
         catchError((err) => {
           console.error("Error loading sub-orders:", err);
           this._error.set("Failed to load sub-orders");
-          return of(FALLBACK_SUB_ORDERS);
+          return throwError(() => err);
         }),
       )
       .subscribe({
         next: (rows) => {
-          this._subOrders.set(rows.length > 0 ? rows : FALLBACK_SUB_ORDERS);
-          const nextDetails = structuredClone(SUB_ORDER_DETAILS);
+          this._subOrders.set(rows);
+          const nextDetails: Record<string, SubOrderDetail> = {};
           rows.forEach((row) => {
-            if (!(row.id in nextDetails)) {
-              nextDetails[row.id] =
-                toDetailFromJson(row) ?? buildDetailFromSummary(row);
-            }
+            nextDetails[row.id] =
+              toDetailFromJson(row) ??
+              this._details()[row.id] ??
+              buildDetailFromSummary(row);
           });
           this._details.set(nextDetails);
           this._loading.set(false);
         },
-        error: () => this._loading.set(false),
+        error: () => {
+          this._subOrders.set([]);
+          this._loading.set(false);
+        },
       });
   }
 

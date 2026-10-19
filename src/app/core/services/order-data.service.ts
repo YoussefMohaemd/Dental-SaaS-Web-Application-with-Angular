@@ -1,12 +1,17 @@
 import { Injectable, signal, computed, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import { of, catchError } from "rxjs";
+import { catchError, map, throwError } from "rxjs";
 import { Order, OrdersViewState } from "../models";
+import { ApiResponse } from "@core/interface/api-response.interface";
+import { ApiEndpoint } from "@core/enum/api.endpoint";
+import { OrdersApi } from "@core/base/orders.api";
+import { OrderAdapter } from "@core/adapters/order.adapter";
 
 @Injectable({ providedIn: "root" })
-export class OrderDataService {
+export class OrderDataService extends OrdersApi {
   private readonly http = inject(HttpClient);
-  private readonly API_URL = "/data/orders.json";
+  private readonly orderAdapter = inject(OrderAdapter);
+  private readonly API_URL = ApiEndpoint.ORDERS;
 
   private readonly _orders = signal<Order[]>([]);
   private readonly _loading = signal<boolean>(false);
@@ -26,6 +31,7 @@ export class OrderDataService {
   );
 
   constructor() {
+    super();
     this.loadOrders();
   }
 
@@ -33,13 +39,11 @@ export class OrderDataService {
     this._loading.set(true);
     this._error.set(null);
 
-    this.http
-      .get<Order[]>(this.API_URL)
+    this.getAllOrders()
       .pipe(
-        catchError((err) => {
-          this._error.set("Failed to load orders");
-          console.error("Error loading orders:", err);
-          return of([] as Order[]);
+        catchError((apiError) => {
+          console.error("Error loading orders:", apiError);
+          return throwError(() => apiError);
         }),
       )
       .subscribe({
@@ -49,9 +53,21 @@ export class OrderDataService {
           this._loading.set(false);
         },
         error: () => {
+          this._error.set("Failed to load orders");
+          this._orders.set([]);
+          this.snapshotOrders = [];
           this._loading.set(false);
         },
       });
+  }
+
+  getAllOrders() {
+    return this.http
+      .get<ApiResponse<Order[]>>(this.API_URL)
+      .pipe(
+        map((response) => response.data ?? []),
+        map((orders) => this.orderAdapter.OrdersAdapter(orders)),
+      );
   }
 
   reload(): void {

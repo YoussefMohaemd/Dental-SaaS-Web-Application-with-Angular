@@ -14,3 +14,4 @@ export * from "./sub-order.model";
 export * from "./navigation.model";
 export * from "./create-order.model";
 export * from "./tooth.model";
+export * from "./dashboard-volume.model";

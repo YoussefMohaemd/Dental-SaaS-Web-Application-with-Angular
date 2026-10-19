@@ -1,12 +1,17 @@
 import { Injectable, signal, computed, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import { Observable, of, catchError } from "rxjs";
+import { catchError, map, throwError } from "rxjs";
 import { ScanCenter } from "../models";
+import { ApiResponse } from "@core/interface/api-response.interface";
+import { ApiEndpoint } from "@core/enum/api.endpoint";
+import { ScanCenterApi } from "@core/base/scan-center.api";
+import { ScanCenterAdapter } from "@core/adapters/scan-center.adapter";
 
 @Injectable({ providedIn: "root" })
-export class ScanCenterDataService {
+export class ScanCenterDataService extends ScanCenterApi {
   private readonly http = inject(HttpClient);
-  private readonly API_URL = "/data/scan-centers.json";
+  private readonly scanCenterAdapter = inject(ScanCenterAdapter);
+  private readonly API_URL = ApiEndpoint.SCAN_CENTERS;
 
   private readonly _centers = signal<ScanCenter[]>([]);
   private readonly _loading = signal<boolean>(false);
@@ -23,6 +28,7 @@ export class ScanCenterDataService {
   );
 
   constructor() {
+    super();
     this.loadCenters();
   }
 
@@ -30,13 +36,11 @@ export class ScanCenterDataService {
     this._loading.set(true);
     this._error.set(null);
 
-    this.http
-      .get<ScanCenter[]>(this.API_URL)
+    this.getAllScanCenters()
       .pipe(
-        catchError((err) => {
-          this._error.set("Failed to load scan centers");
-          console.error("Error loading scan centers:", err);
-          return of([] as ScanCenter[]);
+        catchError((apiError) => {
+          console.error("Error loading scan centers:", apiError);
+          return throwError(() => apiError);
         }),
       )
       .subscribe({
@@ -45,9 +49,20 @@ export class ScanCenterDataService {
           this._loading.set(false);
         },
         error: () => {
+          this._error.set("Failed to load scan centers");
+          this._centers.set([]);
           this._loading.set(false);
         },
       });
+  }
+
+  getAllScanCenters() {
+    return this.http
+      .get<ApiResponse<ScanCenter[]>>(this.API_URL)
+      .pipe(
+        map((response) => response.data ?? []),
+        map((rows) => this.scanCenterAdapter.ScanCenterAdapter(rows)),
+      );
   }
 
   getCenterById(id: string): ScanCenter | undefined {
