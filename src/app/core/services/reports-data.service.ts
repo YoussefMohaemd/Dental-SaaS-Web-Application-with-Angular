@@ -2,7 +2,7 @@ import { Injectable, inject, signal } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { catchError, map, throwError } from "rxjs";
 import { ReportsData } from "../models/report.model";
-import { ApiResponse } from "@core/interface/api-response.interface";
+import { ApiResponse } from "@core/interfaces/api-response.interface";
 import { ApiEndpoint } from "@core/enum/api.endpoint";
 import { ReportsApi } from "@core/base/reports.api";
 import { ReportsAdapter } from "@core/adapters/reports.adapter";

@@ -1,7 +1,7 @@
 import { Injectable, computed, inject, signal } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { catchError, map, Observable, of, tap, throwError } from "rxjs";
-import { ApiResponse } from "@core/interface/api-response.interface";
+import { ApiResponse } from "@core/interfaces/api-response.interface";
 import { ApiEndpoint } from "@core/enum/api.endpoint";
 import { environment } from "../../../environments/environment";
 

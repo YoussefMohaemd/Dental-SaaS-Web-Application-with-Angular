@@ -3,7 +3,7 @@ import { Notification } from "@core/models";
 import {
   ApiNotificationItem,
   ApiNotificationResponse,
-} from "@core/interface/notification.interface";
+} from "@core/interfaces/notification.interface";
 
 @Injectable({ providedIn: "root" })
 export class NotificationAdapter {

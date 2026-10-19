@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { Clinic } from "@core/models";
-import { ApiClinicItem, ApiClinicResponse } from "@core/interface/clinic.interface";
+import { ApiClinicItem, ApiClinicResponse } from "@core/interfaces/clinic.interface";
 
 @Injectable({ providedIn: "root" })
 export class ClinicAdapter {

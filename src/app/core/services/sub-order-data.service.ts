@@ -13,7 +13,7 @@ import {
   SubOrderCreationData,
 } from "../models/sub-order.model";
 import { ApiEndpoint } from "@core/enum/api.endpoint";
-import { ApiResponse } from "@core/interface/api-response.interface";
+import { ApiResponse } from "@core/interfaces/api-response.interface";
 
 interface SubOrderJson {
   id: string;

@@ -3,7 +3,7 @@ import { HttpClient } from "@angular/common/http";
 import { catchError, map, throwError } from "rxjs";
 import { Patient, PatientFilters } from "../models";
 import { filterTableRows, sortTableRows } from "@shared/utils/table-state";
-import { ApiResponse } from "@core/interface/api-response.interface";
+import { ApiResponse } from "@core/interfaces/api-response.interface";
 import { ApiEndpoint } from "@core/enum/api.endpoint";
 import { PatientApi } from "@core/base/patient.api";
 import { PatientAdapter } from "@core/adapters/patient.adapter";

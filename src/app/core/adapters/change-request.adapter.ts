@@ -3,7 +3,7 @@ import { ChangeRequest } from "@core/models";
 import {
   ApiChangeRequestItem,
   ApiChangeRequestResponse,
-} from "@core/interface/change-request.interface";
+} from "@core/interfaces/change-request.interface";
 
 @Injectable({ providedIn: "root" })
 export class ChangeRequestAdapter {

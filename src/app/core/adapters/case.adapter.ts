@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { Case } from "@core/models";
-import { ApiCaseItem, ApiCaseResponse } from "@core/interface/case.interface";
+import { ApiCaseItem, ApiCaseResponse } from "@core/interfaces/case.interface";
 
 @Injectable({ providedIn: "root" })
 export class CaseAdapter {

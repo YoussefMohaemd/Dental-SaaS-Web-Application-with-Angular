@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { BillingRecord } from "@core/models";
-import { ApiBillingItem, ApiBillingResponse } from "@core/interface/billing.interface";
+import { ApiBillingItem, ApiBillingResponse } from "@core/interfaces/billing.interface";
 
 @Injectable({ providedIn: "root" })
 export class BillingAdapter {

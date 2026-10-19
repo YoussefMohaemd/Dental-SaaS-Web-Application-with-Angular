@@ -2,7 +2,7 @@ import { Injectable, inject, signal } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { catchError, map, throwError } from "rxjs";
 import { LabDocument } from "../models/document.model";
-import { ApiResponse } from "@core/interface/api-response.interface";
+import { ApiResponse } from "@core/interfaces/api-response.interface";
 import { ApiEndpoint } from "@core/enum/api.endpoint";
 import { DocumentApi } from "@core/base/document.api";
 import { DocumentAdapter } from "@core/adapters/document.adapter";

@@ -3,7 +3,7 @@ import { LabDocument } from "@core/models/document.model";
 import {
   ApiDocumentItem,
   ApiDocumentResponse,
-} from "@core/interface/document.interface";
+} from "@core/interfaces/document.interface";
 
 @Injectable({ providedIn: "root" })
 export class DocumentAdapter {

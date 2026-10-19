@@ -3,7 +3,7 @@ import { ScanCenter } from "@core/models";
 import {
   ApiScanCenterItem,
   ApiScanCenterResponse,
-} from "@core/interface/scan-center.interface";
+} from "@core/interfaces/scan-center.interface";
 
 @Injectable({ providedIn: "root" })
 export class ScanCenterAdapter {
