@@ -129,10 +129,28 @@ export class ViewOrderComponent implements OnInit {
     if (total === 0) return 0;
     return Math.round((this.completedServices() / total) * 100);
   });
-  readonly currentStage = 3;
+  readonly currentStage = computed(() => {
+    const status = this.order()?.status;
+    return {
+      New: 0,
+      Review: 1,
+      Design: 2,
+      Production: 3,
+      "Quality Check": 4,
+      Ready: 5,
+      Completed: 6,
+      Cancelled: 0,
+    }[status ?? "New"];
+  });
   readonly stages: string[] = STAGES;
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.orderService.loadOrders();
+    this.patientService.loadPatients();
+    this.doctorService.loadDoctors();
+    this.clinicService.loadClinics();
+    this.subOrderService.load();
+  }
 
   openMoreMenu(): void {
     this.moreMenuOpen.update((v) => !v);
@@ -229,7 +247,14 @@ export class ViewOrderComponent implements OnInit {
 
   confirmDelete(): void {
     const current = this.order();
-    if (current) this.orderService.deleteOrder(current.id);
+    if (current) {
+      this.orderService.deleteOrder$(current.id).subscribe({
+        next: () => this.navigationService.navigate("orders"),
+        error: (error) => console.error("Failed to delete order:", error),
+      });
+      this.confirmDeleteVisible.set(false);
+      return;
+    }
     this.confirmDeleteVisible.set(false);
     this.navigationService.navigate("orders");
   }

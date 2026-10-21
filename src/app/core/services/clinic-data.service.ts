@@ -1,7 +1,7 @@
 import { Injectable, signal, computed, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import { catchError, map, throwError } from "rxjs";
-import { Clinic } from "../interfaces";
+import { catchError, map, Observable, tap, throwError } from "rxjs";
+import { ApiClinicItem, Clinic } from "../interfaces";
 import { ApiEndpoint } from "@core/enum/api.endpoint";
 import { ClinicApi } from "@core/base/clinic.api";
 import { ClinicAdapter } from "@core/adapters/clinic.adapter";
@@ -55,10 +55,21 @@ export class ClinicDataService extends ClinicApi {
 
   getAllClinics() {
     return this.http
-      .get<{ data: Clinic[] }>(this.API_URL)
+      .get<{ data: ApiClinicItem[] }>(this.API_URL)
       .pipe(
         map((response) => response.data ?? []),
         map((rows) => this.clinicAdapter.ClinicAdapter(rows)),
+      );
+  }
+
+  createClinic$(
+    payload: Omit<Clinic, "id" | "doctorsCount" | "patientsCount" | "ordersCount">,
+  ): Observable<Clinic> {
+    return this.http
+      .post<{ data: ApiClinicItem }>(this.API_URL, payload)
+      .pipe(
+        map((response) => this.clinicAdapter.ClinicAdapter([response.data])[0]),
+        tap((created) => this._clinics.update((current) => [created, ...current])),
       );
   }
 

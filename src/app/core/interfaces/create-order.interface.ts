@@ -81,7 +81,7 @@ export const AVAILABLE_SERVICES: CreateOrderService[] = [
     name: "Treatment Plan",
     description:
       "Comprehensive treatment planning with diagnostic data and clinical workflow.",
-    icon: "ðŸ“‹",
+    icon: "📋",
     basePrice: 250,
     turnaroundDays: 5,
     scanRequirements: ["Full arch STL", "Bite registration"],
@@ -91,7 +91,7 @@ export const AVAILABLE_SERVICES: CreateOrderService[] = [
     name: "Surgical Guide",
     description:
       "Precision-guided implant surgery using CT and digital planning.",
-    icon: "ðŸ¦·",
+    icon: "🦷",
     basePrice: 420,
     turnaroundDays: 8,
     scanRequirements: [
@@ -105,7 +105,7 @@ export const AVAILABLE_SERVICES: CreateOrderService[] = [
     name: "GFMR",
     description:
       "Full-mouth rehabilitation with a guided functional occlusal approach.",
-    icon: "âš™ï¸",
+    icon: "⚙️",
     basePrice: 580,
     turnaroundDays: 12,
     scanRequirements: ["Upper arch scan", "Lower arch scan", "Bite scan"],
@@ -115,7 +115,7 @@ export const AVAILABLE_SERVICES: CreateOrderService[] = [
     name: "FMB / FMP",
     description:
       "Full-mouth bridge or partial restoration fabricated to precision.",
-    icon: "ðŸ”¬",
+    icon: "🔬",
     basePrice: 540,
     turnaroundDays: 10,
     scanRequirements: ["Upper arch STL", "Lower arch STL"],
@@ -125,7 +125,7 @@ export const AVAILABLE_SERVICES: CreateOrderService[] = [
     name: "Temporary Restoration",
     description:
       "Interim restorations to protect and maintain occlusion during treatment.",
-    icon: "ðŸ›¡ï¸",
+    icon: "🛡️",
     basePrice: 300,
     turnaroundDays: 4,
     scanRequirements: ["Working model scan", "Antagonist scan"],
@@ -135,7 +135,7 @@ export const AVAILABLE_SERVICES: CreateOrderService[] = [
     name: "Final Restoration",
     description:
       "Definitive crowns, bridges, veneers, or full-arch restorations.",
-    icon: "âœ¨",
+    icon: "✨",
     basePrice: 460,
     turnaroundDays: 9,
     scanRequirements: ["Prep scan", "Antagonist scan", "Shade reference photo"],
@@ -145,7 +145,7 @@ export const AVAILABLE_SERVICES: CreateOrderService[] = [
     name: "Full Guide Case",
     description:
       "End-to-end digital workflow with guided surgery and final prosthetics.",
-    icon: "ðŸ”‘",
+    icon: "🔑",
     basePrice: 640,
     turnaroundDays: 12,
     scanRequirements: [
@@ -160,7 +160,7 @@ export const AVAILABLE_SERVICES: CreateOrderService[] = [
     name: "Other Service",
     description:
       "Custom lab service or specialized dental work not listed above.",
-    icon: "âž•",
+    icon: "➕",
     basePrice: 250,
     turnaroundDays: 7,
     scanRequirements: ["As specified"],

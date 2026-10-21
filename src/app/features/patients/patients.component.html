@@ -207,16 +207,13 @@
                       [title]="p.name"
                       >{{ p.name }}</span
                     >
-                    <span class="enterprise-cell-secondary font-mono"
-                      >ID: {{ p.id }}</span
-                    >
                   </div>
                 </div>
               </td>
               <td
                 class="text-xs text-muted-foreground font-mono whitespace-nowrap"
               >
-                {{ p.dob }}
+                {{ p.dob | displayDate }}
               </td>
               <td class="text-xs text-muted-foreground">
                 {{ getGenderLabel(p.gender) }}
@@ -250,7 +247,7 @@
               <td
                 class="text-xs font-mono text-muted-foreground whitespace-nowrap"
               >
-                {{ p.lastVisit }}
+                {{ p.lastVisit | displayDate }}
               </td>
             </tr>
           </ng-template>

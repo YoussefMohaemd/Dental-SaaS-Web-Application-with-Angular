@@ -43,14 +43,14 @@
           <article class="rounded-xl border border-border bg-background p-3">
             <p class="text-[11px] text-muted-foreground">Annual Revenue</p>
             <p class="font-display mt-1 text-lg font-bold text-foreground">
-              {{ formatUtils.formatCurrency(annualTotals().totalRevenue) }}
+              {{ annualTotals().totalRevenue | displayCurrency }}
             </p>
           </article>
 
           <article class="rounded-xl border border-border bg-background p-3">
             <p class="text-[11px] text-muted-foreground">Annual Target</p>
             <p class="font-display mt-1 text-lg font-bold text-primary">
-              {{ formatUtils.formatCurrency(annualTarget()) }}
+              {{ annualTarget() | displayCurrency }}
             </p>
           </article>
 
@@ -80,7 +80,7 @@
         <div class="mt-1 flex flex-wrap items-center justify-between gap-3">
           <p class="text-sm font-semibold text-foreground">
             {{ bestQuarter()!.report.quarterLabel }} — Revenue
-            {{ formatUtils.formatCurrency(bestQuarter()!.report.totalRevenue) }}
+            {{ bestQuarter()!.report.totalRevenue | displayCurrency }}
           </p>
           <p-tag
             severity="info"
@@ -125,13 +125,13 @@
             <div class="rounded-lg border border-border bg-background p-3">
               <p class="text-[11px] text-muted-foreground">Quarter Target</p>
               <p class="mt-1 text-sm font-semibold text-foreground">
-                {{ formatUtils.formatCurrency(quarterTargetAmount()) }}
+                {{ quarterTargetAmount() | displayCurrency }}
               </p>
             </div>
             <div class="rounded-lg border border-border bg-background p-3">
               <p class="text-[11px] text-muted-foreground">Actual Revenue</p>
               <p class="mt-1 text-sm font-semibold text-foreground">
-                {{ formatUtils.formatCurrency(card.report.totalRevenue) }}
+                {{ card.report.totalRevenue | displayCurrency }}
               </p>
             </div>
             <div class="rounded-lg border border-border bg-background p-3">
@@ -143,7 +143,7 @@
             <div class="rounded-lg border border-border bg-background p-3">
               <p class="text-[11px] text-muted-foreground">Avg Ticket</p>
               <p class="mt-1 text-sm font-semibold text-primary">
-                {{ formatUtils.formatCurrency(card.averageTicket) }}
+                {{ card.averageTicket | displayCurrency }}
               </p>
             </div>
           </div>
@@ -225,7 +225,7 @@
                     </p>
                     <p class="font-mono text-muted-foreground">
                       {{ service.ordersCount }} ·
-                      {{ formatUtils.formatCurrency(service.totalRevenue) }}
+                      {{ service.totalRevenue | displayCurrency }}
                     </p>
                   </div>
                   <div class="h-1.5 rounded-full bg-muted/70">

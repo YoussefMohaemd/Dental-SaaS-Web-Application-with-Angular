@@ -1,8 +1,7 @@
 import { CommonModule } from "@angular/common";
-import { Component, computed, inject, signal } from "@angular/core";
+import { Component, computed, inject, OnInit, signal } from "@angular/core";
 import { TeamPerformanceRecord } from "@core/interfaces";
 import { RoleSummary } from "@core/interfaces";
-import { FormatUtils } from "@core/services/format-utils.service";
 import { NavigationService } from "@core/services/navigation.service";
 import { ReportingDataService } from "@core/services/reporting-data.service";
 import { AppButtonComponent } from "@shared/components/button/button.component";
@@ -10,6 +9,7 @@ import { DataTableToolbarComponent } from "@shared/components/data-table-toolbar
 import { EnterprisePaginatorComponent } from "@shared/components/enterprise-paginator/enterprise-paginator.component";
 import { SearchFilterToolbarComponent } from "@shared/components/search-filter-toolbar/search-filter-toolbar.component";
 import { TableFeedbackComponent } from "@shared/components/table-feedback/table-feedback.component";
+import { DisplayCurrencyPipe } from "@shared/pipes/display-currency.pipe";
 import { paginateTableRows, tableTotalPages } from "@shared/utils/table-state";
 import { TagModule } from "primeng/tag";
 
@@ -24,11 +24,12 @@ import { TagModule } from "primeng/tag";
     TableFeedbackComponent,
     AppButtonComponent,
     TagModule,
+    DisplayCurrencyPipe,
   ],
   templateUrl: "./team-performance-report.component.html",
   styleUrl: "./team-performance-report.component.scss",
 })
-export class TeamPerformanceReportComponent {
+export class TeamPerformanceReportComponent implements OnInit {
   private readonly rolePresentation: Record<
     string,
     { label: string; description: string }
@@ -57,7 +58,10 @@ export class TeamPerformanceReportComponent {
 
   private readonly reportingData = inject(ReportingDataService);
   private readonly navigationService = inject(NavigationService);
-  protected readonly formatUtils = inject(FormatUtils);
+
+  ngOnInit(): void {
+    this.reportingData.loadTeamPerformance();
+  }
 
   readonly loading = this.reportingData.loading;
   readonly records = this.reportingData.teamPerformance;

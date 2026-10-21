@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from "@angular/core";
+import { Component, computed, inject, OnInit, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { NotificationDataService } from "@core/services/notification-data.service";
 import { NavigationService } from "@core/services/navigation.service";
@@ -25,8 +25,12 @@ const TYPE_STYLES: Record<NotificationType, string> = {
   templateUrl: "./notifications.component.html",
   styleUrl: "./notifications.component.scss",
 })
-export class NotificationsComponent {
+export class NotificationsComponent implements OnInit {
   private readonly notificationService = inject(NotificationDataService);
+
+  ngOnInit(): void {
+    this.notificationService.loadNotifications();
+  }
   protected readonly navigationService = inject(NavigationService);
   protected readonly formatUtils = inject(FormatUtils);
 

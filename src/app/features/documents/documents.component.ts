@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from "@angular/core";
+import { Component, computed, inject, OnInit, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { TableModule } from "primeng/table";
 import { AppButtonComponent } from "@shared/components/button/button.component";
@@ -13,6 +13,7 @@ import {
   LabDocument,
 } from "@core/interfaces";
 import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
+import { DisplayDatePipe } from "@shared/pipes/display-date.pipe";
 
 export type { DocumentCategory, LabDocument };
 
@@ -28,11 +29,12 @@ export type { DocumentCategory, LabDocument };
     TableFeedbackComponent,
     IconActionButtonComponent,
     SafeHtmlPipe,
+    DisplayDatePipe,
   ],
   templateUrl: "./documents.component.html",
   styleUrl: "./documents.component.scss",
 })
-export class DocumentsComponent {
+export class DocumentsComponent implements OnInit {
   private readonly documentService = inject(DocumentDataService);
 
   readonly documents = this.documentService.documents;
@@ -46,6 +48,10 @@ export class DocumentsComponent {
   readonly previewVisible = signal(false);
 
   readonly categories = DOCUMENT_CATEGORIES;
+
+  ngOnInit(): void {
+    this.documentService.loadDocuments();
+  }
 
   readonly filtered = computed(() => {
     const query = this.search().trim().toLowerCase();

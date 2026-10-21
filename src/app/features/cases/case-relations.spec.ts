@@ -4,7 +4,7 @@ import { getCaseDocuments, getCaseOrders } from "./case-relations";
 const CASE: Case = {
   id: "case-1",
   caseNumber: "CS-08101",
-  title: "Full Arch Restoration ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Alice Johnson",
+  title: "Full Arch Restoration - Alice Johnson",
   patientId: "pt1",
   patientName: "Alice Johnson",
   doctorId: "dr1",

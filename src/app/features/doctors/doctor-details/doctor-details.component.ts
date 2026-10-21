@@ -1,6 +1,7 @@
 import {
   Component,
   computed,
+  effect,
   HostListener,
   inject,
   signal,
@@ -19,6 +20,8 @@ import { AppButtonComponent } from "@shared/components/button/button.component";
 import { AvatarComponent } from "@shared/components/avatar/avatar.component";
 import { IconActionButtonComponent } from "@shared/components/icon-action-button/icon-action-button.component";
 import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
+import { DisplayCurrencyPipe } from "@shared/pipes/display-currency.pipe";
+import { DisplayDatePipe } from "@shared/pipes/display-date.pipe";
 import { TableModule } from "primeng/table";
 
 @Component({
@@ -31,6 +34,8 @@ import { TableModule } from "primeng/table";
     AvatarComponent,
     IconActionButtonComponent,
     SafeHtmlPipe,
+    DisplayCurrencyPipe,
+    DisplayDatePipe,
     TableModule,
   ],
   templateUrl: "./doctor-details.component.html",
@@ -58,26 +63,28 @@ export class DoctorDetailsComponent implements OnInit {
 
   readonly contactItems = signal<ContactItem[]>([]);
 
-  private doctorId = "";
+  private readonly doctorId = signal("");
+
+  private readonly syncDoctor = effect(() => {
+    const doctorId = this.doctorId();
+    const doctor = this.doctorService.getDoctorById(doctorId);
+    if (!doctor) {
+      return;
+    }
+
+    this.doctor.set(doctor);
+    this.doctorOrders.set(this.orderService.getOrdersByDoctor(doctor.id));
+    this.contactItems.set([
+      { icon: "mail", label: "Email", value: doctor.email },
+      { icon: "phone", label: "Phone", value: doctor.phone },
+      { icon: "building-2", label: "Clinic", value: doctor.clinicName },
+    ]);
+  });
 
   ngOnInit(): void {
-    this.doctorId = this.route.snapshot.paramMap.get("doctorId") || "";
-    this.loadDoctor();
-  }
-
-  private loadDoctor(): void {
-    const doctor = this.doctorService.getDoctorById(this.doctorId);
-    if (doctor) {
-      this.doctor.set(doctor);
-      const orders = this.orderService.getOrdersByDoctor(doctor.id);
-      this.doctorOrders.set(orders);
-
-      this.contactItems.set([
-        { icon: "mail", label: "Email", value: doctor.email },
-        { icon: "phone", label: "Phone", value: doctor.phone },
-        { icon: "building-2", label: "Clinic", value: doctor.clinicName },
-      ]);
-    }
+    this.doctorService.loadDoctors();
+    this.orderService.loadOrders();
+    this.doctorId.set(this.route.snapshot.paramMap.get("doctorId") || "");
   }
 
   setActiveTab(tab: string): void {

@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from "@angular/core";
+import { Component, computed, inject, OnInit, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { ActivatedRoute } from "@angular/router";
 import { toSignal } from "@angular/core/rxjs-interop";
@@ -41,11 +41,16 @@ import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
   templateUrl: "./sub-order.component.html",
   styleUrl: "./sub-order.component.scss",
 })
-export class SubOrderComponent {
+export class SubOrderComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly orderService = inject(OrderDataService);
   private readonly subOrderService = inject(SubOrderDataService);
   protected readonly navigationService = inject(NavigationService);
+
+  ngOnInit(): void {
+    this.orderService.loadOrders();
+    this.subOrderService.load();
+  }
 
   private readonly paramMap = toSignal(this.route.paramMap, {
     initialValue: null,

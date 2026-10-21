@@ -35,15 +35,6 @@ const WORKFLOW_STAGES: { name: string; color: string; statuses: string[] }[] = [
   { name: "Ready", color: "#10B981", statuses: ["Ready", "Completed"] },
 ];
 
-const FALLBACK_WORKFLOW: WorkflowDataPoint[] = [
-  { name: "New", count: 8, color: "#94A3B8" },
-  { name: "Review", count: 5, color: "#F59E0B" },
-  { name: "Design", count: 7, color: "#06B6D4" },
-  { name: "Production", count: 12, color: "#2563EB" },
-  { name: "QC", count: 4, color: "#8B5CF6" },
-  { name: "Ready", count: 6, color: "#10B981" },
-];
-
 @Component({
   selector: "app-dashboard",
   standalone: true,
@@ -185,7 +176,6 @@ export class DashboardComponent implements OnInit {
   }));
 
   readonly workflowData = computed<WorkflowDataPoint[]>(() => {
-    if (this.orders().length === 0) return FALLBACK_WORKFLOW;
     return WORKFLOW_STAGES.map((stage) => ({
       name: stage.name,
       color: stage.color,
@@ -202,7 +192,7 @@ export class DashboardComponent implements OnInit {
 
   readonly turnaround = computed(() => {
     const sent = this.orders().filter((o) => o.sentAt);
-    if (sent.length === 0) return "2.4 days";
+    if (sent.length === 0) return "0 days";
     const avg =
       sent.reduce(
         (sum, o) =>
@@ -216,7 +206,6 @@ export class DashboardComponent implements OnInit {
 
   readonly openChangeRequests = computed(() => {
     const all = this.changeRequestService.changeRequests();
-    if (all.length === 0) return 4;
     return all.filter((c) => c.status === "Pending" || c.status === "In Review")
       .length;
   });
@@ -293,6 +282,11 @@ export class DashboardComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.orderService.loadOrders();
+    this.caseService.loadCases();
+    this.volumeService.loadVolume();
+    this.notificationService.loadNotifications();
+    this.changeRequestService.loadChangeRequests();
     this.updateStatCards();
   }
 

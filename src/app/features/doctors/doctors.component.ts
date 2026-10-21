@@ -1,8 +1,9 @@
-import { Component, computed, inject, signal } from "@angular/core";
+import { Component, computed, inject, OnInit, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { TableModule } from "primeng/table";
 import { DoctorDataService } from "@core/services/doctor-data.service";
+import { ClinicDataService } from "@core/services/clinic-data.service";
 import { OrderDataService } from "@core/services/order-data.service";
 import { NavigationService } from "@core/services/navigation.service";
 import { FormatUtils } from "@core/services/format-utils.service";
@@ -18,6 +19,7 @@ import { SearchFilterToolbarComponent } from "@shared/components/search-filter-t
 import { TableFeedbackComponent } from "@shared/components/table-feedback/table-feedback.component";
 import { StatusBadgeComponent } from "@shared/components/status-badge/status-badge.component";
 import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
+import { DisplayDatePipe } from "@shared/pipes/display-date.pipe";
 import { filterTableRows, sortTableRows } from "@shared/utils/table-state";
 import {
   buildSortAriaLabel,
@@ -42,12 +44,14 @@ import {
     TableFeedbackComponent,
     StatusBadgeComponent,
     SafeHtmlPipe,
+    DisplayDatePipe,
   ],
   templateUrl: "./doctors.component.html",
   styleUrl: "./doctors.component.scss",
 })
-export class DoctorsComponent {
+export class DoctorsComponent implements OnInit {
   private readonly doctorService = inject(DoctorDataService);
+  private readonly clinicService = inject(ClinicDataService);
   private readonly orderService = inject(OrderDataService);
   protected readonly navigationService = inject(NavigationService);
   protected readonly formatUtils = inject(FormatUtils);
@@ -64,8 +68,14 @@ export class DoctorsComponent {
   readonly showAddDialog = signal(false);
   readonly newName = signal("");
   readonly newSpecialty = signal("General Dentistry");
-  readonly newClinic = signal("Bright Smile Dental");
+  readonly newClinic = signal("");
   readonly newEmail = signal("");
+
+  ngOnInit(): void {
+    this.doctorService.loadDoctors();
+    this.clinicService.loadClinics();
+    this.orderService.loadOrders();
+  }
   readonly newPhone = signal("");
 
   readonly orderCountByDoctorId = computed(() => {
@@ -148,7 +158,7 @@ export class DoctorsComponent {
   openAddDialog(): void {
     this.newName.set("");
     this.newSpecialty.set("General Dentistry");
-    this.newClinic.set("Bright Smile Dental");
+    this.newClinic.set(this.clinicService.clinics()[0]?.name ?? "");
     this.newEmail.set("");
     this.newPhone.set("");
     this.showAddDialog.set(true);
@@ -159,7 +169,17 @@ export class DoctorsComponent {
   }
 
   saveDoctor(): void {
-    const name = this.newName().trim() || "New Doctor";
+    const name = this.newName().trim();
+    const specialty = this.newSpecialty().trim();
+    const email = this.newEmail().trim();
+    const phone = this.newPhone().trim();
+    const clinic = this.clinicService
+      .clinics()
+      .find((item) => item.name === this.newClinic());
+    if (!name || !specialty || !email || !phone || !clinic) {
+      console.error("Doctor requires name, specialty, contact details, and clinic.");
+      return;
+    }
     const initials =
       name
         .replace(/^Dr\.\s*/, "")
@@ -168,20 +188,19 @@ export class DoctorsComponent {
         .join("")
         .slice(0, 2)
         .toUpperCase() || "ND";
-    this.doctorService.addDoctor({
-      id: `dr-${Date.now()}`,
+    this.doctorService.createDoctor$({
       name: name.startsWith("Dr.") ? name : `Dr. ${name}`,
-      specialty: this.newSpecialty(),
-      clinicId: "cl1",
-      clinicName: this.newClinic(),
-      email: this.newEmail().trim() || "doctor@clinic.com",
-      phone: this.newPhone().trim() || "+1 (555) 000-0000",
+      specialty,
+      clinicId: clinic.id,
+      email,
+      phone,
       status: "Active",
-      ordersCount: 0,
       joinedDate: new Date().toISOString().slice(0, 10),
       avatar: initials,
+    }).subscribe({
+      next: () => this.showAddDialog.set(false),
+      error: (error) => console.error("Failed to create doctor:", error),
     });
-    this.showAddDialog.set(false);
   }
 
   doctorDisplayId(doctor: Doctor): string {

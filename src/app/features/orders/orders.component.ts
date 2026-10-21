@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from "@angular/core";
+import { Component, computed, inject, OnInit, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { TreeTableModule } from "primeng/treetable";
 import { TreeNode } from "primeng/api";
@@ -27,6 +27,7 @@ import { SearchInputComponent } from "@shared/components/search-input/search-inp
 import { AppSelectComponent } from "@shared/components/select/select.component";
 import { StatusBadgeComponent } from "@shared/components/status-badge/status-badge.component";
 import { SafeHtmlPipe } from "../../shared/pipes/safe-html.pipe";
+import { DisplayCurrencyPipe } from "@shared/pipes/display-currency.pipe";
 import { lucideSvg } from "@shared/icons/lucide-icons";
 import { buildSortAriaLabel, sortAriaValue } from "@shared/utils/sort-a11y";
 import { statusDisplayLabel } from "@shared/utils/status-label";
@@ -211,13 +212,19 @@ export function resolveDurationReferenceDate(
     AppSelectComponent,
     StatusBadgeComponent,
     SafeHtmlPipe,
+    DisplayCurrencyPipe,
   ],
   templateUrl: "./orders.component.html",
   styleUrl: "./orders.component.scss",
 })
-export class OrdersComponent {
+export class OrdersComponent implements OnInit {
   private readonly orderService = inject(OrderDataService);
   private readonly subOrderService = inject(SubOrderDataService);
+
+  ngOnInit(): void {
+    this.orderService.loadOrders();
+    this.subOrderService.load();
+  }
   protected readonly navigationService = inject(NavigationService);
   protected readonly formatUtils = inject(FormatUtils);
 
@@ -723,7 +730,7 @@ export class OrdersComponent {
   }
 
   shorten(value: string, maxLength: number): string {
-    return value.length > maxLength ? `${value.slice(0, maxLength)}ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦` : value;
+    return value.length > maxLength ? `${value.slice(0, maxLength)}...` : value;
   }
 
   getIconSvg(name: string): string {

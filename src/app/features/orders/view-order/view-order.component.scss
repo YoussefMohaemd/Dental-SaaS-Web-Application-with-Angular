@@ -11,33 +11,34 @@
 
 .order-stage-progress {
   min-width: 0;
+  overflow: visible;
 }
 
 @media (max-width: 640px) {
   .order-stage-progress {
-    overflow-x: auto;
-    overflow-y: hidden;
-    -webkit-overflow-scrolling: touch;
-    padding-bottom: 0.25rem;
+    padding-bottom: 0.1rem;
   }
 
   .order-stage-track {
-    min-width: 30rem;
-    padding-right: 0.25rem;
+    min-width: 0;
+    width: 100%;
+    flex-wrap: wrap;
+    row-gap: 0.35rem;
   }
 
   .order-stage-item {
-    min-width: 4.125rem;
+    min-width: 0;
   }
 
   .order-stage-label {
     white-space: normal;
     text-align: center;
     line-height: 1.1;
-    max-width: 4.25rem;
+    max-width: 3.5rem;
+    font-size: 0.5rem;
   }
 
   .order-stage-connector {
-    min-width: 1rem;
+    min-width: 0.35rem;
   }
 }

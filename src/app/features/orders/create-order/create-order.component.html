@@ -302,7 +302,7 @@
             <span
               class="rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary"
             >
-              {{ formatUtils.formatCurrency(svc.basePrice) }}
+              {{ svc.basePrice | displayCurrency }}
             </span>
           </div>
           <p class="text-xs leading-relaxed text-muted-foreground">
@@ -346,7 +346,7 @@
               class="flex items-center gap-1.5 rounded-full border border-primary/20 bg-card px-2.5 py-1 text-xs font-semibold text-primary"
             >
               {{ svc.icon }} {{ svc.name }} ·
-              {{ formatUtils.formatCurrency(svc.basePrice) }}
+              {{ svc.basePrice | displayCurrency }}
             </span>
           }
         </div>
@@ -355,7 +355,7 @@
             Services total
           </p>
           <p class="mt-1 text-sm font-semibold text-foreground">
-            {{ formatUtils.formatCurrency(selectedServicesTotal()) }}
+            {{ selectedServicesTotal() | displayCurrency }}
           </p>
         </div>
       </div>
@@ -858,7 +858,7 @@
                 <div>
                   <p class="text-[10px] text-muted-foreground">Price</p>
                   <p class="text-xs font-semibold text-foreground">
-                    {{ formatUtils.formatCurrency(svc.basePrice) }}
+                    {{ svc.basePrice | displayCurrency }}
                   </p>
                 </div>
                 <div>
@@ -877,7 +877,7 @@
             Selected services total
           </p>
           <p class="text-sm font-semibold text-foreground">
-            {{ formatUtils.formatCurrency(selectedServicesTotal()) }}
+            {{ selectedServicesTotal() | displayCurrency }}
           </p>
         </div>
       </div>
@@ -1052,10 +1052,15 @@
           </span>
         </app-button>
       } @else {
-        <app-button variant="primary" size="md" (onClick)="submitOrder()">
+        <app-button
+          variant="primary"
+          size="md"
+          [disabled]="creating()"
+          (onClick)="submitOrder()"
+        >
           <span class="flex items-center gap-2">
             <span [innerHTML]="getIconSvg('check-lg') | safeHtml"></span>
-            Create Order
+            {{ creating() ? "Creating..." : "Create Order" }}
           </span>
         </app-button>
       }
@@ -1065,5 +1070,8 @@
     <p class="mt-2 text-right text-xs text-muted-foreground" role="status">
       {{ validationMessage() }}
     </p>
+  }
+  @if (createError(); as error) {
+    <p class="mt-2 text-right text-xs text-danger" role="alert">{{ error }}</p>
   }
 </div>

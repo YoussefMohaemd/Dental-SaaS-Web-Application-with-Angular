@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from "@angular/core";
+import { Component, computed, inject, OnInit, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { TableModule } from "primeng/table";
 import { ChangeRequestDataService } from "@core/services/change-request-data.service";
@@ -30,8 +30,12 @@ import { PriorityBadgeComponent } from "@shared/components/priority-badge/priori
   templateUrl: "./change-requests.component.html",
   styleUrl: "./change-requests.component.scss",
 })
-export class ChangeRequestsComponent {
+export class ChangeRequestsComponent implements OnInit {
   private readonly changeRequestService = inject(ChangeRequestDataService);
+
+  ngOnInit(): void {
+    this.changeRequestService.loadChangeRequests();
+  }
   protected readonly navigationService = inject(NavigationService);
   protected readonly formatUtils = inject(FormatUtils);
 

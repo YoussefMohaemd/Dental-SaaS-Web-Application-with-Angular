@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from "@angular/core";
+import { Component, computed, inject, OnInit, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { TableModule } from "primeng/table";
 import { ScanCenterDataService } from "@core/services/scan-center-data.service";
@@ -12,17 +12,29 @@ import { AppButtonComponent } from "@shared/components/button/button.component";
 import { AvatarComponent } from "@shared/components/avatar/avatar.component";
 import { AppTextFieldComponent } from "@shared/components/input/input.component";
 import { SafeHtmlPipe } from "../../shared/pipes/safe-html.pipe";
+import { DisplayDatePipe } from "@shared/pipes/display-date.pipe";
 
 @Component({
   selector: "app-scan-center",
   standalone: true,
-  imports: [CommonModule, TableModule, AppTextFieldComponent, SafeHtmlPipe],
+  imports: [
+    CommonModule,
+    TableModule,
+    AppTextFieldComponent,
+    SafeHtmlPipe,
+    DisplayDatePipe,
+  ],
   templateUrl: "./scan-center.component.html",
   styleUrl: "./scan-center.component.scss",
 })
-export class ScanCenterComponent {
+export class ScanCenterComponent implements OnInit {
   private readonly scanCenterService = inject(ScanCenterDataService);
   private readonly orderService = inject(OrderDataService);
+
+  ngOnInit(): void {
+    this.scanCenterService.loadCenters();
+    this.orderService.loadOrders();
+  }
   protected readonly navigationService = inject(NavigationService);
   protected readonly formatUtils = inject(FormatUtils);
 

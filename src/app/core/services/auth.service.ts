@@ -1,6 +1,15 @@
 import { Injectable, computed, inject, signal } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import { catchError, map, Observable, of, tap, throwError } from "rxjs";
+import {
+  catchError,
+  finalize,
+  map,
+  Observable,
+  of,
+  shareReplay,
+  tap,
+  throwError,
+} from "rxjs";
 import { ApiEndpoint } from "@core/enum/api.endpoint";
 import { environment } from "../../../environments/environment";
 
@@ -21,6 +30,9 @@ const AUTH_MARKER_KEY = "dentalab-auth";
 const AUTH_TOKEN_KEY = "dentalab-auth-token";
 const AUTH_USER_KEY = "dentalab-auth-user";
 const AUTH_TENANT_KEY = "dentalab-tenant-id";
+const SESSION_TOKEN_KEY = "dentalab-session-token";
+const SESSION_USER_KEY = "dentalab-session-user";
+const SESSION_TENANT_KEY = "dentalab-session-tenant-id";
 
 @Injectable({ providedIn: "root" })
 export class AuthService {
@@ -28,6 +40,7 @@ export class AuthService {
 
   private readonly _token = signal<string | null>(null);
   private readonly _user = signal<AuthenticatedUser | null>(null);
+  private refreshInFlight$: Observable<AuthenticatedUser> | null = null;
 
   readonly token = this._token.asReadonly();
   readonly user = this._user.asReadonly();
@@ -55,7 +68,9 @@ export class AuthService {
       )
       .pipe(
         map((response) => response.data),
-        tap((result) => this.setSession(result.accessToken, result.user)),
+        tap((result) =>
+          this.setSession(result.accessToken, result.user, credentials.rememberMe ?? false),
+        ),
         map((result) => result.user),
         catchError((error) => {
           this.clearSession();
@@ -80,6 +95,40 @@ export class AuthService {
       );
   }
 
+  refreshSession(): Observable<AuthenticatedUser> {
+    if (this.refreshInFlight$) {
+      return this.refreshInFlight$;
+    }
+
+    this.refreshInFlight$ = this.http
+      .post<{ data: LoginResponse }>(
+        ApiEndpoint.AUTH_REFRESH,
+        {},
+        { withCredentials: true },
+      )
+      .pipe(
+        map((response) => response.data),
+        tap((result) =>
+          this.setSession(
+            result.accessToken,
+            result.user,
+            this.shouldRememberSession(),
+          ),
+        ),
+        map((result) => result.user),
+        catchError((error) => {
+          this.clearSession();
+          return throwError(() => error);
+        }),
+        finalize(() => {
+          this.refreshInFlight$ = null;
+        }),
+        shareReplay({ bufferSize: 1, refCount: false }),
+      );
+
+    return this.refreshInFlight$;
+  }
+
   clearSession(): void {
     this._token.set(null);
     this._user.set(null);
@@ -88,6 +137,9 @@ export class AuthService {
       localStorage.removeItem(AUTH_TOKEN_KEY);
       localStorage.removeItem(AUTH_USER_KEY);
       localStorage.removeItem(AUTH_TENANT_KEY);
+      sessionStorage.removeItem(SESSION_TOKEN_KEY);
+      sessionStorage.removeItem(SESSION_USER_KEY);
+      sessionStorage.removeItem(SESSION_TENANT_KEY);
     } catch {}
   }
 
@@ -103,21 +155,38 @@ export class AuthService {
     return this._user()?.userId ?? null;
   }
 
-  private setSession(token: string, user: AuthenticatedUser): void {
+  private setSession(
+    token: string,
+    user: AuthenticatedUser,
+    rememberMe: boolean,
+  ): void {
     this._token.set(token);
     this._user.set(user);
     try {
-      localStorage.setItem(AUTH_MARKER_KEY, "true");
-      localStorage.setItem(AUTH_TOKEN_KEY, token);
-      localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
-      localStorage.setItem(AUTH_TENANT_KEY, user.tenantId);
+      localStorage.removeItem(AUTH_MARKER_KEY);
+      localStorage.removeItem(AUTH_TOKEN_KEY);
+      localStorage.removeItem(AUTH_USER_KEY);
+      localStorage.removeItem(AUTH_TENANT_KEY);
+      sessionStorage.setItem(SESSION_TOKEN_KEY, token);
+      sessionStorage.setItem(SESSION_USER_KEY, JSON.stringify(user));
+      sessionStorage.setItem(SESSION_TENANT_KEY, user.tenantId);
+      if (rememberMe) {
+        localStorage.setItem(AUTH_MARKER_KEY, "true");
+        localStorage.setItem(AUTH_TOKEN_KEY, token);
+        localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
+        localStorage.setItem(AUTH_TENANT_KEY, user.tenantId);
+      }
     } catch {}
   }
 
   private restoreSession(): void {
     try {
-      const token = localStorage.getItem(AUTH_TOKEN_KEY);
-      const userRaw = localStorage.getItem(AUTH_USER_KEY);
+      const token =
+        localStorage.getItem(AUTH_TOKEN_KEY) ??
+        sessionStorage.getItem(SESSION_TOKEN_KEY);
+      const userRaw =
+        localStorage.getItem(AUTH_USER_KEY) ??
+        sessionStorage.getItem(SESSION_USER_KEY);
       if (!token || !userRaw) return;
       const user = JSON.parse(userRaw) as AuthenticatedUser;
       if (!user?.tenantId || !user?.userId) return;
@@ -130,9 +199,20 @@ export class AuthService {
 
   private getStoredTenantId(): string | null {
     try {
-      return localStorage.getItem(AUTH_TENANT_KEY);
+      return (
+        localStorage.getItem(AUTH_TENANT_KEY) ??
+        sessionStorage.getItem(SESSION_TENANT_KEY)
+      );
     } catch {
       return null;
+    }
+  }
+
+  private shouldRememberSession(): boolean {
+    try {
+      return localStorage.getItem(AUTH_MARKER_KEY) === "true";
+    } catch {
+      return false;
     }
   }
 }

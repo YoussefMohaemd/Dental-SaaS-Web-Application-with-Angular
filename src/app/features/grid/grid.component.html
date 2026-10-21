@@ -168,9 +168,6 @@
               <p class="text-sm font-semibold text-foreground">
                 {{ snapshot.patient }}
               </p>
-              <p class="font-mono text-[11px] text-muted-foreground">
-                {{ snapshot.patientId }}
-              </p>
             </div>
             <app-status-badge
               [status]="stageToStatus(snapshot.stage)"
@@ -344,7 +341,6 @@
           >
             <tr>
               <th>Patient</th>
-              <th>Patient ID</th>
               <th>Doctor</th>
               <th>Age</th>
               <th>Last Visit</th>
@@ -356,9 +352,6 @@
             @for (row of filteredPatients(); track row.id) {
               <tr class="transition-colors even:bg-muted/20 hover:bg-primary/5">
                 <td class="font-semibold text-foreground">{{ row.patient }}</td>
-                <td class="font-mono text-xs text-muted-foreground">
-                  {{ row.patientId }}
-                </td>
                 <td class="text-muted-foreground">{{ row.doctor }}</td>
                 <td>{{ row.age }}</td>
                 <td class="font-mono text-xs text-muted-foreground">

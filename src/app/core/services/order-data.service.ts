@@ -1,7 +1,7 @@
 import { Injectable, signal, computed, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import { catchError, map, throwError } from "rxjs";
-import { Order, OrdersViewState } from "../interfaces";
+import { catchError, map, Observable, tap, throwError } from "rxjs";
+import { ApiOrderItem, Order, OrdersViewState } from "../interfaces";
 import { ApiEndpoint } from "@core/enum/api.endpoint";
 import { OrdersApi } from "@core/base/orders.api";
 import { OrderAdapter } from "@core/adapters/order.adapter";
@@ -61,11 +61,65 @@ export class OrderDataService extends OrdersApi {
 
   getAllOrders() {
     return this.http
-      .get<{ data: Order[] }>(this.API_URL)
+      .get<{ data: ApiOrderItem[] }>(this.API_URL)
       .pipe(
         map((response) => response.data ?? []),
         map((orders) => this.orderAdapter.OrdersAdapter(orders)),
       );
+  }
+
+  createOrder$(
+    payload: Omit<Order, "id" | "orderNumber" | "receivedAt" | "updatedAt" | "createdAt">,
+  ): Observable<Order> {
+    const body = {
+      ...this.toApiOrderPayload(payload),
+      orderNumber: `DL-${Date.now().toString().slice(-8)}`,
+      receivedAt: new Date().toISOString(),
+    };
+
+    return this.http
+      .post<{ data: ApiOrderItem }>(
+        this.API_URL,
+        body,
+      )
+      .pipe(
+        map((response) => this.orderAdapter.OrdersAdapter([response.data])[0]),
+        tap((created) => {
+          this._orders.update((orders) => [created, ...orders]);
+          this.snapshotOrders = [created, ...this.snapshotOrders];
+        }),
+      );
+  }
+
+  updateOrder$(id: string, updates: Partial<Order>): Observable<Order> {
+    return this.http
+      .patch<{ data: ApiOrderItem }>(
+        `${this.API_URL}/${id}`,
+        this.toApiOrderPayload(updates),
+      )
+      .pipe(
+        map((response) => this.orderAdapter.OrdersAdapter([response.data])[0]),
+        tap((updated) => {
+          this._orders.update((orders) =>
+            orders.map((order) => (order.id === id ? updated : order)),
+          );
+          this.snapshotOrders = this.snapshotOrders.map((order) =>
+            order.id === id ? updated : order,
+          );
+        }),
+      );
+  }
+
+  deleteOrder$(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.API_URL}/${id}`).pipe(
+      tap(() => {
+        this._orders.update((orders) => orders.filter((order) => order.id !== id));
+        this.snapshotOrders = this.snapshotOrders.filter(
+          (order) => order.id !== id,
+        );
+      }),
+      map(() => void 0),
+    );
   }
 
   reload(): void {
@@ -157,5 +211,44 @@ export class OrderDataService extends OrdersApi {
       return orders;
     });
     return deleted;
+  }
+
+  private toApiOrderPayload(payload: Partial<Order>): Record<string, unknown> {
+    const allowed = [
+      "orderNumber",
+      "patientId",
+      "doctorId",
+      "clinicId",
+      "scanCenterId",
+      "status",
+      "priority",
+      "restoration",
+      "arch",
+      "format",
+      "shade",
+      "units",
+      "amount",
+      "billed",
+      "billedAmount",
+      "billTo",
+      "vouchers",
+      "isLocked",
+      "hasNotes",
+      "notes",
+      "archiveDate",
+      "receivedAt",
+      "sentAt",
+      "chargedAt",
+      "dueDate",
+      "csTask",
+      "technicianId",
+      "creationData",
+    ] as const;
+
+    return Object.fromEntries(
+      allowed
+        .filter((key) => payload[key] !== undefined && payload[key] !== "")
+        .map((key) => [key, payload[key]]),
+    );
   }
 }

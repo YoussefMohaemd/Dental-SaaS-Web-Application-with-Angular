@@ -66,14 +66,28 @@ export class NotificationDataService extends NotificationApi {
   }
 
   markAsRead(id: string): void {
+    const previous = this._notifications();
     this._notifications.update((notifications) =>
       notifications.map((n) => (n.id === id ? { ...n, read: true } : n)),
     );
+    this.http.post(`${this.API_URL}/${id}/read`, {}).subscribe({
+      error: (error) => {
+        console.error("Error marking notification as read:", error);
+        this._notifications.set(previous);
+      },
+    });
   }
 
   markAllAsRead(): void {
+    const previous = this._notifications();
     this._notifications.update((notifications) =>
       notifications.map((n) => ({ ...n, read: true })),
     );
+    this.http.post(`${this.API_URL}/read-all`, {}).subscribe({
+      error: (error) => {
+        console.error("Error marking all notifications as read:", error);
+        this._notifications.set(previous);
+      },
+    });
   }
 }

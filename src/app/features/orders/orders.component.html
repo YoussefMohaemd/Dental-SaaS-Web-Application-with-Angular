@@ -657,9 +657,6 @@
                               </span>
                             </span>
                             <span class="sub-order-service-meta">
-                              <span class="service-id" title="Sub-order ID">{{
-                                rowData.subOrder.id
-                              }}</span>
                               <span class="sub-order-meta-chip">
                                 Due
                                 {{
@@ -865,9 +862,6 @@
                             >
                               {{ rowData.subOrder.service }}
                             </button>
-                            <span class="service-id" title="Sub-order ID">{{
-                              rowData.subOrder.id
-                            }}</span>
                           </span>
                         }
                       </div>
@@ -988,7 +982,7 @@
                     <td class="text-right">
                       @if (rowData.kind === "order") {
                         <span class="font-mono font-semibold">{{
-                          formatUtils.formatCurrency(rowData.order.amount)
+                          rowData.order.amount | displayCurrency
                         }}</span>
                       } @else {
                         <span class="text-muted-foreground/30">—</span>

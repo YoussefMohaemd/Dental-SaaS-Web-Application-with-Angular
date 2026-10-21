@@ -24,11 +24,11 @@ import { AuthService } from "@core/services/auth.service";
   styleUrl: "./login.component.scss",
 })
 export class LoginComponent {
-  readonly email = signal("dev-admin@example.test");
-  readonly password = signal("ChangeMe123!");
+  readonly email = signal("");
+  readonly password = signal("");
   readonly showPassword = signal(false);
   readonly loading = signal(false);
-  readonly rememberMe = signal(true);
+  readonly rememberMe = signal(false);
   readonly errorMessage = signal<string | null>(null);
 
   readonly DENTAL_IMAGE =

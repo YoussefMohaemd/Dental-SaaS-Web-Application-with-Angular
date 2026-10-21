@@ -156,21 +156,21 @@
                   <div
                     class="w-6 h-6 rounded-full flex items-center justify-center text-xs"
                     [class]="
-                      i < currentStage
+                      i < currentStage()
                         ? 'bg-success'
-                        : i === currentStage
+                        : i === currentStage()
                           ? 'bg-primary ring-4 ring-primary/20'
                           : 'bg-muted'
                     "
                   >
-                    @if (i < currentStage) {
+                    @if (i < currentStage()) {
                       <span
                         [innerHTML]="
                           getStatusIconSvg('check-circle-2') | safeHtml
                         "
                         class="text-white"
                       ></span>
-                    } @else if (i === currentStage) {
+                    } @else if (i === currentStage()) {
                       <span class="font-bold text-white text-[9px]">{{
                         i + 1
                       }}</span>
@@ -184,9 +184,9 @@
                   <span
                     class="order-stage-label text-[9px] whitespace-nowrap"
                     [class]="
-                      i === currentStage
+                      i === currentStage()
                         ? 'text-primary font-semibold'
-                        : i < currentStage
+                        : i < currentStage()
                           ? 'text-success'
                           : 'text-muted-foreground'
                     "
@@ -197,7 +197,7 @@
                 @if (i !== stages.length - 1) {
                   <div
                     class="order-stage-connector flex-1 h-px mx-0.5 mb-4"
-                    [class]="i < currentStage ? 'bg-success' : 'bg-border'"
+                    [class]="i < currentStage() ? 'bg-success' : 'bg-border'"
                   ></div>
                 }
               </div>
@@ -267,11 +267,6 @@
                     ></span>
                     {{ getStatusConfig(sub.status).label }}
                   </span>
-                  <span
-                    class="text-[10px] text-muted-foreground font-mono ml-auto"
-                    [title]="'Sub-order ID: ' + sub.id"
-                    >{{ sub.id }}</span
-                  >
                 </div>
 
                 @if (sub.notes) {

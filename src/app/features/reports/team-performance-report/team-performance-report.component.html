@@ -32,7 +32,7 @@
     <article class="rounded-2xl border border-border bg-card p-4 sm:p-5">
       <p class="text-xs text-muted-foreground">Revenue Collected</p>
       <p class="font-display mt-1 text-xl font-bold text-foreground">
-        {{ formatUtils.formatCurrency(summary().totalRevenue) }}
+        {{ summary().totalRevenue | displayCurrency }}
       </p>
       <p class="mt-2 text-xs text-muted-foreground">Total team contribution</p>
     </article>
@@ -64,7 +64,7 @@
           </h2>
           <p class="mt-1 text-xs text-muted-foreground">
             {{ roleLabel(topPerformer()!.type) }} ·
-            {{ formatUtils.formatCurrency(topPerformer()!.revenueCollected) }}
+            {{ topPerformer()!.revenueCollected | displayCurrency }}
           </p>
         </div>
         <p-tag
@@ -177,7 +177,7 @@
                     {{ record.completedOrders }}
                   </td>
                   <td class="px-4 py-3 text-right text-xs text-foreground">
-                    {{ formatUtils.formatCurrency(record.revenueCollected) }}
+                    {{ record.revenueCollected | displayCurrency }}
                   </td>
                   <td
                     class="px-4 py-3 text-right text-xs text-muted-foreground"
@@ -233,7 +233,7 @@
                 <p class="text-muted-foreground">
                   Revenue:
                   <span class="font-semibold text-foreground">{{
-                    formatUtils.formatCurrency(record.revenueCollected)
+                    (record.revenueCollected | displayCurrency)
                   }}</span>
                 </p>
                 <p class="text-muted-foreground">
@@ -282,7 +282,7 @@
                 <p class="text-muted-foreground">
                   Revenue:
                   <span class="font-semibold text-foreground">{{
-                    formatUtils.formatCurrency(role.totalRevenue)
+                    (role.totalRevenue | displayCurrency)
                   }}</span>
                 </p>
                 <p class="text-muted-foreground">

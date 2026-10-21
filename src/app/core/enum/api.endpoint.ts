@@ -2,6 +2,7 @@ import { environment } from "src/environments/environment";
 
 export class ApiEndpoint {
   static readonly AUTH_LOGIN = `${environment.apiBaseUrl}/auth/login`;
+  static readonly AUTH_REFRESH = `${environment.apiBaseUrl}/auth/refresh`;
   static readonly AUTH_LOGOUT = `${environment.apiBaseUrl}/auth/logout`;
   static readonly BILLING = `${environment.apiBaseUrl}/v1/billing`;
   static readonly CASES = `${environment.apiBaseUrl}/v1/cases`;
@@ -15,6 +16,8 @@ export class ApiEndpoint {
   static readonly PATIENTS = `${environment.apiBaseUrl}/v1/patients`;
   static readonly REPORTS_OVERVIEW = `${environment.apiBaseUrl}/v1/reports/overview`;
   static readonly REPORTING_SEED = `${environment.apiBaseUrl}/v1/reports/seed`;
+  static readonly REPORTS_ORDERS_RANGE = `${environment.apiBaseUrl}/v1/reports/orders-range`;
+  static readonly REPORTS_TEAM_PERFORMANCE = `${environment.apiBaseUrl}/v1/reports/team-performance`;
   static readonly SCAN_CENTERS = `${environment.apiBaseUrl}/v1/scan-centers`;
 
   static orderSubOrders(orderId: string): string {

@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from "@angular/core";
+import { Component, computed, inject, OnInit, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { TableModule } from "primeng/table";
 import { CaseDataService } from "@core/services/case-data.service";
@@ -37,7 +37,7 @@ type ViewMode = "table" | "grid";
   templateUrl: "./cases.component.html",
   styleUrl: "./cases.component.scss",
 })
-export class CasesComponent {
+export class CasesComponent implements OnInit {
   private readonly caseService = inject(CaseDataService);
   private readonly orderService = inject(OrderDataService);
   private readonly documentService = inject(DocumentDataService);
@@ -60,6 +60,12 @@ export class CasesComponent {
   readonly statusFilter = signal<CaseStatus | "">("");
   readonly page = signal(1);
   readonly pageSize = 12;
+
+  ngOnInit(): void {
+    this.caseService.loadCases();
+    this.orderService.loadOrders();
+    this.documentService.loadDocuments();
+  }
 
   readonly filtered = computed(() => {
     let result = [...this.cases()];

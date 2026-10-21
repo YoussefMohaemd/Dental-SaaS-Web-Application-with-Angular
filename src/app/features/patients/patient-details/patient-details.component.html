@@ -20,7 +20,7 @@
             </h1>
             <p class="text-sm text-muted-foreground">
               {{ getGenderLabel(patient.gender) }} &middot; DOB:
-              {{ patient.dob }} &middot; {{ patientOrders().length }} orders
+              {{ patient.dob | displayDate }} &middot; {{ patientOrders().length }} orders
             </p>
             <div class="mt-1.5 flex items-center gap-3 text-xs">
               <button
@@ -265,7 +265,7 @@
                   <app-status-badge [status]="o.status" size="xs" />
                 </td>
                 <td class="px-4 py-3 text-xs font-mono font-semibold">
-                  {{ formatUtils.formatCurrency(o.amount) }}
+                  {{ o.amount | displayCurrency }}
                 </td>
                 <td class="px-4 py-3 text-xs text-muted-foreground">
                   {{ formatUtils.formatDate(o.dueDate) }}

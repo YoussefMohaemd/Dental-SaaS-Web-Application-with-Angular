@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from "@angular/core";
+import { Component, computed, inject, OnInit, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { ActivatedRoute } from "@angular/router";
 import { OrderDataService } from "@core/services/order-data.service";
@@ -96,10 +96,14 @@ const MAX_FILE_BYTES = 100 * 1024 * 1024;
   templateUrl: "./order-files.component.html",
   styleUrl: "./order-files.component.scss",
 })
-export class OrderFilesComponent {
+export class OrderFilesComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly orderService = inject(OrderDataService);
   protected readonly navigationService = inject(NavigationService);
+
+  ngOnInit(): void {
+    this.orderService.loadOrders();
+  }
 
   readonly files = signal<OrderFileEntry[]>(INITIAL_FILES);
   readonly dragOver = signal(false);
@@ -186,7 +190,7 @@ export class OrderFilesComponent {
           uploadedBy: "You",
         };
       });
-    this.uploadMessage.set(rejected.length > 0 ? rejected.join(" Ã‚Â· ") : null);
+    this.uploadMessage.set(rejected.length > 0 ? rejected.join(" | ") : null);
     if (additions.length === 0) return;
     this.files.update((current) => [...additions, ...current]);
     for (const entry of additions) this.simulateUpload(entry.id);

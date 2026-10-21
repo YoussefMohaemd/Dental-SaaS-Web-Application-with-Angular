@@ -88,6 +88,9 @@ export class CaseDetailsComponent implements OnInit {
   private readonly caseId = signal("");
 
   ngOnInit(): void {
+    this.caseService.loadCases();
+    this.orderService.loadOrders();
+    this.documentService.loadDocuments();
     this.caseId.set(this.route.snapshot.paramMap.get("caseId") || "");
   }
 

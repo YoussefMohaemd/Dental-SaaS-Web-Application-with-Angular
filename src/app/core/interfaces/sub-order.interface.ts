@@ -194,6 +194,7 @@ export interface SubOrderJson {
   priority: SubOrder["priority"];
   dueDate: string;
   notes: string;
+  creationData?: SubOrderCreationData;
   forms?: SubOrderDetail["forms"];
   scans?: SubOrderDetail["scans"];
   activity?: SubOrderDetail["activity"];

@@ -1,6 +1,15 @@
 import { Injectable, inject, signal, computed } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import { catchError, forkJoin, map, of, switchMap, throwError } from "rxjs";
+import {
+  catchError,
+  forkJoin,
+  map,
+  Observable,
+  of,
+  switchMap,
+  tap,
+  throwError,
+} from "rxjs";
 import {
   SubOrder,
   SubOrderContextSnapshot,
@@ -43,30 +52,49 @@ function buildDetailFromSummary(
     | "formsTotal"
     | "scansComplete"
     | "scansTotal"
+    | "creationData"
   >,
 ): SubOrderDetail {
-  const forms: SubOrderDetail["forms"] = Array.from(
-    { length: row.formsTotal },
-    (_, index) => ({
+  const serviceFormEntries = Object.entries(row.creationData?.serviceForm ?? {});
+  const formEntries =
+    serviceFormEntries.length > 0
+      ? serviceFormEntries
+      : Array.from({ length: row.formsTotal }, (_, index) => [
+          `form-${index + 1}`,
+          "",
+        ] as const);
+  const forms: SubOrderDetail["forms"] = formEntries.map(
+    ([key, value], index) => ({
       id: `${row.id}-form-${index + 1}`,
-      label:
+      label: serviceFormEntries.length > 0 ? humanizeFieldName(key) : (
         row.formsTotal === 1
           ? `${row.service} Form`
-          : `${row.service} Form ${index + 1}`,
+          : `${row.service} Form ${index + 1}`
+      ),
       required: true,
-      status: index < row.formsComplete ? "complete" : "incomplete",
+      status:
+        (typeof value === "string" && value.trim().length > 0) ||
+        index < row.formsComplete
+          ? "complete"
+          : "incomplete",
     }),
   );
 
+  const scanRequirements = row.creationData?.scanRequirements ?? [];
+  const scanEntries =
+    scanRequirements.length > 0
+      ? scanRequirements
+      : Array.from({ length: row.scansTotal }, (_, index) =>
+          row.scansTotal === 1
+            ? `${row.service} Scan`
+            : `${row.service} Scan ${index + 1}`,
+        );
   const scans: SubOrderDetail["scans"] = Array.from(
-    { length: row.scansTotal },
+    { length: scanEntries.length },
     (_, index) => ({
       id: `${row.id}-scan-${index + 1}`,
-      label:
-        row.scansTotal === 1
-          ? `${row.service} Scan`
-          : `${row.service} Scan ${index + 1}`,
-      format: "Linked record",
+      label: scanEntries[index],
+      format: "Any file type",
       status: index < row.scansComplete ? "uploaded" : "missing",
     }),
   );
@@ -74,174 +102,18 @@ function buildDetailFromSummary(
   return { id: row.id, forms, scans, activity: [] };
 }
 
-const SUB_ORDER_DETAILS: Record<string, SubOrderDetail> = {
-  "so-1": {
-    id: "so-1",
-    forms: [
-      {
-        id: "f1",
-        label: "Implant System & Diameter",
-        required: true,
-        status: "complete",
-      },
-      {
-        id: "f2",
-        label: "Bone Quality Assessment",
-        required: true,
-        status: "complete",
-      },
-      {
-        id: "f3",
-        label: "Surgical Protocol Notes",
-        required: true,
-        status: "complete",
-      },
-    ],
-    scans: [
-      {
-        id: "s1",
-        label: "CBCT / CT Scan",
-        format: "DICOM",
-        status: "uploaded",
-      },
-      { id: "s2", label: "Full Arch STL", format: "STL", status: "uploaded" },
-      {
-        id: "s3",
-        label: "Supporting Reference Files",
-        format: "PDF / JPG",
-        status: "uploaded",
-      },
-    ],
-    activity: [
-      {
-        time: "2 hours ago",
-        user: "Jessica R.",
-        text: "Surgical guide approved and sent to fabrication.",
-      },
-      {
-        time: "1 day ago",
-        user: "Tom K.",
-        text: "CBCT scan uploaded and reviewed.",
-      },
-      {
-        time: "3 days ago",
-        user: "Jessica R.",
-        text: "Sub-order created from parent order.",
-      },
-    ],
-  },
-  "so-2": {
-    id: "so-2",
-    forms: [
-      {
-        id: "f1",
-        label: "Occlusal Concept Form",
-        required: true,
-        status: "complete",
-      },
-      {
-        id: "f2",
-        label: "VDO Change Documentation",
-        required: true,
-        status: "complete",
-      },
-      {
-        id: "f3",
-        label: "Clinical Notes & Photos",
-        required: true,
-        status: "incomplete",
-      },
-    ],
-    scans: [
-      { id: "s1", label: "Upper Arch Scan", format: "STL", status: "uploaded" },
-      { id: "s2", label: "Lower Arch Scan", format: "STL", status: "uploaded" },
-      { id: "s3", label: "Bite Scan", format: "STL", status: "missing" },
-    ],
-    activity: [
-      {
-        time: "30 min ago",
-        user: "Jessica R.",
-        text: "Bite scan still pending from clinic. Sent reminder to Dr. Kim.",
-      },
-      {
-        time: "2 days ago",
-        user: "Tom K.",
-        text: "Upper and lower arch scans uploaded successfully.",
-      },
-      {
-        time: "4 days ago",
-        user: "Jessica R.",
-        text: "GFMR sub-order created.",
-      },
-    ],
-  },
-  "so-3": {
-    id: "so-3",
-    forms: [
-      {
-        id: "f1",
-        label: "Shade & Material Selection",
-        required: true,
-        status: "incomplete",
-      },
-      {
-        id: "f2",
-        label: "Margin & Occlusion Specs",
-        required: true,
-        status: "incomplete",
-      },
-    ],
-    scans: [
-      { id: "s1", label: "Prep Scan", format: "STL", status: "missing" },
-      { id: "s2", label: "Antagonist Scan", format: "STL", status: "missing" },
-    ],
-    activity: [
-      {
-        time: "5 days ago",
-        user: "Jessica R.",
-        text: "Final Restoration sub-order created. Waiting for scans from clinic.",
-      },
-    ],
-  },
-  "so-4": {
-    id: "so-4",
-    forms: [
-      {
-        id: "f1",
-        label: "Patient History Summary",
-        required: true,
-        status: "complete",
-      },
-      {
-        id: "f2",
-        label: "Proposed Treatment Outline",
-        required: true,
-        status: "incomplete",
-      },
-    ],
-    scans: [
-      {
-        id: "s1",
-        label: "Diagnostic Model Scan",
-        format: "STL",
-        status: "missing",
-      },
-    ],
-    activity: [
-      {
-        time: "1 week ago",
-        user: "Jessica R.",
-        text: "Treatment Plan sub-order created.",
-      },
-    ],
-  },
-};
+function humanizeFieldName(fieldName: string): string {
+  return fieldName
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/[-_]+/g, " ")
+    .replace(/\b\w/g, (character) => character.toUpperCase());
+}
 
 const ICON_MAP: Record<string, string> = {
-  tooth: "ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸Ãƒâ€šÃ‚Â¦Ãƒâ€šÃ‚Â·",
-  settings: "ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã‚Â¡ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã‚Â¯Ãƒâ€šÃ‚Â¸Ãƒâ€šÃ‚Â",
-  sparkles: "ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“Ãƒâ€šÃ‚Â¨",
-  clipboard: "ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¹",
+  tooth: "🦷",
+  settings: "⚙️",
+  sparkles: "✨",
+  clipboard: "📋",
 };
 
 const DEFAULT_FORM_VALUES: SubOrderFormDraftValue = {
@@ -317,9 +189,7 @@ export class SubOrderDataService {
   private readonly URL = ApiEndpoint.ORDERS;
 
   private readonly _subOrders = signal<SubOrder[]>([]);
-  private readonly _details = signal<Record<string, SubOrderDetail>>(
-    structuredClone(SUB_ORDER_DETAILS),
-  );
+  private readonly _details = signal<Record<string, SubOrderDetail>>({});
   private readonly _loading = signal<boolean>(false);
   private readonly _error = signal<string | null>(null);
 
@@ -358,7 +228,7 @@ export class SubOrderDataService {
             (row) =>
               ({
                 ...row,
-                icon: ICON_MAP[row.icon] ?? row.icon ?? "Ã°Å¸Â¦Â·",
+                icon: ICON_MAP[row.icon] ?? row.icon ?? "🦷",
               }) as SubOrder,
           ),
         ),
@@ -404,6 +274,65 @@ export class SubOrderDataService {
     const subOrder = this.getById(subOrderId);
     if (!subOrder || subOrder.orderId !== orderId) return undefined;
     return this._details()[subOrderId];
+  }
+
+  createForOrder$(
+    orderId: string,
+    rows: CreateSubOrderInput[],
+  ): Observable<SubOrder[]> {
+    return this.http
+      .post<{ data: SubOrderJson[] }>(
+        ApiEndpoint.orderSubOrders(orderId),
+        rows.map((row) => this.toApiSubOrderPayload(row)),
+      )
+      .pipe(
+        map((response) => response.data ?? []),
+        map((created) => created.map((row) => this.toSubOrder(row))),
+        tap((created) => {
+          this._subOrders.update((current) => [...created, ...current]);
+          this._details.update((current) => {
+            const next = { ...current };
+            created.forEach((row) => {
+              next[row.id] = buildDetailFromSummary(row);
+            });
+            return next;
+          });
+        }),
+      );
+  }
+
+  replaceForOrder$(
+    orderId: string,
+    rows: CreateSubOrderInput[],
+  ): Observable<SubOrder[]> {
+    return this.http
+      .put<{ data: SubOrderJson[] }>(
+        ApiEndpoint.orderSubOrders(orderId),
+        rows.map((row) => this.toApiSubOrderPayload(row)),
+      )
+      .pipe(
+        map((response) => response.data ?? []),
+        map((replaced) => replaced.map((row) => this.toSubOrder(row))),
+        tap((replaced) => {
+          const replacedIds = new Set(
+            this._subOrders()
+              .filter((row) => row.orderId === orderId)
+              .map((row) => row.id),
+          );
+          this._subOrders.update((current) => [
+            ...replaced,
+            ...current.filter((row) => !replacedIds.has(row.id)),
+          ]);
+          this._details.update((current) => {
+            const next = { ...current };
+            replacedIds.forEach((id) => delete next[id]);
+            replaced.forEach((row) => {
+              next[row.id] = buildDetailFromSummary(row);
+            });
+            return next;
+          });
+        }),
+      );
   }
 
   createForOrder(orderId: string, rows: CreateSubOrderInput[]): SubOrder[] {
@@ -482,6 +411,26 @@ export class SubOrderDataService {
     }
 
     return this.createForOrder(orderId, rows);
+  }
+
+  private toApiSubOrderPayload(row: CreateSubOrderInput): Record<string, unknown> {
+    return {
+      service: row.service,
+      icon: row.icon,
+      priority: row.priority,
+      dueDate: row.dueDate,
+      notes: row.notes,
+      teeth: row.teeth,
+      scansTotal: row.scanRequirements.length,
+      creationData: row.creationData,
+    };
+  }
+
+  private toSubOrder(row: SubOrderJson): SubOrder {
+    return {
+      ...row,
+      icon: ICON_MAP[row.icon] ?? row.icon,
+    } as SubOrder;
   }
 
   saveFormItem(

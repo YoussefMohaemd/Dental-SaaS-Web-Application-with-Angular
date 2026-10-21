@@ -1,5 +1,5 @@
 import { CommonModule } from "@angular/common";
-import { Component, computed, inject, signal } from "@angular/core";
+import { Component, computed, inject, OnInit, signal } from "@angular/core";
 import { OrderArchiveRecord } from "@core/interfaces";
 import {
   MonthlyOrderGroup,
@@ -13,6 +13,8 @@ import { DataTableToolbarComponent } from "@shared/components/data-table-toolbar
 import { EnterprisePaginatorComponent } from "@shared/components/enterprise-paginator/enterprise-paginator.component";
 import { AppTextFieldComponent } from "@shared/components/input/input.component";
 import { TableFeedbackComponent } from "@shared/components/table-feedback/table-feedback.component";
+import { DisplayDatePipe } from "@shared/pipes/display-date.pipe";
+import { DisplayCurrencyPipe } from "@shared/pipes/display-currency.pipe";
 import { paginateTableRows, tableTotalPages } from "@shared/utils/table-state";
 import { TagModule } from "primeng/tag";
 
@@ -26,15 +28,21 @@ import { TagModule } from "primeng/tag";
     AppButtonComponent,
     EnterprisePaginatorComponent,
     TableFeedbackComponent,
+    DisplayDatePipe,
+    DisplayCurrencyPipe,
     TagModule,
   ],
   templateUrl: "./orders-range-report.component.html",
   styleUrl: "./orders-range-report.component.scss",
 })
-export class OrdersRangeReportComponent {
+export class OrdersRangeReportComponent implements OnInit {
   private readonly reportingData = inject(ReportingDataService);
   private readonly navigationService = inject(NavigationService);
   protected readonly formatUtils = inject(FormatUtils);
+
+  ngOnInit(): void {
+    this.reportingData.loadOrderArchive();
+  }
 
   readonly loading = this.reportingData.loading;
   readonly sourceOrders = this.reportingData.orderArchive;

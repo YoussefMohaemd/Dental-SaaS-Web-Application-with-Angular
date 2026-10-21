@@ -3,6 +3,7 @@ import {
   Component,
   computed,
   inject,
+  OnInit,
   signal,
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
@@ -37,10 +38,14 @@ export function workflowStatusFromDropListId(
   templateUrl: "./workflow-board.component.html",
   styleUrl: "./workflow-board.component.scss",
 })
-export class WorkflowBoardComponent {
+export class WorkflowBoardComponent implements OnInit {
   private readonly orderService = inject(OrderDataService);
   protected readonly navigationService = inject(NavigationService);
   protected readonly formatUtils = inject(FormatUtils);
+
+  ngOnInit(): void {
+    this.orderService.loadOrders();
+  }
 
   readonly orders = this.orderService.orders;
 
@@ -132,7 +137,9 @@ export class WorkflowBoardComponent {
     );
 
     if (movedOrder && newStatus && movedOrder.status !== newStatus) {
-      this.orderService.updateOrder(movedOrder.id, { status: newStatus });
+      this.orderService.updateOrder$(movedOrder.id, { status: newStatus }).subscribe({
+        error: (error) => console.error("Failed to update order status:", error),
+      });
     }
 
     this.dragId.set(null);

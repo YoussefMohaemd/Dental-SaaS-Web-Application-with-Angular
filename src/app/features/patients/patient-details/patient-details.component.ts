@@ -1,6 +1,7 @@
 import {
   Component,
   computed,
+  effect,
   HostListener,
   inject,
   signal,
@@ -26,6 +27,8 @@ import { AvatarComponent } from "@shared/components/avatar/avatar.component";
 import { IconActionButtonComponent } from "@shared/components/icon-action-button/icon-action-button.component";
 import { PriorityBadgeComponent } from "@shared/components/priority-badge/priority-badge.component";
 import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
+import { DisplayDatePipe } from "@shared/pipes/display-date.pipe";
+import { DisplayCurrencyPipe } from "@shared/pipes/display-currency.pipe";
 import { TableModule } from "primeng/table";
 
 type PatientTab = "Overview" | "Orders" | "Cases" | "Documents" | "Activity";
@@ -41,6 +44,8 @@ type PatientTab = "Overview" | "Orders" | "Cases" | "Documents" | "Activity";
     IconActionButtonComponent,
     PriorityBadgeComponent,
     SafeHtmlPipe,
+    DisplayDatePipe,
+    DisplayCurrencyPipe,
     TableModule,
   ],
   templateUrl: "./patient-details.component.html",
@@ -136,25 +141,30 @@ export class PatientDetailsComponent implements OnInit {
       : false,
   );
 
-  private patientId = "";
+  private readonly patientId = signal("");
+
+  private readonly syncPatient = effect(() => {
+    const patientId = this.patientId();
+    const patient = this.patientService.getPatientById(patientId);
+    if (!patient) {
+      return;
+    }
+
+    this.patient.set(patient);
+    this.contactItems.set([
+      { icon: "mail", label: "Email", value: patient.email },
+      { icon: "phone", label: "Phone", value: patient.phone },
+      { icon: "building-2", label: "Clinic", value: patient.clinicName },
+      { icon: "user", label: "Doctor", value: patient.doctorName },
+    ]);
+  });
 
   ngOnInit(): void {
-    this.patientId = this.route.snapshot.paramMap.get("patientId") || "";
-    this.loadPatient();
-  }
-
-  private loadPatient(): void {
-    const patient = this.patientService.getPatientById(this.patientId);
-    if (patient) {
-      this.patient.set(patient);
-
-      this.contactItems.set([
-        { icon: "mail", label: "Email", value: patient.email },
-        { icon: "phone", label: "Phone", value: patient.phone },
-        { icon: "building-2", label: "Clinic", value: patient.clinicName },
-        { icon: "user", label: "Doctor", value: patient.doctorName },
-      ]);
-    }
+    this.patientService.loadPatients();
+    this.orderService.loadOrders();
+    this.caseService.loadCases();
+    this.documentService.loadDocuments();
+    this.patientId.set(this.route.snapshot.paramMap.get("patientId") || "");
   }
 
   private normalize(value: string | null | undefined): string {

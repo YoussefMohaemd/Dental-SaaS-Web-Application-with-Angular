@@ -43,23 +43,38 @@
           {{ stages[currentIndex()].description }}
         </p>
         <div class="mt-3">
+          @if (workflowError(); as error) {
+            <p class="mb-2 text-sm text-danger">{{ error }}</p>
+          }
           @if (nextStage(); as next) {
-            <app-button
-              variant="primary"
-              size="sm"
-              [disabled]="advancing()"
-              (onClick)="advanceStage()"
-            >
-              <span class="flex items-center gap-1.5">
-                {{ advancing() ? "Moving..." : "Move to " + next.label }}
-                @if (!advancing()) {
-                  <span
-                    [innerHTML]="getIconSvg('chevron-right') | safeHtml"
-                    aria-hidden="true"
-                  ></span>
-                }
-              </span>
-            </app-button>
+            <div class="flex flex-wrap items-center gap-2">
+              @if (previousStage(); as previous) {
+                <app-button
+                  variant="outline"
+                  size="sm"
+                  [disabled]="advancing()"
+                  (onClick)="retreatStage()"
+                >
+                  Back to {{ previous.label }}
+                </app-button>
+              }
+              <app-button
+                variant="primary"
+                size="sm"
+                [disabled]="advancing()"
+                (onClick)="advanceStage()"
+              >
+                <span class="flex items-center gap-1.5">
+                  {{ advancing() ? "Moving..." : "Move to " + next.label }}
+                  @if (!advancing()) {
+                    <span
+                      [innerHTML]="getIconSvg('chevron-right') | safeHtml"
+                      aria-hidden="true"
+                    ></span>
+                  }
+                </span>
+              </app-button>
+            </div>
           } @else {
             <p class="text-sm font-semibold text-success">
               Workflow complete — order delivered.

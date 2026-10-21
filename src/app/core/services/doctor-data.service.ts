@@ -1,7 +1,7 @@
 import { Injectable, signal, computed, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import { catchError, map, throwError } from "rxjs";
-import { Doctor } from "../interfaces";
+import { catchError, map, Observable, tap, throwError } from "rxjs";
+import { ApiDoctorItem, Doctor } from "../interfaces";
 import { ApiEndpoint } from "@core/enum/api.endpoint";
 import { DoctorApi } from "@core/base/doctor.api";
 import { DoctorAdapter } from "@core/adapters/doctor.adapter";
@@ -55,10 +55,23 @@ export class DoctorDataService extends DoctorApi {
 
   getAllDoctors() {
     return this.http
-      .get<{ data: Doctor[] }>(this.API_URL)
+      .get<{ data: ApiDoctorItem[] }>(this.API_URL)
       .pipe(
         map((response) => response.data ?? []),
         map((rows) => this.doctorAdapter.DoctorAdapter(rows)),
+      );
+  }
+
+  createDoctor$(
+    payload: Omit<Doctor, "id" | "clinicName" | "ordersCount" | "avatar"> & {
+      avatar?: string;
+    },
+  ): Observable<Doctor> {
+    return this.http
+      .post<{ data: ApiDoctorItem }>(this.API_URL, payload)
+      .pipe(
+        map((response) => this.doctorAdapter.DoctorAdapter([response.data])[0]),
+        tap((created) => this._doctors.update((current) => [created, ...current])),
       );
   }
 

@@ -1,6 +1,8 @@
 import { Injectable, computed, inject, signal } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import { catchError, throwError } from "rxjs";
+import { catchError, map, throwError } from "rxjs";
+import type { OrdersRangeReportApi } from "@core/base/orders-range-report.api";
+import type { TeamPerformanceReportApi } from "@core/base/team-performance-report.api";
 import {
   MonthlyServiceMetric,
   OrderArchiveRecord,
@@ -11,94 +13,172 @@ import {
   TeamPerformanceRecord,
 } from "../interfaces";
 import { ApiEndpoint } from "@core/enum/api.endpoint";
+import { OrdersRangeReportAdapter } from "@core/adapters/orders-range-report.adapter";
+import { TeamPerformanceReportAdapter } from "@core/adapters/team-performance-report.adapter";
 
-const MONTH_NAMES = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
+const EMPTY_SEED: ReportingSeedData = {
+  startYear: 0,
+  endYear: 0,
+  services: [],
+  scanCenters: [],
+  doctors: [],
+  patientsFirstNames: [],
+  patientsLastNames: [],
+  operators: [],
+  employeeTypes: [],
+  employeeNames: [],
+};
 
 @Injectable({ providedIn: "root" })
-export class ReportingDataService {
+export class ReportingDataService
+  implements OrdersRangeReportApi, TeamPerformanceReportApi
+{
   private readonly http = inject(HttpClient);
-  private readonly API_URL = ApiEndpoint.REPORTING_SEED;
-  private readonly EMPTY_SEED: ReportingSeedData = {
-    startYear: new Date().getUTCFullYear(),
-    endYear: new Date().getUTCFullYear(),
-    services: [],
-    scanCenters: [],
-    doctors: [],
-    patientsFirstNames: [],
-    patientsLastNames: [],
-    operators: [],
-    employeeTypes: [],
-    employeeNames: [],
-  };
+  private readonly ordersRangeAdapter = inject(OrdersRangeReportAdapter);
+  private readonly teamPerformanceAdapter = inject(TeamPerformanceReportAdapter);
 
-  private readonly _seed = signal<ReportingSeedData>(this.EMPTY_SEED);
-  private readonly _loading = signal<boolean>(false);
+  private readonly _seed = signal<ReportingSeedData>(EMPTY_SEED);
+  private readonly _orderArchive = signal<OrderArchiveRecord[]>([]);
+  private readonly _teamPerformance = signal<TeamPerformanceRecord[]>([]);
+  private readonly _loading = signal(false);
   private readonly _error = signal<string | null>(null);
 
   readonly loading = this._loading.asReadonly();
   readonly error = this._error.asReadonly();
   readonly seed = this._seed.asReadonly();
+  readonly orderArchive = this._orderArchive.asReadonly();
+  readonly teamPerformance = this._teamPerformance.asReadonly();
 
-  readonly orderArchive = computed(() =>
-    this.generateOrderArchiveRecords(this.seed()),
-  );
+  readonly monthlyServiceMetrics = computed(() => {
+    const metrics = new Map<string, MonthlyServiceMetric>();
+    for (const order of this.orderArchive()) {
+      const date = new Date(order.receivedAt);
+      if (Number.isNaN(date.getTime())) continue;
 
-  readonly monthlyServiceMetrics = computed(() =>
-    this.generateMonthlyServiceMetrics(this.seed()),
-  );
+      const serviceKey = toServiceKey(order.serviceName);
+      const key = `${date.getUTCFullYear()}-${date.getUTCMonth()}-${serviceKey}`;
+      const current = metrics.get(key);
+      if (current) {
+        current.ordersCount += 1;
+        current.totalRevenue += order.amount;
+        continue;
+      }
 
-  readonly teamPerformance = computed(() =>
-    this.generateTeamPerformanceRows(this.seed()),
-  );
-
-  readonly availableYears = computed(() => {
-    const { startYear, endYear } = this.activeYearRange(this.seed());
-    const years: number[] = [];
-    for (let year = endYear; year >= startYear; year -= 1) {
-      years.push(year);
+      metrics.set(key, {
+        year: date.getUTCFullYear(),
+        month: date.getUTCMonth() + 1,
+        serviceKey,
+        serviceName: order.serviceName,
+        ordersCount: 1,
+        totalRevenue: order.amount,
+      });
     }
-    return years;
+    return [...metrics.values()];
   });
 
-  constructor() {
-  }
+  readonly availableYears = computed(() => {
+    const years = new Set(
+      this.orderArchive()
+        .map((order) => new Date(order.receivedAt).getUTCFullYear())
+        .filter((year) => Number.isFinite(year) && year > 0),
+    );
+    return [...years].sort((left, right) => right - left);
+  });
 
   loadSeedData(): void {
     this._loading.set(true);
     this._error.set(null);
 
     this.http
-      .get<ReportingSeedData>(this.API_URL)
+      .get<{ data: ReportingSeedData }>(ApiEndpoint.REPORTING_SEED)
+      .pipe(map((response) => response.data ?? EMPTY_SEED))
       .pipe(
-        catchError((err) => {
+        catchError((error) => {
           this._error.set("Failed to load reporting seed data");
-          console.error("Error loading reporting seed data:", err);
-          return throwError(() => err);
+          console.error("Error loading reporting seed data:", error);
+          return throwError(() => error);
         }),
       )
       .subscribe({
-        next: (seedData: ReportingSeedData) => {
-          this._seed.set(seedData);
+        next: (seed) => {
+          this._seed.set(seed);
           this._loading.set(false);
         },
         error: () => {
-          this._seed.set(this.EMPTY_SEED);
+          this._seed.set(EMPTY_SEED);
           this._loading.set(false);
         },
       });
+  }
+
+  loadOrderArchive(): void {
+    this._loading.set(true);
+    this._error.set(null);
+
+    this.getOrdersRangeReport()
+      .pipe(
+        catchError((error) => {
+          this._error.set("Failed to load order archive");
+          console.error("Error loading order archive:", error);
+          return throwError(() => error);
+        }),
+      )
+      .subscribe({
+        next: (orders) => {
+          this._orderArchive.set(orders);
+          this._loading.set(false);
+        },
+        error: () => {
+          this._orderArchive.set([]);
+          this._loading.set(false);
+        },
+      });
+  }
+
+  loadTeamPerformance(): void {
+    this._loading.set(true);
+    this._error.set(null);
+
+    this.getTeamPerformanceReport()
+      .pipe(
+        catchError((error) => {
+          this._error.set("Failed to load team performance");
+          console.error("Error loading team performance:", error);
+          return throwError(() => error);
+        }),
+      )
+      .subscribe({
+        next: (records) => {
+          this._teamPerformance.set(records);
+          this._loading.set(false);
+        },
+        error: () => {
+          this._teamPerformance.set([]);
+          this._loading.set(false);
+        },
+      });
+  }
+
+  getOrdersRangeReport() {
+    return this.http
+      .get<{ data: OrderArchiveRecord[] }>(
+        `${ApiEndpoint.REPORTS_ORDERS_RANGE}?page=1&pageSize=100`,
+      )
+      .pipe(
+        map((response) => this.ordersRangeAdapter.adapt(response.data ?? [])),
+      );
+  }
+
+  getTeamPerformanceReport() {
+    return this.http
+      .get<{ data: TeamPerformanceRecord[] }>(
+        ApiEndpoint.REPORTS_TEAM_PERFORMANCE,
+      )
+      .pipe(
+        map((response) =>
+          this.teamPerformanceAdapter.adapt(response.data ?? []),
+        ),
+      );
   }
 
   getQuarterReports(year: number): QuarterReportDetail[] {
@@ -120,34 +200,23 @@ export class ReportingDataService {
     year: number,
     quarter: number,
   ): QuarterReportDetail | null {
-    if (quarter < 1 || quarter > 4) return null;
-
-    const quarterMonths = this.getMonthsForQuarter(quarter);
-    const yearMetrics = this.monthlyServiceMetrics().filter(
-      (metric) => metric.year === year && quarterMonths.includes(metric.month),
+    const monthsInQuarter = this.getMonthsForQuarter(quarter);
+    const metrics = this.monthlyServiceMetrics().filter(
+      (metric) => metric.year === year && monthsInQuarter.includes(metric.month),
     );
-    if (yearMetrics.length === 0) return null;
+    if (metrics.length === 0) return null;
 
-    const months = quarterMonths
-      .map((month) => this.buildMonthDetail(year, month, yearMetrics))
+    const months = monthsInQuarter
+      .map((month) => this.buildMonthDetail(year, month, metrics))
       .filter((month): month is QuarterMonthDetail => month !== null);
-
-    const services = this.aggregateServiceMetrics(yearMetrics);
-    const ordersCount = services.reduce(
-      (sum, item) => sum + item.ordersCount,
-      0,
-    );
-    const totalRevenue = services.reduce(
-      (sum, item) => sum + item.totalRevenue,
-      0,
-    );
+    const services = this.aggregateServiceMetrics(metrics);
 
     return {
       year,
       quarter,
       quarterLabel: `Q${quarter}`,
-      ordersCount,
-      totalRevenue,
+      ordersCount: services.reduce((sum, item) => sum + item.ordersCount, 0),
+      totalRevenue: services.reduce((sum, item) => sum + item.totalRevenue, 0),
       services,
       months,
     };
@@ -156,28 +225,22 @@ export class ReportingDataService {
   private buildMonthDetail(
     year: number,
     month: number,
-    scopedMetrics: MonthlyServiceMetric[],
+    metrics: MonthlyServiceMetric[],
   ): QuarterMonthDetail | null {
-    const monthMetrics = scopedMetrics.filter(
+    const monthMetrics = metrics.filter(
       (metric) => metric.year === year && metric.month === month,
     );
     if (monthMetrics.length === 0) return null;
 
     const services = this.aggregateServiceMetrics(monthMetrics);
-    const ordersCount = services.reduce(
-      (sum, item) => sum + item.ordersCount,
-      0,
-    );
-    const totalRevenue = services.reduce(
-      (sum, item) => sum + item.totalRevenue,
-      0,
-    );
-
     return {
       month,
-      monthLabel: MONTH_NAMES[month - 1] ?? "Unknown",
-      ordersCount,
-      totalRevenue,
+      monthLabel: new Date(Date.UTC(year, month - 1, 1)).toLocaleString(
+        "en-US",
+        { month: "long", timeZone: "UTC" },
+      ),
+      ordersCount: services.reduce((sum, item) => sum + item.ordersCount, 0),
+      totalRevenue: services.reduce((sum, item) => sum + item.totalRevenue, 0),
       services,
     };
   }
@@ -185,18 +248,17 @@ export class ReportingDataService {
   private aggregateServiceMetrics(
     metrics: MonthlyServiceMetric[],
   ): ServiceQuarterMetric[] {
-    const totalsByService = new Map<
+    const totals = new Map<
       string,
       { serviceName: string; ordersCount: number; totalRevenue: number }
     >();
-
     for (const metric of metrics) {
-      const current = totalsByService.get(metric.serviceKey);
+      const current = totals.get(metric.serviceKey);
       if (current) {
         current.ordersCount += metric.ordersCount;
         current.totalRevenue += metric.totalRevenue;
       } else {
-        totalsByService.set(metric.serviceKey, {
+        totals.set(metric.serviceKey, {
           serviceName: metric.serviceName,
           ordersCount: metric.ordersCount,
           totalRevenue: metric.totalRevenue,
@@ -204,208 +266,30 @@ export class ReportingDataService {
       }
     }
 
-    return this.seed().services.map((service) => {
-      const total = totalsByService.get(service.key);
-      const ordersCount = total?.ordersCount ?? 0;
-      const totalRevenue = total?.totalRevenue ?? 0;
-      return {
-        serviceKey: service.key,
-        serviceName: service.label,
-        ordersCount,
-        totalRevenue,
+    return [...totals.entries()]
+      .map(([serviceKey, total]) => ({
+        serviceKey,
+        serviceName: total.serviceName,
+        ordersCount: total.ordersCount,
+        totalRevenue: total.totalRevenue,
         averageUnitPrice:
-          ordersCount === 0 ? 0 : Math.round(totalRevenue / ordersCount),
-      };
-    });
-  }
-
-  private generateOrderArchiveRecords(
-    seed: ReportingSeedData,
-  ): OrderArchiveRecord[] {
-    if (
-      seed.services.length === 0 ||
-      seed.scanCenters.length === 0 ||
-      seed.doctors.length === 0 ||
-      seed.patientsFirstNames.length === 0 ||
-      seed.patientsLastNames.length === 0 ||
-      seed.operators.length === 0
-    ) {
-      return [];
-    }
-
-    const records: OrderArchiveRecord[] = [];
-    let sequence = 1;
-    const now = new Date();
-    const { startYear, endYear } = this.activeYearRange(seed);
-    const currentMonth = now.getUTCMonth() + 1;
-    const currentDay = Math.max(1, now.getUTCDate());
-
-    for (let year = startYear; year <= endYear; year += 1) {
-      const maxMonth = year === endYear ? currentMonth : 12;
-      for (let month = 1; month <= maxMonth; month += 1) {
-        const ordersInMonth = 24 + ((year + month) % 15);
-        const maxDayInMonth =
-          year === endYear && month === currentMonth ? currentDay : 28;
-        for (let index = 0; index < ordersInMonth; index += 1) {
-          const service =
-            seed.services[(month * 3 + index + year) % seed.services.length];
-          const unitCount = 1 + ((year + month + index) % 4);
-          const day = Math.max(
-            1,
-            Math.min(
-              maxDayInMonth,
-              1 + ((index * 2 + year + month) % maxDayInMonth),
-            ),
-          );
-          const receivedDate = new Date(
-            Date.UTC(year, month - 1, day, 8 + (index % 5), 15, 0),
-          );
-          const sentDate = new Date(receivedDate);
-          sentDate.setUTCDate(
-            sentDate.getUTCDate() + 1 + ((index + month) % 4),
-          );
-          if (sentDate.getTime() > now.getTime()) {
-            sentDate.setTime(now.getTime());
-          }
-          const chargedDate = new Date(sentDate);
-          chargedDate.setUTCHours(chargedDate.getUTCHours() + 3);
-          if (chargedDate.getTime() > now.getTime()) {
-            chargedDate.setTime(now.getTime());
-          }
-
-          let maxillary = (month + index) % 2 === 0;
-          const mandibular = (month + index + year) % 3 === 0;
-          if (!maxillary && !mandibular) {
-            maxillary = true;
-          }
-
-          const pricePerUnit =
-            service.basePrice * 12 + ((month + year + index) % 5) * 7;
-          const amount = pricePerUnit * unitCount;
-          const shouldBeCharged = (index + month + year) % 5 !== 0;
-          const doctorName =
-            seed.doctors[sequence % seed.doctors.length] ?? "N/A";
-          const firstName =
-            seed.patientsFirstNames[
-              sequence % seed.patientsFirstNames.length
-            ] ?? "Patient";
-          const lastName =
-            seed.patientsLastNames[
-              (sequence + month) % seed.patientsLastNames.length
-            ] ?? "Name";
-
-          records.push({
-            id: `archive-${sequence}`,
-            orderId: `DL-${String(year).slice(2)}${String(month).padStart(2, "0")}${String(sequence).padStart(4, "0")}`,
-            scanCenter:
-              seed.scanCenters[(sequence + index) % seed.scanCenters.length] ??
-              "Scan Center",
-            doctorName,
-            patientName: `${firstName} ${lastName}`,
-            serviceName: service.label,
-            maxillary,
-            mandibular,
-            amount,
-            vouchers: (sequence + month) % 3,
-            receivedAt: receivedDate.toISOString(),
-            sentAt: sentDate.toISOString(),
-            operator:
-              seed.operators[(sequence + year) % seed.operators.length] ??
-              "operator",
-            archiveDate: sentDate.toISOString().slice(0, 10),
-            chargedAt: shouldBeCharged ? chargedDate.toISOString() : null,
-          });
-
-          sequence += 1;
-        }
-      }
-    }
-
-    return records.sort(
-      (left, right) =>
-        new Date(right.receivedAt).getTime() -
-        new Date(left.receivedAt).getTime(),
-    );
-  }
-
-  private generateMonthlyServiceMetrics(
-    seed: ReportingSeedData,
-  ): MonthlyServiceMetric[] {
-    const metrics: MonthlyServiceMetric[] = [];
-    const { startYear, endYear } = this.activeYearRange(seed);
-    const yearSpan = endYear - startYear + 1;
-    const currentMonth = new Date().getUTCMonth() + 1;
-
-    for (let year = startYear; year <= endYear; year += 1) {
-      const yearOffset = year - startYear;
-      const maxMonth = year === endYear ? currentMonth : 12;
-      for (let month = 1; month <= maxMonth; month += 1) {
-        for (
-          let serviceIndex = 0;
-          serviceIndex < seed.services.length;
-          serviceIndex += 1
-        ) {
-          const service = seed.services[serviceIndex];
-          const baseline =
-            42 + ((month * 7 + serviceIndex * 9 + yearOffset * 13) % 75);
-          const quarterBoost = Math.ceil(month / 3) * 4;
-          const growthBoost = Math.floor((yearOffset / yearSpan) * 9);
-          const ordersCount = baseline + quarterBoost + growthBoost;
-          const averagePrice =
-            service.basePrice + ((month + serviceIndex + yearOffset) % 7);
-          const totalRevenue = ordersCount * averagePrice;
-
-          metrics.push({
-            year,
-            month,
-            serviceKey: service.key,
-            serviceName: service.label,
-            ordersCount,
-            totalRevenue,
-          });
-        }
-      }
-    }
-
-    return metrics;
-  }
-
-  private generateTeamPerformanceRows(
-    seed: ReportingSeedData,
-  ): TeamPerformanceRecord[] {
-    return seed.employeeNames.map((name, index) => {
-      const completedOrders = 70 + ((index * 13) % 210);
-      const revenueCollected = completedOrders * (38 + ((index + 3) % 11) * 4);
-      const avgTurnaroundDays = Number(
-        (1.8 + ((index + 2) % 8) * 0.22).toFixed(1),
-      );
-      const onTimeRate = 80 + ((index * 3) % 19);
-      return {
-        userId: 120 + index,
-        type:
-          seed.employeeTypes[index % seed.employeeTypes.length] ?? "Planner",
-        fullName: name,
-        completedOrders,
-        revenueCollected,
-        avgTurnaroundDays,
-        onTimeRate,
-        status: index % 8 === 0 ? "On Leave" : "Active",
-      };
-    });
+          total.ordersCount === 0
+            ? 0
+            : Math.round(total.totalRevenue / total.ordersCount),
+      }))
+      .sort((left, right) => right.totalRevenue - left.totalRevenue);
   }
 
   private getMonthsForQuarter(quarter: number): number[] {
     const start = (quarter - 1) * 3 + 1;
     return [start, start + 1, start + 2];
   }
+}
 
-  private activeYearRange(seed: ReportingSeedData): {
-    startYear: number;
-    endYear: number;
-  } {
-    const currentYear = new Date().getUTCFullYear();
-    const endYear = Math.min(seed.endYear, currentYear);
-    const startYear = Math.min(seed.startYear, endYear);
-    return { startYear, endYear };
-  }
+function toServiceKey(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 }

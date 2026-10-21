@@ -17,9 +17,6 @@
             <p class="text-sm text-muted-foreground">
               {{ doctor.specialty }} &middot; {{ doctor.clinicName }}
             </p>
-            <p class="text-xs text-muted-foreground mt-1">
-              Doctor ID: {{ doctorLookupId() }}
-            </p>
           </div>
           <span
             class="px-2.5 py-1 rounded-full text-xs font-semibold"
@@ -136,7 +133,7 @@
                     { label: "Specialty", value: doctor.specialty },
                     {
                       label: "Joined",
-                      value: formatUtils.formatDate(doctor.joinedDate),
+                      value:                       (doctor.joinedDate | displayDate),
                     },
                     { label: "Status", value: doctor.status },
                   ];
@@ -185,9 +182,6 @@
             <h2 class="font-display font-semibold text-sm">
               All Orders ({{ doctorOrders().length }})
             </h2>
-            <span class="text-xs text-muted-foreground"
-              >Doctor ID: {{ doctorLookupId() }}</span
-            >
           </div>
           <p-table
             [value]="doctorOrders()"
@@ -235,10 +229,10 @@
                   <app-status-badge [status]="o.status" size="xs" />
                 </td>
                 <td class="px-4 py-3 text-xs font-mono font-semibold">
-                  {{ formatUtils.formatCurrency(o.amount) }}
+                  {{ o.amount | displayCurrency }}
                 </td>
                 <td class="px-4 py-3 text-xs text-muted-foreground">
-                  {{ formatUtils.formatDate(o.dueDate) }}
+                  {{ o.dueDate | displayDate }}
                 </td>
               </tr>
             </ng-template>
@@ -262,7 +256,7 @@
                   for {{ o.patientName }}
                 </p>
                 <p class="text-xs text-muted-foreground mt-0.5">
-                  {{ formatUtils.timeAgo(o.receivedAt) }}
+                  {{ o.receivedAt | displayDate: true }}
                 </p>
               </div>
             }

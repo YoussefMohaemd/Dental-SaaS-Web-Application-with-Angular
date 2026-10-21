@@ -1,7 +1,7 @@
 import { Injectable, signal, computed, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import { catchError, map, throwError } from "rxjs";
-import { Patient, PatientFilters } from "../interfaces";
+import { catchError, map, Observable, tap, throwError } from "rxjs";
+import { ApiPatientItem, Patient, PatientFilters } from "../interfaces";
 import { filterTableRows, sortTableRows } from "@shared/utils/table-state";
 import { ApiEndpoint } from "@core/enum/api.endpoint";
 import { PatientApi } from "@core/base/patient.api";
@@ -56,10 +56,21 @@ export class PatientDataService extends PatientApi {
 
   getAllPatients() {
     return this.http
-      .get<{ data: Patient[] }>(this.API_URL)
+      .get<{ data: ApiPatientItem[] }>(this.API_URL)
       .pipe(
         map((response) => response.data ?? []),
         map((rows) => this.patientAdapter.PatientAdapter(rows)),
+      );
+  }
+
+  createPatient$(
+    payload: Omit<Patient, "id" | "clinicName" | "doctorName" | "ordersCount">,
+  ): Observable<Patient> {
+    return this.http
+      .post<{ data: ApiPatientItem }>(this.API_URL, payload)
+      .pipe(
+        map((response) => this.patientAdapter.PatientAdapter([response.data])[0]),
+        tap((created) => this._patients.update((current) => [created, ...current])),
       );
   }
 

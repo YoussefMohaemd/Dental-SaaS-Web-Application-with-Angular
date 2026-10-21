@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from "@angular/core";
+import { Component, computed, inject, OnInit, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { ActivatedRoute } from "@angular/router";
 import { TableModule } from "primeng/table";
@@ -25,13 +25,19 @@ type ClinicTab = "overview" | "doctors" | "orders" | "activity";
   templateUrl: "./clinic-details.component.html",
   styleUrl: "./clinic-details.component.scss",
 })
-export class ClinicDetailsComponent {
+export class ClinicDetailsComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly clinicService = inject(ClinicDataService);
   private readonly doctorService = inject(DoctorDataService);
   private readonly orderService = inject(OrderDataService);
   protected readonly navigationService = inject(NavigationService);
   protected readonly formatUtils = inject(FormatUtils);
+
+  ngOnInit(): void {
+    this.clinicService.loadClinics();
+    this.doctorService.loadDoctors();
+    this.orderService.loadOrders();
+  }
 
   readonly activeTab = signal<ClinicTab>("overview");
   readonly tabs: { id: ClinicTab; label: string }[] = [

@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from "@angular/core";
+import { Component, computed, inject, OnInit, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { ActivatedRoute } from "@angular/router";
 import { OrderDataService } from "@core/services/order-data.service";
@@ -6,6 +6,7 @@ import { NavigationService } from "@core/services/navigation.service";
 import { FormatUtils } from "@core/services/format-utils.service";
 import { OrderStatus } from "@core/interfaces";
 import { WorkflowStage } from "@core/interfaces";
+import { finalize } from "rxjs";
 import { AppButtonComponent } from "@shared/components/button/button.component";
 import { IconActionButtonComponent } from "@shared/components/icon-action-button/icon-action-button.component";
 import { WorkflowTimelineComponent } from "@shared/components/workflow-timeline/workflow-timeline.component";
@@ -98,13 +99,18 @@ const STAGES: WorkflowStage[] = [
   templateUrl: "./order-workflow.component.html",
   styleUrl: "./order-workflow.component.scss",
 })
-export class OrderWorkflowComponent {
+export class OrderWorkflowComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly orderService = inject(OrderDataService);
   protected readonly navigationService = inject(NavigationService);
   protected readonly formatUtils = inject(FormatUtils);
 
+  ngOnInit(): void {
+    this.orderService.loadOrders();
+  }
+
   readonly advancing = signal(false);
+  readonly workflowError = signal<string | null>(null);
   readonly stages: WorkflowStage[] = STAGES;
 
   readonly order = computed(() => {
@@ -122,6 +128,10 @@ export class OrderWorkflowComponent {
   readonly nextStage = computed(() => {
     const idx = this.currentIndex();
     return idx < STAGES.length - 1 ? STAGES[idx + 1] : null;
+  });
+  readonly previousStage = computed(() => {
+    const idx = this.currentIndex();
+    return idx > 0 ? STAGES[idx - 1] : null;
   });
 
   readonly completedCount = computed(() => this.currentIndex() + 1);
@@ -141,15 +151,30 @@ export class OrderWorkflowComponent {
     return index === this.currentIndex();
   }
 
-  advanceStage(): void {
-    const next = this.nextStage();
+  moveStage(target: WorkflowStage | null): void {
     const current = this.order();
-    if (!next || !current || this.advancing()) return;
+    if (!target || !current || this.advancing()) return;
     this.advancing.set(true);
-    window.setTimeout(() => {
-      this.orderService.updateOrder(current.id, { status: next.status });
-      this.advancing.set(false);
-    }, 600);
+    this.workflowError.set(null);
+    this.orderService
+      .updateOrder$(current.id, { status: target.status })
+      .pipe(finalize(() => this.advancing.set(false)))
+      .subscribe({
+        error: (error) => {
+          console.error("Failed to advance order:", error);
+          this.workflowError.set(
+            error?.error?.message ?? "Unable to move the order to the next stage.",
+          );
+        },
+      });
+  }
+
+  advanceStage(): void {
+    this.moveStage(this.nextStage());
+  }
+
+  retreatStage(): void {
+    this.moveStage(this.previousStage());
   }
 
   getIconSvg(name: string): string {

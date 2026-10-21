@@ -4,6 +4,7 @@ import {
   effect,
   inject,
   OnDestroy,
+  OnInit,
   signal,
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
@@ -61,7 +62,7 @@ import {
   templateUrl: "./edit-order.component.html",
   styleUrl: "./edit-order.component.scss",
 })
-export class EditOrderComponent implements OnDestroy {
+export class EditOrderComponent implements OnDestroy, OnInit {
   private static readonly AUTOCOMPLETE_LIMIT = 6;
   private static readonly AUTOCOMPLETE_DEBOUNCE_MS = 120;
 
@@ -73,6 +74,14 @@ export class EditOrderComponent implements OnDestroy {
   private readonly clinicService = inject(ClinicDataService);
   private readonly subOrderService = inject(SubOrderDataService);
   protected readonly navigationService = inject(NavigationService);
+
+  ngOnInit(): void {
+    this.orderService.loadOrders();
+    this.patientService.loadPatients();
+    this.doctorService.loadDoctors();
+    this.clinicService.loadClinics();
+    this.subOrderService.load();
+  }
 
   readonly patients = this.patientService.patients;
   readonly doctors = this.doctorService.doctors;
@@ -404,16 +413,36 @@ export class EditOrderComponent implements OnDestroy {
       return;
     }
 
-    const matchedPatient = this.matchPatientByName(patientNameInput);
+    const patientInputChanged =
+      normalizeLookup(patientNameInput) !== normalizeLookup(current.patientName);
+    const matchedPatient =
+      this.matchPatientByName(patientNameInput) ??
+      (!patientInputChanged
+        ? { id: current.patientId, name: current.patientName }
+        : undefined);
     const doctorNameInput = raw.doctorName.trim();
-    const matchedDoctor = this.matchDoctorByName(doctorNameInput);
-    const selectedClinic = this.resolveClinicById(raw.clinicId);
-    const clinicName = selectedClinic?.name ?? "";
-    const clinicId = selectedClinic?.id ?? "";
-    const doctorName = matchedDoctor?.name || doctorNameInput;
-    const doctorId = matchedDoctor?.id || (doctorName ? this.syntheticEntityId("dr", doctorName) : "");
-    const patientName = matchedPatient?.name || patientNameInput;
-    const patientId = matchedPatient?.id || this.syntheticEntityId("pt", patientName);
+    const doctorInputChanged =
+      normalizeLookup(doctorNameInput) !== normalizeLookup(current.doctorName);
+    const matchedDoctor =
+      this.matchDoctorByName(doctorNameInput) ??
+      (!doctorInputChanged
+        ? { id: current.doctorId, name: current.doctorName }
+        : undefined);
+    const selectedClinic =
+      this.resolveClinicById(raw.clinicId) ??
+      (raw.clinicId === current.clinicId
+        ? { id: current.clinicId, name: current.clinicName }
+        : undefined);
+    if (!matchedPatient || !matchedDoctor || !selectedClinic) {
+      this.saveError.set("Select an existing patient, doctor, and clinic.");
+      return;
+    }
+    const clinicName = selectedClinic.name;
+    const clinicId = selectedClinic.id;
+    const doctorName = matchedDoctor.name;
+    const doctorId = matchedDoctor.id;
+    const patientName = matchedPatient.name;
+    const patientId = matchedPatient.id;
 
     const dueDate = raw.dueDate || current.dueDate || this.defaultDueDate();
     const selectedServices = this.selectedServices();
@@ -448,7 +477,7 @@ export class EditOrderComponent implements OnDestroy {
       };
     });
 
-    this.orderService.updateOrder(current.id, {
+    this.orderService.updateOrder$(current.id, {
       patientId,
       patientName,
       doctorId,
@@ -470,14 +499,27 @@ export class EditOrderComponent implements OnDestroy {
       creationData: {
         services: rows.map((row) => structuredClone(row.creationData)),
       },
+    }).subscribe({
+      next: () => {
+        this.subOrderService.replaceForOrder$(current.id, rows).subscribe({
+          next: () => {
+            this.saveError.set(null);
+            this.saved.set(true);
+            window.setTimeout(() => {
+              this.navigationService.navigate("viewOrder", { orderId: current.id });
+            }, 800);
+          },
+          error: (error) => {
+            console.error("Failed to save sub-orders:", error);
+            this.saveError.set("Failed to save sub-orders.");
+          },
+        });
+      },
+      error: (error) => {
+        console.error("Failed to update order:", error);
+        this.saveError.set("Failed to update order.");
+      },
     });
-
-    this.subOrderService.replaceForOrder(current.id, rows);
-    this.saveError.set(null);
-    this.saved.set(true);
-    window.setTimeout(() => {
-      this.navigationService.navigate("viewOrder", { orderId: current.id });
-    }, 800);
   }
 
   goBack(): void {
@@ -664,15 +706,6 @@ export class EditOrderComponent implements OnDestroy {
   private matchDoctorByName(name: string): Doctor | undefined {
     const needle = normalizeLookup(name);
     return this.doctors().find((doctor) => normalizeLookup(doctor.name) === needle);
-  }
-
-  private syntheticEntityId(prefix: string, value: string): string {
-    const slug = value
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/(^-|-$)/g, "");
-    return `${prefix}-manual-${slug || "entry"}-${Date.now().toString().slice(-6)}`;
   }
 
   private defaultDueDate(): string {

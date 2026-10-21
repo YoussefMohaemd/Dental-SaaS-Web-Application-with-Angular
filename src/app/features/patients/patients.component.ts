@@ -1,8 +1,10 @@
-import { Component, computed, inject, signal } from "@angular/core";
+import { Component, computed, inject, OnInit, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { TableModule } from "primeng/table";
 import { PatientDataService } from "@core/services/patient-data.service";
+import { ClinicDataService } from "@core/services/clinic-data.service";
+import { DoctorDataService } from "@core/services/doctor-data.service";
 import { OrderDataService } from "@core/services/order-data.service";
 import { NavigationService } from "@core/services/navigation.service";
 import { FormatUtils } from "@core/services/format-utils.service";
@@ -17,6 +19,7 @@ import { SearchFilterToolbarComponent } from "@shared/components/search-filter-t
 import { TableFeedbackComponent } from "@shared/components/table-feedback/table-feedback.component";
 import { StatusBadgeComponent } from "@shared/components/status-badge/status-badge.component";
 import { SafeHtmlPipe } from "../../shared/pipes/safe-html.pipe";
+import { DisplayDatePipe } from "@shared/pipes/display-date.pipe";
 import { filterTableRows } from "@shared/utils/table-state";
 import {
   buildSortAriaLabel,
@@ -47,12 +50,15 @@ import {
     TableFeedbackComponent,
     StatusBadgeComponent,
     SafeHtmlPipe,
+    DisplayDatePipe,
   ],
   templateUrl: "./patients.component.html",
   styleUrl: "./patients.component.scss",
 })
-export class PatientsComponent {
+export class PatientsComponent implements OnInit {
   private readonly patientService = inject(PatientDataService);
+  private readonly clinicService = inject(ClinicDataService);
+  private readonly doctorService = inject(DoctorDataService);
   private readonly orderService = inject(OrderDataService);
   protected readonly navigationService = inject(NavigationService);
   protected readonly formatUtils = inject(FormatUtils);
@@ -72,7 +78,14 @@ export class PatientsComponent {
   readonly newName = signal("");
   readonly newEmail = signal("");
   readonly newPhone = signal("");
-  readonly newClinic = signal("Bright Smile Dental");
+  readonly newClinic = signal("");
+
+  ngOnInit(): void {
+    this.patientService.loadPatients();
+    this.clinicService.loadClinics();
+    this.doctorService.loadDoctors();
+    this.orderService.loadOrders();
+  }
 
   readonly orderCountByPatientId = computed(() => {
     const countByPatientId = new Map<string, number>();
@@ -190,7 +203,7 @@ export class PatientsComponent {
     this.newName.set("");
     this.newEmail.set("");
     this.newPhone.set("");
-    this.newClinic.set("Bright Smile Dental");
+    this.newClinic.set(this.clinicService.clinics()[0]?.name ?? "");
     this.showAddDialog.set(true);
   }
 
@@ -199,23 +212,34 @@ export class PatientsComponent {
   }
 
   savePatient(): void {
-    const name = this.newName().trim() || "New Patient";
-    this.patientService.addPatient({
-      id: `pt-${Date.now()}`,
+    const name = this.newName().trim();
+    const email = this.newEmail().trim();
+    const phone = this.newPhone().trim();
+    const clinic = this.clinicService
+      .clinics()
+      .find((item) => item.name === this.newClinic());
+    const doctor = clinic
+      ? this.doctorService.doctors().find((item) => item.clinicId === clinic.id)
+      : undefined;
+    if (!name || !email || !phone || !clinic || !doctor) {
+      console.error("Patient requires a name, contact details, clinic, and doctor.");
+      return;
+    }
+
+    this.patientService.createPatient$({
       name,
-      dob: "1990-01-01",
+      dob: new Date().toISOString().slice(0, 10),
       gender: "F",
-      phone: this.newPhone().trim() || "+1 (555) 000-0000",
-      email: this.newEmail().trim() || "patient@email.com",
-      clinicId: "cl1",
-      clinicName: this.newClinic(),
-      doctorId: "dr1",
-      doctorName: "Dr. Allison Park",
+      phone,
+      email,
+      clinicId: clinic.id,
+      doctorId: doctor.id,
       status: "Active",
-      ordersCount: 0,
       lastVisit: new Date().toISOString().slice(0, 10),
+    }).subscribe({
+      next: () => this.showAddDialog.set(false),
+      error: (error) => console.error("Failed to create patient:", error),
     });
-    this.showAddDialog.set(false);
   }
 
   getIconSvg(name: string): string {

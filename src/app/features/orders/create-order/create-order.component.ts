@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnDestroy, signal } from "@angular/core";
+import { Component, computed, inject, OnDestroy, OnInit, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { PatientDataService } from "@core/services/patient-data.service";
@@ -25,6 +25,7 @@ import { AppButtonComponent } from "@shared/components/button/button.component";
 import { AppSelectComponent } from "@shared/components/select/select.component";
 import { TeethChartComponent } from "@shared/components/teeth-chart/teeth-chart.component";
 import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
+import { DisplayCurrencyPipe } from "@shared/pipes/display-currency.pipe";
 import {
   defaultServiceClinicalForm,
   defaultServiceDetail,
@@ -55,11 +56,12 @@ import {
     AppSelectComponent,
     TeethChartComponent,
     SafeHtmlPipe,
+    DisplayCurrencyPipe,
   ],
   templateUrl: "./create-order.component.html",
   styleUrl: "./create-order.component.scss",
 })
-export class CreateOrderComponent implements OnDestroy {
+export class CreateOrderComponent implements OnDestroy, OnInit {
   private static readonly AUTOCOMPLETE_LIMIT = 6;
   private static readonly AUTOCOMPLETE_DEBOUNCE_MS = 120;
 
@@ -71,6 +73,15 @@ export class CreateOrderComponent implements OnDestroy {
   private readonly subOrderService = inject(SubOrderDataService);
   protected readonly formatUtils = inject(FormatUtils);
   protected readonly navigationService = inject(NavigationService);
+
+  ngOnInit(): void {
+    this.patientService.loadPatients();
+    this.doctorService.loadDoctors();
+    this.clinicService.loadClinics();
+    this.orderService.loadOrders();
+    this.scanCenterService.loadCenters();
+    this.subOrderService.load();
+  }
 
   readonly patients = this.patientService.patients;
   readonly doctors = this.doctorService.doctors;
@@ -111,6 +122,8 @@ export class CreateOrderComponent implements OnDestroy {
   readonly sendMailRecipients = signal<string[]>([]);
   readonly ihTaskRecipient = signal<string | null>(null);
   readonly rushTask = signal(false);
+  readonly creating = signal(false);
+  readonly createError = signal<string | null>(null);
 
   readonly selectedPatient = computed(() =>
     this.matchPatientByName(this.form().patientName),
@@ -217,15 +230,15 @@ export class CreateOrderComponent implements OnDestroy {
   readonly selectedDoctorDisplay = computed(() => {
     const doctor = this.selectedDoctor();
     if (doctor) return doctor.name;
-    return this.form().doctorName || "ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â";
+    return this.form().doctorName || "-";
   });
   readonly selectedBillToLabel = computed(() => {
     if (this.form().billToTarget === "scan-center") {
-      const centerName = this.scanCenters()[0]?.name ?? "Local Session";
-      return `Scan Center ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ ${centerName}`;
+      const centerName = this.scanCenters()[0]?.name ?? "Scan Center";
+      return `Scan Center - ${centerName}`;
     }
     const doctor = this.selectedDoctor();
-    return doctor ? `Doctor ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ ${doctor.name}` : "Doctor";
+    return doctor ? `Doctor - ${doctor.name}` : "Doctor";
   });
 
   readonly allTeethCombined = computed(() => {
@@ -464,27 +477,31 @@ export class CreateOrderComponent implements OnDestroy {
 
   submitOrder(): void {
     const patientInput = this.form().patientName.trim();
+    const patient = this.selectedPatient();
     const doctor = this.selectedDoctor();
+    const clinic =
+      this.selectedClinic() ??
+      this.clinics().find((candidate) => candidate.id === doctor?.clinicId);
     if (
       patientInput.length === 0 ||
+      !patient ||
       this.selectedServiceObjects().length === 0 ||
-      !doctor
+      !doctor ||
+      !clinic
     ) {
-      if (!doctor) this.step.set(1);
+      this.step.set(1);
       return;
     }
     if (this.missingRequiredTeethServices().length > 0) {
       this.step.set(3);
       return;
     }
-    const patient = this.selectedPatient();
-    const clinic = this.selectedClinic();
-    const clinicName = clinic?.name ?? "";
-    const clinicId = clinic?.id ?? "";
+    const clinicName = clinic.name;
+    const clinicId = clinic.id;
     const doctorName = doctor.name;
     const doctorId = doctor.id;
-    const patientName = patient?.name || patientInput;
-    const patientId = patient?.id || this.syntheticEntityId("pt", patientName);
+    const patientName = patient.name;
+    const patientId = patient.id;
 
     const scanCenter = this.scanCenters()[0];
     const selectedServices = this.selectedServiceObjects();
@@ -525,15 +542,17 @@ export class CreateOrderComponent implements OnDestroy {
       };
     });
 
-    const createdOrder = this.orderService.createOrder({
+    this.creating.set(true);
+    this.createError.set(null);
+    this.orderService.createOrder$({
       patientId,
       patientName,
       doctorId,
       doctorName,
       clinicId,
       clinicName,
-      scanCenterId: scanCenter?.id ?? "scan-local",
-      scanCenterName: scanCenter?.name ?? "Local Session",
+      scanCenterId: scanCenter?.id ?? "",
+      scanCenterName: scanCenter?.name ?? "",
       status: "New",
       priority: "Normal",
       restoration: mapServiceToRestoration(selectedServices[0].id),
@@ -545,8 +564,8 @@ export class CreateOrderComponent implements OnDestroy {
       billed: false,
       billTo:
         this.form().billToTarget === "scan-center"
-          ? `Scan Center ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ ${scanCenter?.name ?? "Local Session"}`
-          : `Doctor ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ ${doctorName}`,
+          ? `Scan Center - ${scanCenter?.name ?? "Scan Center"}`
+          : `Doctor - ${doctorName}`,
       vouchers: 0,
       isLocked: false,
       hasNotes: internalCaseNote.length > 0 || internalCaseFiles.length > 0,
@@ -565,10 +584,30 @@ export class CreateOrderComponent implements OnDestroy {
           rushTask,
         },
       },
+    }).subscribe({
+      next: (createdOrder) => {
+        this.subOrderService.createForOrder$(createdOrder.id, serviceRows).subscribe({
+          next: () => {
+            this.creating.set(false);
+            this.navigationService.navigate("viewOrder", { orderId: createdOrder.id });
+          },
+          error: (error) => {
+            console.error("Failed to create sub-orders:", error);
+            this.creating.set(false);
+            this.createError.set(
+              error?.error?.message ?? "The order was created, but its services could not be saved.",
+            );
+          },
+        });
+      },
+      error: (error) => {
+        console.error("Failed to create order:", error);
+        this.creating.set(false);
+        this.createError.set(
+          error?.error?.message ?? "Unable to create the order. Check the selected records and try again.",
+        );
+      },
     });
-
-    this.subOrderService.createForOrder(createdOrder.id, serviceRows);
-    this.navigationService.navigate("viewOrder", { orderId: createdOrder.id });
   }
 
   private defaultDueDate(services: readonly CreateOrderService[]): string {
@@ -696,15 +735,6 @@ export class CreateOrderComponent implements OnDestroy {
     return `${doctor.name}:${doctor.lookupId ?? doctor.id}`;
   }
 
-  private syntheticEntityId(prefix: string, value: string): string {
-    const slug = value
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/(^-|-$)/g, "");
-    return `${prefix}-manual-${slug || "entry"}-${Date.now().toString().slice(-6)}`;
-  }
-
   private scheduleAutocomplete(
     type: "patient" | "doctor",
     value: string,
@@ -743,7 +773,7 @@ export class CreateOrderComponent implements OnDestroy {
 
   selectedServiceNames(): string {
     const names = this.selectedServiceObjects().map((service) => service.name);
-    return names.length > 0 ? names.join(", ") : "ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â";
+    return names.length > 0 ? names.join(", ") : "-";
   }
 
   getIconSvg(name: string): string {

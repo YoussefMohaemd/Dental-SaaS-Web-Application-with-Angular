@@ -1,14 +1,14 @@
 import { CommonModule } from "@angular/common";
-import { Component, computed, effect, inject, signal } from "@angular/core";
+import { Component, computed, effect, inject, OnInit, signal } from "@angular/core";
 import { QuarterReportDetail, ServiceQuarterMetric } from "@core/interfaces";
 import { QuarterCardViewModel } from "@core/interfaces";
-import { FormatUtils } from "@core/services/format-utils.service";
 import { NavigationService } from "@core/services/navigation.service";
 import { ReportingDataService } from "@core/services/reporting-data.service";
 import { AppButtonComponent } from "@shared/components/button/button.component";
 import { DataTableToolbarComponent } from "@shared/components/data-table-toolbar/data-table-toolbar.component";
 import { AppSelectComponent } from "@shared/components/select/select.component";
 import { TableFeedbackComponent } from "@shared/components/table-feedback/table-feedback.component";
+import { DisplayCurrencyPipe } from "@shared/pipes/display-currency.pipe";
 import { TagModule } from "primeng/tag";
 
 const ALL_QUARTERS = [1, 2, 3, 4] as const;
@@ -22,15 +22,19 @@ const ALL_QUARTERS = [1, 2, 3, 4] as const;
     TableFeedbackComponent,
     AppSelectComponent,
     AppButtonComponent,
+    DisplayCurrencyPipe,
     TagModule,
   ],
   templateUrl: "./quarter-targets-report.component.html",
   styleUrl: "./quarter-targets-report.component.scss",
 })
-export class QuarterTargetsReportComponent {
+export class QuarterTargetsReportComponent implements OnInit {
   private readonly reportingData = inject(ReportingDataService);
   private readonly navigationService = inject(NavigationService);
-  protected readonly formatUtils = inject(FormatUtils);
+
+  ngOnInit(): void {
+    this.reportingData.loadOrderArchive();
+  }
 
   readonly loading = this.reportingData.loading;
   readonly availableYears = this.reportingData.availableYears;
@@ -145,7 +149,7 @@ export class QuarterTargetsReportComponent {
 
   monthLabel(quarterReport: QuarterReportDetail): string {
     if (quarterReport.months.length === 0) return "No month activity recorded";
-    return quarterReport.months.map((month) => month.monthLabel).join(" ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ ");
+    return quarterReport.months.map((month) => month.monthLabel).join(" | ");
   }
 
   serviceContributionPercent(

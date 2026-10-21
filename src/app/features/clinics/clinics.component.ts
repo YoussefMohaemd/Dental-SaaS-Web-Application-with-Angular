@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from "@angular/core";
+import { Component, computed, inject, OnInit, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { ClinicDataService } from "@core/services/clinic-data.service";
@@ -25,7 +25,7 @@ import { SafeHtmlPipe } from "../../shared/pipes/safe-html.pipe";
   templateUrl: "./clinics.component.html",
   styleUrl: "./clinics.component.scss",
 })
-export class ClinicsComponent {
+export class ClinicsComponent implements OnInit {
   private readonly clinicService = inject(ClinicDataService);
   protected readonly navigationService = inject(NavigationService);
   protected readonly formatUtils = inject(FormatUtils);
@@ -38,6 +38,10 @@ export class ClinicsComponent {
   readonly newName = signal("");
   readonly newCity = signal("");
   readonly newManager = signal("");
+
+  ngOnInit(): void {
+    this.clinicService.loadClinics();
+  }
 
   readonly filtered = computed(() => {
     const search = this.search();
@@ -76,21 +80,25 @@ export class ClinicsComponent {
   }
 
   saveClinic(): void {
-    const name = this.newName().trim() || "New Clinic";
-    this.clinicService.addClinic({
-      id: `cl-${Date.now()}`,
+    const name = this.newName().trim();
+    const city = this.newCity().trim();
+    const accountManager = this.newManager().trim();
+    if (!name || !city || !accountManager) {
+      console.error("Clinic requires a name, city, and account manager.");
+      return;
+    }
+    this.clinicService.createClinic$({
       name,
       address: "1200 Innovation Drive",
-      city: this.newCity().trim() || "Los Angeles",
+      city,
       phone: "+1 (555) 000-0000",
       email: "info@clinic.com",
-      doctorsCount: 0,
-      patientsCount: 0,
-      ordersCount: 0,
       status: "Active",
-      accountManager: this.newManager().trim() || "Lab Manager",
+      accountManager,
+    }).subscribe({
+      next: () => this.showAddDialog.set(false),
+      error: (error) => console.error("Failed to create clinic:", error),
     });
-    this.showAddDialog.set(false);
   }
 
   getStatusClass(status: string): string {

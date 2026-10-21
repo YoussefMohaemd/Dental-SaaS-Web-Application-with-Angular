@@ -14,7 +14,7 @@ const MOCK_CASES: Case[] = [
   {
     id: "case-1",
     caseNumber: "CS-08101",
-    title: "Full Arch Restoration ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Alice Johnson",
+    title: "Full Arch Restoration - Alice Johnson",
     patientId: "pt1",
     patientName: "Alice Johnson",
     doctorId: "dr1",
@@ -32,7 +32,7 @@ const MOCK_CASES: Case[] = [
   {
     id: "case-2",
     caseNumber: "CS-08102",
-    title: "Smile Makeover ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Benjamin Clarke",
+    title: "Smile Makeover - Benjamin Clarke",
     patientId: "pt2",
     patientName: "Benjamin Clarke",
     doctorId: "dr2",
@@ -50,7 +50,7 @@ const MOCK_CASES: Case[] = [
   {
     id: "case-3",
     caseNumber: "CS-08103",
-    title: "Implant Case ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Carmen Rodriguez",
+    title: "Implant Case - Carmen Rodriguez",
     patientId: "pt3",
     patientName: "Carmen Rodriguez",
     doctorId: "dr3",

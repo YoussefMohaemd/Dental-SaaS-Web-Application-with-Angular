@@ -33,7 +33,7 @@ const MOCK_DOCS: LabDocument[] = [
     type: "PDF",
     size: "142 KB",
     date: "2024-12-12",
-    doctor: "ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Å“",
+    doctor: "-",
   },
 ];
 

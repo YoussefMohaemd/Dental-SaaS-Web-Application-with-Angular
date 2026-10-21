@@ -53,13 +53,13 @@
         <article class="rounded-xl border border-border bg-background p-3">
           <p class="text-[11px] text-muted-foreground">Total Revenue</p>
           <p class="font-display mt-1 text-lg font-bold text-foreground">
-            {{ formatUtils.formatCurrency(quarterReport()!.totalRevenue) }}
+            {{ quarterReport()!.totalRevenue | displayCurrency }}
           </p>
         </article>
         <article class="rounded-xl border border-border bg-background p-3">
           <p class="text-[11px] text-muted-foreground">Avg Ticket</p>
           <p class="font-display mt-1 text-lg font-bold text-accent">
-            {{ formatUtils.formatCurrency(quarterAverageTicket()) }}
+            {{ quarterAverageTicket() | displayCurrency }}
           </p>
         </article>
       </div>
@@ -100,7 +100,7 @@
             <div class="rounded-lg border border-border bg-background p-3">
               <p class="text-[11px] text-muted-foreground">Revenue</p>
               <p class="mt-1 text-sm font-semibold text-foreground">
-                {{ formatUtils.formatCurrency(panel.month.totalRevenue) }}
+                {{ panel.month.totalRevenue | displayCurrency }}
               </p>
             </div>
             <div class="rounded-lg border border-border bg-background p-3">
@@ -143,7 +143,7 @@
                     </p>
                     <p class="font-mono text-muted-foreground">
                       {{ service.ordersCount }} ·
-                      {{ formatUtils.formatCurrency(service.totalRevenue) }}
+                      {{ service.totalRevenue | displayCurrency }}
                     </p>
                   </div>
                   <div class="h-1.5 rounded-full bg-muted/70">

@@ -1,5 +1,5 @@
 import { CommonModule } from "@angular/common";
-import { Component, DestroyRef, computed, inject, signal } from "@angular/core";
+import { Component, DestroyRef, computed, inject, OnInit, signal } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import {
@@ -14,6 +14,7 @@ import { ReportingDataService } from "@core/services/reporting-data.service";
 import { AppButtonComponent } from "@shared/components/button/button.component";
 import { DataTableToolbarComponent } from "@shared/components/data-table-toolbar/data-table-toolbar.component";
 import { TableFeedbackComponent } from "@shared/components/table-feedback/table-feedback.component";
+import { DisplayCurrencyPipe } from "@shared/pipes/display-currency.pipe";
 import { TagModule } from "primeng/tag";
 
 @Component({
@@ -25,16 +26,21 @@ import { TagModule } from "primeng/tag";
     AppButtonComponent,
     TableFeedbackComponent,
     TagModule,
+    DisplayCurrencyPipe,
   ],
   templateUrl: "./quarter-detail-report.component.html",
   styleUrl: "./quarter-detail-report.component.scss",
 })
-export class QuarterDetailReportComponent {
+export class QuarterDetailReportComponent implements OnInit {
   private readonly reportingData = inject(ReportingDataService);
   private readonly navigationService = inject(NavigationService);
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   protected readonly formatUtils = inject(FormatUtils);
+
+  ngOnInit(): void {
+    this.reportingData.loadOrderArchive();
+  }
 
   readonly loading = this.reportingData.loading;
   readonly year = signal(new Date().getFullYear());
@@ -53,7 +59,7 @@ export class QuarterDetailReportComponent {
   readonly subtitle = computed(() => {
     const report = this.quarterReport();
     if (!report) return "No report data found for this quarter.";
-    return `${report.ordersCount} service entries ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ ${this.formatUtils.formatCurrency(report.totalRevenue)}`;
+    return `${report.ordersCount} service entries | ${this.formatUtils.formatCurrency(report.totalRevenue)}`;
   });
   readonly quarterFeedbackMessage = computed(() => {
     if (this.isFutureQuarter(this.quarter())) {

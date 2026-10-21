@@ -1,5 +1,5 @@
 import { CommonModule } from "@angular/common";
-import { Component, computed, inject } from "@angular/core";
+import { Component, computed, inject, OnInit } from "@angular/core";
 import { Router } from "@angular/router";
 import { BillingDataService } from "@core/services/billing-data.service";
 import { CaseDataService } from "@core/services/case-data.service";
@@ -11,6 +11,7 @@ import {
   ReportNavigationCard,
 } from "@core/interfaces";
 import { AppButtonComponent } from "@shared/components/button/button.component";
+import { DisplayCurrencyPipe } from "@shared/pipes/display-currency.pipe";
 import { ChartConfiguration, ChartData, TooltipItem } from "chart.js";
 import {
   BaseChartDirective,
@@ -33,19 +34,27 @@ import {
     CommonModule,
     BaseChartDirective,
     AppButtonComponent,
+    DisplayCurrencyPipe,
     TagModule,
   ],
   providers: [provideCharts(withDefaultRegisterables())],
   templateUrl: "./reports.component.html",
   styleUrl: "./reports.component.scss",
 })
-export class ReportsComponent {
+export class ReportsComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly orderService = inject(OrderDataService);
   private readonly caseService = inject(CaseDataService);
   private readonly billingService = inject(BillingDataService);
   private readonly reportsService = inject(ReportsDataService);
   protected readonly formatUtils = inject(FormatUtils);
+
+  ngOnInit(): void {
+    this.orderService.loadOrders();
+    this.caseService.loadCases();
+    this.billingService.loadRecords();
+    this.reportsService.loadReports();
+  }
 
   protected readonly reportNavigationCards: ReportNavigationCard[] = [
     {

@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from "@angular/core";
+import { Component, computed, inject, OnInit, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { TableModule } from "primeng/table";
@@ -12,6 +12,7 @@ import { DataTableToolbarComponent } from "@shared/components/data-table-toolbar
 import { SearchFilterToolbarComponent } from "@shared/components/search-filter-toolbar/search-filter-toolbar.component";
 import { TableFeedbackComponent } from "@shared/components/table-feedback/table-feedback.component";
 import { SafeHtmlPipe } from "../../shared/pipes/safe-html.pipe";
+import { DisplayCurrencyPipe } from "@shared/pipes/display-currency.pipe";
 import {
   buildSortAriaLabel,
   sortAriaValue,
@@ -34,11 +35,12 @@ type BillingSortColumn =
     SearchFilterToolbarComponent,
     TableFeedbackComponent,
     SafeHtmlPipe,
+    DisplayCurrencyPipe,
   ],
   templateUrl: "./billing.component.html",
   styleUrl: "./billing.component.scss",
 })
-export class BillingComponent {
+export class BillingComponent implements OnInit {
   private readonly billingService = inject(BillingDataService);
   protected readonly navigationService = inject(NavigationService);
   protected readonly formatUtils = inject(FormatUtils);
@@ -51,6 +53,10 @@ export class BillingComponent {
   readonly pageSize = 15;
   readonly sortColumn = signal<BillingSortColumn>("dueDate");
   readonly sortDirection = signal<"asc" | "desc">("desc");
+
+  ngOnInit(): void {
+    this.billingService.loadRecords();
+  }
 
   readonly statusOptions: (BillingRecord["status"] | "")[] = [
     "",
