@@ -1,7 +1,12 @@
-import { Component, inject, signal } from "@angular/core";
+import { Component, computed, inject, OnInit, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { ReactiveFormsModule, FormBuilder, Validators } from "@angular/forms";
 import { ThemeService } from "@core/services/theme.service";
+import {
+  AuthService,
+  AuthenticatedUser,
+} from "@core/services/auth.service";
+import { getApiErrorMessage } from "@shared/utils/api-error";
 import { AppButtonComponent } from "@shared/components/button/button.component";
 import { AppTextFieldComponent } from "@shared/components/input/input.component";
 import { AppSelectComponent } from "@shared/components/select/select.component";
@@ -29,12 +34,26 @@ type SettingsSection =
   templateUrl: "./settings.component.html",
   styleUrl: "./settings.component.scss",
 })
-export class SettingsComponent {
+export class SettingsComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   protected readonly themeService = inject(ThemeService);
+  protected readonly authService = inject(AuthService);
 
   readonly section = signal<SettingsSection>("profile");
   readonly saved = signal(false);
+  readonly saveError = signal<string | null>(null);
+  readonly profileError = signal<string | null>(null);
+  readonly currentUser = this.authService.user;
+  readonly accountName = computed(
+    () => this.currentUser()?.fullName?.trim() || "Account",
+  );
+  readonly accountInitials = computed(() => {
+    const parts = this.accountName().split(/\s+/).filter(Boolean);
+    return parts
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase() ?? "")
+      .join("");
+  });
   readonly density = signal<"Compact" | "Default" | "Comfortable">("Default");
   readonly twoFactor = signal(false);
   readonly notificationPrefs = signal({
@@ -55,14 +74,11 @@ export class SettingsComponent {
   ];
 
   readonly profileForm = this.fb.nonNullable.group({
-    firstName: ["Jessica", Validators.required],
-    lastName: ["Ruiz", Validators.required],
-    email: [
-      "jessica.ruiz@dentalab.com",
-      [Validators.required, Validators.email],
-    ],
-    role: ["Lab Manager"],
-    phone: ["+1 (415) 555-0132"],
+    firstName: ["", Validators.required],
+    lastName: ["", Validators.required],
+    email: ["", [Validators.required, Validators.email]],
+    role: [""],
+    phone: [""],
   });
 
   readonly languageForm = this.fb.nonNullable.group({
@@ -78,9 +94,9 @@ export class SettingsComponent {
   });
 
   readonly securityForm = this.fb.nonNullable.group({
-    currentPassword: [""],
-    newPassword: ["", Validators.minLength(8)],
-    confirmPassword: [""],
+    currentPassword: ["", Validators.required],
+    newPassword: ["", [Validators.required, Validators.minLength(8)]],
+    confirmPassword: ["", Validators.required],
   });
 
   readonly languageOptions = [
@@ -103,9 +119,23 @@ export class SettingsComponent {
     { label: "YYYY-MM-DD", value: "YYYY-MM-DD" },
   ] as const;
 
+  ngOnInit(): void {
+    this.applyCurrentUser(this.currentUser());
+    if (!this.authService.isAuthenticated()) return;
+
+    this.authService.loadCurrentUser().subscribe({
+      next: (user) => this.applyCurrentUser(user),
+      error: (error) =>
+        this.profileError.set(
+          getApiErrorMessage(error, "Unable to load your account details."),
+        ),
+    });
+  }
+
   setSection(next: SettingsSection): void {
     this.section.set(next);
     this.saved.set(false);
+    this.saveError.set(null);
   }
 
   togglePreference(key: keyof ReturnType<typeof this.notificationPrefs>): void {
@@ -128,8 +158,59 @@ export class SettingsComponent {
   }
 
   saveChanges(): void {
+    this.saveError.set(null);
+    if (this.section() === "security") {
+      this.savePassword();
+      return;
+    }
+
     this.saved.set(true);
     window.setTimeout(() => this.saved.set(false), 2000);
+  }
+
+  private savePassword(): void {
+    const values = this.securityForm.getRawValue();
+    this.securityForm.markAllAsTouched();
+    if (this.securityForm.invalid) {
+      this.saveError.set(
+        "Enter your current password and a new password with at least 8 characters.",
+      );
+      return;
+    }
+    if (values.newPassword !== values.confirmPassword) {
+      this.saveError.set("New password and confirmation do not match.");
+      return;
+    }
+
+    this.authService
+      .changePassword({
+        currentPassword: values.currentPassword,
+        newPassword: values.newPassword,
+      })
+      .subscribe({
+        next: () => {
+          this.securityForm.reset();
+          this.saved.set(true);
+          window.setTimeout(() => this.saved.set(false), 2000);
+        },
+        error: (error) =>
+          this.saveError.set(
+            getApiErrorMessage(error, "Unable to change your password."),
+          ),
+      });
+  }
+
+  private applyCurrentUser(
+    user: AuthenticatedUser | null | undefined,
+  ): void {
+    if (!user) return;
+    const [firstName = "", ...lastNameParts] = user.fullName.trim().split(/\s+/);
+    this.profileForm.patchValue({
+      firstName,
+      lastName: lastNameParts.join(" "),
+      email: user.email,
+      role: user.roles[0] ?? "User",
+    });
   }
 
   preferenceEntries(): {

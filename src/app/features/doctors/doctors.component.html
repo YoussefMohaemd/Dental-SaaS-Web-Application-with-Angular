@@ -154,6 +154,14 @@
     subtitle="Register a new referring dentist."
   >
     <div class="mt-4 space-y-3">
+      @if (newDoctorError(); as error) {
+        <div
+          class="rounded-lg border border-danger/30 bg-danger/10 px-3 py-2 text-xs text-danger"
+          role="alert"
+        >
+          {{ error }}
+        </div>
+      }
       <label class="block"
         ><span class="mb-1 block text-xs font-semibold">Full Name</span>
         <app-input
@@ -184,13 +192,28 @@
       </label>
       <label class="block"
         ><span class="mb-1 block text-xs font-semibold">Clinic</span>
-        <app-input
+        <app-select
           id="doctor-new-clinic"
           [unstyled]="true"
-          inputClass="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
+          selectClass="w-full cursor-pointer rounded-lg border border-border bg-card px-3 py-2 text-sm"
+          [options]="clinicOptions()"
           [value]="newClinic()"
           (valueChange)="newClinic.set($event)"
-        ></app-input
+        ></app-select
+      ></label>
+      <label class="block"
+        ><span class="mb-1 block text-xs font-semibold">Gender</span>
+        <app-select
+          id="doctor-new-gender"
+          [unstyled]="true"
+          selectClass="w-full cursor-pointer rounded-lg border border-border bg-card px-3 py-2 text-sm"
+          [options]="[
+            { value: 'F', label: 'Female' },
+            { value: 'M', label: 'Male' },
+          ]"
+          [value]="newGender()"
+          (valueChange)="newGender.set($event === 'M' ? 'M' : 'F')"
+        ></app-select
       ></label>
       <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <label class="block"

@@ -39,6 +39,15 @@
         >
           <span [innerHTML]="getIconSvg('refresh') | safeHtml"></span>
         </app-button>
+        <app-button
+          variant="outline"
+          size="icon"
+          [ariaLabel]="'Open archived orders'"
+          title="Archive"
+          (onClick)="openArchivedOrders()"
+        >
+          <span [innerHTML]="getIconSvg('archive') | safeHtml"></span>
+        </app-button>
         <div
           class="orders-view-state-toggle flex overflow-hidden rounded-lg border border-border"
           role="group"
@@ -67,6 +76,9 @@
   <div
     class="shrink-0 space-y-2 border-b border-border bg-card px-4 sm:px-6 py-3"
   >
+    @if (actionError(); as error) {
+      <p class="text-xs text-danger" role="alert">{{ error }}</p>
+    }
     <div class="flex flex-wrap items-center gap-2">
       <div
         class="relative w-full sm:w-auto flex-1 min-w-0 sm:min-w-48 sm:max-w-72"
@@ -126,14 +138,33 @@
             size="sm"
             buttonClass="!min-h-0 !rounded-md !px-1.5 !py-0 text-xs text-muted-foreground"
             ariaLabel="Archive selected orders"
+            [disabled]="actionBusy()"
+            [loading]="actionBusy()"
+            (onClick)="archiveSelected()"
           >
             Archive
           </app-button>
           <app-button
             variant="ghost"
             size="sm"
+            buttonClass="!min-h-0 !rounded-md !px-1.5 !py-0 text-xs text-muted-foreground"
+            [ariaLabel]="
+              allSelectedOrdersLocked()
+                ? 'Unlock selected orders'
+                : 'Lock selected orders'
+            "
+            [disabled]="actionBusy()"
+            (onClick)="toggleSelectedLock()"
+          >
+            {{ allSelectedOrdersLocked() ? "Unlock" : "Lock" }}
+          </app-button>
+          <app-button
+            variant="ghost"
+            size="sm"
             buttonClass="!min-h-0 !rounded-md !px-1.5 !py-0 text-xs text-danger hover:!text-danger/80"
             ariaLabel="Delete selected orders"
+            [disabled]="actionBusy()"
+            (onClick)="requestDeleteSelected()"
           >
             Delete
           </app-button>
@@ -300,7 +331,11 @@
   <div>
     @switch (viewState()) {
       @case ("loading") {
-        <div class="space-y-2 p-4 sm:p-6" aria-label="Loading orders" role="status">
+        <div
+          class="space-y-2 p-4 sm:p-6"
+          aria-label="Loading orders"
+          role="status"
+        >
           <span class="sr-only">Loading orders...</span>
           @for (row of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; track row) {
             <div class="skeleton h-10 animate-pulse rounded-lg bg-muted"></div>
@@ -744,7 +779,9 @@
                         ></app-status-badge>
                       </div>
                     </td>
-                    <td class="text-center lock-column-cell sub-order-lock-cell">
+                    <td
+                      class="text-center lock-column-cell sub-order-lock-cell"
+                    >
                       <span class="sr-only">No lock for sub-order row</span>
                     </td>
                   } @else {
@@ -868,9 +905,7 @@
                       @if (rowData.kind === "service" && rowData.subOrder) {
                         <div class="service-sub">
                           Due
-                          {{
-                            formatUtils.formatDate(rowData.subOrder.dueDate)
-                          }}
+                          {{ formatUtils.formatDate(rowData.subOrder.dueDate) }}
                           · {{ subOrderProgress(rowData.subOrder) }}% ready
                         </div>
                       }
@@ -1005,7 +1040,9 @@
                         <span class="text-muted-foreground/30">—</span>
                       }
                     </td>
-                    <td class="text-center vouchers-column-cell font-mono font-semibold text-muted-foreground">
+                    <td
+                      class="text-center vouchers-column-cell font-mono font-semibold text-muted-foreground"
+                    >
                       @if (rowData.kind === "order") {
                         {{
                           rowData.order.vouchers > 0
@@ -1041,21 +1078,35 @@
                     <td class="text-center lock-column-cell">
                       @if (rowData.kind === "order") {
                         <div class="lock-column-content">
-                          @if (rowData.order.isLocked) {
+                          <button
+                            type="button"
+                            class="inline-flex rounded p-1 transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
+                            [class]="
+                              rowData.order.isLocked
+                                ? 'text-amber-500'
+                                : 'text-muted-foreground/50'
+                            "
+                            [attr.aria-label]="
+                              rowData.order.isLocked
+                                ? 'Unlock order'
+                                : 'Lock order'
+                            "
+                            [attr.title]="
+                              rowData.order.isLocked
+                                ? 'Unlock order'
+                                : 'Lock order'
+                            "
+                            [disabled]="actionBusy()"
+                            (click)="toggleOrderLock(rowData.order)"
+                          >
                             <span
-                              class="inline-flex text-amber-500 lock-indicator"
-                              title="Locked"
-                              aria-label="Locked"
-                              [innerHTML]="getIconSvg('lock') | safeHtml"
+                              [innerHTML]="
+                                getIconSvg(
+                                  rowData.order.isLocked ? 'lock' : 'unlock'
+                                ) | safeHtml
+                              "
                             ></span>
-                          } @else {
-                            <span
-                              class="inline-flex text-muted-foreground/40 lock-indicator"
-                              title="Unlocked"
-                              aria-label="Unlocked"
-                              [innerHTML]="getIconSvg('unlock') | safeHtml"
-                            ></span>
-                          }
+                          </button>
                         </div>
                       } @else {
                         <span class="text-muted-foreground/30">—</span>
@@ -1091,5 +1142,36 @@
         }
       }
     }
+    <app-entity-dialog
+      [visible]="confirmDeleteVisible()"
+      (visibleChange)="onConfirmDeleteVisibleChange($event)"
+      (closed)="cancelDeleteSelected()"
+      [dismissableMask]="true"
+      width="25rem"
+      title="Delete selected orders?"
+    >
+      <p class="text-sm text-muted-foreground">
+        This will permanently delete {{ selectedIds().size }} selected
+        {{ selectedIds().size === 1 ? "order" : "orders" }}. This action cannot
+        be undone.
+      </p>
+      <div dialog-actions>
+        <app-button
+          variant="ghost"
+          size="sm"
+          (onClick)="cancelDeleteSelected()"
+        >
+          Cancel
+        </app-button>
+        <app-button
+          variant="danger"
+          size="sm"
+          [loading]="actionBusy()"
+          (onClick)="confirmDeleteSelected()"
+        >
+          Delete
+        </app-button>
+      </div>
+    </app-entity-dialog>
   </div>
 </div>

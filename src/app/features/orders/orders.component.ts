@@ -2,6 +2,7 @@ import { Component, computed, inject, OnInit, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { TreeTableModule } from "primeng/treetable";
 import { TreeNode } from "primeng/api";
+import { forkJoin, Observable } from "rxjs";
 import { OrderDataService } from "@core/services/order-data.service";
 import { SubOrderDataService } from "@core/services/sub-order-data.service";
 import { NavigationService } from "@core/services/navigation.service";
@@ -12,10 +13,7 @@ import {
   OrderStatus,
   SubOrder,
 } from "@core/interfaces";
-import {
-  ActiveOrderFilter,
-  OrderTreeRowData,
-} from "@core/interfaces";
+import { ActiveOrderFilter, OrderTreeRowData } from "@core/interfaces";
 import { ArchBadgeComponent } from "@shared/components/arch-badge/arch-badge.component";
 import { AppButtonComponent } from "@shared/components/button/button.component";
 import { DataTableToolbarComponent } from "@shared/components/data-table-toolbar/data-table-toolbar.component";
@@ -32,20 +30,12 @@ import { lucideSvg } from "@shared/icons/lucide-icons";
 import { buildSortAriaLabel, sortAriaValue } from "@shared/utils/sort-a11y";
 import { statusDisplayLabel } from "@shared/utils/status-label";
 import { filterTableRows } from "@shared/utils/table-state";
+import { getApiErrorMessage } from "@shared/utils/api-error";
 
-type OrderFilterType =
-  | "status"
-  | "duration"
-  | "service";
+type OrderFilterType = "status" | "duration" | "service";
 
 type DurationFilterValue =
-  | ""
-  | "today"
-  | "week"
-  | "month"
-  | "2-months"
-  | "3-months"
-  | "6-months";
+  "" | "today" | "week" | "month" | "2-months" | "3-months" | "6-months";
 
 type DurationWindow = Exclude<DurationFilterValue, "">;
 
@@ -236,6 +226,9 @@ export class OrdersComponent implements OnInit {
   readonly durationFilter = signal<DurationFilterValue>("");
   readonly serviceFilter = signal<string[]>([]);
   readonly selectedIds = signal<Set<string>>(new Set());
+  readonly actionBusy = signal(false);
+  readonly actionError = signal<string | null>(null);
+  readonly confirmDeleteVisible = signal(false);
   readonly page = signal(1);
   readonly pageSize = signal(10);
   readonly sortColumn = signal<keyof Order | "">("receivedAt");
@@ -287,6 +280,7 @@ export class OrdersComponent implements OnInit {
       (order) => order.doctorName,
       (order) => order.clinicName,
     ]);
+    result = result.filter((order) => !order.archiveDate);
     if (this.statusFilter().length > 0)
       result = result.filter((order) =>
         this.statusFilter().includes(order.status),
@@ -304,7 +298,9 @@ export class OrdersComponent implements OnInit {
       result = result.filter((order) => {
         const orderServices = this.subOrderServicesByOrderId().get(order.id);
         if (!orderServices) return false;
-        return this.serviceFilter().some((service) => orderServices.has(service));
+        return this.serviceFilter().some((service) =>
+          orderServices.has(service),
+        );
       });
     const column = this.sortColumn();
     if (column) {
@@ -431,6 +427,13 @@ export class OrdersComponent implements OnInit {
       pageIds.length > 0 && pageIds.every((id) => this.selectedIds().has(id))
     );
   });
+  readonly selectedOrders = computed(() =>
+    this.orders().filter((order) => this.selectedIds().has(order.id)),
+  );
+  readonly allSelectedOrdersLocked = computed(() => {
+    const selected = this.selectedOrders();
+    return selected.length > 0 && selected.every((order) => order.isLocked);
+  });
 
   readonly statusDisplayLabel = statusDisplayLabel;
 
@@ -556,6 +559,91 @@ export class OrdersComponent implements OnInit {
     return this.selectedIds().has(orderId);
   }
 
+  archiveSelected(): void {
+    const ids = this.selectedOrderIds();
+    if (ids.length === 0) return;
+    if (this.selectedOrders().some((order) => order.isLocked)) {
+      this.actionError.set("Unlock locked orders before archiving them.");
+      return;
+    }
+    this.runBulkAction(
+      ids.map((id) =>
+        this.orderService.updateOrder$(id, {
+          archiveDate: new Date().toISOString(),
+        }),
+      ),
+      "Unable to archive the selected orders.",
+    );
+  }
+
+  deleteSelected(): void {
+    this.requestDeleteSelected();
+  }
+
+  requestDeleteSelected(): void {
+    const ids = this.selectedOrderIds();
+    if (ids.length === 0) return;
+    if (this.selectedOrders().some((order) => order.isLocked)) {
+      this.actionError.set("Unlock locked orders before deleting them.");
+      return;
+    }
+    this.confirmDeleteVisible.set(true);
+  }
+
+  cancelDeleteSelected(): void {
+    if (this.actionBusy()) return;
+    this.confirmDeleteVisible.set(false);
+  }
+
+  onConfirmDeleteVisibleChange(next: boolean): void {
+    if (!next) this.cancelDeleteSelected();
+    else this.confirmDeleteVisible.set(true);
+  }
+
+  confirmDeleteSelected(): void {
+    const ids = this.selectedOrderIds();
+    if (ids.length === 0) {
+      this.confirmDeleteVisible.set(false);
+      return;
+    }
+    this.confirmDeleteVisible.set(false);
+    this.runBulkAction(
+      ids.map((id) => this.orderService.deleteOrder$(id)),
+      "Unable to delete the selected orders.",
+    );
+  }
+
+  toggleSelectedLock(): void {
+    const selected = this.selectedOrders();
+    if (selected.length === 0) return;
+    const nextLocked = !this.allSelectedOrdersLocked();
+    this.runBulkAction(
+      selected
+        .filter((order) => order.isLocked !== nextLocked)
+        .map((order) =>
+          this.orderService.updateOrder$(order.id, { isLocked: nextLocked }),
+        ),
+      `Unable to ${nextLocked ? "lock" : "unlock"} the selected orders.`,
+    );
+  }
+
+  toggleOrderLock(order: Order): void {
+    if (this.actionBusy()) return;
+    this.actionBusy.set(true);
+    this.actionError.set(null);
+    this.orderService
+      .updateOrder$(order.id, { isLocked: !order.isLocked })
+      .subscribe({
+        next: () => this.actionBusy.set(false),
+        error: (error) => {
+          this.actionBusy.set(false);
+          this.actionError.set(
+            getApiErrorMessage(error, "Unable to update the order lock."),
+          );
+        },
+      });
+  }
+
   openAdvancedFilters(): void {
     this.resetDraftFiltersFromCurrent();
     this.advancedFilters.set(true);
@@ -630,6 +718,10 @@ export class OrdersComponent implements OnInit {
 
   simulateRefresh(): void {
     this.orderService.reload();
+  }
+
+  openArchivedOrders(): void {
+    this.navigationService.navigate("archivedOrders");
   }
 
   retryLoad(): void {
@@ -738,6 +830,7 @@ export class OrdersComponent implements OnInit {
       plus: { icon: "plus", size: 13 },
       download: { icon: "download", size: 15 },
       refresh: { icon: "refresh-cw", size: 15 },
+      archive: { icon: "archive", size: 15 },
       sliders: { icon: "sliders-horizontal", size: 12 },
       x: { icon: "x", size: 12 },
       "chevron-left": { icon: "chevron-left", size: 14 },
@@ -757,8 +850,12 @@ export class OrdersComponent implements OnInit {
     return lucideSvg(entry.icon, entry.size);
   }
 
-  private durationFilterLabel(duration: Exclude<DurationFilterValue, "">): string {
-    const option = DURATION_FILTER_OPTIONS.find((item) => item.value === duration);
+  private durationFilterLabel(
+    duration: Exclude<DurationFilterValue, "">,
+  ): string {
+    const option = DURATION_FILTER_OPTIONS.find(
+      (item) => item.value === duration,
+    );
     return option?.label ?? duration;
   }
 
@@ -773,5 +870,29 @@ export class OrdersComponent implements OnInit {
     this.draftDurationFilter.set(this.durationFilter());
     this.draftServiceFilter.set([...this.serviceFilter()]);
     this.draftServiceSelectValue.set("");
+  }
+
+  private selectedOrderIds(): string[] {
+    return Array.from(this.selectedIds());
+  }
+
+  private runBulkAction(
+    actions: Observable<unknown>[],
+    errorMessage: string,
+  ): void {
+    if (this.actionBusy()) return;
+    this.actionBusy.set(true);
+    this.actionError.set(null);
+    forkJoin(actions).subscribe({
+      next: () => {
+        this.selectedIds.set(new Set());
+        this.actionBusy.set(false);
+        this.page.set(Math.min(this.page(), this.totalPages()));
+      },
+      error: (error) => {
+        this.actionBusy.set(false);
+        this.actionError.set(getApiErrorMessage(error, errorMessage));
+      },
+    });
   }
 }

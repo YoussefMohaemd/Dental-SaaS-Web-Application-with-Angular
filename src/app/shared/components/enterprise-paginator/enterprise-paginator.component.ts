@@ -1,5 +1,12 @@
 import { CommonModule } from "@angular/common";
-import { Component, computed, input, output } from "@angular/core";
+import {
+  Component,
+  computed,
+  ElementRef,
+  inject,
+  input,
+  output,
+} from "@angular/core";
 import { PaginatorModule, PaginatorState } from "primeng/paginator";
 
 @Component({
@@ -10,6 +17,8 @@ import { PaginatorModule, PaginatorState } from "primeng/paginator";
   styleUrl: "./enterprise-paginator.component.scss",
 })
 export class EnterprisePaginatorComponent {
+  private readonly hostElement = inject(ElementRef<HTMLElement>);
+
   readonly totalRecords = input.required<number>();
   readonly rows = input<number>(10);
   readonly page = input<number>(1);
@@ -33,5 +42,8 @@ export class EnterprisePaginatorComponent {
     const nextRows = event.rows ?? this.rows();
     const nextFirst = event.first ?? 0;
     this.pageChange.emit(Math.floor(nextFirst / nextRows) + 1);
+    this.hostElement.nativeElement
+      .closest("main")
+      ?.scrollTo({ top: 0, behavior: "smooth" });
   }
 }

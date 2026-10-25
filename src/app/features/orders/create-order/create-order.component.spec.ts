@@ -5,7 +5,10 @@ import {
   provideHttpClientTesting,
 } from "@angular/common/http/testing";
 import { provideRouter } from "@angular/router";
+import { of } from "rxjs";
+import { Order } from "@core/interfaces";
 import { CreateOrderComponent } from "./create-order.component";
+import { ApiEndpoint } from "@core/enum/api.endpoint";
 
 describe("CreateOrderComponent", () => {
   let component: CreateOrderComponent;
@@ -25,56 +28,65 @@ describe("CreateOrderComponent", () => {
     fixture = TestBed.createComponent(CreateOrderComponent);
     component = fixture.componentInstance;
     httpMock = TestBed.inject(HttpTestingController);
-    httpMock.expectOne("/data/patients.json").flush([
-      {
-        id: "p1",
-        name: "Alice Johnson",
-        gender: "F",
-        dob: "1988-04-12",
-        status: "Active",
-        ordersCount: 0,
-        lastVisit: "2024-12-01",
-        email: "alice@example.com",
-        phone: "555-0101",
-        clinicId: "c1",
-        clinicName: "Bright Smile Dental",
-        doctorId: "d1",
-        doctorName: "Dr. Park",
-      },
-    ]);
-    httpMock.expectOne("/data/doctors.json").flush([
-      {
-        id: "d1",
-        lookupId: "2077",
-        name: "Dr. Park",
-        specialty: "Prosthodontics",
-        clinicId: "c1",
-        clinicName: "Bright Smile Dental",
-        status: "Active",
-        email: "dr.park@example.com",
-        phone: "555-0202",
-        ordersCount: 0,
-        joinedDate: "2020-01-01",
-      },
-    ]);
-    httpMock.expectOne("/data/clinics.json").flush([
-      {
-        id: "c1",
-        name: "Bright Smile Dental",
-        status: "Active",
-        city: "Seattle",
-      },
-    ]);
-    httpMock.expectOne("/data/scan-centers.json").flush([
-      {
-        id: "sc1",
-        name: "Main Scan Center",
-        status: "Operational",
-      },
-    ]);
-    httpMock.expectOne("/data/orders.json").flush([]);
-    httpMock.expectOne("/data/sub-orders.json").flush([]);
     fixture.detectChanges();
+    httpMock.expectOne(ApiEndpoint.PATIENTS).flush({
+      data: [
+        {
+          id: "p1",
+          name: "Alice Johnson",
+          gender: "F",
+          dob: "1988-04-12",
+          status: "Active",
+          ordersCount: 0,
+          lastVisit: "2024-12-01",
+          email: "alice@example.com",
+          phone: "555-0101",
+          clinicId: "c1",
+          clinicName: "Bright Smile Dental",
+          doctorId: "d1",
+          doctorName: "Dr. Park",
+        },
+      ],
+    });
+    httpMock.expectOne(ApiEndpoint.DOCTORS).flush({
+      data: [
+        {
+          id: "d1",
+          lookupId: "2077",
+          name: "Dr. Park",
+          specialty: "Prosthodontics",
+          clinicId: "c1",
+          clinicName: "Bright Smile Dental",
+          status: "Active",
+          email: "dr.park@example.com",
+          phone: "555-0202",
+          ordersCount: 0,
+          joinedDate: "2020-01-01",
+        },
+      ],
+    });
+    httpMock.expectOne(ApiEndpoint.CLINICS).flush({
+      data: [
+        {
+          id: "c1",
+          name: "Bright Smile Dental",
+          status: "Active",
+          city: "Seattle",
+        },
+      ],
+    });
+    const orderRequests = httpMock.match(ApiEndpoint.ORDERS);
+    expect(orderRequests.length).toBe(2);
+    orderRequests.forEach((request) => request.flush({ data: [] }));
+    httpMock.expectOne(ApiEndpoint.SCAN_CENTERS).flush({
+      data: [
+        {
+          id: "sc1",
+          name: "Main Scan Center",
+          status: "Operational",
+        },
+      ],
+    });
   });
 
   afterEach(() => {
@@ -95,6 +107,14 @@ describe("CreateOrderComponent", () => {
     expect(component.selectedServices()).toContain("gfmr");
     component.toggleService("gfmr");
     expect(component.selectedServices()).not.toContain("gfmr");
+  });
+
+  it("should synchronize the doctor and clinic when a patient is selected", () => {
+    component.onPatientInput("Alice Johnson");
+
+    expect(component.form().doctorName).toBe("Dr. Park");
+    expect(component.form().doctorId).toBe("d1");
+    expect(component.form().clinicId).toBe("c1");
   });
 
   it("should open upload picker for a service requirement", () => {
@@ -204,6 +224,15 @@ describe("CreateOrderComponent", () => {
     expect(component.visibleSelectedTeeth()).toContain(11);
   });
 
+  it("should keep service teeth visible after returning to the overview", () => {
+    component.toggleService("gfmr");
+    component.activeServiceForTeeth.set("gfmr");
+    component.toggleTooth(11);
+    component.activeServiceForTeeth.set(null);
+
+    expect(component.visibleSelectedTeeth()).toContain(11);
+  });
+
   it("should combine general and per-service teeth for review", () => {
     component.toggleTooth(12);
     component.toggleService("gfmr");
@@ -232,19 +261,22 @@ describe("CreateOrderComponent", () => {
     component.onUploadFilesSelected({ target: input } as unknown as Event);
 
     const orderService = (component as any).orderService as {
-      createOrder: jasmine.Spy;
+      createOrder$: jasmine.Spy;
     };
     const subOrderService = (component as any).subOrderService as {
-      createForOrder: jasmine.Spy;
+      createForOrder$: jasmine.Spy;
     };
-    spyOn(orderService, "createOrder").and.callThrough();
-    spyOn(subOrderService, "createForOrder").and.returnValue([]);
+    spyOn(orderService, "createOrder$").and.returnValue(
+      of({ id: "ord-test" } as Order),
+    );
+    spyOn(subOrderService, "createForOrder$").and.returnValue(of([]));
     spyOn((component as any).navigationService, "navigate");
 
     component.submitOrder();
 
-    expect(orderService.createOrder).toHaveBeenCalled();
-    const createdOrderArg = orderService.createOrder.calls.mostRecent().args[0];
+    expect(orderService.createOrder$).toHaveBeenCalled();
+    const createdOrderArg =
+      orderService.createOrder$.calls.mostRecent().args[0];
     expect(createdOrderArg.creationData.services[0].fileReferences).toEqual([
       "upper-arch.stl",
       "bite-scan.obj",
@@ -268,31 +300,40 @@ describe("CreateOrderComponent", () => {
       configurable: true,
       value: dataTransfer.files,
     });
-    component.onInternalCaseFilesSelected({ target: input } as unknown as Event);
+    component.onInternalCaseFilesSelected({
+      target: input,
+    } as unknown as Event);
 
     const orderService = (component as any).orderService as {
-      createOrder: jasmine.Spy;
+      createOrder$: jasmine.Spy;
     };
     const subOrderService = (component as any).subOrderService as {
-      createForOrder: jasmine.Spy;
+      createForOrder$: jasmine.Spy;
     };
-    spyOn(orderService, "createOrder").and.callThrough();
-    spyOn(subOrderService, "createForOrder").and.returnValue([]);
+    spyOn(orderService, "createOrder$").and.returnValue(
+      of({ id: "ord-test" } as Order),
+    );
+    spyOn(subOrderService, "createForOrder$").and.returnValue(of([]));
     spyOn((component as any).navigationService, "navigate");
 
     component.submitOrder();
 
-    expect(orderService.createOrder).toHaveBeenCalled();
-    const createdOrderArg = orderService.createOrder.calls.mostRecent().args[0];
+    expect(orderService.createOrder$).toHaveBeenCalled();
+    const createdOrderArg =
+      orderService.createOrder$.calls.mostRecent().args[0];
     expect(createdOrderArg.amount).toBe(580);
-    expect(createdOrderArg.billTo).toBe("Doctor • Dr. Park");
+    expect(createdOrderArg.billTo).toBe("Doctor - Dr. Park");
     expect(createdOrderArg.dueDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-    expect(createdOrderArg.creationData.communication.sendMailTo).toEqual(["CS"]);
-    expect(createdOrderArg.creationData.communication.sendIhTaskTo).toBe("Sales");
-    expect(createdOrderArg.creationData.communication.rushTask).toBeTrue();
-    expect(createdOrderArg.creationData.communication.internalCaseFiles).toEqual([
-      "internal-note.pdf",
+    expect(createdOrderArg.creationData.communication.sendMailTo).toEqual([
+      "CS",
     ]);
+    expect(createdOrderArg.creationData.communication.sendIhTaskTo).toBe(
+      "Sales",
+    );
+    expect(createdOrderArg.creationData.communication.rushTask).toBeTrue();
+    expect(
+      createdOrderArg.creationData.communication.internalCaseFiles,
+    ).toEqual(["internal-note.pdf"]);
   });
 
   it("should set bill-to as scan center when selected", () => {
@@ -303,19 +344,22 @@ describe("CreateOrderComponent", () => {
     component.toggleTooth(11);
 
     const orderService = (component as any).orderService as {
-      createOrder: jasmine.Spy;
+      createOrder$: jasmine.Spy;
     };
     const subOrderService = (component as any).subOrderService as {
-      createForOrder: jasmine.Spy;
+      createForOrder$: jasmine.Spy;
     };
-    spyOn(orderService, "createOrder").and.callThrough();
-    spyOn(subOrderService, "createForOrder").and.returnValue([]);
+    spyOn(orderService, "createOrder$").and.returnValue(
+      of({ id: "ord-test" } as Order),
+    );
+    spyOn(subOrderService, "createForOrder$").and.returnValue(of([]));
     spyOn((component as any).navigationService, "navigate");
 
     component.submitOrder();
 
-    const createdOrderArg = orderService.createOrder.calls.mostRecent().args[0];
-    expect(createdOrderArg.billTo).toBe("Scan Center • Main Scan Center");
+    const createdOrderArg =
+      orderService.createOrder$.calls.mostRecent().args[0];
+    expect(createdOrderArg.billTo).toBe("Scan Center - Main Scan Center");
   });
 
   it("should preserve service/form/tooth/file references on submit", () => {
@@ -333,19 +377,22 @@ describe("CreateOrderComponent", () => {
     component.toggleTooth(11);
 
     const orderService = (component as any).orderService as {
-      createOrder: jasmine.Spy;
+      createOrder$: jasmine.Spy;
     };
     const subOrderService = (component as any).subOrderService as {
-      createForOrder: jasmine.Spy;
+      createForOrder$: jasmine.Spy;
     };
-    spyOn(orderService, "createOrder").and.callThrough();
-    spyOn(subOrderService, "createForOrder").and.returnValue([]);
+    spyOn(orderService, "createOrder$").and.returnValue(
+      of({ id: "ord-test" } as Order),
+    );
+    spyOn(subOrderService, "createForOrder$").and.returnValue(of([]));
     spyOn((component as any).navigationService, "navigate");
 
     component.submitOrder();
 
-    expect(orderService.createOrder).toHaveBeenCalled();
-    const createdOrderArg = orderService.createOrder.calls.mostRecent().args[0];
+    expect(orderService.createOrder$).toHaveBeenCalled();
+    const createdOrderArg =
+      orderService.createOrder$.calls.mostRecent().args[0];
     expect(createdOrderArg.creationData.services[0].serviceId).toBe("gfmr");
     expect(
       createdOrderArg.creationData.services[0].serviceDetails.serviceNotes,
@@ -357,9 +404,9 @@ describe("CreateOrderComponent", () => {
       11,
     ]);
     expect(createdOrderArg.creationData.services[0].fileReferences).toEqual([]);
-    expect(subOrderService.createForOrder).toHaveBeenCalled();
+    expect(subOrderService.createForOrder$).toHaveBeenCalled();
     const createdRows =
-      subOrderService.createForOrder.calls.mostRecent().args[1];
+      subOrderService.createForOrder$.calls.mostRecent().args[1];
     expect(createdRows[0].creationData.serviceId).toBe("gfmr");
     expect(createdRows[0].creationData.selectedTeeth).toEqual([11]);
     expect((component as any).navigationService.navigate).toHaveBeenCalledWith(

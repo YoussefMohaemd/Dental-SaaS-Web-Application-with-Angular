@@ -7,6 +7,7 @@ import { ActivatedRoute, convertToParamMap } from "@angular/router";
 import { of } from "rxjs";
 import { By } from "@angular/platform-browser";
 import { SubOrderComponent } from "./sub-order.component";
+import { ApiEndpoint } from "@core/enum/api.endpoint";
 
 describe("SubOrderComponent", () => {
   let component: SubOrderComponent;
@@ -35,55 +36,68 @@ describe("SubOrderComponent", () => {
     fixture = TestBed.createComponent(SubOrderComponent);
     component = fixture.componentInstance;
     httpMock = TestBed.inject(HttpTestingController);
-    httpMock.expectOne("/data/orders.json").flush([
-      {
-        id: "ord-1",
-        orderNumber: "DL-024001",
-        patientId: "pt1",
-        patientName: "Alice Johnson",
-        doctorId: "dr1",
-        doctorName: "Dr. Allison Park",
-        clinicId: "cl1",
-        clinicName: "Bright Smile Dental",
-        scanCenterId: "sc1",
-        scanCenterName: "SC-LA Central",
-        status: "New",
-        priority: "Normal",
-        restoration: "Crown",
-        arch: "Maxilla",
-        format: "STL",
-        shade: "A2",
-        units: 1,
-        amount: 450,
-        billed: false,
-        billTo: "Bright Smile Dental",
-        vouchers: 0,
-        isLocked: false,
-        hasNotes: false,
-        notes: "",
-        receivedAt: "2024-12-10T10:00:00Z",
-        updatedAt: "2024-12-10T10:00:00Z",
-        dueDate: "2024-12-24",
-      },
-    ]);
-    httpMock.expectOne("/data/sub-orders.json").flush([
-      {
-        id: "so-2",
-        orderId: "ord-1",
-        service: "GFMR",
-        icon: "settings",
-        status: "in-progress",
-        formsComplete: 2,
-        formsTotal: 3,
-        scansComplete: 1,
-        scansTotal: 3,
-        teeth: [11, 12, 13, 21, 22, 23],
-        priority: "High",
-        dueDate: "2024-12-25",
-        notes:
-          "Full mouth rehabilitation, occlusal vertical dimension to be confirmed.",
-      },
-    ]);
+    fixture.detectChanges();
+    httpMock
+      .match((request) => request.url.startsWith(ApiEndpoint.ORDERS))
+      .forEach((request) =>
+        request.flush({
+          data: [
+            {
+              id: "ord-1",
+              orderNumber: "DL-024001",
+              patientId: "pt1",
+              patientName: "Alice Johnson",
+              doctorId: "dr1",
+              doctorName: "Dr. Allison Park",
+              clinicId: "cl1",
+              clinicName: "Bright Smile Dental",
+              scanCenterId: "sc1",
+              scanCenterName: "SC-LA Central",
+              status: "New",
+              priority: "Normal",
+              restoration: "Crown",
+              arch: "Maxilla",
+              format: "STL",
+              shade: "A2",
+              units: 1,
+              amount: 450,
+              billed: false,
+              billTo: "Bright Smile Dental",
+              vouchers: 0,
+              isLocked: false,
+              hasNotes: false,
+              notes: "",
+              receivedAt: "2024-12-10T10:00:00Z",
+              updatedAt: "2024-12-10T10:00:00Z",
+              dueDate: "2024-12-24",
+            },
+          ],
+        }),
+      );
+    httpMock
+      .expectOne((request) =>
+        request.url.startsWith(ApiEndpoint.orderSubOrders("ord-1")),
+      )
+      .flush({
+        data: [
+          {
+            id: "so-2",
+            orderId: "ord-1",
+            service: "GFMR",
+            icon: "settings",
+            status: "in-progress",
+            formsComplete: 2,
+            formsTotal: 3,
+            scansComplete: 1,
+            scansTotal: 3,
+            teeth: [11, 12, 13, 21, 22, 23],
+            priority: "High",
+            dueDate: "2024-12-25",
+            notes:
+              "Full mouth rehabilitation, occlusal vertical dimension to be confirmed.",
+          },
+        ],
+      });
     fixture.detectChanges();
   });
 
@@ -105,8 +119,8 @@ describe("SubOrderComponent", () => {
 
   it("should compute progress from required forms and scans", () => {
     expect(component.formsComplete()).toBe(2);
-    expect(component.scansUploaded()).toBe(2);
-    expect(component.progress()).toBe(67);
+    expect(component.scansUploaded()).toBe(1);
+    expect(component.progress()).toBe(50);
   });
 
   it("should render four tabs with forms/scans count badges", () => {
@@ -123,7 +137,7 @@ describe("SubOrderComponent", () => {
       (t.nativeElement.textContent as string).replace(/\s+/g, " ").trim(),
     );
     expect(badges[1]).toContain("2/3");
-    expect(badges[2]).toContain("2/3");
+    expect(badges[2]).toContain("1/3");
   });
 
   it("should switch tabs on click", () => {
@@ -131,7 +145,7 @@ describe("SubOrderComponent", () => {
     fixture.detectChanges();
     expect(component.tab()).toBe("scans");
     const panel = fixture.debugElement.query(By.css('[role="tabpanel"]'));
-    expect(panel.nativeElement.textContent).toContain("Bite Scan");
+    expect(panel.nativeElement.textContent).toContain("Bite scan");
   });
 
   it("should render the read-only tooth chart on overview when teeth exist", () => {
@@ -212,55 +226,68 @@ describe("SubOrderComponent exact ord-33 / so-58 flow", () => {
     fixture = TestBed.createComponent(SubOrderComponent);
     component = fixture.componentInstance;
     httpMock = TestBed.inject(HttpTestingController);
-    httpMock.expectOne("/data/orders.json").flush([
-      {
-        id: "ord-33",
-        orderNumber: "DL-024033",
-        patientId: "pt33",
-        patientName: "Hannah Lindqvist",
-        doctorId: "dr33",
-        doctorName: "Dr. Jennifer Walsh",
-        clinicId: "cl33",
-        clinicName: "North Shore Dental",
-        scanCenterId: "sc33",
-        scanCenterName: "SC-North",
-        status: "Design",
-        priority: "High",
-        restoration: "Crown",
-        arch: "Mandible",
-        format: "STL",
-        shade: "A3",
-        units: 1,
-        amount: 850,
-        billed: false,
-        billTo: "North Shore Dental",
-        vouchers: 0,
-        isLocked: false,
-        hasNotes: false,
-        notes: "Order 33 parent record",
-        receivedAt: "2024-12-12T08:00:00Z",
-        updatedAt: "2024-12-12T15:00:00Z",
-        dueDate: "2024-12-27",
-      },
-    ]);
-    httpMock.expectOne("/data/sub-orders.json").flush([
-      {
-        id: "so-58",
-        orderId: "ord-33",
-        service: "Shade Match",
-        icon: "clipboard",
-        status: "in-progress",
-        formsComplete: 1,
-        formsTotal: 1,
-        scansComplete: 1,
-        scansTotal: 1,
-        teeth: [45, 46, 47],
-        priority: "High",
-        dueDate: "2024-12-27",
-        notes:
-          "Shade A3 verified against clinic photos before glaze. (teeth 45, 46, 47.)",
-      },
-    ]);
+    fixture.detectChanges();
+    httpMock
+      .match((request) => request.url.startsWith(ApiEndpoint.ORDERS))
+      .forEach((request) =>
+        request.flush({
+          data: [
+            {
+              id: "ord-33",
+              orderNumber: "DL-024033",
+              patientId: "pt33",
+              patientName: "Hannah Lindqvist",
+              doctorId: "dr33",
+              doctorName: "Dr. Jennifer Walsh",
+              clinicId: "cl33",
+              clinicName: "North Shore Dental",
+              scanCenterId: "sc33",
+              scanCenterName: "SC-North",
+              status: "Design",
+              priority: "High",
+              restoration: "Crown",
+              arch: "Mandible",
+              format: "STL",
+              shade: "A3",
+              units: 1,
+              amount: 850,
+              billed: false,
+              billTo: "North Shore Dental",
+              vouchers: 0,
+              isLocked: false,
+              hasNotes: false,
+              notes: "Order 33 parent record",
+              receivedAt: "2024-12-12T08:00:00Z",
+              updatedAt: "2024-12-12T15:00:00Z",
+              dueDate: "2024-12-27",
+            },
+          ],
+        }),
+      );
+    httpMock
+      .expectOne((request) =>
+        request.url.startsWith(ApiEndpoint.orderSubOrders("ord-33")),
+      )
+      .flush({
+        data: [
+          {
+            id: "so-58",
+            orderId: "ord-33",
+            service: "Shade Match",
+            icon: "clipboard",
+            status: "in-progress",
+            formsComplete: 1,
+            formsTotal: 1,
+            scansComplete: 1,
+            scansTotal: 1,
+            teeth: [45, 46, 47],
+            priority: "High",
+            dueDate: "2024-12-27",
+            notes:
+              "Shade A3 verified against clinic photos before glaze. (teeth 45, 46, 47.)",
+          },
+        ],
+      });
     fixture.detectChanges();
   });
 

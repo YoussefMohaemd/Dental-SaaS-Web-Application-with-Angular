@@ -226,7 +226,7 @@ export class SubOrderComponent implements OnInit {
       context: this.buildFormContext(),
       required: form.required,
     });
-    this.formMessage.set("Form saved locally for this session.");
+    this.formMessage.set("Form saved.");
     this.activeFormId.set(null);
   }
 

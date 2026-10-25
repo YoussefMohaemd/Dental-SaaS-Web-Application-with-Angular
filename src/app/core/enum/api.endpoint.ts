@@ -4,6 +4,8 @@ export class ApiEndpoint {
   static readonly AUTH_LOGIN = `${environment.apiBaseUrl}/auth/login`;
   static readonly AUTH_REFRESH = `${environment.apiBaseUrl}/auth/refresh`;
   static readonly AUTH_LOGOUT = `${environment.apiBaseUrl}/auth/logout`;
+  static readonly AUTH_ME = `${environment.apiBaseUrl}/auth/me`;
+  static readonly AUTH_PASSWORD = `${environment.apiBaseUrl}/auth/password`;
   static readonly BILLING = `${environment.apiBaseUrl}/v1/billing`;
   static readonly CASES = `${environment.apiBaseUrl}/v1/cases`;
   static readonly CHANGE_REQUESTS = `${environment.apiBaseUrl}/v1/change-requests`;
@@ -22,5 +24,9 @@ export class ApiEndpoint {
 
   static orderSubOrders(orderId: string): string {
     return `${environment.apiBaseUrl}/v1/orders/${orderId}/sub-orders`;
+  }
+
+  static subOrder(orderId: string, subOrderId: string): string {
+    return `${this.orderSubOrders(orderId)}/${subOrderId}`;
   }
 }

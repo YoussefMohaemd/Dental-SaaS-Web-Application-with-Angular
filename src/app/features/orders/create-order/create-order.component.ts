@@ -1,4 +1,11 @@
-import { Component, computed, inject, OnDestroy, OnInit, signal } from "@angular/core";
+import {
+  Component,
+  computed,
+  inject,
+  OnDestroy,
+  OnInit,
+  signal,
+} from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { PatientDataService } from "@core/services/patient-data.service";
@@ -114,9 +121,10 @@ export class CreateOrderComponent implements OnDestroy, OnInit {
   readonly serviceDetails = signal<Record<string, ServiceDetail>>({});
 
   readonly serviceForms = signal<Record<string, ServiceClinicalForm>>({});
-  readonly uploadTarget = signal<{ serviceId: string; requirement: string } | null>(
-    null,
-  );
+  readonly uploadTarget = signal<{
+    serviceId: string;
+    requirement: string;
+  } | null>(null);
   readonly uploadedRequirementFiles = signal<Record<string, string[]>>({});
   readonly internalCaseFiles = signal<string[]>([]);
   readonly sendMailRecipients = signal<string[]>([]);
@@ -145,23 +153,31 @@ export class CreateOrderComponent implements OnDestroy, OnInit {
     const query = normalizeLookup(this.doctorAutocompleteQuery());
     if (!query) return [];
 
+    const patientDoctorId = this.selectedPatient()?.doctorId;
     const matched = this.doctors()
       .filter((doctor) => {
+        if (patientDoctorId && doctor.id !== patientDoctorId) return false;
         const byName = normalizeLookup(doctor.name).includes(query);
-        const byLookupId = normalizeLookup(doctor.lookupId ?? "").includes(query);
+        const byLookupId = normalizeLookup(doctor.lookupId ?? "").includes(
+          query,
+        );
         return byName || byLookupId;
       })
       .sort((left, right) => {
         const leftLabel = this.doctorSuggestionLabel(left);
         const rightLabel = this.doctorSuggestionLabel(right);
-        const leftStartsName = normalizeLookup(left.name).startsWith(query) ? 0 : 1;
+        const leftStartsName = normalizeLookup(left.name).startsWith(query)
+          ? 0
+          : 1;
         const rightStartsName = normalizeLookup(right.name).startsWith(query)
           ? 0
           : 1;
         if (leftStartsName !== rightStartsName) {
           return leftStartsName - rightStartsName;
         }
-        const leftStartsId = normalizeLookup(left.lookupId ?? "").startsWith(query)
+        const leftStartsId = normalizeLookup(left.lookupId ?? "").startsWith(
+          query,
+        )
           ? 0
           : 1;
         const rightStartsId = normalizeLookup(right.lookupId ?? "").startsWith(
@@ -184,7 +200,12 @@ export class CreateOrderComponent implements OnDestroy, OnInit {
   });
   readonly clinicOptions = computed(() =>
     this.clinics()
-      .filter((c) => c.status === "Active" || c.id === this.form().clinicId)
+      .filter((clinic) => {
+        const requiredClinicId =
+          this.selectedPatient()?.clinicId ?? this.selectedDoctor()?.clinicId;
+        if (requiredClinicId && clinic.id !== requiredClinicId) return false;
+        return clinic.status === "Active" || clinic.id === this.form().clinicId;
+      })
       .map((c) => ({ value: c.id, label: c.name })),
   );
   readonly billToOptions = [
@@ -212,6 +233,16 @@ export class CreateOrderComponent implements OnDestroy, OnInit {
     }
     return out;
   });
+  readonly relationsMatch = computed(() => {
+    const patient = this.selectedPatient();
+    const doctor = this.selectedDoctor();
+    if (!patient || !doctor) return false;
+    return (
+      patient.doctorId === doctor.id &&
+      patient.clinicId === doctor.clinicId &&
+      (this.form().clinicId === "" || patient.clinicId === this.form().clinicId)
+    );
+  });
   readonly steps = CREATE_ORDER_STEPS;
   readonly services: CreateOrderService[] = AVAILABLE_SERVICES;
   readonly shades = SHADES;
@@ -225,7 +256,10 @@ export class CreateOrderComponent implements OnDestroy, OnInit {
   readonly ihTaskRecipients = IH_TASK_RECIPIENTS;
 
   readonly selectedServicesTotal = computed(() =>
-    this.selectedServiceObjects().reduce((sum, service) => sum + service.basePrice, 0),
+    this.selectedServiceObjects().reduce(
+      (sum, service) => sum + service.basePrice,
+      0,
+    ),
   );
   readonly selectedDoctorDisplay = computed(() => {
     const doctor = this.selectedDoctor();
@@ -257,7 +291,9 @@ export class CreateOrderComponent implements OnDestroy, OnInit {
   readonly missingRequiredTeethServices = computed(() =>
     this.selectedServiceObjects()
       .filter((service) => serviceRequiresTeeth(service.id))
-      .filter((service) => this.teethForServiceWithFallback(service.id).length === 0)
+      .filter(
+        (service) => this.teethForServiceWithFallback(service.id).length === 0,
+      )
       .map((service) => service.name),
   );
 
@@ -267,6 +303,17 @@ export class CreateOrderComponent implements OnDestroy, OnInit {
 
   onPatientInput(value: string): void {
     this.setField("patientName", value);
+    const patient = this.matchPatientByName(value);
+    if (patient) {
+      this.applyPatientSelection(patient);
+    } else {
+      this.form.update((current) => ({
+        ...current,
+        doctorName: "",
+        doctorId: "",
+        clinicId: "",
+      }));
+    }
     this.scheduleAutocomplete("patient", value);
   }
 
@@ -290,6 +337,7 @@ export class CreateOrderComponent implements OnDestroy, OnInit {
   }
 
   onPatientBlur(): void {
+    this.syncPatientSelectionFromInput();
     window.setTimeout(() => this.patientAutocompleteOpen.set(false), 120);
   }
 
@@ -301,16 +349,26 @@ export class CreateOrderComponent implements OnDestroy, OnInit {
   }
 
   selectPatientSuggestion(name: string): void {
-    this.setField("patientName", name);
+    const patient = this.matchPatientByName(name);
+    if (patient) {
+      this.applyPatientSelection(patient);
+    } else {
+      this.setField("patientName", name);
+    }
     this.patientAutocompleteQuery.set(name);
     this.patientAutocompleteOpen.set(false);
   }
 
   selectDoctorSuggestion(suggestion: DoctorSuggestion): void {
+    const doctor = this.doctors().find((item) => item.id === suggestion.id);
     this.form.update((current) => ({
       ...current,
       doctorName: suggestion.name,
       doctorId: suggestion.id,
+      clinicId:
+        this.selectedPatient()?.clinicId ??
+        doctor?.clinicId ??
+        current.clinicId,
     }));
     this.doctorAutocompleteQuery.set(suggestion.label);
     this.doctorAutocompleteOpen.set(false);
@@ -368,7 +426,9 @@ export class CreateOrderComponent implements OnDestroy, OnInit {
   }
 
   getServiceForm(serviceId: string): ServiceClinicalForm {
-    return this.serviceForms()[serviceId] ?? defaultServiceClinicalForm(serviceId);
+    return (
+      this.serviceForms()[serviceId] ?? defaultServiceClinicalForm(serviceId)
+    );
   }
 
   needsShadeArch(serviceId: string): boolean {
@@ -400,9 +460,13 @@ export class CreateOrderComponent implements OnDestroy, OnInit {
 
   readonly visibleSelectedTeeth = computed(() => {
     const active = this.activeServiceForTeeth();
-    return active
-      ? [...(this.serviceTeeth()[active] || [])]
-      : [...this.selectedTeeth()];
+    if (active) return [...(this.serviceTeeth()[active] || [])];
+
+    const all = new Set(this.selectedTeeth());
+    Object.values(this.serviceTeeth()).forEach((teeth) =>
+      teeth.forEach((tooth) => all.add(tooth)),
+    );
+    return [...all].sort((left, right) => left - right);
   });
 
   teethForService(serviceId: string): number[] {
@@ -418,10 +482,7 @@ export class CreateOrderComponent implements OnDestroy, OnInit {
   canProceed(): boolean {
     const step = this.step();
     if (step === 1) {
-      return (
-        this.form().patientName.trim().length > 0 &&
-        this.selectedDoctor() !== undefined
-      );
+      return this.selectedPatient() !== undefined && this.relationsMatch();
     }
     if (step === 2) return this.selectedServices().length > 0;
     if (step === 3) return this.missingRequiredTeethServices().length === 0;
@@ -430,10 +491,16 @@ export class CreateOrderComponent implements OnDestroy, OnInit {
 
   validationMessage(): string {
     if (this.step() === 1) {
-      if (this.form().patientName.trim().length === 0) {
-        return "Enter a patient name to continue.";
+      if (!this.selectedPatient()) {
+        return "Select a patient from the list to continue.";
       }
-      return "Select a doctor by name or ID to continue.";
+      if (!this.selectedDoctor()) {
+        return "Select the patient's referring doctor to continue.";
+      }
+      if (!this.relationsMatch()) {
+        return "The selected patient, doctor, and clinic must belong together.";
+      }
+      return "";
     }
     if (this.step() === 2) return "Select at least one service to continue.";
     if (this.step() === 3 && this.missingRequiredTeethServices().length > 0) {
@@ -446,11 +513,11 @@ export class CreateOrderComponent implements OnDestroy, OnInit {
     const current = this.step();
     if (target === current) return;
     if (target < current) {
-      this.step.set(target);
+      this.moveToStep(target);
       return;
     }
     if (target === current + 1 && this.canProceed()) {
-      this.step.set(target);
+      this.moveToStep(target);
     }
   }
 
@@ -463,7 +530,7 @@ export class CreateOrderComponent implements OnDestroy, OnInit {
 
   nextStep(): void {
     if (this.canProceed() && this.step() < this.steps.length) {
-      this.step.update((s) => s + 1);
+      this.moveToStep(this.step() + 1);
     }
   }
 
@@ -471,7 +538,7 @@ export class CreateOrderComponent implements OnDestroy, OnInit {
     if (this.step() === 1) {
       this.navigationService.navigate("orders");
     } else {
-      this.step.update((s) => s - 1);
+      this.moveToStep(this.step() - 1);
     }
   }
 
@@ -544,70 +611,80 @@ export class CreateOrderComponent implements OnDestroy, OnInit {
 
     this.creating.set(true);
     this.createError.set(null);
-    this.orderService.createOrder$({
-      patientId,
-      patientName,
-      doctorId,
-      doctorName,
-      clinicId,
-      clinicName,
-      scanCenterId: scanCenter?.id ?? "",
-      scanCenterName: scanCenter?.name ?? "",
-      status: "New",
-      priority: "Normal",
-      restoration: mapServiceToRestoration(selectedServices[0].id),
-      arch: deriveArchFromSelection(allTeeth),
-      format: this.form().format,
-      shade: this.form().shade,
-      units: Math.max(allTeeth.length, 1),
-      amount: this.selectedServicesTotal(),
-      billed: false,
-      billTo:
-        this.form().billToTarget === "scan-center"
-          ? `Scan Center - ${scanCenter?.name ?? "Scan Center"}`
-          : `Doctor - ${doctorName}`,
-      vouchers: 0,
-      isLocked: false,
-      hasNotes: internalCaseNote.length > 0 || internalCaseFiles.length > 0,
-      notes: internalCaseNote,
-      dueDate,
-      csTask: sendIhTaskTo
-        ? `${sendIhTaskTo}${rushTask ? " (RUSH)" : ""}`
-        : undefined,
-      creationData: {
-        services: serviceRows.map((row) => structuredClone(row.creationData)),
-        communication: {
-          internalCaseNote,
-          internalCaseFiles: [...internalCaseFiles],
-          sendMailTo: [...sendMailTo],
-          sendIhTaskTo: sendIhTaskTo ?? undefined,
-          rushTask,
+    this.orderService
+      .createOrder$({
+        patientId,
+        patientName,
+        doctorId,
+        doctorName,
+        clinicId,
+        clinicName,
+        scanCenterId: scanCenter?.id ?? "",
+        scanCenterName: scanCenter?.name ?? "",
+        status: "New",
+        priority: "Normal",
+        restoration: mapServiceToRestoration(selectedServices[0].id),
+        arch: deriveArchFromSelection(allTeeth),
+        format: this.form().format,
+        shade: this.form().shade,
+        units: Math.max(allTeeth.length, 1),
+        amount: this.selectedServicesTotal(),
+        billed: false,
+        billTo:
+          this.form().billToTarget === "scan-center"
+            ? `Scan Center - ${scanCenter?.name ?? "Scan Center"}`
+            : `Doctor - ${doctorName}`,
+        vouchers: 0,
+        isLocked: false,
+        hasNotes: internalCaseNote.length > 0 || internalCaseFiles.length > 0,
+        notes: internalCaseNote,
+        dueDate,
+        csTask: sendIhTaskTo
+          ? `${sendIhTaskTo}${rushTask ? " (RUSH)" : ""}`
+          : undefined,
+        creationData: {
+          services: serviceRows.map((row) => structuredClone(row.creationData)),
+          communication: {
+            internalCaseNote,
+            internalCaseFiles: [...internalCaseFiles],
+            sendMailTo: [...sendMailTo],
+            sendIhTaskTo: sendIhTaskTo ?? undefined,
+            rushTask,
+          },
         },
-      },
-    }).subscribe({
-      next: (createdOrder) => {
-        this.subOrderService.createForOrder$(createdOrder.id, serviceRows).subscribe({
-          next: () => {
-            this.creating.set(false);
-            this.navigationService.navigate("viewOrder", { orderId: createdOrder.id });
-          },
-          error: (error) => {
-            console.error("Failed to create sub-orders:", error);
-            this.creating.set(false);
-            this.createError.set(
-              error?.error?.message ?? "The order was created, but its services could not be saved.",
-            );
-          },
-        });
-      },
-      error: (error) => {
-        console.error("Failed to create order:", error);
-        this.creating.set(false);
-        this.createError.set(
-          error?.error?.message ?? "Unable to create the order. Check the selected records and try again.",
-        );
-      },
-    });
+      })
+      .subscribe({
+        next: (createdOrder) => {
+          this.subOrderService
+            .createForOrder$(createdOrder.id, serviceRows)
+            .subscribe({
+              next: () => {
+                this.creating.set(false);
+                this.navigationService.navigate("viewOrder", {
+                  orderId: createdOrder.id,
+                });
+              },
+              error: (error) => {
+                console.error("Failed to create sub-orders:", error);
+                this.creating.set(false);
+                this.createError.set(
+                  error?.error?.error?.message ??
+                    error?.error?.message ??
+                    "The order was created, but its services could not be saved.",
+                );
+              },
+            });
+        },
+        error: (error) => {
+          console.error("Failed to create order:", error);
+          this.creating.set(false);
+          this.createError.set(
+            error?.error?.error?.message ??
+              error?.error?.message ??
+              "Unable to create the order. Check the selected records and try again.",
+          );
+        },
+      });
   }
 
   private defaultDueDate(services: readonly CreateOrderService[]): string {
@@ -696,7 +773,29 @@ export class CreateOrderComponent implements OnDestroy, OnInit {
     );
   }
 
-  private matchDoctorByInput(name: string, doctorId: string): Doctor | undefined {
+  private syncPatientSelectionFromInput(): void {
+    const patient = this.matchPatientByName(this.form().patientName);
+    if (patient) this.applyPatientSelection(patient);
+  }
+
+  private applyPatientSelection(patient: Patient): void {
+    const doctor = this.doctors().find((item) => item.id === patient.doctorId);
+    this.form.update((current) => ({
+      ...current,
+      patientName: patient.name,
+      doctorName: doctor?.name ?? patient.doctorName ?? "",
+      doctorId: patient.doctorId,
+      clinicId: patient.clinicId,
+    }));
+    this.doctorAutocompleteQuery.set(
+      doctor ? this.doctorSuggestionLabel(doctor) : (patient.doctorName ?? ""),
+    );
+  }
+
+  private matchDoctorByInput(
+    name: string,
+    doctorId: string,
+  ): Doctor | undefined {
     const byId = doctorId.trim();
     if (byId) {
       const matchedById = this.matchDoctorById(byId);
@@ -714,12 +813,17 @@ export class CreateOrderComponent implements OnDestroy, OnInit {
 
   private matchDoctorById(doctorId: string): Doctor | undefined {
     const needle = normalizeLookup(doctorId);
-    return this.doctors().find((doctor) => normalizeLookup(doctor.id) === needle);
+    return this.doctors().find(
+      (doctor) => normalizeLookup(doctor.id) === needle,
+    );
   }
 
   private syncDoctorSelectionFromInput(): void {
     const current = this.form();
-    const matched = this.matchDoctorByInput(current.doctorName, current.doctorId);
+    const matched = this.matchDoctorByInput(
+      current.doctorName,
+      current.doctorId,
+    );
     if (!matched) {
       this.form.update((value) => ({ ...value, doctorId: "" }));
       return;
@@ -757,6 +861,11 @@ export class CreateOrderComponent implements OnDestroy, OnInit {
     if (current !== null) window.clearTimeout(current);
     if (type === "patient") this.patientAutocompleteTimer = null;
     else this.doctorAutocompleteTimer = null;
+  }
+
+  private moveToStep(target: number): void {
+    if (target !== 3) this.activeServiceForTeeth.set(null);
+    this.step.set(target);
   }
 
   ngOnDestroy(): void {
@@ -816,7 +925,9 @@ export class CreateOrderComponent implements OnDestroy, OnInit {
   }
 
   openUploadDialogForService(serviceId: string, input: HTMLInputElement): void {
-    const service = this.selectedServiceObjects().find((s) => s.id === serviceId);
+    const service = this.selectedServiceObjects().find(
+      (s) => s.id === serviceId,
+    );
     const firstRequirement = service?.scanRequirements[0];
     if (!firstRequirement) return;
     this.openUploadDialogForRequirement(serviceId, firstRequirement, input);
@@ -854,8 +965,9 @@ export class CreateOrderComponent implements OnDestroy, OnInit {
 
   filesForRequirement(serviceId: string, requirement: string): string[] {
     return (
-      this.uploadedRequirementFiles()[this.requirementKey(serviceId, requirement)] ??
-      []
+      this.uploadedRequirementFiles()[
+        this.requirementKey(serviceId, requirement)
+      ] ?? []
     );
   }
 

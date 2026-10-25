@@ -5,6 +5,7 @@ import { provideRouter } from "@angular/router";
 import { SidebarComponent } from "./sidebar.component";
 import { NavigationService } from "@core/services/navigation.service";
 import { ThemeService } from "@core/services/theme.service";
+import { AuthService } from "@core/services/auth.service";
 
 describe("SidebarComponent", () => {
   let component: SidebarComponent;
@@ -33,6 +34,18 @@ describe("SidebarComponent", () => {
         provideRouter([]),
         { provide: NavigationService, useValue: navSpy },
         { provide: ThemeService, useValue: themeSpy },
+        {
+          provide: AuthService,
+          useValue: {
+            user: signal({
+              userId: "user-1",
+              tenantId: "tenant-1",
+              fullName: "Jessica Ruiz",
+              email: "jessica@example.com",
+              roles: ["Lab Manager"],
+            }),
+          },
+        },
       ],
     }).compileComponents();
 

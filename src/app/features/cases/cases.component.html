@@ -10,7 +10,7 @@
       <app-button
         variant="primary"
         size="md"
-        (onClick)="navigateToCreateOrder()"
+        (onClick)="openAddCaseDialog()"
         aria-label="Create new case"
         class="flex items-center gap-2"
       >
@@ -218,4 +218,100 @@
       </div>
     }
   </div>
+
+  <app-entity-dialog
+    [visible]="showAddDialog()"
+    (visibleChange)="showAddDialog.set($event)"
+    (closed)="closeAddCaseDialog()"
+    title="Add Case"
+    subtitle="Create a case and link it to the correct care team."
+  >
+    <div class="mt-4 space-y-3">
+      @if (newCaseError(); as error) {
+        <div
+          class="rounded-lg border border-danger/30 bg-danger/10 px-3 py-2 text-xs text-danger"
+          role="alert"
+        >
+          {{ error }}
+        </div>
+      }
+      <label class="block">
+        <span class="mb-1 block text-xs font-semibold">Case Title</span>
+        <app-input
+          id="case-new-title"
+          [unstyled]="true"
+          inputClass="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
+          placeholder="e.g. Full arch restoration"
+          [value]="newCaseTitle()"
+          (valueChange)="newCaseTitle.set($event); newCaseError.set(null)"
+        ></app-input>
+      </label>
+      <label class="block">
+        <span class="mb-1 block text-xs font-semibold">Patient</span>
+        <app-select
+          id="case-new-patient"
+          [unstyled]="true"
+          selectClass="w-full cursor-pointer rounded-lg border border-border bg-card px-3 py-2 text-sm"
+          [options]="patientOptions()"
+          [value]="newCasePatientId()"
+          (valueChange)="onNewCasePatientChange($event)"
+        ></app-select>
+      </label>
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <label class="block">
+          <span class="mb-1 block text-xs font-semibold">Doctor</span>
+          <app-select
+            id="case-new-doctor"
+            [unstyled]="true"
+            selectClass="w-full cursor-pointer rounded-lg border border-border bg-card px-3 py-2 text-sm"
+            [options]="doctorOptions()"
+            [value]="newCaseDoctorId()"
+            (valueChange)="newCaseDoctorId.set($event)"
+          ></app-select>
+        </label>
+        <label class="block">
+          <span class="mb-1 block text-xs font-semibold">Clinic</span>
+          <app-select
+            id="case-new-clinic"
+            [unstyled]="true"
+            selectClass="w-full cursor-pointer rounded-lg border border-border bg-card px-3 py-2 text-sm"
+            [options]="clinicOptions()"
+            [value]="newCaseClinicId()"
+            (valueChange)="newCaseClinicId.set($event)"
+          ></app-select>
+        </label>
+      </div>
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <label class="block">
+          <span class="mb-1 block text-xs font-semibold">Priority</span>
+          <app-select
+            id="case-new-priority"
+            [unstyled]="true"
+            selectClass="!h-10 !min-h-10 w-full cursor-pointer rounded-lg border border-border bg-card px-3 py-2 text-sm leading-5"
+            [options]="PRIORITY_OPTIONS"
+            [value]="newCasePriority()"
+            (valueChange)="onNewCasePriorityChange($event)"
+          ></app-select>
+        </label>
+        <label class="block">
+          <span class="mb-1 block text-xs font-semibold">Notes</span>
+          <app-input
+            id="case-new-notes"
+            [unstyled]="true"
+            inputClass="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
+            [value]="newCaseNotes()"
+            (valueChange)="newCaseNotes.set($event)"
+          ></app-input>
+        </label>
+      </div>
+    </div>
+    <div dialog-actions>
+      <app-button variant="outline" size="sm" (onClick)="closeAddCaseDialog()"
+        >Cancel</app-button
+      >
+      <app-button variant="primary" size="sm" (onClick)="saveCase()"
+        >Save Case</app-button
+      >
+    </div>
+  </app-entity-dialog>
 </div>

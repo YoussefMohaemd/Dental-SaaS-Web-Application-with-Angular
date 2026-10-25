@@ -30,7 +30,7 @@
                 ? 'bg-success'
                 : s.id === step()
                   ? 'bg-primary ring-4 ring-primary/20'
-                  : 'bg-muted disabled:cursor-not-allowed disabled:opacity-[var(--disabled-opacity)]'
+                  : 'bg-muted disabled:cursor-not-allowed disabled:opacity-(--disabled-opacity)'
             "
             [attr.aria-label]="
               'Step ' +

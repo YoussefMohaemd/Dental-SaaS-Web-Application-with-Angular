@@ -9,6 +9,7 @@ export class DoctorAdapter {
       id: item.id,
       lookupId: item.lookupId,
       name: item.name,
+      gender: item.gender ?? "M",
       specialty: item.specialty,
       clinicId: item.clinicId,
       clinicName: item.clinicName,

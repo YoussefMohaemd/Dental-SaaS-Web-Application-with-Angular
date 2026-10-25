@@ -113,7 +113,7 @@
                       o.restoration
                     }}</span>
                     <span class="text-xs text-muted-foreground">{{
-                      formatUtils.timeAgo(o.updatedAt)
+                      formatUtils.formatDate(o.receivedAt)
                     }}</span>
                   </div>
                 }
@@ -133,7 +133,7 @@
                     { label: "Specialty", value: doctor.specialty },
                     {
                       label: "Joined",
-                      value:                       (doctor.joinedDate | displayDate),
+                      value: (doctor.joinedDate | displayDate),
                     },
                     { label: "Status", value: doctor.status },
                   ];
@@ -246,7 +246,7 @@
             @for (o of doctorOrders().slice(0, 5); track o.id; let i = $index) {
               <div class="relative ml-2">
                 <div
-                  class="absolute -left-[22px] w-3 h-3 rounded-full bg-card border-2 border-primary"
+                  class="absolute -left-5.5 w-3 h-3 rounded-full bg-card border-2 border-primary"
                 ></div>
                 <p class="text-sm text-foreground">
                   Order

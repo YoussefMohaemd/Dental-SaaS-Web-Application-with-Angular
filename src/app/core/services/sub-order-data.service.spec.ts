@@ -4,6 +4,7 @@ import {
   HttpTestingController,
   provideHttpClientTesting,
 } from "@angular/common/http/testing";
+import { ApiEndpoint } from "@core/enum/api.endpoint";
 import { SubOrderDataService } from "./sub-order-data.service";
 
 describe("SubOrderDataService", () => {
@@ -23,8 +24,6 @@ describe("SubOrderDataService", () => {
   });
 
   it("should preserve service, teeth, and file-reference boundaries when creating sub-orders", () => {
-    httpMock.expectOne("/data/sub-orders.json").flush([]);
-
     const created = service.createForOrder("ord-42", [
       {
         serviceId: "gfmr",
@@ -54,24 +53,60 @@ describe("SubOrderDataService", () => {
     expect(service.getDetailById(created[0].id)?.forms.length).toBe(3);
   });
 
+  it("should send service-specific form and scan totals to the API", () => {
+    service
+      .createForOrder$("ord-42", [
+        {
+          serviceId: "final-restoration",
+          service: "Final Restoration",
+          icon: "✨",
+          priority: "Normal",
+          dueDate: "2024-12-24",
+          notes: "",
+          teeth: [11],
+          scanRequirements: ["Prep scan"],
+          creationData: {
+            serviceId: "final-restoration",
+            serviceDetails: {},
+            serviceForm: {},
+            selectedTeeth: [11],
+            scanRequirements: ["Prep scan"],
+            fileReferences: [],
+          },
+        },
+      ])
+      .subscribe();
+
+    const request = httpMock.expectOne(ApiEndpoint.orderSubOrders("ord-42"));
+    expect(request.request.body[0].formsTotal).toBe(3);
+    expect(request.request.body[0].scansTotal).toBe(1);
+    request.flush({ data: [] });
+  });
+
   it("should synthesize detail records from the summary counts for the exact sub-order id", async () => {
-    httpMock.expectOne("/data/sub-orders.json").flush([
-      {
-        id: "so-58",
-        orderId: "ord-33",
-        service: "Shade Match",
-        icon: "clipboard",
-        status: "in-progress",
-        formsComplete: 1,
-        formsTotal: 1,
-        scansComplete: 1,
-        scansTotal: 1,
-        teeth: [45, 46, 47],
-        priority: "High",
-        dueDate: "2024-12-27",
-        notes: "Shade A3 verified against clinic photos before glaze.",
-      },
-    ]);
+    service.load();
+    httpMock.expectOne(ApiEndpoint.ORDERS).flush({
+      data: [{ id: "ord-33" }],
+    });
+    httpMock.expectOne(ApiEndpoint.orderSubOrders("ord-33")).flush({
+      data: [
+        {
+          id: "so-58",
+          orderId: "ord-33",
+          service: "Shade Match",
+          icon: "clipboard",
+          status: "in-progress",
+          formsComplete: 1,
+          formsTotal: 1,
+          scansComplete: 1,
+          scansTotal: 1,
+          teeth: [45, 46, 47],
+          priority: "High",
+          dueDate: "2024-12-27",
+          notes: "Shade A3 verified against clinic photos before glaze.",
+        },
+      ],
+    });
     await new Promise((resolve) => setTimeout(resolve, 250));
 
     const detail = service.getDetailByContext("ord-33", "so-58");
@@ -88,8 +123,6 @@ describe("SubOrderDataService", () => {
   });
 
   it("should replace existing sub-orders for an order when editing", () => {
-    httpMock.expectOne("/data/sub-orders.json").flush([]);
-
     service.replaceForOrder("ord-1", [
       {
         serviceId: "final-restoration",

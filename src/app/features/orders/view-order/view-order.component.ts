@@ -25,6 +25,7 @@ import { EntityDialogComponent } from "@shared/components/entity-dialog/entity-d
 import { IconActionButtonComponent } from "@shared/components/icon-action-button/icon-action-button.component";
 import { OrderSummaryCardComponent } from "@shared/components/order-summary-card/order-summary-card.component";
 import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
+import { DisplayDatePipe } from "@shared/pipes/display-date.pipe";
 import { lucideSvg } from "@shared/icons/lucide-icons";
 import { SubOrderDataService } from "@core/services/sub-order-data.service";
 import { statusDisplayLabel } from "@shared/utils/status-label";
@@ -59,6 +60,7 @@ function withIconSize(svg: string, size?: number): string {
     IconActionButtonComponent,
     OrderSummaryCardComponent,
     SafeHtmlPipe,
+    DisplayDatePipe,
   ],
   templateUrl: "./view-order.component.html",
   styleUrl: "./view-order.component.scss",
@@ -233,6 +235,10 @@ export class ViewOrderComponent implements OnInit {
   }
 
   askDelete(): void {
+    if (this.order()?.isLocked) {
+      this.flashAction("Unlock the order before performing actions.");
+      return;
+    }
     this.confirmDeleteVisible.set(true);
     this.closeMoreMenu();
   }
@@ -248,6 +254,11 @@ export class ViewOrderComponent implements OnInit {
   confirmDelete(): void {
     const current = this.order();
     if (current) {
+      if (current.isLocked) {
+        this.flashAction("Unlock the order before deleting it.");
+        this.confirmDeleteVisible.set(false);
+        return;
+      }
       this.orderService.deleteOrder$(current.id).subscribe({
         next: () => this.navigationService.navigate("orders"),
         error: (error) => console.error("Failed to delete order:", error),
@@ -270,6 +281,10 @@ export class ViewOrderComponent implements OnInit {
     return `SO-${String(index + 1).padStart(2, "0")}`;
   }
 
+  patientGenderLabel(gender: Patient["gender"]): string {
+    return gender === "M" ? "Male" : "Female";
+  }
+
   subOrderProgress(sub: SubOrder): number {
     const forms = sub.formsTotal === 0 ? 1 : sub.formsComplete / sub.formsTotal;
     const scans = sub.scansTotal === 0 ? 1 : sub.scansComplete / sub.scansTotal;
@@ -282,19 +297,19 @@ export class ViewOrderComponent implements OnInit {
 
   navigateToEditOrder(): void {
     const current = this.order();
-    if (!current) return;
+    if (!current || current.isLocked) return;
     this.navigationService.navigate("editOrder", { orderId: current.id });
   }
 
   navigateToWorkflow(): void {
     const current = this.order();
-    if (!current) return;
+    if (!current || current.isLocked) return;
     this.navigationService.navigate("orderWorkflow", { orderId: current.id });
   }
 
   navigateToFiles(): void {
     const current = this.order();
-    if (!current) return;
+    if (!current || current.isLocked) return;
     this.navigationService.navigate("orderFiles", { orderId: current.id });
   }
 

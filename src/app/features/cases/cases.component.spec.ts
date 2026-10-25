@@ -8,6 +8,9 @@ import { DocumentDataService } from "@core/services/document-data.service";
 import { NavigationService } from "@core/services/navigation.service";
 import { OrderDataService } from "@core/services/order-data.service";
 import { FormatUtils } from "@core/services/format-utils.service";
+import { PatientDataService } from "@core/services/patient-data.service";
+import { DoctorDataService } from "@core/services/doctor-data.service";
+import { ClinicDataService } from "@core/services/clinic-data.service";
 import { Case, LabDocument, Order } from "@core/interfaces";
 
 const MOCK_CASES: Case[] = [
@@ -163,16 +166,45 @@ describe("CasesComponent", () => {
   let navigationService: jasmine.SpyObj<NavigationService>;
 
   beforeEach(async () => {
-    const caseSpy = jasmine.createSpyObj("CaseDataService", [], {
-      cases: signal(MOCK_CASES),
-      loading: signal(false),
-    });
-    const orderSpy = jasmine.createSpyObj("OrderDataService", [], {
+    const caseSpy = jasmine.createSpyObj(
+      "CaseDataService",
+      ["loadCases", "createCase$"],
+      {
+        cases: signal(MOCK_CASES),
+        loading: signal(false),
+      },
+    );
+    const orderSpy = jasmine.createSpyObj("OrderDataService", ["loadOrders"], {
       orders: signal(MOCK_ORDERS),
     });
-    const documentSpy = jasmine.createSpyObj("DocumentDataService", [], {
-      documents: signal(MOCK_DOCUMENTS),
-    });
+    const documentSpy = jasmine.createSpyObj(
+      "DocumentDataService",
+      ["loadDocuments"],
+      {
+        documents: signal(MOCK_DOCUMENTS),
+      },
+    );
+    const patientSpy = jasmine.createSpyObj(
+      "PatientDataService",
+      ["loadPatients"],
+      {
+        patients: signal([]),
+      },
+    );
+    const doctorSpy = jasmine.createSpyObj(
+      "DoctorDataService",
+      ["loadDoctors"],
+      {
+        doctors: signal([]),
+      },
+    );
+    const clinicSpy = jasmine.createSpyObj(
+      "ClinicDataService",
+      ["loadClinics"],
+      {
+        clinics: signal([]),
+      },
+    );
     const navSpy = jasmine.createSpyObj("NavigationService", ["navigate"]);
     const formatSpy = jasmine.createSpyObj("FormatUtils", ["timeAgo"]);
     formatSpy.timeAgo.and.returnValue("1d ago");
@@ -184,6 +216,9 @@ describe("CasesComponent", () => {
         { provide: CaseDataService, useValue: caseSpy },
         { provide: OrderDataService, useValue: orderSpy },
         { provide: DocumentDataService, useValue: documentSpy },
+        { provide: PatientDataService, useValue: patientSpy },
+        { provide: DoctorDataService, useValue: doctorSpy },
+        { provide: ClinicDataService, useValue: clinicSpy },
         { provide: NavigationService, useValue: navSpy },
         { provide: FormatUtils, useValue: formatSpy },
       ],
@@ -208,9 +243,9 @@ describe("CasesComponent", () => {
     expect(component.filtered().length).toBe(3);
   });
 
-  it("should navigate to createOrder when New Case is clicked (React parity)", () => {
-    component.navigateToCreateOrder();
-    expect(navigationService.navigate).toHaveBeenCalledWith("createOrder");
+  it("should open the Add Case form when New Case is clicked", () => {
+    component.openAddCaseDialog();
+    expect(component.showAddDialog()).toBeTrue();
     const action = fixture.debugElement.query(By.css("app-button"));
     expect(action.nativeElement.textContent).toContain("New Case");
   });

@@ -166,8 +166,9 @@ export class WorkflowBoardComponent implements OnInit {
     return order.id;
   }
 
-  navigateToOrder(orderId: string): void {
-    this.navigationService.navigate("viewOrder", { orderId });
+  navigateToOrder(order: Order): void {
+    if (order.isLocked) return;
+    this.navigationService.navigate("viewOrder", { orderId: order.id });
   }
 
   getPriorityColor(priority: string): string {

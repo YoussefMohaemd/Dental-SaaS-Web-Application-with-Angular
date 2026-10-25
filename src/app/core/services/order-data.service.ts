@@ -6,6 +6,10 @@ import { ApiEndpoint } from "@core/enum/api.endpoint";
 import { OrdersApi } from "@core/base/orders.api";
 import { OrderAdapter } from "@core/adapters/order.adapter";
 
+type OrderMutation = Omit<Partial<Order>, "archiveDate"> & {
+  archiveDate?: string | null;
+};
+
 @Injectable({ providedIn: "root" })
 export class OrderDataService extends OrdersApi {
   private readonly http = inject(HttpClient);
@@ -68,6 +72,14 @@ export class OrderDataService extends OrdersApi {
       );
   }
 
+  getOrderById$(id: string): Observable<Order> {
+    return this.http
+      .get<{ data: ApiOrderItem }>(`${this.API_URL}/${id}`)
+      .pipe(
+        map((response) => this.orderAdapter.OrdersAdapter([response.data])[0]),
+      );
+  }
+
   createOrder$(
     payload: Omit<Order, "id" | "orderNumber" | "receivedAt" | "updatedAt" | "createdAt">,
   ): Observable<Order> {
@@ -91,7 +103,10 @@ export class OrderDataService extends OrdersApi {
       );
   }
 
-  updateOrder$(id: string, updates: Partial<Order>): Observable<Order> {
+  updateOrder$(
+    id: string,
+    updates: OrderMutation,
+  ): Observable<Order> {
     return this.http
       .patch<{ data: ApiOrderItem }>(
         `${this.API_URL}/${id}`,
@@ -213,7 +228,9 @@ export class OrderDataService extends OrdersApi {
     return deleted;
   }
 
-  private toApiOrderPayload(payload: Partial<Order>): Record<string, unknown> {
+  private toApiOrderPayload(
+    payload: OrderMutation,
+  ): Record<string, unknown> {
     const allowed = [
       "orderNumber",
       "patientId",

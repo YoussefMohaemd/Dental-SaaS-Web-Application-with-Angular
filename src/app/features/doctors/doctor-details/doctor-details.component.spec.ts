@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
+import { signal } from "@angular/core";
 import {
   ActivatedRoute,
   convertToParamMap,
@@ -27,11 +28,19 @@ describe("DoctorDetailsComponent", () => {
         },
         {
           provide: DoctorDataService,
-          useValue: { getDoctorById: () => undefined },
+          useValue: {
+            getDoctorById: () => undefined,
+            loadDoctors: jasmine.createSpy("loadDoctors"),
+            doctors: signal([]),
+          },
         },
         {
           provide: OrderDataService,
-          useValue: { getOrdersByDoctor: () => [] },
+          useValue: {
+            getOrdersByDoctor: () => [],
+            loadOrders: jasmine.createSpy("loadOrders"),
+            orders: signal([]),
+          },
         },
       ],
     }).compileComponents();

@@ -54,25 +54,24 @@ export class DoctorDataService extends DoctorApi {
   }
 
   getAllDoctors() {
-    return this.http
-      .get<{ data: ApiDoctorItem[] }>(this.API_URL)
-      .pipe(
-        map((response) => response.data ?? []),
-        map((rows) => this.doctorAdapter.DoctorAdapter(rows)),
-      );
+    return this.http.get<{ data: ApiDoctorItem[] }>(this.API_URL).pipe(
+      map((response) => response.data ?? []),
+      map((rows) => this.doctorAdapter.DoctorAdapter(rows)),
+    );
   }
 
   createDoctor$(
     payload: Omit<Doctor, "id" | "clinicName" | "ordersCount" | "avatar"> & {
       avatar?: string;
+      gender?: "M" | "F";
     },
   ): Observable<Doctor> {
-    return this.http
-      .post<{ data: ApiDoctorItem }>(this.API_URL, payload)
-      .pipe(
-        map((response) => this.doctorAdapter.DoctorAdapter([response.data])[0]),
-        tap((created) => this._doctors.update((current) => [created, ...current])),
-      );
+    return this.http.post<{ data: ApiDoctorItem }>(this.API_URL, payload).pipe(
+      map((response) => this.doctorAdapter.DoctorAdapter([response.data])[0]),
+      tap((created) =>
+        this._doctors.update((current) => [created, ...current]),
+      ),
+    );
   }
 
   getDoctorById(id: string): Doctor | undefined {

@@ -43,6 +43,47 @@ function toDetailFromJson(row: SubOrderJson): SubOrderDetail | null {
   };
 }
 
+const SERVICE_ID_BY_NAME: Record<string, string> = {
+  "crown design": "final-restoration",
+  "digital wax-up": "treatment-plan",
+  milling: "fmb",
+  "quality control": "other",
+};
+
+const SERVICE_SCAN_TEMPLATES: Record<string, string[]> = {
+  "treatment-plan": ["Full arch STL", "Bite registration"],
+  "surgical-guide": [
+    "CBCT / CT scan",
+    "STL dental model",
+    "Supporting reference files",
+  ],
+  gfmr: ["Upper arch scan", "Lower arch scan", "Bite scan"],
+  fmb: ["Upper arch STL", "Lower arch STL"],
+  "temp-restoration": ["Working model scan", "Antagonist scan"],
+  "final-restoration": [
+    "Prep scan",
+    "Antagonist scan",
+    "Shade reference photo",
+  ],
+  "full-guide": [
+    "CBCT / CT scan",
+    "Full arch STL",
+    "Diagnostic model",
+    "Bite registration",
+  ],
+  other: ["As specified"],
+};
+
+function resolveServiceId(
+  row: Pick<SubOrderJson, "service" | "creationData">,
+): string {
+  return (
+    row.creationData?.serviceId?.trim().toLowerCase() ??
+    SERVICE_ID_BY_NAME[row.service.trim().toLowerCase()] ??
+    row.service.trim().toLowerCase()
+  );
+}
+
 function buildDetailFromSummary(
   row: Pick<
     SubOrderJson,
@@ -55,32 +96,29 @@ function buildDetailFromSummary(
     | "creationData"
   >,
 ): SubOrderDetail {
-  const serviceFormEntries = Object.entries(row.creationData?.serviceForm ?? {});
-  const formEntries =
-    serviceFormEntries.length > 0
-      ? serviceFormEntries
-      : Array.from({ length: row.formsTotal }, (_, index) => [
-          `form-${index + 1}`,
-          "",
-        ] as const);
-  const forms: SubOrderDetail["forms"] = formEntries.map(
-    ([key, value], index) => ({
-      id: `${row.id}-form-${index + 1}`,
-      label: serviceFormEntries.length > 0 ? humanizeFieldName(key) : (
-        row.formsTotal === 1
-          ? `${row.service} Form`
-          : `${row.service} Form ${index + 1}`
-      ),
-      required: true,
-      status:
-        (typeof value === "string" && value.trim().length > 0) ||
-        index < row.formsComplete
-          ? "complete"
-          : "incomplete",
-    }),
+  const serviceId = resolveServiceId(row);
+  const templates = SERVICE_FORM_TEMPLATES[serviceId];
+  const formCount = templates?.length ?? row.formsTotal;
+  const forms: SubOrderDetail["forms"] = Array.from(
+    { length: formCount },
+    (_, index) => {
+      const template = templates?.[index];
+      return {
+        id: `${row.id}-form-${index + 1}`,
+        label:
+          template?.label ??
+          (formCount === 1
+            ? `${row.service} Form`
+            : `${row.service} Form ${index + 1}`),
+        required: template?.required ?? true,
+        status: index < row.formsComplete ? "complete" : "incomplete",
+      };
+    },
   );
 
-  const scanRequirements = row.creationData?.scanRequirements ?? [];
+  const scanRequirements = row.creationData?.scanRequirements?.length
+    ? row.creationData.scanRequirements
+    : (SERVICE_SCAN_TEMPLATES[serviceId] ?? []);
   const scanEntries =
     scanRequirements.length > 0
       ? scanRequirements
@@ -90,10 +128,12 @@ function buildDetailFromSummary(
             : `${row.service} Scan ${index + 1}`,
         );
   const scans: SubOrderDetail["scans"] = Array.from(
-    { length: scanEntries.length },
+    {
+      length: scanEntries.length > 0 ? scanEntries.length : row.scansTotal,
+    },
     (_, index) => ({
       id: `${row.id}-scan-${index + 1}`,
-      label: scanEntries[index],
+      label: scanEntries[index] ?? `${row.service} Scan ${index + 1}`,
       format: "Any file type",
       status: index < row.scansComplete ? "uploaded" : "missing",
     }),
@@ -200,8 +240,7 @@ export class SubOrderDataService {
 
   readonly count = computed(() => this._subOrders().length);
 
-  constructor() {
-  }
+  constructor() {}
 
   load(): void {
     this._loading.set(true);
@@ -240,14 +279,22 @@ export class SubOrderDataService {
       )
       .subscribe({
         next: (rows) => {
-          this._subOrders.set(rows);
           const nextDetails: Record<string, SubOrderDetail> = {};
-          rows.forEach((row) => {
-            nextDetails[row.id] =
+          const normalizedRows = rows.map((row) => {
+            const detail =
               toDetailFromJson(row) ??
               this._details()[row.id] ??
               buildDetailFromSummary(row);
+            nextDetails[row.id] = detail;
+            return {
+              ...row,
+              formsTotal: detail.forms.length,
+              formsComplete: Math.min(row.formsComplete, detail.forms.length),
+              scansTotal: detail.scans.length,
+              scansComplete: Math.min(row.scansComplete, detail.scans.length),
+            };
           });
+          this._subOrders.set(normalizedRows);
           this._details.set(nextDetails);
           this._loading.set(false);
         },
@@ -413,7 +460,13 @@ export class SubOrderDataService {
     return this.createForOrder(orderId, rows);
   }
 
-  private toApiSubOrderPayload(row: CreateSubOrderInput): Record<string, unknown> {
+  private toApiSubOrderPayload(
+    row: CreateSubOrderInput,
+  ): Record<string, unknown> {
+    const formsTotal = this.formTemplatesForService(
+      row.serviceId,
+      row.service,
+    ).length;
     return {
       service: row.service,
       icon: row.icon,
@@ -421,6 +474,7 @@ export class SubOrderDataService {
       dueDate: row.dueDate,
       notes: row.notes,
       teeth: row.teeth,
+      formsTotal,
       scansTotal: row.scanRequirements.length,
       creationData: row.creationData,
     };
@@ -482,6 +536,7 @@ export class SubOrderDataService {
       },
     }));
     this.refreshSubOrderCounts([subOrderId]);
+    this.persistSubOrderProgress(subOrderId);
   }
 
   saveScanFiles(
@@ -512,6 +567,7 @@ export class SubOrderDataService {
       },
     }));
     this.refreshSubOrderCounts([subOrderId]);
+    this.persistSubOrderProgress(subOrderId);
   }
 
   addActivityNote(subOrderId: string, user: string, text: string): void {
@@ -541,10 +597,7 @@ export class SubOrderDataService {
     subOrderId: string,
     row: CreateSubOrderInput,
   ): SubOrderDetail["forms"] {
-    const serviceId = this.normalizeServiceId(row.serviceId);
-    const templates = SERVICE_FORM_TEMPLATES[serviceId] ?? [
-      { label: `${row.service} Clinical Form`, required: true },
-    ];
+    const templates = this.formTemplatesForService(row.serviceId, row.service);
 
     return templates.map((template, index) => ({
       id: `${subOrderId}-form-${index + 1}`,
@@ -556,6 +609,19 @@ export class SubOrderDataService {
 
   private normalizeServiceId(value: string): string {
     return value.trim().toLowerCase();
+  }
+
+  private formTemplatesForService(
+    serviceId: string,
+    serviceName: string,
+  ): ServiceFormTemplate[] {
+    const normalizedId = this.normalizeServiceId(serviceId);
+    return (
+      SERVICE_FORM_TEMPLATES[normalizedId] ??
+      SERVICE_FORM_TEMPLATES[serviceName.trim().toLowerCase()] ?? [
+        { label: `${serviceName} Clinical Form`, required: true },
+      ]
+    );
   }
 
   private refreshSubOrderCounts(subOrderIds: string[]): void {
@@ -594,6 +660,36 @@ export class SubOrderDataService {
         };
       }),
     );
+  }
+
+  private persistSubOrderProgress(subOrderId: string): void {
+    const subOrder = this._subOrders().find((row) => row.id === subOrderId);
+    if (!subOrder?.orderId) return;
+
+    this.http
+      .patch<{ data: SubOrderJson }>(
+        ApiEndpoint.subOrder(subOrder.orderId, subOrder.id),
+        {
+          status: subOrder.status,
+          formsComplete: subOrder.formsComplete,
+          formsTotal: subOrder.formsTotal,
+          scansComplete: subOrder.scansComplete,
+          scansTotal: subOrder.scansTotal,
+        },
+      )
+      .subscribe({
+        next: (response) => {
+          if (!response.data) return;
+          const updated = this.toSubOrder(response.data);
+          this._subOrders.update((rows) =>
+            rows.map((row) => (row.id === updated.id ? updated : row)),
+          );
+        },
+        error: (error) => {
+          console.error("Failed to persist sub-order progress:", error);
+          this._error.set("Progress could not be saved to the server.");
+        },
+      });
   }
 
   private deriveStatus(

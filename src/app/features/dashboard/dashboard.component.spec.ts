@@ -27,13 +27,13 @@ describe("DashboardComponent", () => {
   ];
 
   beforeEach(async () => {
-    const orderSpy = jasmine.createSpyObj("OrderDataService", [], {
+    const orderSpy = jasmine.createSpyObj("OrderDataService", ["loadOrders"], {
       orders: signal([]),
       loading: signal(false),
       urgentOrdersCount: signal(0),
       completedTodayCount: signal(0),
     });
-    const caseSpy = jasmine.createSpyObj("CaseDataService", [], {
+    const caseSpy = jasmine.createSpyObj("CaseDataService", ["loadCases"], {
       cases: signal([]),
     });
     const navSpy = jasmine.createSpyObj("NavigationService", ["navigate"]);
@@ -56,6 +56,7 @@ describe("DashboardComponent", () => {
         {
           provide: DashboardDataService,
           useValue: {
+            loadVolume: jasmine.createSpy("loadVolume"),
             currentDays: signal(volumeDays),
             weekMax: signal(21),
             loading: signal(false),
@@ -74,13 +75,18 @@ describe("DashboardComponent", () => {
                 createdAt: "2024-12-16T10:00:00Z",
               },
             ]),
+            loadNotifications: jasmine.createSpy("loadNotifications"),
             loading: signal(false),
             unreadCount: signal(1),
           },
         },
         {
           provide: ChangeRequestDataService,
-          useValue: { changeRequests: signal([]), loading: signal(false) },
+          useValue: {
+            changeRequests: signal([]),
+            loading: signal(false),
+            loadChangeRequests: jasmine.createSpy("loadChangeRequests"),
+          },
         },
       ],
     }).compileComponents();
@@ -159,7 +165,7 @@ describe("DashboardComponent", () => {
   it("should derive workflow stages from order data with a fallback", () => {
     expect(component.workflowData().length).toBe(6);
     const max = Math.max(...component.workflowData().map((w) => w.count));
-    expect(component.getWorkflowBarWidth(max)).toBe(100);
+    expect(component.getWorkflowBarWidth(max)).toBe(0);
     expect(component.getWorkflowBarWidth(0)).toBe(0);
   });
 

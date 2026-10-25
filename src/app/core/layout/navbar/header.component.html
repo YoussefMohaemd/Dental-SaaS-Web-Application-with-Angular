@@ -127,11 +127,13 @@
         aria-label="Profile menu"
       >
         <app-avatar
-          [name]="'Jessica Ruiz'"
+          [name]="accountName()"
           [size]="'sm'"
           [variant]="'primary'"
         />
-        <span class="text-sm font-medium hidden xl:block">Jessica R.</span>
+        <span class="text-sm font-medium hidden xl:block">{{
+          accountName()
+        }}</span>
         <span
           [innerHTML]="getIconSvg('chevron-down') | safeHtml"
           class="hidden xl:inline-flex text-muted-foreground"
@@ -139,8 +141,19 @@
       </button>
       @if (profileOpen()) {
         <div
-          class="absolute right-0 top-full mt-2 w-44 sm:w-48 bg-card border border-border rounded-xl shadow-xl z-50 py-1"
+          class="absolute right-0 top-full mt-2 w-56 bg-card border border-border rounded-xl shadow-xl z-50 py-1"
         >
+          <div class="border-b border-border px-4 py-3">
+            <p class="truncate text-sm font-semibold text-foreground">
+              {{ accountName() }}
+            </p>
+            <p class="truncate text-xs text-muted-foreground">
+              {{ accountEmail() }}
+            </p>
+            <p class="mt-1 text-[11px] text-muted-foreground">
+              {{ accountRole() }}
+            </p>
+          </div>
           <button
             (click)="navigateToSettings()"
             class="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm hover:bg-muted"

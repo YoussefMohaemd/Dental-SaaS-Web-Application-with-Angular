@@ -21,6 +21,7 @@ import { StatusBadgeComponent } from "@shared/components/status-badge/status-bad
 import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
 import { DisplayDatePipe } from "@shared/pipes/display-date.pipe";
 import { filterTableRows, sortTableRows } from "@shared/utils/table-state";
+import { getApiErrorMessage } from "@shared/utils/api-error";
 import {
   buildSortAriaLabel,
   sortAriaValue,
@@ -70,6 +71,14 @@ export class DoctorsComponent implements OnInit {
   readonly newSpecialty = signal("General Dentistry");
   readonly newClinic = signal("");
   readonly newEmail = signal("");
+  readonly newGender = signal<"M" | "F">("M");
+  readonly newDoctorError = signal<string | null>(null);
+  readonly clinicOptions = computed(() =>
+    this.clinicService.clinics().map((clinic) => ({
+      value: clinic.name,
+      label: clinic.name,
+    })),
+  );
 
   ngOnInit(): void {
     this.doctorService.loadDoctors();
@@ -161,6 +170,8 @@ export class DoctorsComponent implements OnInit {
     this.newClinic.set(this.clinicService.clinics()[0]?.name ?? "");
     this.newEmail.set("");
     this.newPhone.set("");
+    this.newGender.set("M");
+    this.newDoctorError.set(null);
     this.showAddDialog.set(true);
   }
 
@@ -176,10 +187,31 @@ export class DoctorsComponent implements OnInit {
     const clinic = this.clinicService
       .clinics()
       .find((item) => item.name === this.newClinic());
-    if (!name || !specialty || !email || !phone || !clinic) {
-      console.error("Doctor requires name, specialty, contact details, and clinic.");
+    const errors: string[] = [];
+    if (
+      !/^\p{L}[\p{L}\s.'-]{1,}$/u.test(name) ||
+      name.split(/\s+/).length < 2
+    ) {
+      errors.push("Enter the doctor's first and last name.");
+    }
+    if (!specialty) {
+      errors.push("Select a specialty.");
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      errors.push("Enter a valid email address.");
+    }
+    const phoneDigits = phone.replace(/\D/g, "");
+    if (!/^[+()\d\s-]{7,20}$/.test(phone) || phoneDigits.length < 7) {
+      errors.push("Enter a valid phone number.");
+    }
+    if (!clinic) {
+      errors.push("Select an existing clinic.");
+    }
+    if (errors.length > 0) {
+      this.newDoctorError.set(errors.join(" "));
       return;
     }
+    if (!clinic) return;
     const initials =
       name
         .replace(/^Dr\.\s*/, "")
@@ -188,19 +220,27 @@ export class DoctorsComponent implements OnInit {
         .join("")
         .slice(0, 2)
         .toUpperCase() || "ND";
-    this.doctorService.createDoctor$({
-      name: name.startsWith("Dr.") ? name : `Dr. ${name}`,
-      specialty,
-      clinicId: clinic.id,
-      email,
-      phone,
-      status: "Active",
-      joinedDate: new Date().toISOString().slice(0, 10),
-      avatar: initials,
-    }).subscribe({
-      next: () => this.showAddDialog.set(false),
-      error: (error) => console.error("Failed to create doctor:", error),
-    });
+    this.doctorService
+      .createDoctor$({
+        name: name.startsWith("Dr.") ? name : `Dr. ${name}`,
+        gender: this.newGender(),
+        specialty,
+        clinicId: clinic.id,
+        email,
+        phone,
+        status: "Active",
+        joinedDate: new Date().toISOString().slice(0, 10),
+        avatar: initials,
+      })
+      .subscribe({
+        next: () => this.showAddDialog.set(false),
+        error: (error) => {
+          console.error("Failed to create doctor:", error);
+          this.newDoctorError.set(
+            getApiErrorMessage(error, "Unable to create the doctor."),
+          );
+        },
+      });
   }
 
   doctorDisplayId(doctor: Doctor): string {

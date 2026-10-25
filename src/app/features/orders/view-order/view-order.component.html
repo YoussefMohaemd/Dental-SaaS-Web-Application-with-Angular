@@ -152,7 +152,9 @@
           <div class="order-stage-track flex items-end gap-0">
             @for (stage of stages; track stage; let i = $index) {
               <div class="order-stage-item flex items-center flex-1">
-                <div class="order-stage-node flex flex-col items-center gap-1 shrink-0">
+                <div
+                  class="order-stage-node flex flex-col items-center gap-1 shrink-0"
+                >
                   <div
                     class="w-6 h-6 rounded-full flex items-center justify-center text-xs"
                     [class]="
@@ -387,7 +389,10 @@
                   >
                     {{ p.name }}
                   </p>
-                  <p class="text-xs text-muted-foreground">{{ p.dob }}</p>
+                  <p class="text-xs text-muted-foreground">
+                    {{ patientGenderLabel(p.gender) }} &middot;
+                    {{ p.dob | displayDate }}
+                  </p>
                 </div>
                 <span
                   [innerHTML]="getStageSvg('chevron-right') | safeHtml"
@@ -398,6 +403,9 @@
               <div class="space-y-0.5 text-xs text-muted-foreground">
                 <div class="truncate">{{ p.phone }}</div>
                 <div class="truncate">{{ p.email }}</div>
+                <div class="truncate">
+                  Last visit: {{ p.lastVisit | displayDate }}
+                </div>
               </div>
             </button>
           } @else {
@@ -440,7 +448,9 @@
               </div>
             </button>
           } @else {
-            <p class="text-sm text-muted-foreground">{{ o.doctorName || "—" }}</p>
+            <p class="text-sm text-muted-foreground">
+              {{ o.doctorName || "—" }}
+            </p>
           }
         </div>
 
@@ -474,7 +484,9 @@
               </div>
             </button>
           } @else {
-            <p class="text-sm text-muted-foreground">{{ o.clinicName || "—" }}</p>
+            <p class="text-sm text-muted-foreground">
+              {{ o.clinicName || "—" }}
+            </p>
           }
         </div>
 

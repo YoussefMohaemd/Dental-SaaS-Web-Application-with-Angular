@@ -1,0 +1,430 @@
+<div class="flex flex-col">
+  <div
+    class="shrink-0 border-b border-border bg-card px-4 py-3 sm:px-6 sm:py-4"
+  >
+    <app-data-table-toolbar
+      title="Archived Orders"
+      [subtitle]="orders().length + ' archived orders'"
+    >
+      <div
+        header-actions
+        class="ml-auto flex w-full items-center justify-end gap-2 sm:w-auto"
+      >
+        <app-button
+          variant="outline"
+          size="sm"
+          (onClick)="navigationService.navigate('orders')"
+        >
+          Back to Orders
+        </app-button>
+      </div>
+    </app-data-table-toolbar>
+  </div>
+
+  <div
+    class="shrink-0 space-y-2 border-b border-border bg-card px-4 py-3 sm:px-6"
+  >
+    @if (actionError(); as error) {
+      <p class="text-xs text-danger" role="alert">{{ error }}</p>
+    }
+    <div class="flex flex-wrap items-center gap-2">
+      <label for="archived-orders-search" class="sr-only">
+        Search archived orders
+      </label>
+      <input
+        id="archived-orders-search"
+        type="search"
+        [value]="search()"
+        (input)="onSearch($event)"
+        placeholder="Search order, patient, doctor..."
+        class="min-w-0 flex-1 rounded-lg border border-border bg-card px-3 py-1.5 text-xs text-foreground outline-none focus:border-primary sm:max-w-72"
+      />
+
+      @if (selectedIds().size > 0) {
+        <div
+          class="ml-auto flex items-center gap-1.5 rounded-lg border border-primary/20 bg-primary/10 px-2 py-1"
+        >
+          <span
+            class="mr-1 whitespace-nowrap text-xs font-semibold text-primary"
+          >
+            {{ selectedIds().size }} selected
+          </span>
+          <app-button
+            variant="ghost"
+            size="sm"
+            buttonClass="!min-h-0 !rounded-md !px-2 !py-1 text-xs text-primary"
+            [disabled]="!!actionId()"
+            [loading]="actionId() === 'bulk'"
+            (onClick)="restoreSelected()"
+          >
+            Restore
+          </app-button>
+          <app-button
+            variant="ghost"
+            size="sm"
+            buttonClass="!min-h-0 !rounded-md !px-2 !py-1 text-xs text-danger hover:!text-danger/80"
+            [disabled]="!!actionId()"
+            (onClick)="requestDeleteSelected()"
+          >
+            Delete
+          </app-button>
+        </div>
+      }
+    </div>
+  </div>
+
+  @if (orders().length === 0) {
+    <app-empty-state
+      title="No archived orders"
+      description="Archived orders will appear here so you can restore them later."
+    ></app-empty-state>
+  } @else {
+    <div class="orders-archive-table-scroll">
+      <table class="orders-archive-table">
+        <thead>
+          <tr>
+            <th scope="col" style="width: 2.25rem; min-width: 2.25rem">
+              <button
+                type="button"
+                class="text-muted-foreground transition-colors hover:text-foreground"
+                (click)="toggleSelectAll()"
+                [attr.aria-pressed]="allSelected()"
+                aria-label="Select all unlocked archived orders"
+              >
+                <span
+                  [innerHTML]="allSelected() ? '✓' : '□'"
+                  [class.text-primary]="allSelected()"
+                ></span>
+              </button>
+            </th>
+            <th
+              scope="col"
+              style="min-width: 10.5rem"
+              [attr.aria-sort]="sortAriaSort('orderNumber')"
+            >
+              <button
+                type="button"
+                (click)="toggleSort('orderNumber')"
+                [attr.aria-label]="sortAriaLabel('orderNumber')"
+              >
+                Order #
+                <span
+                  class="sort-icon"
+                  [innerHTML]="sortIconSvg('orderNumber') | safeHtml"
+                ></span>
+              </button>
+            </th>
+            <th
+              scope="col"
+              style="min-width: 7.5rem"
+              [attr.aria-sort]="sortAriaSort('patientName')"
+            >
+              <button
+                type="button"
+                (click)="toggleSort('patientName')"
+                [attr.aria-label]="sortAriaLabel('patientName')"
+              >
+                Patient
+                <span
+                  class="sort-icon"
+                  [innerHTML]="sortIconSvg('patientName') | safeHtml"
+                ></span>
+              </button>
+            </th>
+            <th
+              scope="col"
+              style="min-width: 7.5rem"
+              [attr.aria-sort]="sortAriaSort('doctorName')"
+            >
+              <button
+                type="button"
+                (click)="toggleSort('doctorName')"
+                [attr.aria-label]="sortAriaLabel('doctorName')"
+              >
+                Doctor
+                <span
+                  class="sort-icon"
+                  [innerHTML]="sortIconSvg('doctorName') | safeHtml"
+                ></span>
+              </button>
+            </th>
+            <th
+              scope="col"
+              style="min-width: 6.5rem"
+              [attr.aria-sort]="sortAriaSort('scanCenterName')"
+            >
+              <button
+                type="button"
+                (click)="toggleSort('scanCenterName')"
+                [attr.aria-label]="sortAriaLabel('scanCenterName')"
+              >
+                Scan Center
+                <span
+                  class="sort-icon"
+                  [innerHTML]="sortIconSvg('scanCenterName') | safeHtml"
+                ></span>
+              </button>
+            </th>
+            <th
+              scope="col"
+              style="min-width: 5.5rem"
+              [attr.aria-sort]="sortAriaSort('billTo')"
+            >
+              <button
+                type="button"
+                (click)="toggleSort('billTo')"
+                [attr.aria-label]="sortAriaLabel('billTo')"
+              >
+                Bill To
+                <span
+                  class="sort-icon"
+                  [innerHTML]="sortIconSvg('billTo') | safeHtml"
+                ></span>
+              </button>
+            </th>
+            <th
+              scope="col"
+              style="min-width: 4.5rem"
+              [attr.aria-sort]="sortAriaSort('arch')"
+            >
+              <button
+                type="button"
+                (click)="toggleSort('arch')"
+                [attr.aria-label]="sortAriaLabel('arch')"
+              >
+                Max/Mand
+                <span
+                  class="sort-icon"
+                  [innerHTML]="sortIconSvg('arch') | safeHtml"
+                ></span>
+              </button>
+            </th>
+            <th
+              scope="col"
+              style="min-width: 6.5rem"
+              [attr.aria-sort]="sortAriaSort('restoration')"
+            >
+              <button
+                type="button"
+                (click)="toggleSort('restoration')"
+                [attr.aria-label]="sortAriaLabel('restoration')"
+              >
+                Format / Rest.
+                <span
+                  class="sort-icon"
+                  [innerHTML]="sortIconSvg('restoration') | safeHtml"
+                ></span>
+              </button>
+            </th>
+            <th
+              scope="col"
+              class="text-right"
+              style="min-width: 5rem"
+              [attr.aria-sort]="sortAriaSort('amount')"
+            >
+              <button
+                type="button"
+                (click)="toggleSort('amount')"
+                [attr.aria-label]="sortAriaLabel('amount')"
+              >
+                Amount
+                <span
+                  class="sort-icon"
+                  [innerHTML]="sortIconSvg('amount') | safeHtml"
+                ></span>
+              </button>
+            </th>
+            <th scope="col" class="text-center" style="min-width: 4rem">
+              Billed
+            </th>
+            <th scope="col" class="text-center" style="min-width: 4rem">
+              Vouchers
+            </th>
+            <th
+              scope="col"
+              style="min-width: 6.4rem"
+              [attr.aria-sort]="sortAriaSort('status')"
+            >
+              <button
+                type="button"
+                (click)="toggleSort('status')"
+                [attr.aria-label]="sortAriaLabel('status')"
+              >
+                Status
+                <span
+                  class="sort-icon"
+                  [innerHTML]="sortIconSvg('status') | safeHtml"
+                ></span>
+              </button>
+            </th>
+            <th
+              scope="col"
+              style="min-width: 8rem"
+              [attr.aria-sort]="sortAriaSort('archiveDate')"
+            >
+              <button
+                type="button"
+                (click)="toggleSort('archiveDate')"
+                [attr.aria-label]="sortAriaLabel('archiveDate')"
+              >
+                Archived
+                <span
+                  class="sort-icon"
+                  [innerHTML]="sortIconSvg('archiveDate') | safeHtml"
+                ></span>
+              </button>
+            </th>
+            <th scope="col" class="text-center" style="min-width: 5rem">
+              Lock
+            </th>
+            <th scope="col" style="min-width: 7.5rem">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (order of orders(); track order.id) {
+            <tr [class.is-selected]="isSelected(order.id)">
+              <td>
+                <button
+                  type="button"
+                  class="text-muted-foreground transition-colors hover:text-primary disabled:cursor-not-allowed disabled:opacity-40"
+                  [disabled]="order.isLocked"
+                  (click)="toggleSelect(order.id)"
+                  [attr.aria-pressed]="isSelected(order.id)"
+                  [attr.aria-label]="'Select order ' + order.orderNumber"
+                >
+                  {{ isSelected(order.id) ? "✓" : "□" }}
+                </button>
+              </td>
+              <td>
+                <button
+                  type="button"
+                  class="order-number-link"
+                  [disabled]="order.isLocked"
+                  (click)="openOrder(order)"
+                  [title]="
+                    order.isLocked
+                      ? 'Unlock this order to open it'
+                      : 'Open order ' + order.orderNumber
+                  "
+                >
+                  {{ order.orderNumber }}
+                </button>
+              </td>
+              <td>
+                <span class="cell-truncate" [title]="order.patientName">{{
+                  order.patientName
+                }}</span>
+              </td>
+              <td>
+                <span
+                  class="cell-truncate text-muted-foreground"
+                  [title]="order.doctorName"
+                  >{{ order.doctorName.replace("Dr. ", "") }}</span
+                >
+              </td>
+              <td>
+                <span
+                  class="cell-truncate text-muted-foreground"
+                  [title]="order.scanCenterName"
+                  >{{ order.scanCenterName.replace("SC-", "") }}</span
+                >
+              </td>
+              <td>
+                <span
+                  class="cell-truncate text-muted-foreground"
+                  [title]="order.billTo"
+                  >{{ order.billTo }}</span
+                >
+              </td>
+              <td><app-arch-badge [arch]="order.arch"></app-arch-badge></td>
+              <td>
+                <span class="cell-truncate text-muted-foreground"
+                  >{{ order.format }} / {{ order.restoration }}</span
+                >
+              </td>
+              <td class="text-right">{{ order.amount | displayCurrency }}</td>
+              <td class="text-center">{{ order.billed ? "Yes" : "No" }}</td>
+              <td class="text-center">{{ order.vouchers }}</td>
+              <td>
+                <app-status-badge [status]="order.status"></app-status-badge>
+              </td>
+              <td class="text-muted-foreground">
+                {{ order.archiveDate | displayDate }}
+              </td>
+              <td class="text-center">
+                @if (order.isLocked) {
+                  <span
+                    class="lock-indicator is-locked"
+                    title="Locked archived order"
+                    aria-label="Locked"
+                  >
+                    <span [innerHTML]="getIconSvg('lock') | safeHtml"></span>
+                  </span>
+                } @else {
+                  <span
+                    class="lock-indicator"
+                    title="Unlocked archived order"
+                    aria-label="Unlocked"
+                  >
+                    <span [innerHTML]="getIconSvg('unlock') | safeHtml"></span>
+                  </span>
+                }
+              </td>
+              <td>
+                @if (order.isLocked) {
+                  <app-button
+                    variant="outline"
+                    size="sm"
+                    [loading]="actionId() === order.id"
+                    [disabled]="!!actionId()"
+                    (onClick)="unlock(order)"
+                  >
+                    Unlock
+                  </app-button>
+                } @else {
+                  <app-button
+                    variant="outline"
+                    size="sm"
+                    [loading]="actionId() === order.id"
+                    [disabled]="!!actionId()"
+                    (onClick)="unarchive(order)"
+                  >
+                    Restore
+                  </app-button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  <app-entity-dialog
+    [visible]="confirmDeleteVisible()"
+    (visibleChange)="onConfirmDeleteVisibleChange($event)"
+    (closed)="cancelDelete()"
+    [dismissableMask]="true"
+    width="25rem"
+    title="Delete archived orders?"
+  >
+    <p class="text-sm text-muted-foreground">
+      This will permanently delete {{ selectedOrders().length }} selected
+      {{ selectedOrders().length === 1 ? "order" : "orders" }}. This action
+      cannot be undone.
+    </p>
+    <div dialog-actions>
+      <app-button variant="ghost" size="sm" (onClick)="cancelDelete()"
+        >Cancel</app-button
+      >
+      <app-button
+        variant="danger"
+        size="sm"
+        [loading]="actionId() === 'bulk'"
+        (onClick)="confirmDelete()"
+      >
+        Delete
+      </app-button>
+    </div>
+  </app-entity-dialog>
+</div>

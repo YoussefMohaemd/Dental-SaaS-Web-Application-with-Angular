@@ -13,12 +13,14 @@ import {
 import { ApiEndpoint } from "@core/enum/api.endpoint";
 import { environment } from "../../../environments/environment";
 
-interface AuthenticatedUser {
+export interface AuthenticatedUser {
   userId: string;
   tenantId: string;
   fullName: string;
   email: string;
   roles: string[];
+  clinicId?: string;
+  avatarUrl?: string;
 }
 
 interface LoginResponse {
@@ -127,6 +129,24 @@ export class AuthService {
       );
 
     return this.refreshInFlight$;
+  }
+
+  loadCurrentUser(): Observable<AuthenticatedUser> {
+    return this.http
+      .get<{ data: AuthenticatedUser }>(ApiEndpoint.AUTH_ME)
+      .pipe(
+        map((response) => response.data),
+        tap((user) => this._user.set(user)),
+      );
+  }
+
+  changePassword(payload: {
+    currentPassword: string;
+    newPassword: string;
+  }): Observable<void> {
+    return this.http
+      .post<void>(ApiEndpoint.AUTH_PASSWORD, payload)
+      .pipe(map(() => void 0));
   }
 
   clearSession(): void {

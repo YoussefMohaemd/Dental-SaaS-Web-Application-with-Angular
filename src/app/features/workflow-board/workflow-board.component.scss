@@ -7,7 +7,10 @@
 }
 
 .workflow-board-lanes {
-  min-width: 1540px;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.5rem;
+  min-width: 0;
 }
 
 .kanban-card {
@@ -55,21 +58,16 @@
 
 @media (max-width: 640px) {
   .workflow-board-scroll {
-    overflow-x: auto;
+    overflow-x: hidden;
     overflow-y: visible;
-    padding-bottom: 1rem;
-    scroll-snap-type: x mandatory;
+    padding-bottom: 0.75rem;
   }
 
   .workflow-board-lanes {
-    min-width: max-content;
-    flex-direction: row;
-    gap: 0.75rem;
+    gap: 0.25rem;
   }
 
   .workflow-lane {
-    width: min(18rem, calc(100vw - 2.25rem));
-    flex-shrink: 0;
-    scroll-snap-align: start;
+    min-width: 0;
   }
 }

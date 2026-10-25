@@ -30,19 +30,34 @@ describe("PatientDetailsComponent", () => {
         },
         {
           provide: PatientDataService,
-          useValue: { getPatientById: () => undefined },
+          useValue: {
+            getPatientById: () => undefined,
+            loadPatients: jasmine.createSpy("loadPatients"),
+            patients: signal([]),
+          },
         },
         {
           provide: OrderDataService,
-          useValue: { getOrdersByPatient: () => [] },
+          useValue: {
+            getOrdersByPatient: () => [],
+            loadOrders: jasmine.createSpy("loadOrders"),
+            orders: signal([]),
+          },
         },
         {
           provide: CaseDataService,
-          useValue: { getCasesByPatient: () => [] },
+          useValue: {
+            getCasesByPatient: () => [],
+            loadCases: jasmine.createSpy("loadCases"),
+            cases: signal([]),
+          },
         },
         {
           provide: DocumentDataService,
-          useValue: { documents: signal([]) },
+          useValue: {
+            documents: signal([]),
+            loadDocuments: jasmine.createSpy("loadDocuments"),
+          },
         },
       ],
     }).compileComponents();

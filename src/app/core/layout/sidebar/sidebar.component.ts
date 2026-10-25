@@ -3,6 +3,7 @@ import { CommonModule } from "@angular/common";
 import { RouterModule } from "@angular/router";
 import { NavigationService } from "../../../core/services/navigation.service";
 import { ThemeService } from "../../../core/services/theme.service";
+import { AuthService } from "@core/services/auth.service";
 import { NAV_ITEMS } from "../../../core/interfaces/navigation.interface";
 import { AvatarComponent } from "../../../shared/components/avatar/avatar.component";
 import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
@@ -18,6 +19,7 @@ import { lucideSvg } from "../../../shared/icons/lucide-icons";
 export class SidebarComponent {
   readonly navigationService = inject(NavigationService);
   private readonly themeService = inject(ThemeService);
+  private readonly authService = inject(AuthService);
 
   readonly navItems = NAV_ITEMS;
   readonly sidebarOpen = this.navigationService.sidebarOpen;
@@ -26,9 +28,12 @@ export class SidebarComponent {
   readonly isMobile = this.navigationService.isMobile;
   readonly isDark = this.themeService.isDark;
 
-  readonly userInitials = "JR";
-  readonly userName = "Jessica Ruiz";
-  readonly userRole = "Lab Manager";
+  readonly userName = computed(
+    () => this.authService.user()?.fullName?.trim() || "Account",
+  );
+  readonly userRole = computed(
+    () => this.authService.user()?.roles?.[0] || "User",
+  );
 
   readonly sidebarClasses = computed(() => {
     if (this.isMobile()) {

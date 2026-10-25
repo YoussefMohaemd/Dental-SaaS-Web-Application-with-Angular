@@ -31,6 +31,7 @@ export class NavigationService {
 
   readonly activeGroup = computed(() => {
     const page = this.currentPage();
+    if (page === "archivedOrders") return "archivedOrders";
     if (
       [
         "orders",
@@ -61,6 +62,16 @@ export class NavigationService {
   readonly breadcrumbs = computed<BreadcrumbItem[]>(() => {
     const page = this.currentPage();
     const params = this.currentParams();
+    if (page === "viewOrder" && params.archived && params.orderId) {
+      return [
+        { label: "Orders", page: "orders" },
+        { label: "Archive", page: "archivedOrders" },
+        {
+          label: "View Order",
+          params: { orderId: params.orderId, archived: true },
+        },
+      ];
+    }
     const crumbs: BreadcrumbItem[] = [];
     let current: PageId | undefined = page;
 
@@ -149,6 +160,19 @@ export class NavigationService {
     }
 
     if (firstSegment === "orders") {
+      if (segments[1] === "archive") {
+        if (segments[2]) {
+          this.currentPage.set("viewOrder");
+          this.currentParams.set({
+            orderId: segments[2],
+            archived: true,
+          });
+          return;
+        }
+        this.currentPage.set("archivedOrders");
+        this.currentParams.set({});
+        return;
+      }
       if (segments[1] === "create") {
         this.currentPage.set("createOrder");
         this.currentParams.set({});
@@ -238,7 +262,9 @@ export class NavigationService {
     const routeMap: Partial<Record<PageId, (params: NavParams) => string>> = {
       dashboard: () => "/dashboard",
       orders: () => "/orders",
-      viewOrder: (p) => `/orders/${p.orderId}`,
+      archivedOrders: () => "/orders/archive",
+      viewOrder: (p) =>
+        p.archived ? `/orders/archive/${p.orderId}` : `/orders/${p.orderId}`,
       orderWorkflow: (p) => `/orders/${p.orderId}/workflow`,
       orderFiles: (p) => `/orders/${p.orderId}/files`,
       createOrder: () => "/orders/create",

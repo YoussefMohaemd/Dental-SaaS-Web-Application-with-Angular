@@ -43,16 +43,21 @@
             class="rounded-xl border border-border bg-card p-5"
             aria-label="Profile settings"
           >
+            @if (profileError(); as error) {
+              <p class="mb-4 text-xs text-danger" role="alert">{{ error }}</p>
+            }
             <div class="mb-4 flex items-center gap-3">
               <span
                 class="flex h-12 w-12 items-center justify-center rounded-full bg-primary/15 text-sm font-bold text-primary"
                 aria-hidden="true"
-                >JR</span
+                >{{ accountInitials() }}</span
               >
               <div>
-                <p class="text-sm font-bold text-foreground">Jessica Ruiz</p>
+                <p class="text-sm font-bold text-foreground">
+                  {{ accountName() }}
+                </p>
                 <p class="text-xs text-muted-foreground">
-                  Lab Manager ·
+                  {{ profileForm.controls.role.value || "User" }} ·
                   <button type="button" class="text-primary hover:underline">
                     Change avatar
                   </button>
@@ -268,6 +273,9 @@
             class="rounded-xl border border-border bg-card p-5"
             aria-label="Security settings"
           >
+            @if (saveError(); as error) {
+              <p class="mb-4 text-xs text-danger" role="alert">{{ error }}</p>
+            }
             <div class="grid grid-cols-1 gap-4">
               <app-input
                 id="security-current-password"

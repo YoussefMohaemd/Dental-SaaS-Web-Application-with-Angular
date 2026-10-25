@@ -32,6 +32,14 @@ export class HeaderComponent {
   private readonly authService = inject(AuthService);
 
   readonly breadcrumbs = this.navigationService.breadcrumbs;
+  readonly currentUser = this.authService.user;
+  readonly accountName = computed(
+    () => this.currentUser()?.fullName?.trim() || "Account",
+  );
+  readonly accountEmail = computed(() => this.currentUser()?.email || "");
+  readonly accountRole = computed(
+    () => this.currentUser()?.roles?.[0] || "User",
+  );
   readonly isDark = this.themeService.isDark;
   readonly notifications = this.notificationService.recentNotifications;
   readonly unreadCount = this.notificationService.unreadCount;

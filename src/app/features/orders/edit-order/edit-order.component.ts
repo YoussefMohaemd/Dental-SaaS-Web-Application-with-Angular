@@ -23,7 +23,13 @@ import { AppSelectComponent } from "@shared/components/select/select.component";
 import { TeethChartComponent } from "@shared/components/teeth-chart/teeth-chart.component";
 import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
 import { statusDisplayLabel } from "@shared/utils/status-label";
-import { ArchType, Order, Patient, Doctor, SubOrderCreationData } from "@core/interfaces";
+import {
+  ArchType,
+  Order,
+  Patient,
+  Doctor,
+  SubOrderCreationData,
+} from "@core/interfaces";
 import { AVAILABLE_SERVICES } from "@core/interfaces";
 import {
   defaultServiceClinicalForm,
@@ -172,7 +178,9 @@ export class EditOrderComponent implements OnDestroy, OnInit {
   );
   readonly services = AVAILABLE_SERVICES;
   readonly selectedServices = computed(() =>
-    this.services.filter((service) => this.selectedServiceIds().includes(service.id)),
+    this.services.filter((service) =>
+      this.selectedServiceIds().includes(service.id),
+    ),
   );
   readonly serviceArchOptions = [
     { value: "Maxilla (Upper)", label: "Maxilla (Upper)" },
@@ -204,7 +212,8 @@ export class EditOrderComponent implements OnDestroy, OnInit {
   readonly canSave = computed(() => {
     if (!this.editForm.valid) return false;
     if (this.selectedServiceIds().length === 0) return false;
-    if (this.editForm.controls.patientName.value.trim().length === 0) return false;
+    if (this.editForm.controls.patientName.value.trim().length === 0)
+      return false;
     return this.missingRequiredTeethServices().length === 0;
   });
 
@@ -222,7 +231,9 @@ export class EditOrderComponent implements OnDestroy, OnInit {
       if (selected.length === 0) return;
       const mapped = mapServiceToRestoration(selected[0]);
       if (this.editForm.controls.restoration.value !== mapped) {
-        this.editForm.controls.restoration.setValue(mapped, { emitEvent: false });
+        this.editForm.controls.restoration.setValue(mapped, {
+          emitEvent: false,
+        });
       }
     });
   }
@@ -259,7 +270,10 @@ export class EditOrderComponent implements OnDestroy, OnInit {
       const next = selected.includes(tooth)
         ? selected.filter((value) => value !== tooth)
         : [...selected, tooth];
-      return { ...current, [serviceId]: next.sort((left, right) => left - right) };
+      return {
+        ...current,
+        [serviceId]: next.sort((left, right) => left - right),
+      };
     });
   }
 
@@ -271,7 +285,10 @@ export class EditOrderComponent implements OnDestroy, OnInit {
     return this.teethForService(serviceId);
   }
 
-  serviceTeethLegend(serviceId: string, serviceName: string): Record<string, number[]> {
+  serviceTeethLegend(
+    serviceId: string,
+    serviceName: string,
+  ): Record<string, number[]> {
     return { [serviceName]: this.teethForService(serviceId) };
   }
 
@@ -313,7 +330,9 @@ export class EditOrderComponent implements OnDestroy, OnInit {
   }
 
   getServiceForm(serviceId: string): ServiceClinicalForm {
-    return this.serviceForms()[serviceId] ?? defaultServiceClinicalForm(serviceId);
+    return (
+      this.serviceForms()[serviceId] ?? defaultServiceClinicalForm(serviceId)
+    );
   }
 
   clinicalNotesValue(serviceId: string): string {
@@ -342,12 +361,18 @@ export class EditOrderComponent implements OnDestroy, OnInit {
 
   onPatientFocus(): void {
     this.patientAutocompleteOpen.set(true);
-    this.scheduleAutocomplete("patient", this.editForm.controls.patientName.value);
+    this.scheduleAutocomplete(
+      "patient",
+      this.editForm.controls.patientName.value,
+    );
   }
 
   onDoctorFocus(): void {
     this.doctorAutocompleteOpen.set(true);
-    this.scheduleAutocomplete("doctor", this.editForm.controls.doctorName.value);
+    this.scheduleAutocomplete(
+      "doctor",
+      this.editForm.controls.doctorName.value,
+    );
   }
 
   onPatientBlur(): void {
@@ -383,7 +408,8 @@ export class EditOrderComponent implements OnDestroy, OnInit {
 
   discard(): void {
     const current = this.order();
-    if (current) this.navigationService.navigate("viewOrder", { orderId: current.id });
+    if (current)
+      this.navigationService.navigate("viewOrder", { orderId: current.id });
     else this.navigationService.navigate("orders");
   }
 
@@ -405,6 +431,10 @@ export class EditOrderComponent implements OnDestroy, OnInit {
 
     const current = this.order();
     if (!current) return;
+    if (current.isLocked) {
+      this.saveError.set("This order is locked. Unlock it before editing.");
+      return;
+    }
 
     const raw = this.editForm.getRawValue();
     const patientNameInput = raw.patientName.trim();
@@ -414,7 +444,8 @@ export class EditOrderComponent implements OnDestroy, OnInit {
     }
 
     const patientInputChanged =
-      normalizeLookup(patientNameInput) !== normalizeLookup(current.patientName);
+      normalizeLookup(patientNameInput) !==
+      normalizeLookup(current.patientName);
     const matchedPatient =
       this.matchPatientByName(patientNameInput) ??
       (!patientInputChanged
@@ -477,49 +508,63 @@ export class EditOrderComponent implements OnDestroy, OnInit {
       };
     });
 
-    this.orderService.updateOrder$(current.id, {
-      patientId,
-      patientName,
-      doctorId,
-      doctorName,
-      clinicId,
-      clinicName,
-      restoration: mapServiceToRestoration(selectedServices[0].id),
-      arch: deriveArchFromSelection(allTeeth, raw.arch as ArchType),
-      shade: raw.shade,
-      format: raw.format,
-      units: Math.max(raw.units, allTeeth.length, 1),
-      status: raw.status as Order["status"],
-      priority: raw.priority as Order["priority"],
-      dueDate,
-      billTo: raw.billTo.trim() || clinicName || patientName,
-      notes: raw.notes,
-      hasNotes: raw.notes.trim().length > 0,
-      isLocked: this.isLocked(),
-      creationData: {
-        services: rows.map((row) => structuredClone(row.creationData)),
-      },
-    }).subscribe({
-      next: () => {
-        this.subOrderService.replaceForOrder$(current.id, rows).subscribe({
-          next: () => {
-            this.saveError.set(null);
-            this.saved.set(true);
-            window.setTimeout(() => {
-              this.navigationService.navigate("viewOrder", { orderId: current.id });
-            }, 800);
-          },
-          error: (error) => {
-            console.error("Failed to save sub-orders:", error);
-            this.saveError.set("Failed to save sub-orders.");
-          },
-        });
-      },
-      error: (error) => {
-        console.error("Failed to update order:", error);
-        this.saveError.set("Failed to update order.");
-      },
-    });
+    this.orderService
+      .updateOrder$(current.id, {
+        patientId,
+        patientName,
+        doctorId,
+        doctorName,
+        clinicId,
+        clinicName,
+        restoration: mapServiceToRestoration(selectedServices[0].id),
+        arch: deriveArchFromSelection(allTeeth, raw.arch as ArchType),
+        shade: raw.shade,
+        format: raw.format,
+        units: Math.max(raw.units, allTeeth.length, 1),
+        ...(raw.status !== current.status
+          ? { status: raw.status as Order["status"] }
+          : {}),
+        priority: raw.priority as Order["priority"],
+        dueDate,
+        billTo: raw.billTo.trim() || clinicName || patientName,
+        notes: raw.notes,
+        hasNotes: raw.notes.trim().length > 0,
+        isLocked: this.isLocked(),
+        creationData: {
+          services: rows.map((row) => structuredClone(row.creationData)),
+        },
+      })
+      .subscribe({
+        next: () => {
+          this.subOrderService.replaceForOrder$(current.id, rows).subscribe({
+            next: () => {
+              this.saveError.set(null);
+              this.saved.set(true);
+              window.setTimeout(() => {
+                this.navigationService.navigate("viewOrder", {
+                  orderId: current.id,
+                });
+              }, 800);
+            },
+            error: (error) => {
+              console.error("Failed to save sub-orders:", error);
+              this.saveError.set(
+                error?.error?.error?.message ??
+                  error?.error?.message ??
+                  "Failed to save sub-orders.",
+              );
+            },
+          });
+        },
+        error: (error) => {
+          console.error("Failed to update order:", error);
+          this.saveError.set(
+            error?.error?.error?.message ??
+              error?.error?.message ??
+              "Failed to update order.",
+          );
+        },
+      });
   }
 
   goBack(): void {
@@ -582,7 +627,9 @@ export class EditOrderComponent implements OnDestroy, OnInit {
       const serviceId = this.resolveServiceId(row.serviceId, "");
       if (!serviceId) continue;
       if (!nextServiceIds.includes(serviceId)) nextServiceIds.push(serviceId);
-      const rowTeeth = Array.isArray(row.selectedTeeth) ? row.selectedTeeth : [];
+      const rowTeeth = Array.isArray(row.selectedTeeth)
+        ? row.selectedTeeth
+        : [];
       nextTeeth[serviceId] = parseTeethInput(rowTeeth.join(","));
       nextDetails[serviceId] = {
         ...defaultServiceDetail(),
@@ -660,8 +707,14 @@ export class EditOrderComponent implements OnDestroy, OnInit {
     }
   }
 
-  private resolveServiceId(serviceId: string, serviceName: string): string | null {
-    if (serviceId && this.services.some((service) => service.id === serviceId)) {
+  private resolveServiceId(
+    serviceId: string,
+    serviceName: string,
+  ): string | null {
+    if (
+      serviceId &&
+      this.services.some((service) => service.id === serviceId)
+    ) {
       return serviceId;
     }
     if (!serviceName) return null;
@@ -684,7 +737,10 @@ export class EditOrderComponent implements OnDestroy, OnInit {
     return [...set].sort((a, b) => a - b);
   }
 
-  private fallbackServiceNote(serviceName: string, selectedTeeth: number[]): string {
+  private fallbackServiceNote(
+    serviceName: string,
+    selectedTeeth: number[],
+  ): string {
     const teethLabel =
       selectedTeeth.length > 0
         ? `teeth ${selectedTeeth.join(", ")}`
@@ -692,7 +748,9 @@ export class EditOrderComponent implements OnDestroy, OnInit {
     return `${serviceName} updated for ${teethLabel}.`;
   }
 
-  private resolveClinicById(clinicId: string): { id: string; name: string } | undefined {
+  private resolveClinicById(
+    clinicId: string,
+  ): { id: string; name: string } | undefined {
     const selected = this.clinics().find((clinic) => clinic.id === clinicId);
     if (!selected) return undefined;
     return { id: selected.id, name: selected.name };
@@ -700,12 +758,16 @@ export class EditOrderComponent implements OnDestroy, OnInit {
 
   private matchPatientByName(name: string): Patient | undefined {
     const needle = normalizeLookup(name);
-    return this.patients().find((patient) => normalizeLookup(patient.name) === needle);
+    return this.patients().find(
+      (patient) => normalizeLookup(patient.name) === needle,
+    );
   }
 
   private matchDoctorByName(name: string): Doctor | undefined {
     const needle = normalizeLookup(name);
-    return this.doctors().find((doctor) => normalizeLookup(doctor.name) === needle);
+    return this.doctors().find(
+      (doctor) => normalizeLookup(doctor.name) === needle,
+    );
   }
 
   private defaultDueDate(): string {
@@ -714,7 +776,10 @@ export class EditOrderComponent implements OnDestroy, OnInit {
     return date.toISOString().slice(0, 10);
   }
 
-  private scheduleAutocomplete(type: "patient" | "doctor", value: string): void {
+  private scheduleAutocomplete(
+    type: "patient" | "doctor",
+    value: string,
+  ): void {
     this.clearAutocompleteTimer(type);
     const timer = window.setTimeout(() => {
       if (type === "patient") this.patientAutocompleteQuery.set(value);

@@ -3,6 +3,7 @@ import { signal } from "@angular/core";
 import { provideRouter } from "@angular/router";
 import { DoctorsComponent } from "./doctors.component";
 import { DoctorDataService } from "@core/services/doctor-data.service";
+import { ClinicDataService } from "@core/services/clinic-data.service";
 import { OrderDataService } from "@core/services/order-data.service";
 import { Doctor } from "@core/interfaces";
 
@@ -40,7 +41,17 @@ describe("DoctorsComponent", () => {
               makeDoctor({ id: "d-2", name: "Dr. Baker" }),
             ]),
             loading: signal(false),
+            loadDoctors: jasmine.createSpy("loadDoctors"),
             addDoctor: jasmine.createSpy("addDoctor"),
+          },
+        },
+        {
+          provide: ClinicDataService,
+          useValue: {
+            clinics: signal([
+              { id: "c-1", name: "Bright Smile Dental", status: "Active" },
+            ]),
+            loadClinics: jasmine.createSpy("loadClinics"),
           },
         },
         {
@@ -51,6 +62,7 @@ describe("DoctorsComponent", () => {
               { id: "o-2", doctorId: "d-1", patientId: "p-2" },
               { id: "o-3", doctorId: "d-2", patientId: "p-3" },
             ]),
+            loadOrders: jasmine.createSpy("loadOrders"),
           },
         },
       ],

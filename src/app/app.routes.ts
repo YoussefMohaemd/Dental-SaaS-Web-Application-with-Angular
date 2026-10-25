@@ -1,6 +1,7 @@
 import { Routes } from "@angular/router";
 import { LayoutComponent } from "./core/layout/shell/layout.component";
 import { AuthGuard } from "./core/guards/auth.guard";
+import { orderUnlockedGuard } from "./core/guards/order-lock.guard";
 
 export const appRoutes: Routes = [
   { path: "", redirectTo: "login", pathMatch: "full" },
@@ -32,6 +33,21 @@ export const appRoutes: Routes = [
           ),
       },
       {
+        path: "orders/archive",
+        loadComponent: () =>
+          import("./features/orders/archived-orders/archived-orders.component").then(
+            (m) => m.ArchivedOrdersComponent,
+          ),
+      },
+      {
+        path: "orders/archive/:orderId",
+        canActivate: [orderUnlockedGuard],
+        loadComponent: () =>
+          import("./features/orders/view-order/view-order.component").then(
+            (m) => m.ViewOrderComponent,
+          ),
+      },
+      {
         path: "orders/create",
         loadComponent: () =>
           import("./features/orders/create-order/create-order.component").then(
@@ -40,6 +56,7 @@ export const appRoutes: Routes = [
       },
       {
         path: "orders/:orderId",
+        canActivate: [orderUnlockedGuard],
         loadComponent: () =>
           import("./features/orders/view-order/view-order.component").then(
             (m) => m.ViewOrderComponent,
@@ -47,6 +64,7 @@ export const appRoutes: Routes = [
       },
       {
         path: "orders/:orderId/edit",
+        canActivate: [orderUnlockedGuard],
         loadComponent: () =>
           import("./features/orders/edit-order/edit-order.component").then(
             (m) => m.EditOrderComponent,
@@ -54,6 +72,7 @@ export const appRoutes: Routes = [
       },
       {
         path: "orders/:orderId/workflow",
+        canActivate: [orderUnlockedGuard],
         loadComponent: () =>
           import("./features/orders/order-workflow/order-workflow.component").then(
             (m) => m.OrderWorkflowComponent,
@@ -61,6 +80,7 @@ export const appRoutes: Routes = [
       },
       {
         path: "orders/:orderId/files",
+        canActivate: [orderUnlockedGuard],
         loadComponent: () =>
           import("./features/orders/order-files/order-files.component").then(
             (m) => m.OrderFilesComponent,
@@ -68,6 +88,7 @@ export const appRoutes: Routes = [
       },
       {
         path: "orders/:orderId/sub-orders/:subOrderId",
+        canActivate: [orderUnlockedGuard],
         loadComponent: () =>
           import("./features/orders/sub-order/sub-order.component").then(
             (m) => m.SubOrderComponent,
@@ -174,30 +195,30 @@ export const appRoutes: Routes = [
       {
         path: "reports/orders-range",
         loadComponent: () =>
-          import(
-            "./features/reports/orders-range-report/orders-range-report.component"
-          ).then((m) => m.OrdersRangeReportComponent),
+          import("./features/reports/orders-range-report/orders-range-report.component").then(
+            (m) => m.OrdersRangeReportComponent,
+          ),
       },
       {
         path: "reports/quarterly-targets",
         loadComponent: () =>
-          import(
-            "./features/reports/quarter-targets-report/quarter-targets-report.component"
-          ).then((m) => m.QuarterTargetsReportComponent),
+          import("./features/reports/quarter-targets-report/quarter-targets-report.component").then(
+            (m) => m.QuarterTargetsReportComponent,
+          ),
       },
       {
         path: "reports/quarterly-targets/:year/:quarter",
         loadComponent: () =>
-          import(
-            "./features/reports/quarter-detail-report/quarter-detail-report.component"
-          ).then((m) => m.QuarterDetailReportComponent),
+          import("./features/reports/quarter-detail-report/quarter-detail-report.component").then(
+            (m) => m.QuarterDetailReportComponent,
+          ),
       },
       {
         path: "reports/team-performance",
         loadComponent: () =>
-          import(
-            "./features/reports/team-performance-report/team-performance-report.component"
-          ).then((m) => m.TeamPerformanceReportComponent),
+          import("./features/reports/team-performance-report/team-performance-report.component").then(
+            (m) => m.TeamPerformanceReportComponent,
+          ),
       },
       {
         path: "notifications",

@@ -2,6 +2,7 @@ export type PageId =
   | "login"
   | "dashboard"
   | "orders"
+  | "archivedOrders"
   | "viewOrder"
   | "orderWorkflow"
   | "orderFiles"
@@ -33,6 +34,7 @@ export type PageId =
 
 export interface NavParams {
   orderId?: string;
+  archived?: boolean;
   patientId?: string;
   doctorId?: string;
   clinicId?: string;
@@ -84,6 +86,7 @@ export const BREADCRUMB_MAP: Partial<
 > = {
   dashboard: { label: "Dashboard" },
   orders: { label: "Orders" },
+  archivedOrders: { label: "Archived Orders", parent: "orders" },
   viewOrder: { label: "View Order", parent: "orders" },
   orderWorkflow: { label: "Workflow", parent: "viewOrder" },
   orderFiles: { label: "Files", parent: "viewOrder" },

@@ -12,6 +12,7 @@ import { Patient, PatientStatus } from "@core/interfaces";
 import { AppButtonComponent } from "@shared/components/button/button.component";
 import { AvatarComponent } from "@shared/components/avatar/avatar.component";
 import { AppTextFieldComponent } from "@shared/components/input/input.component";
+import { AppSelectComponent } from "@shared/components/select/select.component";
 import { EntityDialogComponent } from "@shared/components/entity-dialog/entity-dialog.component";
 import { EnterprisePaginatorComponent } from "@shared/components/enterprise-paginator/enterprise-paginator.component";
 import { DataTableToolbarComponent } from "@shared/components/data-table-toolbar/data-table-toolbar.component";
@@ -32,6 +33,7 @@ import {
   tableTotalPages,
   visibleTablePages,
 } from "@shared/utils/table-state";
+import { getApiErrorMessage } from "@shared/utils/api-error";
 
 @Component({
   selector: "app-patients",
@@ -43,6 +45,7 @@ import {
     AppButtonComponent,
     AvatarComponent,
     AppTextFieldComponent,
+    AppSelectComponent,
     EntityDialogComponent,
     EnterprisePaginatorComponent,
     DataTableToolbarComponent,
@@ -79,6 +82,14 @@ export class PatientsComponent implements OnInit {
   readonly newEmail = signal("");
   readonly newPhone = signal("");
   readonly newClinic = signal("");
+  readonly newGender = signal<"M" | "F">("F");
+  readonly newPatientError = signal<string | null>(null);
+  readonly clinicOptions = computed(() =>
+    this.clinicService.clinics().map((clinic) => ({
+      value: clinic.name,
+      label: clinic.name,
+    })),
+  );
 
   ngOnInit(): void {
     this.patientService.loadPatients();
@@ -98,15 +109,13 @@ export class PatientsComponent implements OnInit {
     return countByPatientId;
   });
 
-  readonly patientsWithOrderStats = computed<Patient[]>(() =>
-    {
-      const countByPatientId = this.orderCountByPatientId();
-      return this.patients().map((patient) => ({
-        ...patient,
-        ordersCount: countByPatientId.get(patient.id) ?? 0,
-      }));
-    },
-  );
+  readonly patientsWithOrderStats = computed<Patient[]>(() => {
+    const countByPatientId = this.orderCountByPatientId();
+    return this.patients().map((patient) => ({
+      ...patient,
+      ordersCount: countByPatientId.get(patient.id) ?? 0,
+    }));
+  });
 
   readonly filtered = computed(() => {
     let result = filterTableRows(this.patientsWithOrderStats(), this.search(), [
@@ -204,6 +213,8 @@ export class PatientsComponent implements OnInit {
     this.newEmail.set("");
     this.newPhone.set("");
     this.newClinic.set(this.clinicService.clinics()[0]?.name ?? "");
+    this.newGender.set("F");
+    this.newPatientError.set(null);
     this.showAddDialog.set(true);
   }
 
@@ -221,25 +232,53 @@ export class PatientsComponent implements OnInit {
     const doctor = clinic
       ? this.doctorService.doctors().find((item) => item.clinicId === clinic.id)
       : undefined;
-    if (!name || !email || !phone || !clinic || !doctor) {
-      console.error("Patient requires a name, contact details, clinic, and doctor.");
+    const errors: string[] = [];
+    if (
+      !/^\p{L}[\p{L}\s.'-]{1,}$/u.test(name) ||
+      name.split(/\s+/).length < 2
+    ) {
+      errors.push("Enter the patient's first and last name.");
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      errors.push("Enter a valid email address.");
+    }
+    const phoneDigits = phone.replace(/\D/g, "");
+    if (!/^[+()\d\s-]{7,20}$/.test(phone) || phoneDigits.length < 7) {
+      errors.push("Enter a valid phone number.");
+    }
+    if (!clinic) {
+      errors.push("Select an existing clinic.");
+    }
+    if (!doctor) {
+      errors.push("The selected clinic has no assigned doctor.");
+    }
+    if (errors.length > 0) {
+      this.newPatientError.set(errors.join(" "));
       return;
     }
+    if (!clinic || !doctor) return;
 
-    this.patientService.createPatient$({
-      name,
-      dob: new Date().toISOString().slice(0, 10),
-      gender: "F",
-      phone,
-      email,
-      clinicId: clinic.id,
-      doctorId: doctor.id,
-      status: "Active",
-      lastVisit: new Date().toISOString().slice(0, 10),
-    }).subscribe({
-      next: () => this.showAddDialog.set(false),
-      error: (error) => console.error("Failed to create patient:", error),
-    });
+    this.patientService
+      .createPatient$({
+        name,
+        dob: new Date().toISOString().slice(0, 10),
+        gender: this.newGender(),
+        phone,
+        email,
+        clinicId: clinic.id,
+        doctorId: doctor.id,
+        status: "Active",
+        lastVisit: new Date().toISOString().slice(0, 10),
+      })
+      .subscribe({
+        next: () => this.showAddDialog.set(false),
+        error: (error) => {
+          console.error("Failed to create patient:", error);
+          this.newPatientError.set(
+            getApiErrorMessage(error, "Unable to create the patient."),
+          );
+        },
+      });
   }
 
   getIconSvg(name: string): string {

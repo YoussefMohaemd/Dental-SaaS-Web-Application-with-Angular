@@ -4,6 +4,7 @@ export interface ApiDoctorItem {
   id: string;
   lookupId?: string;
   name: string;
+  gender?: "M" | "F";
   specialty: string;
   clinicId: string;
   clinicName: string;
@@ -21,6 +22,7 @@ export interface Doctor {
   id: string;
   lookupId?: string;
   name: string;
+  gender?: "M" | "F";
   specialty: string;
   clinicId: string;
   clinicName: string;

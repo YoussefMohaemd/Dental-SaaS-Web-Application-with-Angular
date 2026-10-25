@@ -1,7 +1,7 @@
 import { Injectable, signal, computed, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import { catchError, map, throwError } from "rxjs";
-import { Case } from "../interfaces";
+import { catchError, map, Observable, tap, throwError } from "rxjs";
+import { ApiCaseItem, Case } from "../interfaces";
 import { ApiEndpoint } from "@core/enum/api.endpoint";
 import { CaseApi } from "@core/base/case.api";
 import { CaseAdapter } from "@core/adapters/case.adapter";
@@ -54,16 +54,33 @@ export class CaseDataService extends CaseApi {
   }
 
   getAllCases() {
-    return this.http
-      .get<{ data: Case[] }>(this.API_URL)
-      .pipe(
-        map((response) => response.data ?? []),
-        map((rows) => this.caseAdapter.CaseAdapter(rows)),
-      );
+    return this.http.get<{ data: Case[] }>(this.API_URL).pipe(
+      map((response) => response.data ?? []),
+      map((rows) => this.caseAdapter.CaseAdapter(rows)),
+    );
   }
 
   getCaseById(id: string): Case | undefined {
     return this._cases().find((c) => c.id === id);
+  }
+
+  createCase$(
+    payload: Omit<
+      Case,
+      | "id"
+      | "patientName"
+      | "doctorName"
+      | "clinicName"
+      | "ordersCount"
+      | "filesCount"
+      | "createdAt"
+      | "updatedAt"
+    >,
+  ): Observable<Case> {
+    return this.http.post<{ data: ApiCaseItem }>(this.API_URL, payload).pipe(
+      map((response) => this.caseAdapter.CaseAdapter([response.data])[0]),
+      tap((created) => this._cases.update((current) => [created, ...current])),
+    );
   }
 
   getCasesByPatient(patientId: string): Case[] {

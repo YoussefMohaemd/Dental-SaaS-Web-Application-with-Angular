@@ -4,6 +4,7 @@ import {
   HttpTestingController,
   provideHttpClientTesting,
 } from "@angular/common/http/testing";
+import { ApiEndpoint } from "@core/enum/api.endpoint";
 import { OrderDataService } from "./order-data.service";
 
 describe("OrderDataService", () => {
@@ -23,7 +24,8 @@ describe("OrderDataService", () => {
   });
 
   it("should set error state and stop loading when the data request fails", () => {
-    const request = httpMock.expectOne("/data/orders.json");
+    service.loadOrders();
+    const request = httpMock.expectOne(ApiEndpoint.ORDERS);
     expect(service.loading()).toBeTrue();
 
     request.flush(
@@ -37,8 +39,7 @@ describe("OrderDataService", () => {
   });
 
   it("should preserve the create-order payload boundary", () => {
-    httpMock.expectOne("/data/orders.json").flush([]);
-    const created = service.createOrder({
+    const create$ = service.createOrder$({
       patientId: "pt-1",
       patientName: "Alice Johnson",
       doctorId: "dr-1",
@@ -75,54 +76,109 @@ describe("OrderDataService", () => {
         ],
       },
     });
+    create$.subscribe();
 
-    expect(created.creationData?.services[0].serviceId).toBe("gfmr");
-    expect(created.creationData?.services[0].selectedTeeth).toEqual([11, 12]);
-    expect(created.creationData?.services[0].fileReferences).toEqual([
-      "scan-1.stl",
-    ]);
+    const request = httpMock.expectOne(ApiEndpoint.ORDERS);
+    expect(request.request.method).toBe("POST");
+    expect(request.request.body.patientId).toBe("pt-1");
+    expect(
+      request.request.body.creationData.services[0].fileReferences,
+    ).toEqual(["scan-1.stl"]);
+    request.flush({
+      data: {
+        id: "ord-1",
+        orderNumber: "DL-024001",
+        patientId: "pt-1",
+        doctorId: "dr-1",
+        clinicId: "cl-1",
+        scanCenterId: "scan-1",
+        status: "New",
+        priority: "High",
+        restoration: "Crown",
+        arch: "Maxilla",
+        format: "STL",
+        shade: "A2",
+        units: 2,
+        amount: 500,
+        billed: false,
+        billTo: "Bright Smile Dental",
+        vouchers: 0,
+        isLocked: false,
+        hasNotes: true,
+        notes: "Create-order contract test",
+        dueDate: "2024-12-24",
+      },
+    });
+
     expect(service.totalOrders()).toBe(1);
   });
 
+  it("should omit status when updating fields without a status change", () => {
+    service
+      .updateOrder$("ord-1", {
+        patientId: "pt-1",
+        notes: "Updated notes",
+      })
+      .subscribe();
+
+    const request = httpMock.expectOne(`${ApiEndpoint.ORDERS}/ord-1`);
+    expect(request.request.method).toBe("PATCH");
+    expect(request.request.body).toEqual({
+      patientId: "pt-1",
+      notes: "Updated notes",
+    });
+    request.flush({
+      data: {
+        id: "ord-1",
+        patientId: "pt-1",
+        status: "Review",
+        notes: "Updated notes",
+      },
+    });
+  });
+
   it("should recover from error after reload", () => {
+    service.loadOrders();
     httpMock
-      .expectOne("/data/orders.json")
+      .expectOne(ApiEndpoint.ORDERS)
       .flush({}, { status: 500, statusText: "Server Error" });
 
     expect(service.error()).toBe("Failed to load orders");
 
     service.reload();
-    httpMock.expectOne("/data/orders.json").flush([
-      {
-        id: "ord-1",
-        orderNumber: "DL-024001",
-        patientId: "pt-1",
-        patientName: "Alice Johnson",
-        doctorId: "dr-1",
-        doctorName: "Dr. Park",
-        clinicId: "cl-1",
-        clinicName: "Bright Smile Dental",
-        scanCenterId: "scan-1",
-        scanCenterName: "Main Scan Center",
-        status: "New",
-        priority: "Normal",
-        restoration: "Crown",
-        arch: "Maxilla",
-        format: "STL",
-        shade: "A2",
-        units: 1,
-        amount: 250,
-        billed: false,
-        billTo: "Bright Smile Dental",
-        vouchers: 0,
-        isLocked: false,
-        hasNotes: false,
-        notes: "",
-        receivedAt: "2026-09-26T10:00:00.000Z",
-        updatedAt: "2026-09-26T10:00:00.000Z",
-        dueDate: "2026-10-01",
-      },
-    ]);
+    httpMock.expectOne(ApiEndpoint.ORDERS).flush({
+      data: [
+        {
+          id: "ord-1",
+          orderNumber: "DL-024001",
+          patientId: "pt-1",
+          patientName: "Alice Johnson",
+          doctorId: "dr-1",
+          doctorName: "Dr. Park",
+          clinicId: "cl-1",
+          clinicName: "Bright Smile Dental",
+          scanCenterId: "scan-1",
+          scanCenterName: "Main Scan Center",
+          status: "New",
+          priority: "Normal",
+          restoration: "Crown",
+          arch: "Maxilla",
+          format: "STL",
+          shade: "A2",
+          units: 1,
+          amount: 250,
+          billed: false,
+          billTo: "Bright Smile Dental",
+          vouchers: 0,
+          isLocked: false,
+          hasNotes: false,
+          notes: "",
+          receivedAt: "2026-09-26T10:00:00.000Z",
+          updatedAt: "2026-09-26T10:00:00.000Z",
+          dueDate: "2026-10-01",
+        },
+      ],
+    });
 
     expect(service.error()).toBeNull();
     expect(service.loading()).toBeFalse();

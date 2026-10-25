@@ -1,0 +1,110 @@
+:host {
+  display: block;
+}
+
+.orders-archive-table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.orders-archive-table {
+  width: 100%;
+  min-width: 76rem;
+  table-layout: auto;
+  border-collapse: collapse;
+  background: var(--color-card, white);
+  color: var(--color-foreground);
+  font-size: 0.75rem;
+}
+
+.orders-archive-table th {
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-card, white);
+  color: var(--color-muted-foreground);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  padding: 0.75rem 0.625rem;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.orders-archive-table th button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  transition: color 150ms ease;
+}
+
+.orders-archive-table th button:hover,
+.orders-archive-table th button:focus-visible {
+  color: var(--color-foreground);
+}
+
+.orders-archive-table .sort-icon {
+  display: inline-flex;
+  color: currentColor;
+  opacity: 0.7;
+}
+
+.orders-archive-table td {
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--color-border) 72%, transparent);
+  padding: 0.75rem 0.625rem;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.orders-archive-table tbody tr {
+  background: var(--color-card, white);
+  transition: background-color 150ms ease;
+}
+
+.orders-archive-table tbody tr:hover {
+  background: color-mix(in srgb, var(--color-muted) 24%, transparent);
+}
+
+.orders-archive-table tbody tr.is-selected {
+  background: color-mix(in srgb, var(--color-primary) 7%, transparent);
+}
+
+.orders-archive-table .order-number-link {
+  color: var(--color-primary);
+  font-weight: 600;
+  transition: color 150ms ease;
+}
+
+.orders-archive-table .order-number-link:hover:not(:disabled),
+.orders-archive-table .order-number-link:focus-visible:not(:disabled) {
+  text-decoration: underline;
+}
+
+.orders-archive-table .order-number-link:disabled {
+  cursor: not-allowed;
+  color: var(--color-muted-foreground);
+  opacity: 0.65;
+}
+
+.cell-truncate {
+  display: block;
+  max-width: 9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lock-indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-muted-foreground);
+}
+
+.lock-indicator.is-locked {
+  color: var(--color-warning);
+}
