@@ -14,6 +14,7 @@ import { FormatUtils } from "@core/services/format-utils.service";
 import { NavigationService } from "@core/services/navigation.service";
 import { NotificationDataService } from "@core/services/notification-data.service";
 import { OrderDataService } from "@core/services/order-data.service";
+import { AuthorizationService } from "@core/services/authorization.service";
 import {
   QuickStatData,
   StatCardData,
@@ -59,6 +60,7 @@ export class DashboardComponent implements OnInit {
   private readonly volumeService = inject(DashboardDataService);
   private readonly notificationService = inject(NotificationDataService);
   private readonly changeRequestService = inject(ChangeRequestDataService);
+  private readonly authorizationService = inject(AuthorizationService);
   readonly formatUtils = inject(FormatUtils);
 
   readonly orders = this.orderService.orders;
@@ -68,6 +70,9 @@ export class DashboardComponent implements OnInit {
   readonly completedTodayCount = this.orderService.completedTodayCount;
   readonly volumeLoading = this.volumeService.loading;
   readonly activityLoading = this.notificationService.loading;
+  readonly canCreateOrders = computed(() =>
+    this.authorizationService.has("orders.create"),
+  );
 
   readonly totalOrders = computed(() => this.orders().length);
   readonly activeCases = computed(
@@ -328,6 +333,9 @@ export class DashboardComponent implements OnInit {
   }
 
   navigateTo(route: string): void {
+    if (route === "createOrder" && !this.canCreateOrders()) {
+      return;
+    }
     this.navigationService.navigate(route as any);
   }
 

@@ -15,6 +15,7 @@ import { CaseDataService } from "@core/services/case-data.service";
 import { DocumentDataService } from "@core/services/document-data.service";
 import { NavigationService } from "@core/services/navigation.service";
 import { FormatUtils } from "@core/services/format-utils.service";
+import { AuthorizationService } from "@core/services/authorization.service";
 import { Case, LabDocument, Order, Patient } from "@core/interfaces";
 import {
   ContactItem,
@@ -59,8 +60,12 @@ export class PatientDetailsComponent implements OnInit {
   private readonly orderService = inject(OrderDataService);
   private readonly caseService = inject(CaseDataService);
   private readonly documentService = inject(DocumentDataService);
+  private readonly authorizationService = inject(AuthorizationService);
   protected readonly navigationService = inject(NavigationService);
   protected readonly formatUtils = inject(FormatUtils);
+  readonly canCreateOrders = computed(() =>
+    this.authorizationService.has("orders.create"),
+  );
 
   readonly patient = signal<Patient | null>(null);
   readonly patientOrders = computed<Order[]>(() => {
@@ -257,6 +262,11 @@ export class PatientDetailsComponent implements OnInit {
       return;
     }
     this.navigateToDocumentsPage();
+  }
+
+  navigateToCreateOrder(): void {
+    if (!this.canCreateOrders()) return;
+    this.navigationService.navigate("createOrder");
   }
 
   openActivityItem(item: PatientActivityItem): void {

@@ -6,6 +6,7 @@ import { forkJoin, Observable } from "rxjs";
 import { OrderDataService } from "@core/services/order-data.service";
 import { SubOrderDataService } from "@core/services/sub-order-data.service";
 import { NavigationService } from "@core/services/navigation.service";
+import { AuthorizationService } from "@core/services/authorization.service";
 import { FormatUtils } from "@core/services/format-utils.service";
 import {
   Order,
@@ -210,6 +211,7 @@ export function resolveDurationReferenceDate(
 export class OrdersComponent implements OnInit {
   private readonly orderService = inject(OrderDataService);
   private readonly subOrderService = inject(SubOrderDataService);
+  private readonly authorizationService = inject(AuthorizationService);
 
   ngOnInit(): void {
     this.orderService.loadOrders();
@@ -220,6 +222,22 @@ export class OrdersComponent implements OnInit {
 
   readonly orders = this.orderService.orders;
   readonly subOrders = this.subOrderService.subOrders;
+  readonly canCreateOrders = computed(() =>
+    this.authorizationService.has("orders.create"),
+  );
+  readonly canArchiveOrders = computed(() =>
+    this.authorizationService.has("orders.archive"),
+  );
+  readonly canDeleteOrders = computed(() =>
+    this.authorizationService.has("orders.delete"),
+  );
+  readonly canLockOrders = computed(() =>
+    this.authorizationService.has("orders.lock"),
+  );
+  readonly canBulkMutateOrders = computed(
+    () =>
+      this.canArchiveOrders() || this.canDeleteOrders() || this.canLockOrders(),
+  );
 
   readonly search = signal("");
   readonly statusFilter = signal<OrderStatus[]>([]);
@@ -536,6 +554,7 @@ export class OrdersComponent implements OnInit {
   }
 
   toggleSelect(orderId: string): void {
+    if (!this.canBulkMutateOrders()) return;
     this.selectedIds.update((current) => {
       const next = new Set(current);
       if (next.has(orderId)) next.delete(orderId);
@@ -545,6 +564,7 @@ export class OrdersComponent implements OnInit {
   }
 
   toggleSelectAll(): void {
+    if (!this.canBulkMutateOrders()) return;
     const pageIds = this.pageData().map((order) => order.id);
     const allSelected = pageIds.every((id) => this.selectedIds().has(id));
     this.selectedIds.update((current) => {
@@ -560,6 +580,10 @@ export class OrdersComponent implements OnInit {
   }
 
   archiveSelected(): void {
+    if (!this.canArchiveOrders()) {
+      this.actionError.set("You do not have permission to archive orders.");
+      return;
+    }
     const ids = this.selectedOrderIds();
     if (ids.length === 0) return;
     if (this.selectedOrders().some((order) => order.isLocked)) {
@@ -581,6 +605,10 @@ export class OrdersComponent implements OnInit {
   }
 
   requestDeleteSelected(): void {
+    if (!this.canDeleteOrders()) {
+      this.actionError.set("You do not have permission to delete orders.");
+      return;
+    }
     const ids = this.selectedOrderIds();
     if (ids.length === 0) return;
     if (this.selectedOrders().some((order) => order.isLocked)) {
@@ -614,6 +642,10 @@ export class OrdersComponent implements OnInit {
   }
 
   toggleSelectedLock(): void {
+    if (!this.canLockOrders()) {
+      this.actionError.set("You do not have permission to lock orders.");
+      return;
+    }
     const selected = this.selectedOrders();
     if (selected.length === 0) return;
     const nextLocked = !this.allSelectedOrdersLocked();
@@ -628,6 +660,10 @@ export class OrdersComponent implements OnInit {
   }
 
   toggleOrderLock(order: Order): void {
+    if (!this.canLockOrders()) {
+      this.actionError.set("You do not have permission to lock orders.");
+      return;
+    }
     if (this.actionBusy()) return;
     this.actionBusy.set(true);
     this.actionError.set(null);
@@ -794,6 +830,10 @@ export class OrdersComponent implements OnInit {
   }
 
   createOrder(): void {
+    if (!this.canCreateOrders()) {
+      this.actionError.set("You do not have permission to create orders.");
+      return;
+    }
     this.navigationService.navigate("createOrder");
   }
 

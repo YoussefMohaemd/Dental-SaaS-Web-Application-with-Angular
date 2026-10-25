@@ -8,6 +8,7 @@ import { PatientDataService } from "@core/services/patient-data.service";
 import { DoctorDataService } from "@core/services/doctor-data.service";
 import { ClinicDataService } from "@core/services/clinic-data.service";
 import { SubOrderDataService } from "@core/services/sub-order-data.service";
+import { AuthorizationService } from "@core/services/authorization.service";
 import { Order, SubOrder } from "@core/interfaces";
 
 const order = {
@@ -111,6 +112,10 @@ function configureComponent(orderId: string, currentOrder?: Order, currentSubOrd
           getByOrderId: (id: string) =>
             currentSubOrders.filter((subOrder) => subOrder.orderId === id),
         },
+      },
+      {
+        provide: AuthorizationService,
+        useValue: { has: () => true },
       },
     ],
   }).compileComponents();

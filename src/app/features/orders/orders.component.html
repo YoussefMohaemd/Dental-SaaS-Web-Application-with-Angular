@@ -10,17 +10,19 @@
         header-actions
         class="orders-header-actions ml-auto flex w-full flex-wrap items-center justify-end gap-2 sm:gap-3 lg:w-auto lg:flex-nowrap"
       >
-        <app-button
-          variant="primary"
-          size="md"
-          (onClick)="createOrder()"
-          aria-label="Create new order"
-        >
-          <span class="flex items-center gap-2">
-            <span [innerHTML]="getIconSvg('plus') | safeHtml"></span>
-            <span class="hidden sm:inline">New Order</span>
-          </span>
-        </app-button>
+        @if (canCreateOrders()) {
+          <app-button
+            variant="primary"
+            size="md"
+            (onClick)="createOrder()"
+            aria-label="Create new order"
+          >
+            <span class="flex items-center gap-2">
+              <span [innerHTML]="getIconSvg('plus') | safeHtml"></span>
+              <span class="hidden sm:inline">New Order</span>
+            </span>
+          </app-button>
+        }
         <app-button
           variant="outline"
           size="icon"
@@ -133,41 +135,47 @@
           <span class="text-xs font-semibold text-primary"
             >{{ selectedIds().size }} selected</span
           >
-          <app-button
-            variant="ghost"
-            size="sm"
-            buttonClass="!min-h-0 !rounded-md !px-1.5 !py-0 text-xs text-muted-foreground"
-            ariaLabel="Archive selected orders"
-            [disabled]="actionBusy()"
-            [loading]="actionBusy()"
-            (onClick)="archiveSelected()"
-          >
-            Archive
-          </app-button>
-          <app-button
-            variant="ghost"
-            size="sm"
-            buttonClass="!min-h-0 !rounded-md !px-1.5 !py-0 text-xs text-muted-foreground"
-            [ariaLabel]="
-              allSelectedOrdersLocked()
-                ? 'Unlock selected orders'
-                : 'Lock selected orders'
-            "
-            [disabled]="actionBusy()"
-            (onClick)="toggleSelectedLock()"
-          >
-            {{ allSelectedOrdersLocked() ? "Unlock" : "Lock" }}
-          </app-button>
-          <app-button
-            variant="ghost"
-            size="sm"
-            buttonClass="!min-h-0 !rounded-md !px-1.5 !py-0 text-xs text-danger hover:!text-danger/80"
-            ariaLabel="Delete selected orders"
-            [disabled]="actionBusy()"
-            (onClick)="requestDeleteSelected()"
-          >
-            Delete
-          </app-button>
+          @if (canArchiveOrders()) {
+            <app-button
+              variant="ghost"
+              size="sm"
+              buttonClass="!min-h-0 !rounded-md !px-1.5 !py-0 text-xs text-muted-foreground"
+              ariaLabel="Archive selected orders"
+              [disabled]="actionBusy()"
+              [loading]="actionBusy()"
+              (onClick)="archiveSelected()"
+            >
+              Archive
+            </app-button>
+          }
+          @if (canLockOrders()) {
+            <app-button
+              variant="ghost"
+              size="sm"
+              buttonClass="!min-h-0 !rounded-md !px-1.5 !py-0 text-xs text-muted-foreground"
+              [ariaLabel]="
+                allSelectedOrdersLocked()
+                  ? 'Unlock selected orders'
+                  : 'Lock selected orders'
+              "
+              [disabled]="actionBusy()"
+              (onClick)="toggleSelectedLock()"
+            >
+              {{ allSelectedOrdersLocked() ? "Unlock" : "Lock" }}
+            </app-button>
+          }
+          @if (canDeleteOrders()) {
+            <app-button
+              variant="ghost"
+              size="sm"
+              buttonClass="!min-h-0 !rounded-md !px-1.5 !py-0 text-xs text-danger hover:!text-danger/80"
+              ariaLabel="Delete selected orders"
+              [disabled]="actionBusy()"
+              (onClick)="requestDeleteSelected()"
+            >
+              Delete
+            </app-button>
+          }
         </div>
       }
       <div
@@ -346,7 +354,7 @@
         <app-empty-state
           title="No orders yet"
           description="Start by creating your first dental order."
-          actionLabel="Create Order"
+          [actionLabel]="canCreateOrders() ? 'Create Order' : ''"
           (actionClick)="createOrder()"
         >
           <ng-template #icon>
@@ -395,9 +403,10 @@
                     <button
                       type="button"
                       (click)="toggleSelectAll()"
-                      class="text-muted-foreground hover:text-foreground transition-colors"
+                      class="text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       aria-label="Select all orders on page"
                       [attr.aria-pressed]="allPageSelected()"
+                      [disabled]="!canBulkMutateOrders()"
                     >
                       <span
                         [innerHTML]="
@@ -790,7 +799,7 @@
                         <button
                           type="button"
                           (click)="toggleSelect(rowData.order.id)"
-                          class="hover:text-primary transition-colors"
+                          class="hover:text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                           [class]="
                             isSelected(rowData.order.id)
                               ? 'text-primary'
@@ -800,6 +809,7 @@
                             'Select order ' + rowData.order.orderNumber
                           "
                           [attr.aria-pressed]="isSelected(rowData.order.id)"
+                          [disabled]="!canBulkMutateOrders()"
                         >
                           <span
                             [innerHTML]="
@@ -1096,7 +1106,7 @@
                                 ? 'Unlock order'
                                 : 'Lock order'
                             "
-                            [disabled]="actionBusy()"
+                            [disabled]="actionBusy() || !canLockOrders()"
                             (click)="toggleOrderLock(rowData.order)"
                           >
                             <span

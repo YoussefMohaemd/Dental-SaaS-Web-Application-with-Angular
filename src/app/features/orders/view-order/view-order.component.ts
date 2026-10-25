@@ -18,6 +18,7 @@ import { DoctorDataService } from "@core/services/doctor-data.service";
 import { ClinicDataService } from "@core/services/clinic-data.service";
 import { NavigationService } from "@core/services/navigation.service";
 import { FormatUtils } from "@core/services/format-utils.service";
+import { AuthorizationService } from "@core/services/authorization.service";
 import { Order, Patient, Doctor, Clinic, SubOrder } from "@core/interfaces";
 import { AvatarComponent } from "@shared/components/avatar/avatar.component";
 import { AppButtonComponent } from "@shared/components/button/button.component";
@@ -73,6 +74,7 @@ export class ViewOrderComponent implements OnInit {
   private readonly doctorService = inject(DoctorDataService);
   private readonly clinicService = inject(ClinicDataService);
   private readonly subOrderService = inject(SubOrderDataService);
+  private readonly authorizationService = inject(AuthorizationService);
   protected readonly navigationService = inject(NavigationService);
   protected readonly formatUtils = inject(FormatUtils);
 
@@ -91,6 +93,15 @@ export class ViewOrderComponent implements OnInit {
   readonly notes = signal<{ text: string; at: string }[]>([]);
   readonly confirmDeleteVisible = signal(false);
   readonly actionMessage = signal<string | null>(null);
+  readonly canCreateOrders = computed(() =>
+    this.authorizationService.has("orders.create"),
+  );
+  readonly canUpdateOrders = computed(() =>
+    this.authorizationService.has("orders.update"),
+  );
+  readonly canDeleteOrders = computed(() =>
+    this.authorizationService.has("orders.delete"),
+  );
 
   readonly order = computed(() => {
     const id = this.orderId();
@@ -177,6 +188,10 @@ export class ViewOrderComponent implements OnInit {
   }
 
   openNoteDialog(): void {
+    if (!this.canUpdateOrders()) {
+      this.flashAction("You do not have permission to edit this order.");
+      return;
+    }
     this.noteDialogVisible.set(true);
     this.noteSaved.set(false);
     this.closeMoreMenu();
@@ -200,6 +215,10 @@ export class ViewOrderComponent implements OnInit {
   }
 
   saveNote(): void {
+    if (!this.canUpdateOrders()) {
+      this.flashAction("You do not have permission to edit this order.");
+      return;
+    }
     const text = this.noteText().trim();
     if (!text) return;
     const current = this.order();
@@ -253,6 +272,10 @@ export class ViewOrderComponent implements OnInit {
   }
 
   askDelete(): void {
+    if (!this.canDeleteOrders()) {
+      this.flashAction("You do not have permission to delete this order.");
+      return;
+    }
     if (this.order()?.isLocked) {
       this.flashAction("Unlock the order before performing actions.");
       return;
@@ -270,6 +293,11 @@ export class ViewOrderComponent implements OnInit {
   }
 
   confirmDelete(): void {
+    if (!this.canDeleteOrders()) {
+      this.flashAction("You do not have permission to delete this order.");
+      this.confirmDeleteVisible.set(false);
+      return;
+    }
     const current = this.order();
     if (current) {
       if (current.isLocked) {
@@ -310,12 +338,13 @@ export class ViewOrderComponent implements OnInit {
   }
 
   navigateToCreateOrder(): void {
+    if (!this.canCreateOrders()) return;
     this.navigationService.navigate("createOrder");
   }
 
   navigateToEditOrder(): void {
     const current = this.order();
-    if (!current || current.isLocked) return;
+    if (!current || current.isLocked || !this.canUpdateOrders()) return;
     this.navigationService.navigate("editOrder", { orderId: current.id });
   }
 

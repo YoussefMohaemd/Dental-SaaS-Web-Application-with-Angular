@@ -4,6 +4,7 @@ import { RouterModule } from "@angular/router";
 import { NavigationService } from "../../../core/services/navigation.service";
 import { ThemeService } from "../../../core/services/theme.service";
 import { AuthService } from "@core/services/auth.service";
+import { AuthorizationService } from "@core/services/authorization.service";
 import { NAV_ITEMS } from "../../../core/interfaces/navigation.interface";
 import { AvatarComponent } from "../../../shared/components/avatar/avatar.component";
 import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
@@ -20,8 +21,11 @@ export class SidebarComponent {
   readonly navigationService = inject(NavigationService);
   private readonly themeService = inject(ThemeService);
   private readonly authService = inject(AuthService);
+  private readonly authorizationService = inject(AuthorizationService);
 
-  readonly navItems = NAV_ITEMS;
+  readonly navItems = computed(() =>
+    NAV_ITEMS.filter((item) => this.authorizationService.canAccessNav(item.id)),
+  );
   readonly sidebarOpen = this.navigationService.sidebarOpen;
   readonly currentPage = this.navigationService.currentPage;
   readonly activeGroup = this.navigationService.activeGroup;

@@ -104,6 +104,7 @@ Raw logs live under `evidence/`.
 ## Supported Scenarios
 
 - Orders page with shared header toolbar, shared status badges, and service-driven preview states (normal/loading/empty/error)
+- Role-aware UX wiring: navigation, order creation/edit entry points, and bulk/order action buttons are now gated by backend-issued user capabilities to prevent unsupported actions before API calls
 - Order detail, sub-order detail, and create/edit order flows with patient autocomplete, doctor lookup by name/ID (required on create), bill-to targeting (Doctor/Scan Center), service pricing summaries, service-specific form capture, automatic due-date generation, and teeth-aware validation
 - Workflow board drag/drop transitions
 - Forms, scan/file, patient, doctor, clinic, billing, change-request, report, notification, and settings pages

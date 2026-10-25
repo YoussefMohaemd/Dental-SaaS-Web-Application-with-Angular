@@ -2,12 +2,14 @@ import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { provideHttpClient } from "@angular/common/http";
 import { provideHttpClientTesting } from "@angular/common/http/testing";
 import { provideRouter } from "@angular/router";
+import { signal } from "@angular/core";
 import {
   OrdersComponent,
   compareOrderValues,
   matchesOrderDuration,
   resolveDurationReferenceDate,
 } from "./orders.component";
+import { AuthService, AuthenticatedUser } from "@core/services/auth.service";
 import { NavigationService } from "@core/services/navigation.service";
 import { OrderDataService } from "@core/services/order-data.service";
 
@@ -15,14 +17,36 @@ describe("OrdersComponent", () => {
   let component: OrdersComponent;
   let fixture: ComponentFixture<OrdersComponent>;
   let orderService: OrderDataService;
+  let authUserSignal: ReturnType<typeof signal<AuthenticatedUser>>;
 
   beforeEach(async () => {
+    authUserSignal = signal<AuthenticatedUser>({
+      userId: "staff-1",
+      tenantId: "tenant-1",
+      fullName: "Test Staff",
+      email: "staff@example.test",
+      roles: ["staff"],
+      capabilities: [
+        "orders.create",
+        "orders.update",
+        "orders.delete",
+        "orders.archive",
+        "orders.lock",
+      ],
+    });
+
     await TestBed.configureTestingModule({
       imports: [OrdersComponent],
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
         provideRouter([]),
+        {
+          provide: AuthService,
+          useValue: {
+            user: authUserSignal,
+          },
+        },
       ],
     }).compileComponents();
 
@@ -207,6 +231,21 @@ describe("OrdersComponent", () => {
     spyOn(nav, "navigate");
     component.createOrder();
     expect(nav.navigate).toHaveBeenCalledWith("createOrder");
+  });
+
+  it("should block create order action when capability is missing", () => {
+    const nav = TestBed.inject(NavigationService);
+    spyOn(nav, "navigate");
+    authUserSignal.set({
+      ...authUserSignal(),
+      roles: ["manager"],
+      capabilities: ["orders.read"],
+    });
+
+    component.createOrder();
+
+    expect(nav.navigate).not.toHaveBeenCalled();
+    expect(component.actionError()).toContain("permission");
   });
 
   it("should navigate to view order and related records", () => {

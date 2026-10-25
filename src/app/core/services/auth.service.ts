@@ -11,6 +11,7 @@ import {
   throwError,
 } from "rxjs";
 import { ApiEndpoint } from "@core/enum/api.endpoint";
+import { type DentalCapability } from "@core/security/capabilities";
 import { environment } from "../../../environments/environment";
 
 export interface AuthenticatedUser {
@@ -19,6 +20,7 @@ export interface AuthenticatedUser {
   fullName: string;
   email: string;
   roles: string[];
+  capabilities?: DentalCapability[];
   clinicId?: string;
   avatarUrl?: string;
 }

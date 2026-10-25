@@ -1,6 +1,7 @@
 import { Routes } from "@angular/router";
 import { LayoutComponent } from "./core/layout/shell/layout.component";
 import { AuthGuard } from "./core/guards/auth.guard";
+import { capabilityGuard } from "./core/guards/capability.guard";
 import { orderUnlockedGuard } from "./core/guards/order-lock.guard";
 
 export const appRoutes: Routes = [
@@ -49,6 +50,8 @@ export const appRoutes: Routes = [
       },
       {
         path: "orders/create",
+        canActivate: [capabilityGuard],
+        data: { requiredCapabilities: ["orders.create"] },
         loadComponent: () =>
           import("./features/orders/create-order/create-order.component").then(
             (m) => m.CreateOrderComponent,
@@ -64,7 +67,8 @@ export const appRoutes: Routes = [
       },
       {
         path: "orders/:orderId/edit",
-        canActivate: [orderUnlockedGuard],
+        canActivate: [capabilityGuard, orderUnlockedGuard],
+        data: { requiredCapabilities: ["orders.update"] },
         loadComponent: () =>
           import("./features/orders/edit-order/edit-order.component").then(
             (m) => m.EditOrderComponent,

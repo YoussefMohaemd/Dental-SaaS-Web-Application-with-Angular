@@ -10,6 +10,7 @@ import { PatientDataService } from "@core/services/patient-data.service";
 import { OrderDataService } from "@core/services/order-data.service";
 import { CaseDataService } from "@core/services/case-data.service";
 import { DocumentDataService } from "@core/services/document-data.service";
+import { AuthorizationService } from "@core/services/authorization.service";
 
 describe("PatientDetailsComponent", () => {
   let component: PatientDetailsComponent;
@@ -58,6 +59,10 @@ describe("PatientDetailsComponent", () => {
             documents: signal([]),
             loadDocuments: jasmine.createSpy("loadDocuments"),
           },
+        },
+        {
+          provide: AuthorizationService,
+          useValue: { has: () => false },
         },
       ],
     }).compileComponents();

@@ -6,6 +6,7 @@ import { DashboardComponent } from "./dashboard.component";
 import { OrderDataService } from "@core/services/order-data.service";
 import { CaseDataService } from "@core/services/case-data.service";
 import { NavigationService } from "@core/services/navigation.service";
+import { AuthorizationService } from "@core/services/authorization.service";
 import { FormatUtils } from "@core/services/format-utils.service";
 import { DashboardDataService } from "@core/services/dashboard-data.service";
 import { NotificationDataService } from "@core/services/notification-data.service";
@@ -52,6 +53,10 @@ describe("DashboardComponent", () => {
         { provide: OrderDataService, useValue: orderSpy },
         { provide: CaseDataService, useValue: caseSpy },
         { provide: NavigationService, useValue: navSpy },
+        {
+          provide: AuthorizationService,
+          useValue: { has: () => true },
+        },
         { provide: FormatUtils, useValue: formatSpy },
         {
           provide: DashboardDataService,
