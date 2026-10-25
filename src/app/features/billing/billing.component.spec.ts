@@ -76,6 +76,7 @@ describe("BillingComponent sortable headers a11y", () => {
           useValue: {
             records: signal([record]),
             loading: signal(false),
+            loadRecords: jasmine.createSpy("loadRecords"),
           },
         },
       ],

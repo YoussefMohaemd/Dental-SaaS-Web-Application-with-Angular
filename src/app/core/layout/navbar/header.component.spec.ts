@@ -6,6 +6,8 @@ import { HeaderComponent } from "./header.component";
 import { NavigationService } from "@core/services/navigation.service";
 import { ThemeService } from "@core/services/theme.service";
 import { NotificationDataService } from "@core/services/notification-data.service";
+import { AuthService } from "@core/services/auth.service";
+import { of } from "rxjs";
 
 describe("HeaderComponent", () => {
   let component: HeaderComponent;
@@ -41,6 +43,12 @@ describe("HeaderComponent", () => {
         unreadCount: signal(0),
       },
     );
+    const authSpy = jasmine.createSpyObj(
+      "AuthService",
+      ["logout"],
+      { user: signal(null) },
+    );
+    authSpy.logout.and.returnValue(of(void 0));
 
     await TestBed.configureTestingModule({
       imports: [HeaderComponent],
@@ -49,6 +57,7 @@ describe("HeaderComponent", () => {
         { provide: NavigationService, useValue: navSpy },
         { provide: ThemeService, useValue: themeSpy },
         { provide: NotificationDataService, useValue: notifSpy },
+        { provide: AuthService, useValue: authSpy },
       ],
     }).compileComponents();
 

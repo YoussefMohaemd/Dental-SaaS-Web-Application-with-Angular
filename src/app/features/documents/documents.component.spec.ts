@@ -50,8 +50,10 @@ describe("DocumentsComponent", () => {
     httpMock = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(DocumentsComponent);
     component = fixture.componentInstance;
-    httpMock.expectOne("/data/documents.json").flush(MOCK_DOCS);
     fixture.detectChanges();
+    httpMock
+      .expectOne("http://localhost:3000/api/v1/documents")
+      .flush({ data: MOCK_DOCS });
   });
 
   afterEach(() => {

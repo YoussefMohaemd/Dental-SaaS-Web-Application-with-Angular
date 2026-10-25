@@ -23,7 +23,7 @@ describe("DocumentDataService", () => {
     httpMock.verify();
   });
 
-  it("should load documents from JSON", () => {
+  it("should load documents from the API", () => {
     const mock: LabDocument[] = [
       {
         id: "d1",
@@ -35,14 +35,18 @@ describe("DocumentDataService", () => {
         doctor: "Dr. Test",
       },
     ];
-    httpMock.expectOne("/data/documents.json").flush(mock);
+    service.loadDocuments();
+    httpMock
+      .expectOne("http://localhost:3000/api/v1/documents")
+      .flush({ data: mock });
     expect(service.documents().length).toBe(1);
     expect(service.getDocumentById("d1")?.name).toBe("rx_test.pdf");
   });
 
   it("should surface an error when the request fails", () => {
+    service.loadDocuments();
     httpMock
-      .expectOne("/data/documents.json")
+      .expectOne("http://localhost:3000/api/v1/documents")
       .error(new ProgressEvent("error"));
     expect(service.error()).not.toBeNull();
     expect(service.documents().length).toBe(0);
