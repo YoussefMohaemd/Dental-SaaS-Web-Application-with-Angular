@@ -90,11 +90,23 @@ export class AuthService {
       )
       .pipe(
         map(() => void 0),
-        catchError(() => {
-          return of(void 0);
+        catchError((error) => {
+          this.clearSession();
+          return throwError(() => error);
         }),
         tap(() => this.clearSession()),
       );
+  }
+
+  ensureSession(): Observable<boolean> {
+    if (this.isAuthenticated()) {
+      return of(true);
+    }
+
+    return this.refreshSession().pipe(
+      map(() => true),
+      catchError(() => of(false)),
+    );
   }
 
   refreshSession(): Observable<AuthenticatedUser> {
@@ -192,7 +204,6 @@ export class AuthService {
       sessionStorage.setItem(SESSION_TENANT_KEY, user.tenantId);
       if (rememberMe) {
         localStorage.setItem(AUTH_MARKER_KEY, "true");
-        localStorage.setItem(AUTH_TOKEN_KEY, token);
         localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
         localStorage.setItem(AUTH_TENANT_KEY, user.tenantId);
       }
@@ -201,12 +212,8 @@ export class AuthService {
 
   private restoreSession(): void {
     try {
-      const token =
-        localStorage.getItem(AUTH_TOKEN_KEY) ??
-        sessionStorage.getItem(SESSION_TOKEN_KEY);
-      const userRaw =
-        localStorage.getItem(AUTH_USER_KEY) ??
-        sessionStorage.getItem(SESSION_USER_KEY);
+      const token = sessionStorage.getItem(SESSION_TOKEN_KEY);
+      const userRaw = sessionStorage.getItem(SESSION_USER_KEY);
       if (!token || !userRaw) return;
       const user = JSON.parse(userRaw) as AuthenticatedUser;
       if (!user?.tenantId || !user?.userId) return;

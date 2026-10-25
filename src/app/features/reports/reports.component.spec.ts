@@ -3,6 +3,21 @@ import { provideHttpClient } from "@angular/common/http";
 import { provideHttpClientTesting } from "@angular/common/http/testing";
 import { provideRouter } from "@angular/router";
 import { ReportsComponent } from "./reports.component";
+import { BillingDataService } from "@core/services/billing-data.service";
+import { CaseDataService } from "@core/services/case-data.service";
+import { OrderDataService } from "@core/services/order-data.service";
+import { ReportsDataService } from "@core/services/reports-data.service";
+import { signal } from "@angular/core";
+
+const reportData = {
+  monthlyRevenue: [
+    { month: "Jan", revenue: 100 },
+    { month: "Feb", revenue: 133 },
+  ],
+  restorationBreakdown: [{ name: "Crown", value: 100 }],
+  turnaround: [{ day: "Mon", days: 1 }],
+  workflowShare: [{ stage: "New", count: 1, percent: 100 }],
+};
 
 describe("ReportsComponent", () => {
   let component: ReportsComponent;
@@ -15,6 +30,25 @@ describe("ReportsComponent", () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         provideRouter([]),
+        {
+          provide: OrderDataService,
+          useValue: { orders: signal([]), loadOrders: jasmine.createSpy() },
+        },
+        {
+          provide: CaseDataService,
+          useValue: { cases: signal([]), loadCases: jasmine.createSpy() },
+        },
+        {
+          provide: BillingDataService,
+          useValue: { records: signal([]), loadRecords: jasmine.createSpy() },
+        },
+        {
+          provide: ReportsDataService,
+          useValue: {
+            reports: signal(reportData),
+            loadReports: jasmine.createSpy(),
+          },
+        },
       ],
     }).compileComponents();
 

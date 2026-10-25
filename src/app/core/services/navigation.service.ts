@@ -53,6 +53,7 @@ export class NavigationService {
         "reportsQuarterlyTargets",
         "reportsQuarterDetail",
         "reportsTeamPerformance",
+        "reportsSubOrders",
       ].includes(page)
     )
       return "reports";
@@ -229,6 +230,11 @@ export class NavigationService {
         this.currentParams.set({});
         return;
       }
+      if (segments[1] === "sub-orders") {
+        this.currentPage.set("reportsSubOrders");
+        this.currentParams.set({});
+        return;
+      }
       this.currentPage.set("reports");
       this.currentParams.set({});
       return;
@@ -288,6 +294,7 @@ export class NavigationService {
       reportsQuarterDetail: (p) =>
         `/reports/quarterly-targets/${p.reportYear}/${p.reportQuarter}`,
       reportsTeamPerformance: () => "/reports/team-performance",
+      reportsSubOrders: () => "/reports/sub-orders",
       notifications: () => "/notifications",
       settings: () => "/settings",
       grid: () => "/grid",

@@ -80,15 +80,15 @@ npm run build-storybook
 
 Storybook covers the shared controls and reusable composite/business patterns. Static output is generated in `storybook-static/`.
 
-## Current Status (2026-09-26)
+## Current Status (2026-10-25)
 
 | Gate | Result |
 | --- | --- |
-| `npm run build` | Passing (2026-09-26 capture; non-blocking Sass/CSS budget warnings remain) |
-| `npm test -- --watch=false --browsers=ChromeHeadless` | 363/363 passing (2026-09-26 capture) |
-| `npm run lint` | Passing (2026-09-26 capture) |
-| `npm run build-storybook` | Passing (2026-09-26 capture; 8 story files emitted) |
-| axe-core scan (wcag2a/aa + best-practice, 24 route-states) | 0 violations (2026-09-26 capture) |
+| `npm run build` | Passing; non-blocking Sass/CSS budget warnings remain |
+| `npm test -- --watch=false --browsers=ChromeHeadless` | 393/393 passing |
+| `npm run lint` | Passing |
+| `npm run type-check` | Passing |
+| `npm run build-storybook` | Existing Storybook gate remains documented in `evidence/` |
 
 Raw logs live under `evidence/`.
 
@@ -120,12 +120,25 @@ Raw logs live under `evidence/`.
 - `evidence/responsive/` - responsive screenshots and checklist
 - `evidence/accessibility/` - axe-core and keyboard walkthrough artifacts
 
-## Limitations
+## Limitations and backend boundaries
 
-- This is still a frontend POC; core data/auth services call backend APIs, while selected report/sub-order prototyping flows may still require backend contract alignment.
-- Controlled AI-comparison evidence is pending human execution.
-- Mentor checkpoint approvals are pending for recorded deviations.
-- Some evidence items are intentionally human-validated and must not be fabricated.
+- Business data, dashboard/report data, documents, orders, patients, doctors,
+  clinics, billing, cases, notifications, and scan-center references are
+  loaded from authenticated backend APIs. The removed `public/data` fixture
+  assets are not part of the build.
+- Settings appearance, notification, density, and language preferences are
+  persisted through the authenticated settings API. Profile and organization
+  administration remains restricted to the appropriate backend user-management
+  workflow and is not reported as saved by this screen.
+- Document upload currently persists document metadata through the API. Binary
+  storage, virus scanning, download authorization, and retention policy still
+  require an approved object-storage contract.
+- Quarterly target values are sourced from the backend; when no target
+  configuration exists, the API returns zero targets rather than inventing
+  client-side values.
+- The AI Assistant phase has not started. Any future AI order operation must
+  use authenticated server-derived tenant/doctor scope, confirmation for
+  writes, and audit events.
 
 ## Demo Notes
 

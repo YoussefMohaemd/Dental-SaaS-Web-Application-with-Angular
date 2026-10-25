@@ -202,20 +202,38 @@ export class ViewOrderComponent implements OnInit {
   saveNote(): void {
     const text = this.noteText().trim();
     if (!text) return;
+    const current = this.order();
+    if (!current || current.isLocked) {
+      this.flashAction("Unlock the order before adding a note.");
+      return;
+    }
+
     this.noteSaving.set(true);
-    window.setTimeout(() => {
-      this.notes.update((current) => [
-        ...current,
-        { text, at: new Date().toISOString() },
-      ]);
-      this.noteText.set("");
-      this.noteSaving.set(false);
-      this.noteSaved.set(true);
-      window.setTimeout(() => {
-        this.noteDialogVisible.set(false);
-        this.noteSaved.set(false);
-      }, 900);
-    }, 600);
+    const timestamp = new Date().toISOString();
+    const notes = [current.notes.trim(), `[${timestamp}] ${text}`]
+      .filter(Boolean)
+      .join("\n");
+
+    this.orderService
+      .updateOrder$(current.id, { notes, hasNotes: true })
+      .subscribe({
+        next: () => {
+          this.notes.update((items) => [...items, { text, at: timestamp }]);
+          this.noteText.set("");
+          this.noteSaving.set(false);
+          this.noteSaved.set(true);
+          window.setTimeout(() => {
+            this.noteDialogVisible.set(false);
+            this.noteSaved.set(false);
+          }, 900);
+        },
+        error: (error) => {
+          this.noteSaving.set(false);
+          this.flashAction(
+            error?.error?.message ?? "Unable to save the note.",
+          );
+        },
+      });
   }
 
   exportOrder(): void {

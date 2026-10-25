@@ -6,6 +6,7 @@ import {
 } from "@angular/common/http/testing";
 import { DocumentsComponent } from "./documents.component";
 import { LabDocument } from "@core/interfaces";
+import { ApiEndpoint } from "@core/enum/api.endpoint";
 
 const MOCK_DOCS: LabDocument[] = [
   {
@@ -52,7 +53,7 @@ describe("DocumentsComponent", () => {
     component = fixture.componentInstance;
     fixture.detectChanges();
     httpMock
-      .expectOne("http://localhost:3000/api/v1/documents")
+      .expectOne(ApiEndpoint.DOCUMENTS)
       .flush({ data: MOCK_DOCS });
   });
 
@@ -78,6 +79,7 @@ describe("DocumentsComponent", () => {
 
   it("should delete and preview documents", () => {
     component.deleteDocument("d1");
+    httpMock.expectOne(`${ApiEndpoint.DOCUMENTS}/d1`).flush(null);
     expect(component.filtered().find((d) => d.id === "d1")).toBeUndefined();
     component.openPreview(component.filtered()[0]);
     expect(component.previewVisible()).toBeTrue();

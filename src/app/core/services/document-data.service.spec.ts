@@ -6,6 +6,7 @@ import {
 } from "@angular/common/http/testing";
 import { DocumentDataService } from "./document-data.service";
 import { LabDocument } from "../interfaces";
+import { ApiEndpoint } from "@core/enum/api.endpoint";
 
 describe("DocumentDataService", () => {
   let service: DocumentDataService;
@@ -37,7 +38,7 @@ describe("DocumentDataService", () => {
     ];
     service.loadDocuments();
     httpMock
-      .expectOne("http://localhost:3000/api/v1/documents")
+      .expectOne(ApiEndpoint.DOCUMENTS)
       .flush({ data: mock });
     expect(service.documents().length).toBe(1);
     expect(service.getDocumentById("d1")?.name).toBe("rx_test.pdf");
@@ -46,7 +47,7 @@ describe("DocumentDataService", () => {
   it("should surface an error when the request fails", () => {
     service.loadDocuments();
     httpMock
-      .expectOne("http://localhost:3000/api/v1/documents")
+      .expectOne(ApiEndpoint.DOCUMENTS)
       .error(new ProgressEvent("error"));
     expect(service.error()).not.toBeNull();
     expect(service.documents().length).toBe(0);

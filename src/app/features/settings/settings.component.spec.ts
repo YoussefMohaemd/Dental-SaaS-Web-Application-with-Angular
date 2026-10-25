@@ -3,6 +3,7 @@ import { SettingsComponent } from "./settings.component";
 import { AuthService, AuthenticatedUser } from "@core/services/auth.service";
 import { signal } from "@angular/core";
 import { of } from "rxjs";
+import { SettingsPreferencesService } from "@core/services/settings-preferences.service";
 
 describe("SettingsComponent", () => {
   let component: SettingsComponent;
@@ -28,6 +29,13 @@ describe("SettingsComponent", () => {
             changePassword: jasmine.createSpy("changePassword").and.returnValue(
               of(void 0),
             ),
+          },
+        },
+        {
+          provide: SettingsPreferencesService,
+          useValue: {
+            load: () => of(null),
+            save: jasmine.createSpy("save").and.returnValue(of({})),
           },
         },
       ],

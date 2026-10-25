@@ -26,12 +26,7 @@
             "tsConfig": "tsconfig.app.json",
             "assets": [
               "src/favicon.ico",
-              "src/assets",
-              {
-                "glob": "**/*",
-                "input": "public/data",
-                "output": "data"
-              }
+              "src/assets"
             ],
             "styles": [
               "src/styles.scss",
@@ -101,12 +96,7 @@
             "tsConfig": "tsconfig.spec.json",
             "assets": [
               "src/favicon.ico",
-              "src/assets",
-              {
-                "glob": "**/*",
-                "input": "public/data",
-                "output": "data"
-              }
+              "src/assets"
             ],
             "styles": [
               "src/styles.scss",

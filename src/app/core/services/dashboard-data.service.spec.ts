@@ -5,6 +5,7 @@ import {
   provideHttpClientTesting,
 } from "@angular/common/http/testing";
 import { DashboardDataService } from "./dashboard-data.service";
+import { ApiEndpoint } from "@core/enum/api.endpoint";
 
 describe("DashboardDataService", () => {
   let service: DashboardDataService;
@@ -55,20 +56,23 @@ describe("DashboardDataService", () => {
 
   it("should create", () => {
     expect(service).toBeTruthy();
-    httpMock.expectOne("data/dashboard-volume.json").flush(payload);
   });
 
-  it("should expose the current week from dashboard-volume.json", () => {
-    httpMock.expectOne("data/dashboard-volume.json").flush(payload);
+  it("should expose the current week from the dashboard API", () => {
+    service.loadVolume();
+    httpMock.expectOne(ApiEndpoint.DASHBOARD_VOLUME).flush({ data: payload });
     expect(service.weeks().length).toBe(2);
     expect(service.currentWeek().weekLabel).toBe("W51");
     expect(service.currentDays().length).toBe(7);
     expect(service.weekMax()).toBe(21);
   });
 
-  it("should fall back to built-in data when the JSON is unavailable", () => {
-    httpMock.expectOne("data/dashboard-volume.json").flush(null);
-    expect(service.currentDays().length).toBe(7);
-    expect(service.weekMax()).toBe(21);
+  it("should expose an empty state when the dashboard API is unavailable", () => {
+    service.loadVolume();
+    httpMock
+      .expectOne(ApiEndpoint.DASHBOARD_VOLUME)
+      .flush(null, { status: 500, statusText: "Server Error" });
+    expect(service.currentDays().length).toBe(0);
+    expect(service.weekMax()).toBe(1);
   });
 });

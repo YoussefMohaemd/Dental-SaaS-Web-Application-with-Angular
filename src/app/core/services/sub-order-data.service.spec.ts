@@ -148,4 +148,40 @@ describe("SubOrderDataService", () => {
     expect(rows.length).toBe(1);
     expect(rows[0].service).toBe("Final Restoration");
   });
+
+  it("should persist sub-order activity through the backend update", () => {
+    const [created] = service.createForOrder("ord-1", [
+      {
+        serviceId: "gfmr",
+        service: "GFMR",
+        icon: "clipboard",
+        priority: "Normal",
+        dueDate: "2024-12-24",
+        notes: "",
+        teeth: [],
+        scanRequirements: [],
+        creationData: {
+          serviceId: "gfmr",
+          serviceDetails: {},
+          serviceForm: {},
+          selectedTeeth: [],
+          scanRequirements: [],
+          fileReferences: [],
+        },
+      },
+    ]);
+
+    service.addActivityNote(created.id, "Test User", "Review requested.");
+
+    const request = httpMock.expectOne(
+      ApiEndpoint.subOrder("ord-1", created.id),
+    );
+    expect(request.request.method).toBe("PATCH");
+    expect(request.request.body.activity[0]).toEqual({
+      time: "just now",
+      user: "Test User",
+      text: "Review requested.",
+    });
+    request.flush({ data: { ...created } });
+  });
 });

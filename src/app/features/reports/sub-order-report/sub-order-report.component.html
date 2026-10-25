@@ -1,0 +1,103 @@
+<div class="enterprise-table-page">
+  <app-data-table-toolbar
+    title="Sub-order Report"
+    subtitle="Tenant-scoped delivery status, service throughput, and overdue work"
+  >
+    <div header-actions>
+      <app-button variant="outline" size="sm" (onClick)="goToReportsHub()">
+        Back to reports hub
+      </app-button>
+    </div>
+  </app-data-table-toolbar>
+
+  <section class="rounded-2xl border border-border bg-card p-4 sm:p-5">
+    <div class="flex flex-wrap items-end gap-2">
+      <div class="min-w-64 flex-1">
+        <app-input
+          id="sub-order-report-service"
+          label="Service"
+          placeholder="Filter by service"
+          [value]="serviceFilter()"
+          (valueChange)="serviceFilter.set($event)"
+        ></app-input>
+      </div>
+      <app-button variant="primary" size="md" (onClick)="applyFilter()">
+        Apply
+      </app-button>
+      <app-button variant="outline" size="md" (onClick)="resetFilter()">
+        Reset
+      </app-button>
+    </div>
+  </section>
+
+  @if (loading()) {
+    <div class="enterprise-table-panel">
+      <app-table-feedback mode="loading" message="Loading sub-order report..." />
+    </div>
+  } @else if (error()) {
+    <div class="enterprise-table-panel">
+      <app-table-feedback mode="error" [message]="error()!" />
+    </div>
+  } @else {
+    <section class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      @for (card of summaryCards(); track card.label) {
+        <article class="rounded-2xl border border-border bg-card p-4 sm:p-5">
+          <p class="text-xs text-muted-foreground">{{ card.label }}</p>
+          <p class="font-display mt-1 text-xl font-bold" [class]="card.tone">
+            {{ card.value }}
+          </p>
+        </article>
+      }
+    </section>
+
+    <section class="rounded-2xl border border-border bg-card p-4 sm:p-5">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h2 class="font-display text-base font-semibold text-foreground">
+            Service throughput
+          </h2>
+          <p class="mt-1 text-xs text-muted-foreground">
+            {{ report().summary.completionRate }}% overall completion
+          </p>
+        </div>
+        <p-tag
+          [value]="'Blocked ' + report().summary.blocked"
+          severity="danger"
+        />
+      </div>
+
+      @if (report().byService.length === 0) {
+        <app-table-feedback mode="empty" message="No sub-orders found." />
+      } @else {
+        <div class="mt-4 overflow-x-auto">
+          <table class="w-full min-w-[720px] text-left text-sm">
+            <thead class="border-b border-border text-xs text-muted-foreground">
+              <tr>
+                <th class="px-3 py-3 font-medium">Service</th>
+                <th class="px-3 py-3 font-medium">Total</th>
+                <th class="px-3 py-3 font-medium">Completed</th>
+                <th class="px-3 py-3 font-medium">In progress</th>
+                <th class="px-3 py-3 font-medium">Pending</th>
+                <th class="px-3 py-3 font-medium">Overdue</th>
+                <th class="px-3 py-3 font-medium">Completion</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of report().byService; track row.service) {
+                <tr class="border-b border-border/70 last:border-0">
+                  <td class="px-3 py-3 font-medium text-foreground">{{ row.service }}</td>
+                  <td class="px-3 py-3 text-muted-foreground">{{ row.total }}</td>
+                  <td class="px-3 py-3 text-muted-foreground">{{ row.completed }}</td>
+                  <td class="px-3 py-3 text-muted-foreground">{{ row.inProgress }}</td>
+                  <td class="px-3 py-3 text-muted-foreground">{{ row.pending }}</td>
+                  <td class="px-3 py-3 text-danger">{{ row.overdue }}</td>
+                  <td class="px-3 py-3 text-muted-foreground">{{ row.completionRate }}%</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+  }
+</div>

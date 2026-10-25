@@ -5,6 +5,7 @@ import { AuthGuard } from "./auth.guard";
 import { NavigationService } from "@core/services/navigation.service";
 import { AuthService } from "@core/services/auth.service";
 import { signal } from "@angular/core";
+import { Observable, of } from "rxjs";
 
 describe("AuthGuard", () => {
   let guard: AuthGuard;
@@ -22,7 +23,10 @@ describe("AuthGuard", () => {
         { provide: NavigationService, useValue: {} },
         {
           provide: AuthService,
-          useValue: { isAuthenticated: authenticated.asReadonly() },
+          useValue: {
+            isAuthenticated: authenticated.asReadonly(),
+            ensureSession: () => of(false),
+          },
         },
         { provide: PLATFORM_ID, useValue: "browser" },
       ],
@@ -38,7 +42,11 @@ describe("AuthGuard", () => {
   });
 
   it("redirects to /login when the auth service reports no session", () => {
-    expect(guard.canActivate()).toBeFalse();
+    let result: boolean | undefined;
+    (guard.canActivate() as Observable<boolean>).subscribe(
+      (value) => (result = value),
+    );
+    expect(result).toBeFalse();
     expect(router.navigate).toHaveBeenCalledWith(["/login"]);
   });
 });

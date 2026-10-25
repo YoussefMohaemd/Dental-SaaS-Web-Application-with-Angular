@@ -81,6 +81,14 @@ export class ReportsComponent implements OnInit {
       cta: "Open Team Performance",
       severity: "info",
     },
+    {
+      title: "Sub-order Report",
+      description:
+        "Track service throughput, completion rates, blocked work, and overdue sub-orders.",
+      route: "/reports/sub-orders",
+      cta: "Open Sub-order Report",
+      severity: "warn",
+    },
   ];
 
   get monthlyRevenue(): RevenuePoint[] {

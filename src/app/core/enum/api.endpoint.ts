@@ -20,7 +20,9 @@ export class ApiEndpoint {
   static readonly REPORTING_SEED = `${environment.apiBaseUrl}/v1/reports/seed`;
   static readonly REPORTS_ORDERS_RANGE = `${environment.apiBaseUrl}/v1/reports/orders-range`;
   static readonly REPORTS_TEAM_PERFORMANCE = `${environment.apiBaseUrl}/v1/reports/team-performance`;
+  static readonly REPORTS_SUB_ORDERS = `${environment.apiBaseUrl}/v1/reports/sub-orders`;
   static readonly SCAN_CENTERS = `${environment.apiBaseUrl}/v1/scan-centers`;
+  static readonly SETTINGS_PREFERENCES = `${environment.apiBaseUrl}/v1/settings/preferences`;
 
   static orderSubOrders(orderId: string): string {
     return `${environment.apiBaseUrl}/v1/orders/${orderId}/sub-orders`;
@@ -28,5 +30,9 @@ export class ApiEndpoint {
 
   static subOrder(orderId: string, subOrderId: string): string {
     return `${this.orderSubOrders(orderId)}/${subOrderId}`;
+  }
+
+  static changeRequestStatus(requestId: string): string {
+    return `${this.CHANGE_REQUESTS}/${requestId}/status`;
   }
 }

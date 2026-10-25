@@ -48,8 +48,8 @@ describe("authInterceptor", () => {
   });
 
   it("attaches an Authorization header when a token exists", () => {
-    localStorage.setItem("dentalab-auth-token", "token-value");
-    localStorage.setItem("dentalab-auth-user", JSON.stringify(user));
+    sessionStorage.setItem("dentalab-session-token", "token-value");
+    sessionStorage.setItem("dentalab-session-user", JSON.stringify(user));
 
     const next = jasmine
       .createSpy("next")
@@ -87,8 +87,8 @@ describe("authInterceptor", () => {
   });
 
   it("refreshes an expired access token and retries the original request", () => {
-    localStorage.setItem("dentalab-auth-token", "expired-token");
-    localStorage.setItem("dentalab-auth-user", JSON.stringify(user));
+    sessionStorage.setItem("dentalab-session-token", "expired-token");
+    sessionStorage.setItem("dentalab-session-user", JSON.stringify(user));
 
     const http = TestBed.inject(HttpClient);
     let responseBody: unknown;

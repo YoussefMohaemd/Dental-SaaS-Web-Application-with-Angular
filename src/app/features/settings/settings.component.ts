@@ -6,6 +6,10 @@ import {
   AuthService,
   AuthenticatedUser,
 } from "@core/services/auth.service";
+import {
+  SettingsPreferencesService,
+  UserPreferences,
+} from "@core/services/settings-preferences.service";
 import { getApiErrorMessage } from "@shared/utils/api-error";
 import { AppButtonComponent } from "@shared/components/button/button.component";
 import { AppTextFieldComponent } from "@shared/components/input/input.component";
@@ -38,6 +42,7 @@ export class SettingsComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   protected readonly themeService = inject(ThemeService);
   protected readonly authService = inject(AuthService);
+  private readonly preferencesService = inject(SettingsPreferencesService);
 
   readonly section = signal<SettingsSection>("profile");
   readonly saved = signal(false);
@@ -130,6 +135,15 @@ export class SettingsComponent implements OnInit {
           getApiErrorMessage(error, "Unable to load your account details."),
         ),
     });
+    this.preferencesService.load().subscribe({
+      next: (preferences) => {
+        if (preferences) this.applyPreferences(preferences);
+      },
+      error: (error) =>
+        this.saveError.set(
+          getApiErrorMessage(error, "Unable to load your preferences."),
+        ),
+    });
   }
 
   setSection(next: SettingsSection): void {
@@ -164,8 +178,23 @@ export class SettingsComponent implements OnInit {
       return;
     }
 
-    this.saved.set(true);
-    window.setTimeout(() => this.saved.set(false), 2000);
+    if (["notifications", "appearance", "language"].includes(this.section())) {
+      this.preferencesService.save(this.currentPreferences()).subscribe({
+        next: () => {
+          this.saved.set(true);
+          window.setTimeout(() => this.saved.set(false), 2000);
+        },
+        error: (error) =>
+          this.saveError.set(
+            getApiErrorMessage(error, "Unable to save your preferences."),
+          ),
+      });
+      return;
+    }
+
+    this.saveError.set(
+      "Profile and organization changes are managed by an administrator.",
+    );
   }
 
   private savePassword(): void {
@@ -211,6 +240,29 @@ export class SettingsComponent implements OnInit {
       email: user.email,
       role: user.roles[0] ?? "User",
     });
+  }
+
+  private applyPreferences(preferences: UserPreferences): void {
+    this.density.set(preferences.density);
+    this.notificationPrefs.set(preferences.notificationPrefs);
+    this.languageForm.patchValue({
+      language: preferences.language,
+      timeZone: preferences.timeZone,
+      dateFormat: preferences.dateFormat,
+    });
+    this.themeService.setTheme(preferences.theme);
+  }
+
+  private currentPreferences(): UserPreferences {
+    const language = this.languageForm.getRawValue();
+    return {
+      density: this.density(),
+      theme: this.themeService.theme(),
+      language: language.language,
+      timeZone: language.timeZone,
+      dateFormat: language.dateFormat,
+      notificationPrefs: this.notificationPrefs(),
+    };
   }
 
   preferenceEntries(): {

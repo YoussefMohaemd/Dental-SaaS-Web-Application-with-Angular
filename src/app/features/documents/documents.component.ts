@@ -40,7 +40,6 @@ export class DocumentsComponent implements OnInit {
   readonly documents = this.documentService.documents;
   readonly loading = this.documentService.loading;
   readonly error = this.documentService.error;
-  private readonly uploads = signal<LabDocument[]>([]);
   readonly search = signal("");
   readonly category = signal<"All" | DocumentCategory>("All");
   readonly dragOver = signal(false);
@@ -55,10 +54,7 @@ export class DocumentsComponent implements OnInit {
 
   readonly filtered = computed(() => {
     const query = this.search().trim().toLowerCase();
-    const removed = this.removedIds();
-    const all = [...this.uploads(), ...this.documents()].filter(
-      (doc) => !removed.has(doc.id),
-    );
+    const all = this.documents();
     return all.filter((doc) => {
       const matchesCategory =
         this.category() === "All" || doc.category === this.category();
@@ -105,13 +101,10 @@ export class DocumentsComponent implements OnInit {
     input.value = "";
   }
 
-  private readonly removedIds = signal<Set<string>>(new Set());
-
   deleteDocument(documentId: string): void {
-    this.removedIds.update((current) => new Set(current).add(documentId));
-    this.uploads.update((current) =>
-      current.filter((d) => d.id !== documentId),
-    );
+    this.documentService.deleteDocument(documentId).subscribe({
+      error: (error) => console.error("Error deleting document:", error),
+    });
   }
 
   downloadDocument(doc: LabDocument): void {
@@ -189,24 +182,20 @@ export class DocumentsComponent implements OnInit {
   }
 
   private addFiles(fileList: FileList): void {
-    const additions: LabDocument[] = Array.from(fileList)
+    Array.from(fileList)
       .slice(0, 10)
-      .map((file, index) => ({
-        id: `upload-${Date.now()}-${index}`,
-        name: file.name,
-        category: "Scan Files" as DocumentCategory,
-        type: (file.name.split(".").pop() ?? "FILE").toUpperCase(),
-        size: this.formatBytes(file.size),
-        date: new Date().toISOString().slice(0, 10),
-        doctor: "You",
-      }));
-    if (additions.length > 0)
-      this.uploads.update((current) => [...additions, ...current]);
+      .forEach((file) => {
+        this.documentService
+          .createDocument({
+            name: file.name,
+            category: "Scan Files",
+            type: (file.name.split(".").pop() ?? "FILE").toUpperCase(),
+            sizeBytes: file.size,
+          })
+          .subscribe({
+            error: (error) => console.error("Error creating document:", error),
+          });
+      });
   }
 
-  private formatBytes(bytes: number): string {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-  }
 }

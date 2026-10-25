@@ -586,6 +586,7 @@ export class SubOrderDataService {
         ],
       },
     }));
+    this.persistSubOrderProgress(subOrderId);
   }
 
   getByOrderId(orderId: string): SubOrder[] {
@@ -665,6 +666,7 @@ export class SubOrderDataService {
   private persistSubOrderProgress(subOrderId: string): void {
     const subOrder = this._subOrders().find((row) => row.id === subOrderId);
     if (!subOrder?.orderId) return;
+    const detail = this._details()[subOrderId];
 
     this.http
       .patch<{ data: SubOrderJson }>(
@@ -675,6 +677,13 @@ export class SubOrderDataService {
           formsTotal: subOrder.formsTotal,
           scansComplete: subOrder.scansComplete,
           scansTotal: subOrder.scansTotal,
+          ...(detail
+            ? {
+                forms: detail.forms,
+                scans: detail.scans,
+                activity: detail.activity,
+              }
+            : {}),
         },
       )
       .subscribe({

@@ -26,6 +26,7 @@ export type PageId =
   | "reportsQuarterlyTargets"
   | "reportsQuarterDetail"
   | "reportsTeamPerformance"
+  | "reportsSubOrders"
   | "notifications"
   | "settings"
   | "grid"
@@ -113,6 +114,7 @@ export const BREADCRUMB_MAP: Partial<
     parent: "reportsQuarterlyTargets",
   },
   reportsTeamPerformance: { label: "Team Performance", parent: "reports" },
+  reportsSubOrders: { label: "Sub-order Report", parent: "reports" },
   notifications: { label: "Notifications" },
   settings: { label: "Settings" },
   grid: { label: "Grid" },

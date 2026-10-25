@@ -221,6 +221,13 @@ export const appRoutes: Routes = [
           ),
       },
       {
+        path: "reports/sub-orders",
+        loadComponent: () =>
+          import("./features/reports/sub-order-report/sub-order-report.component").then(
+            (m) => m.SubOrderReportComponent,
+          ),
+      },
+      {
         path: "notifications",
         loadComponent: () =>
           import("./features/notifications/notifications.component").then(

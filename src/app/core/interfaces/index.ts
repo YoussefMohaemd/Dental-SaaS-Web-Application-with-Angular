@@ -15,4 +15,5 @@ export * from './report.interface';
 export * from './reporting.interface';
 export * from './scan-center.interface';
 export * from './sub-order.interface';
+export * from './sub-order-report.interface';
 export * from './tooth.interface';

@@ -74,8 +74,25 @@ export class ChangeRequestDataService extends ChangeRequestApi {
   }
 
   updateStatus(requestId: string, status: ChangeRequest["status"]): void {
-    this._changeRequests.update((current) =>
-      current.map((r) => (r.id === requestId ? { ...r, status } : r)),
-    );
+    this._error.set(null);
+    this.http
+      .patch<{ data: ChangeRequest }>(
+        ApiEndpoint.changeRequestStatus(requestId),
+        { status },
+      )
+      .pipe(map((response) => response.data))
+      .subscribe({
+        next: (updated) => {
+          this._changeRequests.update((current) =>
+            current.map((request) =>
+              request.id === updated.id ? updated : request,
+            ),
+          );
+        },
+        error: (apiError) => {
+          console.error("Error updating change request status:", apiError);
+          this._error.set("Change request status could not be saved.");
+        },
+      });
   }
 }

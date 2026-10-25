@@ -2,6 +2,8 @@ import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { By } from "@angular/platform-browser";
 import { LoginComponent } from "./login.component";
 import { Router } from "@angular/router";
+import { AuthService } from "@core/services/auth.service";
+import { of } from "rxjs";
 
 describe("LoginComponent", () => {
   let component: LoginComponent;
@@ -10,10 +12,25 @@ describe("LoginComponent", () => {
 
   beforeEach(async () => {
     const routerSpy = jasmine.createSpyObj("Router", ["navigate"]);
+    const authServiceSpy = jasmine.createSpyObj<AuthService>("AuthService", [
+      "login",
+    ]);
+    authServiceSpy.login.and.returnValue(
+      of({
+        userId: "user-id",
+        tenantId: "tenant-id",
+        fullName: "Test User",
+        email: "test@example.com",
+        roles: ["admin"],
+      }),
+    );
 
     await TestBed.configureTestingModule({
       imports: [LoginComponent],
-      providers: [{ provide: Router, useValue: routerSpy }],
+      providers: [
+        { provide: Router, useValue: routerSpy },
+        { provide: AuthService, useValue: authServiceSpy },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(LoginComponent);
@@ -26,8 +43,8 @@ describe("LoginComponent", () => {
     expect(component).toBeTruthy();
   });
 
-  it("should have default email value", () => {
-    expect(component.email()).toBe("jessica.ruiz@dentalab.com");
+  it("should start with an empty email value", () => {
+    expect(component.email()).toBe("");
   });
 
   it("should toggle password visibility", () => {
@@ -41,6 +58,8 @@ describe("LoginComponent", () => {
   });
 
   it("should call router.navigate on successful login", async () => {
+    component.email.set("test@example.com");
+    component.password.set("password");
     const form = fixture.debugElement.query(By.css("form"));
     form.triggerEventHandler("ngSubmit", new Event("submit"));
     await new Promise((resolve) => setTimeout(resolve, 900));
@@ -82,6 +101,7 @@ describe("LoginComponent", () => {
   });
 
   it("should toggle password visibility and keep the value readable", () => {
+    component.password.set("password");
     const toggle = fixture.debugElement.query(
       By.css('button[aria-label="Toggle password visibility"]'),
     );
