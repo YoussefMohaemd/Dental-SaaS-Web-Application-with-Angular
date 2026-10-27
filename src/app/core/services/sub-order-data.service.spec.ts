@@ -85,8 +85,16 @@ describe("SubOrderDataService", () => {
 
   it("should synthesize detail records from the summary counts for the exact sub-order id", async () => {
     service.load();
-    httpMock.expectOne(ApiEndpoint.ORDERS).flush({
+    httpMock
+      .expectOne(
+        (request) =>
+          request.url === ApiEndpoint.ORDERS &&
+          request.params.get("page") === "1" &&
+          request.params.get("pageSize") === "100",
+      )
+      .flush({
       data: [{ id: "ord-33" }],
+      meta: { pagination: { page: 1, totalPages: 1 } },
     });
     httpMock.expectOne(ApiEndpoint.orderSubOrders("ord-33")).flush({
       data: [
@@ -183,5 +191,44 @@ describe("SubOrderDataService", () => {
       text: "Review requested.",
     });
     request.flush({ data: { ...created } });
+  });
+
+  it("should not count selected-local scans as completed uploads", () => {
+    const [created] = service.createForOrder("ord-7", [
+      {
+        serviceId: "gfmr",
+        service: "GFMR",
+        icon: "clipboard",
+        priority: "Normal",
+        dueDate: "2024-12-24",
+        notes: "",
+        teeth: [],
+        scanRequirements: ["Upper scan"],
+        creationData: {
+          serviceId: "gfmr",
+          serviceDetails: {},
+          serviceForm: {},
+          selectedTeeth: [],
+          scanRequirements: ["Upper scan"],
+          fileReferences: [],
+        },
+      },
+    ]);
+
+    service.saveScanFiles(created.id, `${created.id}-scan-1`, [
+      {
+        id: "local-1",
+        name: "upper-scan.stl",
+        sizeBytes: 2048,
+        sizeLabel: "2 KB",
+        type: "model/stl",
+        lastModified: Date.now(),
+        selectedAt: new Date().toISOString(),
+      },
+    ]);
+
+    const request = httpMock.expectOne(ApiEndpoint.subOrder("ord-7", created.id));
+    expect(request.request.body.scansComplete).toBe(0);
+    request.flush({ data: { ...created, scansComplete: 0 } });
   });
 });

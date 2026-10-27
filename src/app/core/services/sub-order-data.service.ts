@@ -1,11 +1,15 @@
 import { Injectable, inject, signal, computed } from "@angular/core";
-import { HttpClient } from "@angular/common/http";
+import { HttpClient, HttpParams } from "@angular/common/http";
 import {
+  EMPTY,
   catchError,
+  expand,
+  finalize,
   forkJoin,
   map,
   Observable,
   of,
+  reduce,
   switchMap,
   tap,
   throwError,
@@ -223,15 +227,28 @@ export interface CreateSubOrderInput {
   creationData: SubOrderCreationData;
 }
 
+interface OrdersPageResponse {
+  data?: Array<{ id: string }>;
+  meta?: {
+    pagination?: {
+      page?: number;
+      totalPages?: number;
+    };
+  };
+}
+
 @Injectable({ providedIn: "root" })
 export class SubOrderDataService {
   private readonly http = inject(HttpClient);
   private readonly URL = ApiEndpoint.ORDERS;
+  private static readonly ORDER_PAGE_SIZE = 100;
 
   private readonly _subOrders = signal<SubOrder[]>([]);
   private readonly _details = signal<Record<string, SubOrderDetail>>({});
   private readonly _loading = signal<boolean>(false);
   private readonly _error = signal<string | null>(null);
+  private readonly persistRevisionBySubOrderId = new Map<string, number>();
+  private readonly persistingSubOrderIds = new Set<string>();
 
   readonly subOrders = this._subOrders.asReadonly();
   readonly loading = this._loading.asReadonly();
@@ -245,11 +262,8 @@ export class SubOrderDataService {
   load(): void {
     this._loading.set(true);
     this._error.set(null);
-    this.http
-      .get<{ data: Array<{ id: string }> }>(this.URL)
+    this.loadAllOrderIds$()
       .pipe(
-        map((response) => response.data ?? []),
-        map((orders) => orders.map((order) => order.id).filter((id) => !!id)),
         switchMap((orderIds) => {
           if (orderIds.length === 0) return of([] as SubOrderJson[]);
           return forkJoin(
@@ -309,6 +323,34 @@ export class SubOrderDataService {
     return this._subOrders().find((s) => s.id === id);
   }
 
+  private loadAllOrderIds$(): Observable<string[]> {
+    return this.loadOrdersPage$(1).pipe(
+      expand((response) => {
+        const page = response.meta?.pagination?.page ?? 1;
+        const totalPages = response.meta?.pagination?.totalPages ?? 1;
+        if (page >= totalPages) {
+          return EMPTY;
+        }
+        return this.loadOrdersPage$(page + 1);
+      }),
+      map((response) =>
+        (response.data ?? [])
+          .map((order) => order.id)
+          .filter((id): id is string => typeof id === "string" && id.length > 0),
+      ),
+      reduce((allOrderIds, pageIds) => [...allOrderIds, ...pageIds], [] as string[]),
+    );
+  }
+
+  private loadOrdersPage$(page: number): Observable<OrdersPageResponse> {
+    const params = new HttpParams()
+      .set("page", String(page))
+      .set("pageSize", String(SubOrderDataService.ORDER_PAGE_SIZE))
+      .set("sortBy", "receivedAt")
+      .set("sortDirection", "desc");
+    return this.http.get<OrdersPageResponse>(this.URL, { params });
+  }
+
   getDetailById(id: string): SubOrderDetail | undefined {
     return this._details()[id];
   }
@@ -366,6 +408,7 @@ export class SubOrderDataService {
               .filter((row) => row.orderId === orderId)
               .map((row) => row.id),
           );
+          this.clearPersistQueueState(replacedIds);
           this._subOrders.update((current) => [
             ...replaced,
             ...current.filter((row) => !replacedIds.has(row.id)),
@@ -445,6 +488,7 @@ export class SubOrderDataService {
       .map((subOrder) => subOrder.id);
 
     if (existingIds.length > 0) {
+      this.clearPersistQueueState(new Set(existingIds));
       this._subOrders.update((current) =>
         current.filter((subOrder) => subOrder.orderId !== orderId),
       );
@@ -458,6 +502,13 @@ export class SubOrderDataService {
     }
 
     return this.createForOrder(orderId, rows);
+  }
+
+  private clearPersistQueueState(subOrderIds: ReadonlySet<string>): void {
+    for (const subOrderId of subOrderIds) {
+      this.persistRevisionBySubOrderId.delete(subOrderId);
+      this.persistingSubOrderIds.delete(subOrderId);
+    }
   }
 
   private toApiSubOrderPayload(
@@ -641,8 +692,7 @@ export class SubOrderDataService {
         ).length;
         const scansTotal = detail.scans.length;
         const scansComplete = detail.scans.filter(
-          (scan) =>
-            scan.status === "uploaded" || scan.status === "selected-local",
+          (scan) => scan.status === "uploaded",
         ).length;
         const status = this.deriveStatus(
           formsTotal,
@@ -664,10 +714,32 @@ export class SubOrderDataService {
   }
 
   private persistSubOrderProgress(subOrderId: string): void {
+    const nextRevision =
+      (this.persistRevisionBySubOrderId.get(subOrderId) ?? 0) + 1;
+    this.persistRevisionBySubOrderId.set(subOrderId, nextRevision);
+
+    if (this.persistingSubOrderIds.has(subOrderId)) {
+      return;
+    }
+
+    this.flushSubOrderProgress(subOrderId);
+  }
+
+  private flushSubOrderProgress(subOrderId: string): void {
+    const revision = this.persistRevisionBySubOrderId.get(subOrderId);
+    if (revision === undefined) {
+      return;
+    }
+
     const subOrder = this._subOrders().find((row) => row.id === subOrderId);
-    if (!subOrder?.orderId) return;
+    if (!subOrder?.orderId) {
+      this.persistRevisionBySubOrderId.delete(subOrderId);
+      this.persistingSubOrderIds.delete(subOrderId);
+      return;
+    }
     const detail = this._details()[subOrderId];
 
+    this.persistingSubOrderIds.add(subOrderId);
     this.http
       .patch<{ data: SubOrderJson }>(
         ApiEndpoint.subOrder(subOrder.orderId, subOrder.id),
@@ -686,9 +758,19 @@ export class SubOrderDataService {
             : {}),
         },
       )
+      .pipe(
+        finalize(() => {
+          this.onSubOrderPersistCompleted(subOrderId, revision);
+        }),
+      )
       .subscribe({
         next: (response) => {
           if (!response.data) return;
+          const latestRevision =
+            this.persistRevisionBySubOrderId.get(subOrderId) ?? revision;
+          if (latestRevision !== revision) {
+            return;
+          }
           const updated = this.toSubOrder(response.data);
           this._subOrders.update((rows) =>
             rows.map((row) => (row.id === updated.id ? updated : row)),
@@ -699,6 +781,19 @@ export class SubOrderDataService {
           this._error.set("Progress could not be saved to the server.");
         },
       });
+  }
+
+  private onSubOrderPersistCompleted(
+    subOrderId: string,
+    completedRevision: number,
+  ): void {
+    this.persistingSubOrderIds.delete(subOrderId);
+    const pendingRevision = this.persistRevisionBySubOrderId.get(subOrderId);
+    if (pendingRevision !== undefined && pendingRevision > completedRevision) {
+      this.flushSubOrderProgress(subOrderId);
+      return;
+    }
+    this.persistRevisionBySubOrderId.delete(subOrderId);
   }
 
   private deriveStatus(

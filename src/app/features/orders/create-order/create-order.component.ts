@@ -52,6 +52,7 @@ import {
   serviceRequiresTeeth,
   SHADES,
 } from "../order-flow.utils";
+import { catchError, map, of, switchMap, throwError } from "rxjs";
 
 @Component({
   selector: "app-create-order",
@@ -653,29 +654,58 @@ export class CreateOrderComponent implements OnDestroy, OnInit {
           },
         },
       })
+      .pipe(
+        switchMap((createdOrder) =>
+          this.subOrderService.createForOrder$(createdOrder.id, serviceRows).pipe(
+            map(() => createdOrder),
+            catchError((originalError) =>
+              this.orderService.deleteOrder$(createdOrder.id).pipe(
+                map(() => ({
+                  kind: "sub-order-create-failed",
+                  orderId: createdOrder.id,
+                  originalError,
+                  rollbackFailed: false,
+                })),
+                catchError((rollbackError) =>
+                  of({
+                    kind: "sub-order-create-failed",
+                    orderId: createdOrder.id,
+                    originalError,
+                    rollbackFailed: true,
+                    rollbackError,
+                  }),
+                ),
+                switchMap((failure) => throwError(() => failure)),
+              ),
+            ),
+          ),
+        ),
+      )
       .subscribe({
         next: (createdOrder) => {
-          this.subOrderService
-            .createForOrder$(createdOrder.id, serviceRows)
-            .subscribe({
-              next: () => {
-                this.creating.set(false);
-                this.navigationService.navigate("viewOrder", {
-                  orderId: createdOrder.id,
-                });
-              },
-              error: (error) => {
-                console.error("Failed to create sub-orders:", error);
-                this.creating.set(false);
-                this.createError.set(
-                  error?.error?.error?.message ??
-                    error?.error?.message ??
-                    "The order was created, but its services could not be saved.",
-                );
-              },
-            });
+          this.creating.set(false);
+          this.navigationService.navigate("viewOrder", {
+            orderId: createdOrder.id,
+          });
         },
         error: (error) => {
+          if (error?.kind === "sub-order-create-failed") {
+            console.error("Failed to create sub-orders:", error.originalError);
+            if (error.rollbackFailed) {
+              console.error(
+                "Order rollback failed after sub-order creation error:",
+                error.rollbackError,
+              );
+            }
+            this.creating.set(false);
+            this.createError.set(
+              error.rollbackFailed
+                ? "Order services could not be saved and automatic rollback failed. Please contact support and provide the order ID."
+                : "Order services could not be saved. The order was rolled back automatically, so no partial order was kept.",
+            );
+            return;
+          }
+
           console.error("Failed to create order:", error);
           this.creating.set(false);
           this.createError.set(

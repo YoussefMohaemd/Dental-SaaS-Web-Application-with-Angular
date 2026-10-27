@@ -28,7 +28,7 @@ describe("OrderDataService", () => {
     const request = httpMock.expectOne((req) => req.url === ApiEndpoint.ORDERS);
     expect(service.loading()).toBeTrue();
     expect(request.request.params.get("page")).toBe("1");
-    expect(request.request.params.get("pageSize")).toBe("100");
+    expect(request.request.params.get("pageSize")).toBe("20");
 
     request.flush(
       { message: "failure" },
@@ -112,7 +112,7 @@ describe("OrderDataService", () => {
       },
     });
 
-    expect(service.totalOrders()).toBe(1);
+    expect(service.orders().length).toBe(1);
   });
 
   it("should omit status when updating fields without a status change", () => {
@@ -150,7 +150,7 @@ describe("OrderDataService", () => {
     service.reload();
     const request = httpMock.expectOne((req) => req.url === ApiEndpoint.ORDERS);
     expect(request.request.params.get("page")).toBe("1");
-    expect(request.request.params.get("pageSize")).toBe("100");
+    expect(request.request.params.get("pageSize")).toBe("20");
     request.flush({
       data: [
         {

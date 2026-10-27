@@ -38,18 +38,11 @@ function withAuthHeaders(
   req: HttpRequest<unknown>,
   authService: AuthService,
 ): HttpRequest<unknown> {
-  const setHeaders: Record<string, string> = {
-    "x-tenant-id": authService.getTenantId(),
-  };
+  const setHeaders: Record<string, string> = {};
   const token = authService.getToken();
-  const userId = authService.getUserId();
 
   if (token) {
     setHeaders["Authorization"] = `Bearer ${token}`;
-  }
-
-  if (userId) {
-    setHeaders["x-user-id"] = userId;
   }
 
   return req.clone({

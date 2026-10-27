@@ -65,6 +65,8 @@ describe("authInterceptor", () => {
 
     const forwarded = next.calls.mostRecent().args[0] as HttpRequest<unknown>;
     expect(forwarded.headers.get("Authorization")).toBe("Bearer token-value");
+    expect(forwarded.headers.has("x-tenant-id")).toBeFalse();
+    expect(forwarded.headers.has("x-user-id")).toBeFalse();
   });
 
   it("forwards the original request when no token exists", () => {
@@ -118,6 +120,8 @@ describe("authInterceptor", () => {
     expect(retriedRequest.request.headers.get("Authorization")).toBe(
       "Bearer fresh-token",
     );
+    expect(retriedRequest.request.headers.has("x-tenant-id")).toBeFalse();
+    expect(retriedRequest.request.headers.has("x-user-id")).toBeFalse();
     retriedRequest.flush({ data: [] });
 
     expect(responseBody).toEqual({ data: [] });

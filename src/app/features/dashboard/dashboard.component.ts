@@ -72,6 +72,7 @@ export class DashboardComponent implements OnInit {
   readonly completedTodayCount = this.orderService.completedTodayCount;
   readonly volumeLoading = this.volumeService.loading;
   readonly activityLoading = this.notificationService.loading;
+  readonly pendingChangeRequests = this.changeRequestService.pendingChangeRequests;
   readonly canCreateOrders = computed(() =>
     this.authorizationService.has("orders.create"),
   );
@@ -238,7 +239,10 @@ export class DashboardComponent implements OnInit {
     {
       label: "Change Requests",
       value: `${this.openChangeRequests()} open`,
-      sub: "2 require action today",
+      sub:
+        this.pendingChangeRequests() > 0
+          ? `${this.pendingChangeRequests()} pending review`
+          : "No pending review",
       icon: "alert-triangle",
       color: "text-warning",
     },

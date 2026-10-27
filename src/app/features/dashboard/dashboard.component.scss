@@ -121,3 +121,16 @@
     font-size: 0.75rem !important;
   }
 }
+
+:host-context([data-theme="dark"]) ::ng-deep .dashboard-recent-orders-table .p-datatable-table-container,
+:host-context([data-theme="dark"]) ::ng-deep .dashboard-recent-orders-table table {
+  background-color: var(--card);
+}
+
+:host-context([data-theme="dark"]) ::ng-deep .dashboard-recent-orders-table .p-datatable-tbody > tr {
+  background-color: var(--card);
+}
+
+:host-context([data-theme="dark"]) ::ng-deep .dashboard-recent-orders-table .p-datatable-tbody > tr:hover {
+  background-color: color-mix(in srgb, var(--muted) 60%, transparent);
+}

@@ -4,7 +4,7 @@
   >
     <app-data-table-toolbar
       title="Orders"
-      [subtitle]="filtered().length + ' orders total'"
+      [subtitle]="totalRecords() + ' orders total'"
     >
       <div
         header-actions
@@ -378,7 +378,7 @@
         </app-empty-state>
       }
       @default {
-        @if (filtered().length === 0) {
+        @if (pageData().length === 0) {
           <app-empty-state
             title="No matching orders"
             description="Try adjusting your search or filters."
@@ -1142,7 +1142,7 @@
           >
             <app-enterprise-paginator
               class="orders-paginator w-full"
-              [totalRecords]="filtered().length"
+              [totalRecords]="totalRecords()"
               [rows]="pageSize()"
               [page]="page()"
               [pageLinkSize]="5"

@@ -58,12 +58,14 @@ export class AuthService {
     email: string;
     password: string;
     rememberMe?: boolean;
+    tenantId?: string;
   }): Observable<AuthenticatedUser> {
+    const tenantId = this.resolveLoginTenantId(credentials.tenantId);
     return this.http
       .post<{ data: LoginResponse }>(
         ApiEndpoint.AUTH_LOGIN,
         {
-          tenantId: environment.defaultTenantId,
+          tenantId,
           email: credentials.email.trim().toLowerCase(),
           password: credentials.password,
           rememberMe: credentials.rememberMe ?? true,
@@ -73,7 +75,7 @@ export class AuthService {
       .pipe(
         map((response) => response.data),
         tap((result) =>
-          this.setSession(result.accessToken, result.user, credentials.rememberMe ?? false),
+          this.setSession(result.accessToken, result.user, credentials.rememberMe ?? true),
         ),
         map((result) => result.user),
         catchError((error) => {
@@ -242,6 +244,38 @@ export class AuthService {
       return localStorage.getItem(AUTH_MARKER_KEY) === "true";
     } catch {
       return false;
+    }
+  }
+
+  private resolveLoginTenantId(explicitTenantId?: string): string {
+    const explicit = explicitTenantId?.trim();
+    if (explicit) {
+      return explicit;
+    }
+
+    const fromQuery = this.readTenantIdFromQuery();
+    if (fromQuery) {
+      return fromQuery;
+    }
+
+    return this.getStoredTenantId() ?? environment.defaultTenantId;
+  }
+
+  private readTenantIdFromQuery(): string | null {
+    if (typeof window === "undefined") {
+      return null;
+    }
+
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const value =
+        params.get("tenantId")?.trim() ?? params.get("tenant")?.trim() ?? "";
+      if (!value) {
+        return null;
+      }
+      return /^[a-f\d]{24}$/i.test(value) ? value : null;
+    } catch {
+      return null;
     }
   }
 }

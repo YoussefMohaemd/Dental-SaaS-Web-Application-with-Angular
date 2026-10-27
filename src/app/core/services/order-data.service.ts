@@ -1,6 +1,6 @@
 import { Injectable, signal, computed, inject } from "@angular/core";
-import { HttpClient } from "@angular/common/http";
-import { EMPTY, catchError, expand, map, Observable, reduce, tap, throwError } from "rxjs";
+import { HttpClient, HttpParams } from "@angular/common/http";
+import { catchError, map, Observable, tap, throwError } from "rxjs";
 import { ApiOrderItem, Order, OrdersViewState } from "../interfaces";
 import { ApiEndpoint } from "@core/enum/api.endpoint";
 import { OrdersApi } from "@core/base/orders.api";
@@ -9,6 +9,33 @@ import { OrderAdapter } from "@core/adapters/order.adapter";
 type OrderMutation = Omit<Partial<Order>, "archiveDate"> & {
   archiveDate?: string | null;
 };
+
+export interface OrderPageQuery {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+  sortBy?:
+    | "orderNumber"
+    | "status"
+    | "priority"
+    | "restoration"
+    | "receivedAt"
+    | "dueDate"
+    | "amount"
+    | "createdAt"
+    | "updatedAt";
+  sortDirection?: "asc" | "desc";
+  status?: string[];
+  duration?: "today" | "week" | "month" | "2-months" | "3-months" | "6-months";
+  service?: string[];
+}
+
+interface OrderPaginationState {
+  page: number;
+  pageSize: number;
+  totalItems: number;
+  totalPages: number;
+}
 
 @Injectable({ providedIn: "root" })
 export class OrderDataService extends OrdersApi {
@@ -20,13 +47,26 @@ export class OrderDataService extends OrdersApi {
   private readonly _loading = signal<boolean>(false);
   private readonly _error = signal<string | null>(null);
   private snapshotOrders: Order[] = [];
-  private static readonly PAGE_SIZE = 100;
+  private static readonly PAGE_SIZE = 20;
+  private readonly _pagination = signal<OrderPaginationState>({
+    page: 1,
+    pageSize: OrderDataService.PAGE_SIZE,
+    totalItems: 0,
+    totalPages: 1,
+  });
+  private _lastQuery: OrderPageQuery = {
+    page: 1,
+    pageSize: OrderDataService.PAGE_SIZE,
+    sortBy: "receivedAt",
+    sortDirection: "desc",
+  };
 
   readonly orders = this._orders.asReadonly();
   readonly loading = this._loading.asReadonly();
   readonly error = this._error.asReadonly();
+  readonly pagination = this._pagination.asReadonly();
 
-  readonly totalOrders = computed(() => this._orders().length);
+  readonly totalOrders = computed(() => this._pagination().totalItems);
   readonly urgentOrdersCount = computed(
     () => this._orders().filter((o) => o.priority === "Urgent").length,
   );
@@ -38,11 +78,16 @@ export class OrderDataService extends OrdersApi {
     super();
   }
 
-  loadOrders(): void {
+  loadOrders(query: OrderPageQuery = this._lastQuery): void {
+    this._lastQuery = {
+      ...this._lastQuery,
+      ...query,
+    };
+
     this._loading.set(true);
     this._error.set(null);
 
-    this.getAllOrders()
+    this.loadOrdersPage(this._lastQuery)
       .pipe(
         catchError((apiError) => {
           console.error("Error loading orders:", apiError);
@@ -50,32 +95,24 @@ export class OrderDataService extends OrdersApi {
         }),
       )
       .subscribe({
-        next: (orders: Order[]) => {
-          this._orders.set(orders);
-          this.snapshotOrders = [...orders];
+        next: (pageResult) => {
+          this._orders.set(pageResult.items);
+          this._pagination.set(pageResult.pagination);
+          this.snapshotOrders = [...pageResult.items];
           this._loading.set(false);
         },
         error: () => {
           this._error.set("Failed to load orders");
           this._orders.set([]);
           this.snapshotOrders = [];
+          this._pagination.update((current) => ({
+            ...current,
+            totalItems: 0,
+            totalPages: 1,
+          }));
           this._loading.set(false);
         },
       });
-  }
-
-  getAllOrders() {
-    return this.loadOrdersPage(1).pipe(
-      expand((pageResult) =>
-        pageResult.page < pageResult.totalPages
-          ? this.loadOrdersPage(pageResult.page + 1)
-          : EMPTY,
-      ),
-      reduce(
-        (all, pageResult) => all.concat(pageResult.items),
-        [] as Order[],
-      ),
-    );
   }
 
   getOrderById$(id: string): Observable<Order> {
@@ -144,7 +181,7 @@ export class OrderDataService extends OrdersApi {
   }
 
   reload(): void {
-    this.loadOrders();
+    this.loadOrders(this._lastQuery);
   }
 
   // POC evidence control: keeps screenshots and service state in sync.
@@ -275,34 +312,66 @@ export class OrderDataService extends OrdersApi {
     );
   }
 
-  private loadOrdersPage(page: number) {
+  private loadOrdersPage(query: OrderPageQuery) {
+    let params = new HttpParams()
+      .set("page", String(query.page ?? 1))
+      .set("pageSize", String(query.pageSize ?? OrderDataService.PAGE_SIZE))
+      .set("sortBy", query.sortBy ?? "receivedAt")
+      .set("sortDirection", query.sortDirection ?? "desc");
+
+    if (query.search && query.search.trim()) {
+      params = params.set("search", query.search.trim());
+    }
+
+    if (query.duration) {
+      params = params.set("duration", query.duration);
+    }
+
+    if (query.status && query.status.length > 0) {
+      params = params.set("status", query.status.join(","));
+    }
+
+    if (query.service && query.service.length > 0) {
+      params = params.set("service", query.service.join(","));
+    }
+
     return this.http
       .get<{
         data: ApiOrderItem[];
         meta?: {
           pagination?: {
             page?: number;
+            pageSize?: number;
+            totalItems?: number;
             totalPages?: number;
           };
         };
-      }>(this.API_URL, {
-        params: {
-          page,
-          pageSize: OrderDataService.PAGE_SIZE,
-        },
-      })
+      }>(this.API_URL, { params })
       .pipe(
         map((response) => ({
-          page:
-            response.meta?.pagination?.page && response.meta.pagination.page > 0
-              ? response.meta.pagination.page
-              : page,
-          totalPages:
-            response.meta?.pagination?.totalPages &&
-            response.meta.pagination.totalPages > 0
-              ? response.meta.pagination.totalPages
-              : 1,
           items: this.orderAdapter.OrdersAdapter(response.data ?? []),
+          pagination: {
+            page:
+              response.meta?.pagination?.page &&
+              response.meta.pagination.page > 0
+                ? response.meta.pagination.page
+                : query.page ?? 1,
+            pageSize:
+              response.meta?.pagination?.pageSize &&
+              response.meta.pagination.pageSize > 0
+                ? response.meta.pagination.pageSize
+                : query.pageSize ?? OrderDataService.PAGE_SIZE,
+            totalItems:
+              response.meta?.pagination?.totalItems &&
+              response.meta.pagination.totalItems >= 0
+                ? response.meta.pagination.totalItems
+                : response.data?.length ?? 0,
+            totalPages:
+              response.meta?.pagination?.totalPages &&
+              response.meta.pagination.totalPages > 0
+                ? response.meta.pagination.totalPages
+                : 1,
+          },
         })),
       );
   }

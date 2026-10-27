@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { By } from "@angular/platform-browser";
-import { signal } from "@angular/core";
+import { signal, type WritableSignal } from "@angular/core";
 import { provideRouter } from "@angular/router";
 import { DashboardComponent } from "./dashboard.component";
 import { OrderDataService } from "@core/services/order-data.service";
@@ -12,6 +12,7 @@ import { DashboardDataService } from "@core/services/dashboard-data.service";
 import { NotificationDataService } from "@core/services/notification-data.service";
 import { ChangeRequestDataService } from "@core/services/change-request-data.service";
 import { AuthService } from "@core/services/auth.service";
+import { Order } from "@core/interfaces";
 
 describe("DashboardComponent", () => {
   let component: DashboardComponent;
@@ -102,6 +103,7 @@ describe("DashboardComponent", () => {
           provide: ChangeRequestDataService,
           useValue: {
             changeRequests: signal([]),
+            pendingChangeRequests: signal(0),
             loading: signal(false),
             loadChangeRequests: jasmine.createSpy("loadChangeRequests"),
           },
@@ -198,5 +200,56 @@ describe("DashboardComponent", () => {
     expect(stats.length).toBe(3);
     expect(stats[0].label).toBe("Revenue This Month");
     expect(stats[2].value).toContain("open");
+    expect(stats[2].sub).toBe("No pending review");
+  });
+
+  it("should apply dark-mode scoped classes to recent orders table", () => {
+    const orderService = TestBed.inject(OrderDataService) as unknown as {
+      orders: WritableSignal<Order[]>;
+    };
+    orderService.orders.set([
+      {
+        id: "ord-1",
+        orderNumber: "DL-100001",
+        patientId: "pat-1",
+        patientName: "Patient A",
+        doctorId: "doc-1",
+        doctorName: "Doctor A",
+        clinicId: "cl-1",
+        clinicName: "Clinic A",
+        scanCenterId: "sc-1",
+        scanCenterName: "Scan Center A",
+        status: "Review",
+        priority: "High",
+        restoration: "Crown",
+        arch: "Maxilla",
+        format: "STL",
+        shade: "A1",
+        units: 1,
+        amount: 100,
+        billed: false,
+        billTo: "Clinic",
+        vouchers: 0,
+        isLocked: false,
+        hasNotes: false,
+        notes: "",
+        receivedAt: "2026-10-01T10:00:00Z",
+        updatedAt: "2026-10-01T11:00:00Z",
+        dueDate: "2026-10-05T10:00:00Z",
+      },
+    ]);
+    fixture.detectChanges();
+
+    const table = fixture.debugElement.query(
+      By.css(".dashboard-recent-orders-table"),
+    );
+    expect(table).toBeTruthy();
+
+    const headerRow = fixture.debugElement.query(By.css("p-table thead tr"));
+    expect(headerRow.nativeElement.className).toContain("dark:bg-muted/70");
+
+    const bodyRow = fixture.debugElement.query(By.css("p-table tbody tr"));
+    expect(bodyRow.nativeElement.className).toContain("dark:bg-card");
+    expect(bodyRow.nativeElement.className).toContain("dark:hover:bg-muted/60");
   });
 });

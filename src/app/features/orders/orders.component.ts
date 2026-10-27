@@ -1,9 +1,18 @@
-import { Component, computed, inject, OnInit, signal } from "@angular/core";
+import {
+  Component,
+  computed,
+  inject,
+  OnInit,
+  signal,
+} from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { TreeTableModule } from "primeng/treetable";
 import { TreeNode } from "primeng/api";
 import { forkJoin, Observable } from "rxjs";
-import { OrderDataService } from "@core/services/order-data.service";
+import {
+  OrderDataService,
+  type OrderPageQuery,
+} from "@core/services/order-data.service";
 import { SubOrderDataService } from "@core/services/sub-order-data.service";
 import { NavigationService } from "@core/services/navigation.service";
 import { AuthorizationService } from "@core/services/authorization.service";
@@ -105,6 +114,19 @@ const SORT_COLUMN_LABELS: Partial<Record<keyof Order, string>> = {
   sentAt: "Sent date",
   updatedAt: "Updated date",
   chargedAt: "Charged date",
+};
+
+const SERVER_SORT_FIELD_BY_COLUMN: Partial<
+  Record<keyof Order, NonNullable<OrderPageQuery["sortBy"]>>
+> = {
+  orderNumber: "orderNumber",
+  status: "status",
+  priority: "priority",
+  restoration: "restoration",
+  receivedAt: "receivedAt",
+  dueDate: "dueDate",
+  amount: "amount",
+  updatedAt: "updatedAt",
 };
 
 export function compareOrderValues(a: unknown, b: unknown): number {
@@ -214,7 +236,7 @@ export class OrdersComponent implements OnInit {
   private readonly authorizationService = inject(AuthorizationService);
 
   ngOnInit(): void {
-    this.orderService.loadOrders();
+    this.refreshOrders();
     this.subOrderService.load();
   }
   protected readonly navigationService = inject(NavigationService);
@@ -292,52 +314,20 @@ export class OrdersComponent implements OnInit {
   });
 
   readonly filtered = computed(() => {
-    let result = filterTableRows(this.orders(), this.search().trim(), [
+    return filterTableRows(this.orders(), this.search().trim(), [
       (order) => order.orderNumber,
       (order) => order.patientName,
       (order) => order.doctorName,
       (order) => order.clinicName,
     ]);
-    result = result.filter((order) => !order.archiveDate);
-    if (this.statusFilter().length > 0)
-      result = result.filter((order) =>
-        this.statusFilter().includes(order.status),
-      );
-    const duration = this.durationFilter();
-    if (duration)
-      result = result.filter((order) =>
-        matchesOrderDuration(
-          order.receivedAt,
-          duration,
-          this.durationReferenceDate(),
-        ),
-      );
-    if (this.serviceFilter().length > 0)
-      result = result.filter((order) => {
-        const orderServices = this.subOrderServicesByOrderId().get(order.id);
-        if (!orderServices) return false;
-        return this.serviceFilter().some((service) =>
-          orderServices.has(service),
-        );
-      });
-    const column = this.sortColumn();
-    if (column) {
-      const direction = this.sortDirection() === "asc" ? 1 : -1;
-      result.sort(
-        (a, b) => compareOrderValues(a[column], b[column]) * direction,
-      );
-    }
-    return result;
   });
 
-  readonly totalPages = computed(() =>
-    Math.max(1, Math.ceil(this.filtered().length / this.pageSize())),
+  readonly totalPages = computed(() => this.orderService.pagination().totalPages);
+  readonly totalRecords = computed(
+    () => this.orderService.pagination().totalItems,
   );
   readonly pageData = computed(() => {
-    return this.filtered().slice(
-      (this.page() - 1) * this.pageSize(),
-      this.page() * this.pageSize(),
-    );
+    return this.filtered();
   });
 
   readonly expandedIds = signal<Set<string>>(new Set());
@@ -464,6 +454,8 @@ export class OrdersComponent implements OnInit {
       this.sortColumn.set(column);
       this.sortDirection.set("asc");
     }
+    this.page.set(1);
+    this.refreshOrders();
   }
 
   sortIconSvg(column: keyof Order): string {
@@ -509,26 +501,31 @@ export class OrdersComponent implements OnInit {
         : ((value.target as HTMLInputElement | null)?.value ?? "");
     this.search.set(next);
     this.page.set(1);
+    this.refreshOrders();
   }
 
   clearSearch(): void {
     this.search.set("");
     this.page.set(1);
+    this.refreshOrders();
   }
 
   addStatusFilter(status: OrderStatus): void {
     if (!status || this.statusFilter().includes(status)) return;
     this.statusFilter.update((current) => [...current, status]);
     this.page.set(1);
+    this.refreshOrders();
   }
 
   onPageSizeValueChange(value: string): void {
     this.pageSize.set(Number(value));
     this.page.set(1);
+    this.refreshOrders();
   }
 
   onPageNumberChange(pageNumber: number): void {
     this.page.set(Math.max(1, Math.min(this.totalPages(), pageNumber)));
+    this.refreshOrders();
   }
 
   removeFilter(type: OrderFilterType, value?: string): void {
@@ -543,6 +540,7 @@ export class OrdersComponent implements OnInit {
       );
     if (type === "service" && !value) this.serviceFilter.set([]);
     this.page.set(1);
+    this.refreshOrders();
   }
 
   clearAllFilters(): void {
@@ -551,6 +549,7 @@ export class OrdersComponent implements OnInit {
     this.durationFilter.set("");
     this.serviceFilter.set([]);
     this.page.set(1);
+    this.refreshOrders();
   }
 
   toggleSelect(orderId: string): void {
@@ -712,8 +711,6 @@ export class OrdersComponent implements OnInit {
   onDraftDurationValueChange(value: string): void {
     const next = value as DurationFilterValue;
     this.draftDurationFilter.set(next);
-    this.durationFilter.set(next);
-    this.page.set(1);
   }
 
   toggleDraftService(service: string): void {
@@ -746,6 +743,7 @@ export class OrdersComponent implements OnInit {
     this.serviceFilter.set([...this.draftServiceFilter()]);
     this.page.set(1);
     this.advancedFilters.set(false);
+    this.refreshOrders();
   }
 
   setViewState(state: OrdersViewState): void {
@@ -765,7 +763,7 @@ export class OrdersComponent implements OnInit {
   }
 
   exportCsv(): void {
-    const rows = this.filtered();
+    const rows = this.pageData();
     const header = [
       "Order #",
       "Patient",
@@ -810,6 +808,7 @@ export class OrdersComponent implements OnInit {
 
   goToPage(target: number): void {
     this.page.set(Math.max(1, Math.min(this.totalPages(), target)));
+    this.refreshOrders();
   }
 
   openOrder(orderId: string): void {
@@ -928,11 +927,35 @@ export class OrdersComponent implements OnInit {
         this.selectedIds.set(new Set());
         this.actionBusy.set(false);
         this.page.set(Math.min(this.page(), this.totalPages()));
+        this.refreshOrders();
       },
       error: (error) => {
         this.actionBusy.set(false);
         this.actionError.set(getApiErrorMessage(error, errorMessage));
       },
     });
+  }
+
+  private refreshOrders(): void {
+    this.orderService.loadOrders({
+      page: this.page(),
+      pageSize: this.pageSize(),
+      search: this.search().trim() || undefined,
+      sortBy: this.resolveServerSortField(this.sortColumn()),
+      sortDirection: this.sortDirection(),
+      status: this.statusFilter(),
+      duration: this.durationFilter() || undefined,
+      service: this.serviceFilter(),
+    });
+  }
+
+  private resolveServerSortField(
+    column: keyof Order | "",
+  ): NonNullable<OrderPageQuery["sortBy"]> {
+    if (!column) {
+      return "receivedAt";
+    }
+
+    return SERVER_SORT_FIELD_BY_COLUMN[column] ?? "receivedAt";
   }
 }
