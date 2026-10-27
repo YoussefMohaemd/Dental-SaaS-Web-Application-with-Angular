@@ -11,6 +11,7 @@ import { FormatUtils } from "@core/services/format-utils.service";
 import { DashboardDataService } from "@core/services/dashboard-data.service";
 import { NotificationDataService } from "@core/services/notification-data.service";
 import { ChangeRequestDataService } from "@core/services/change-request-data.service";
+import { AuthService } from "@core/services/auth.service";
 
 describe("DashboardComponent", () => {
   let component: DashboardComponent;
@@ -56,6 +57,18 @@ describe("DashboardComponent", () => {
         {
           provide: AuthorizationService,
           useValue: { has: () => true },
+        },
+        {
+          provide: AuthService,
+          useValue: {
+            user: signal({
+              userId: "user-1",
+              tenantId: "tenant-1",
+              fullName: "Dr. Nora Salem",
+              email: "nora@example.com",
+              roles: ["Doctor"],
+            }),
+          },
         },
         { provide: FormatUtils, useValue: formatSpy },
         {
@@ -111,6 +124,7 @@ describe("DashboardComponent", () => {
   it("should display page header", () => {
     const header = fixture.debugElement.query(By.css("h1"));
     expect(header.nativeElement.textContent).toContain("Good morning");
+    expect(header.nativeElement.textContent).toContain("Dr. Nora Salem");
   });
 
   it("should display a New Order button that navigates to createOrder", () => {

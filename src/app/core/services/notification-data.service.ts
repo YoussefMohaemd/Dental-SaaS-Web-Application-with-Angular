@@ -1,6 +1,6 @@
 import { Injectable, signal, computed, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import { catchError, map, throwError } from "rxjs";
+import { EMPTY, catchError, expand, map, reduce, throwError } from "rxjs";
 import { Notification } from "../interfaces";
 import { ApiEndpoint } from "@core/enum/api.endpoint";
 import { NotificationApi } from "@core/base/notification.api";
@@ -16,6 +16,7 @@ export class NotificationDataService extends NotificationApi {
   private readonly _notifications = signal<Notification[]>([]);
   private readonly _loading = signal<boolean>(false);
   private readonly _error = signal<string | null>(null);
+  private static readonly PAGE_SIZE = 100;
 
   readonly notifications = this._notifications.asReadonly();
   readonly loading = this._loading.asReadonly();
@@ -57,12 +58,17 @@ export class NotificationDataService extends NotificationApi {
   }
 
   getAllNotifications() {
-    return this.http
-      .get<{ data: Notification[] }>(this.API_URL)
-      .pipe(
-        map((response) => response.data ?? []),
-        map((rows) => this.notificationAdapter.NotificationAdapter(rows)),
-      );
+    return this.loadNotificationsPage(1).pipe(
+      expand((pageResult) =>
+        pageResult.page < pageResult.totalPages
+          ? this.loadNotificationsPage(pageResult.page + 1)
+          : EMPTY,
+      ),
+      reduce(
+        (all, pageResult) => all.concat(pageResult.items),
+        [] as Notification[],
+      ),
+    );
   }
 
   markAsRead(id: string): void {
@@ -89,5 +95,37 @@ export class NotificationDataService extends NotificationApi {
         this._notifications.set(previous);
       },
     });
+  }
+
+  private loadNotificationsPage(page: number) {
+    return this.http
+      .get<{
+        data: Notification[];
+        meta?: {
+          pagination?: {
+            page?: number;
+            totalPages?: number;
+          };
+        };
+      }>(this.API_URL, {
+        params: {
+          page,
+          pageSize: NotificationDataService.PAGE_SIZE,
+        },
+      })
+      .pipe(
+        map((response) => ({
+          page:
+            response.meta?.pagination?.page && response.meta.pagination.page > 0
+              ? response.meta.pagination.page
+              : page,
+          totalPages:
+            response.meta?.pagination?.totalPages &&
+            response.meta.pagination.totalPages > 0
+              ? response.meta.pagination.totalPages
+              : 1,
+          items: this.notificationAdapter.NotificationAdapter(response.data ?? []),
+        })),
+      );
   }
 }

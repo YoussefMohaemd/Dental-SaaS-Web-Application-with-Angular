@@ -6,6 +6,7 @@ import { EntityDialogComponent } from "@shared/components/entity-dialog/entity-d
 import { AppTextFieldComponent } from "@shared/components/input/input.component";
 import { TableFeedbackComponent } from "@shared/components/table-feedback/table-feedback.component";
 import { IconActionButtonComponent } from "@shared/components/icon-action-button/icon-action-button.component";
+import { EnterprisePaginatorComponent } from "@shared/components/enterprise-paginator/enterprise-paginator.component";
 import { DocumentDataService } from "@core/services/document-data.service";
 import {
   DOCUMENT_CATEGORIES,
@@ -28,6 +29,7 @@ export type { DocumentCategory, LabDocument };
     AppTextFieldComponent,
     TableFeedbackComponent,
     IconActionButtonComponent,
+    EnterprisePaginatorComponent,
     SafeHtmlPipe,
     DisplayDatePipe,
   ],
@@ -45,6 +47,8 @@ export class DocumentsComponent implements OnInit {
   readonly dragOver = signal(false);
   readonly preview = signal<LabDocument | null>(null);
   readonly previewVisible = signal(false);
+  readonly page = signal(1);
+  readonly pageSize = 20;
 
   readonly categories = DOCUMENT_CATEGORIES;
 
@@ -66,16 +70,30 @@ export class DocumentsComponent implements OnInit {
     });
   });
 
+  readonly pageData = computed(() =>
+    this.filtered().slice(
+      (this.page() - 1) * this.pageSize,
+      this.page() * this.pageSize,
+    ),
+  );
+
   onSearchChange(event: Event): void {
     this.search.set((event.target as HTMLInputElement).value);
+    this.page.set(1);
   }
 
   onSearchValueChange(value: string): void {
     this.search.set(value);
+    this.page.set(1);
   }
 
   setCategory(next: "All" | DocumentCategory): void {
     this.category.set(next);
+    this.page.set(1);
+  }
+
+  onPageNumberChange(pageNumber: number): void {
+    this.page.set(pageNumber);
   }
 
   onDragOver(event: DragEvent): void {

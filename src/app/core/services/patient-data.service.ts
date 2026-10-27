@@ -1,6 +1,6 @@
 import { Injectable, signal, computed, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import { catchError, map, Observable, tap, throwError } from "rxjs";
+import { EMPTY, catchError, expand, map, Observable, reduce, tap, throwError } from "rxjs";
 import { ApiPatientItem, Patient, PatientFilters } from "../interfaces";
 import { filterTableRows, sortTableRows } from "@shared/utils/table-state";
 import { ApiEndpoint } from "@core/enum/api.endpoint";
@@ -16,6 +16,7 @@ export class PatientDataService extends PatientApi {
   private readonly _patients = signal<Patient[]>([]);
   private readonly _loading = signal<boolean>(false);
   private readonly _error = signal<string | null>(null);
+  private static readonly PAGE_SIZE = 100;
 
   readonly patients = this._patients.asReadonly();
   readonly loading = this._loading.asReadonly();
@@ -55,12 +56,17 @@ export class PatientDataService extends PatientApi {
   }
 
   getAllPatients() {
-    return this.http
-      .get<{ data: ApiPatientItem[] }>(this.API_URL)
-      .pipe(
-        map((response) => response.data ?? []),
-        map((rows) => this.patientAdapter.PatientAdapter(rows)),
-      );
+    return this.loadPatientsPage(1).pipe(
+      expand((pageResult) =>
+        pageResult.page < pageResult.totalPages
+          ? this.loadPatientsPage(pageResult.page + 1)
+          : EMPTY,
+      ),
+      reduce(
+        (all, pageResult) => all.concat(pageResult.items),
+        [] as Patient[],
+      ),
+    );
   }
 
   createPatient$(
@@ -110,5 +116,37 @@ export class PatientDataService extends PatientApi {
     }
 
     return result;
+  }
+
+  private loadPatientsPage(page: number) {
+    return this.http
+      .get<{
+        data: ApiPatientItem[];
+        meta?: {
+          pagination?: {
+            page?: number;
+            totalPages?: number;
+          };
+        };
+      }>(this.API_URL, {
+        params: {
+          page,
+          pageSize: PatientDataService.PAGE_SIZE,
+        },
+      })
+      .pipe(
+        map((response) => ({
+          page:
+            response.meta?.pagination?.page && response.meta.pagination.page > 0
+              ? response.meta.pagination.page
+              : page,
+          totalPages:
+            response.meta?.pagination?.totalPages &&
+            response.meta.pagination.totalPages > 0
+              ? response.meta.pagination.totalPages
+              : 1,
+          items: this.patientAdapter.PatientAdapter(response.data ?? []),
+        })),
+      );
   }
 }

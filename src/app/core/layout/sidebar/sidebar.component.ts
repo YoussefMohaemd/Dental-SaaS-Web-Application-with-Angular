@@ -1,10 +1,11 @@
-import { Component, computed, inject } from "@angular/core";
+import { Component, computed, inject, OnInit } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { RouterModule } from "@angular/router";
 import { NavigationService } from "../../../core/services/navigation.service";
 import { ThemeService } from "../../../core/services/theme.service";
 import { AuthService } from "@core/services/auth.service";
 import { AuthorizationService } from "@core/services/authorization.service";
+import { ChangeRequestDataService } from "@core/services/change-request-data.service";
 import { NAV_ITEMS } from "../../../core/interfaces/navigation.interface";
 import { AvatarComponent } from "../../../shared/components/avatar/avatar.component";
 import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
@@ -17,15 +18,26 @@ import { lucideSvg } from "../../../shared/icons/lucide-icons";
   templateUrl: "./sidebar.component.html",
   styleUrl: "./sidebar.component.scss",
 })
-export class SidebarComponent {
+export class SidebarComponent implements OnInit {
   readonly navigationService = inject(NavigationService);
   private readonly themeService = inject(ThemeService);
   private readonly authService = inject(AuthService);
   private readonly authorizationService = inject(AuthorizationService);
+  private readonly changeRequestService = inject(ChangeRequestDataService);
 
-  readonly navItems = computed(() =>
-    NAV_ITEMS.filter((item) => this.authorizationService.canAccessNav(item.id)),
-  );
+  readonly navItems = computed(() => {
+    const totalChangeRequests = this.changeRequestService.totalChangeRequests();
+    return NAV_ITEMS.filter((item) =>
+      this.authorizationService.canAccessNav(item.id),
+    ).map((item) =>
+      item.id === "changeRequests"
+        ? {
+            ...item,
+            badge: totalChangeRequests > 0 ? totalChangeRequests : undefined,
+          }
+        : item,
+    );
+  });
   readonly sidebarOpen = this.navigationService.sidebarOpen;
   readonly currentPage = this.navigationService.currentPage;
   readonly activeGroup = this.navigationService.activeGroup;
@@ -38,6 +50,12 @@ export class SidebarComponent {
   readonly userRole = computed(
     () => this.authService.user()?.roles?.[0] || "User",
   );
+
+  ngOnInit(): void {
+    if (this.authorizationService.canAccessNav("changeRequests")) {
+      this.changeRequestService.loadChangeRequests();
+    }
+  }
 
   readonly sidebarClasses = computed(() => {
     if (this.isMobile()) {

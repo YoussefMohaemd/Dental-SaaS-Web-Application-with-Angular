@@ -25,8 +25,10 @@ describe("OrderDataService", () => {
 
   it("should set error state and stop loading when the data request fails", () => {
     service.loadOrders();
-    const request = httpMock.expectOne(ApiEndpoint.ORDERS);
+    const request = httpMock.expectOne((req) => req.url === ApiEndpoint.ORDERS);
     expect(service.loading()).toBeTrue();
+    expect(request.request.params.get("page")).toBe("1");
+    expect(request.request.params.get("pageSize")).toBe("100");
 
     request.flush(
       { message: "failure" },
@@ -140,13 +142,16 @@ describe("OrderDataService", () => {
   it("should recover from error after reload", () => {
     service.loadOrders();
     httpMock
-      .expectOne(ApiEndpoint.ORDERS)
+      .expectOne((req) => req.url === ApiEndpoint.ORDERS)
       .flush({}, { status: 500, statusText: "Server Error" });
 
     expect(service.error()).toBe("Failed to load orders");
 
     service.reload();
-    httpMock.expectOne(ApiEndpoint.ORDERS).flush({
+    const request = httpMock.expectOne((req) => req.url === ApiEndpoint.ORDERS);
+    expect(request.request.params.get("page")).toBe("1");
+    expect(request.request.params.get("pageSize")).toBe("100");
+    request.flush({
       data: [
         {
           id: "ord-1",

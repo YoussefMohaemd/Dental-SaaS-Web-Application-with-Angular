@@ -1,6 +1,6 @@
 import { Injectable, inject, signal } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import { catchError, map, Observable, tap, throwError } from "rxjs";
+import { EMPTY, catchError, expand, map, Observable, reduce, tap, throwError } from "rxjs";
 import { LabDocument } from "../interfaces";
 import { ApiEndpoint } from "@core/enum/api.endpoint";
 import { DocumentApi } from "@core/base/document.api";
@@ -15,6 +15,7 @@ export class DocumentDataService extends DocumentApi {
   private readonly _documents = signal<LabDocument[]>([]);
   private readonly _loading = signal<boolean>(false);
   private readonly _error = signal<string | null>(null);
+  private static readonly PAGE_SIZE = 100;
 
   readonly documents = this._documents.asReadonly();
   readonly loading = this._loading.asReadonly();
@@ -49,12 +50,17 @@ export class DocumentDataService extends DocumentApi {
   }
 
   getAllDocuments() {
-    return this.http
-      .get<{ data: LabDocument[] }>(this.API_URL)
-      .pipe(
-        map((response) => response.data ?? []),
-        map((rows) => this.documentAdapter.DocumentAdapter(rows)),
-      );
+    return this.loadDocumentsPage(1).pipe(
+      expand((pageResult) =>
+        pageResult.page < pageResult.totalPages
+          ? this.loadDocumentsPage(pageResult.page + 1)
+          : EMPTY,
+      ),
+      reduce(
+        (all, pageResult) => all.concat(pageResult.items),
+        [] as LabDocument[],
+      ),
+    );
   }
 
   createDocument(payload: {
@@ -80,5 +86,37 @@ export class DocumentDataService extends DocumentApi {
 
   getDocumentById(id: string): LabDocument | undefined {
     return this._documents().find((d) => d.id === id);
+  }
+
+  private loadDocumentsPage(page: number) {
+    return this.http
+      .get<{
+        data: LabDocument[];
+        meta?: {
+          pagination?: {
+            page?: number;
+            totalPages?: number;
+          };
+        };
+      }>(this.API_URL, {
+        params: {
+          page,
+          pageSize: DocumentDataService.PAGE_SIZE,
+        },
+      })
+      .pipe(
+        map((response) => ({
+          page:
+            response.meta?.pagination?.page && response.meta.pagination.page > 0
+              ? response.meta.pagination.page
+              : page,
+          totalPages:
+            response.meta?.pagination?.totalPages &&
+            response.meta.pagination.totalPages > 0
+              ? response.meta.pagination.totalPages
+              : 1,
+          items: this.documentAdapter.DocumentAdapter(response.data ?? []),
+        })),
+      );
   }
 }

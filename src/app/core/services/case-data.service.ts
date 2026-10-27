@@ -1,6 +1,6 @@
 import { Injectable, signal, computed, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import { catchError, map, Observable, tap, throwError } from "rxjs";
+import { EMPTY, catchError, expand, map, Observable, reduce, tap, throwError } from "rxjs";
 import { ApiCaseItem, Case } from "../interfaces";
 import { ApiEndpoint } from "@core/enum/api.endpoint";
 import { CaseApi } from "@core/base/case.api";
@@ -15,6 +15,7 @@ export class CaseDataService extends CaseApi {
   private readonly _cases = signal<Case[]>([]);
   private readonly _loading = signal<boolean>(false);
   private readonly _error = signal<string | null>(null);
+  private static readonly PAGE_SIZE = 100;
 
   readonly cases = this._cases.asReadonly();
   readonly loading = this._loading.asReadonly();
@@ -54,9 +55,16 @@ export class CaseDataService extends CaseApi {
   }
 
   getAllCases() {
-    return this.http.get<{ data: Case[] }>(this.API_URL).pipe(
-      map((response) => response.data ?? []),
-      map((rows) => this.caseAdapter.CaseAdapter(rows)),
+    return this.loadCasesPage(1).pipe(
+      expand((pageResult) =>
+        pageResult.page < pageResult.totalPages
+          ? this.loadCasesPage(pageResult.page + 1)
+          : EMPTY,
+      ),
+      reduce(
+        (all, pageResult) => all.concat(pageResult.items),
+        [] as Case[],
+      ),
     );
   }
 
@@ -93,5 +101,37 @@ export class CaseDataService extends CaseApi {
 
   getCasesByClinic(clinicId: string): Case[] {
     return this._cases().filter((c) => c.clinicId === clinicId);
+  }
+
+  private loadCasesPage(page: number) {
+    return this.http
+      .get<{
+        data: ApiCaseItem[];
+        meta?: {
+          pagination?: {
+            page?: number;
+            totalPages?: number;
+          };
+        };
+      }>(this.API_URL, {
+        params: {
+          page,
+          pageSize: CaseDataService.PAGE_SIZE,
+        },
+      })
+      .pipe(
+        map((response) => ({
+          page:
+            response.meta?.pagination?.page && response.meta.pagination.page > 0
+              ? response.meta.pagination.page
+              : page,
+          totalPages:
+            response.meta?.pagination?.totalPages &&
+            response.meta.pagination.totalPages > 0
+              ? response.meta.pagination.totalPages
+              : 1,
+          items: this.caseAdapter.CaseAdapter(response.data ?? []),
+        })),
+      );
   }
 }

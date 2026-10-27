@@ -1,6 +1,6 @@
 import { Injectable, signal, computed, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import { catchError, map, Observable, tap, throwError } from "rxjs";
+import { EMPTY, catchError, expand, map, Observable, reduce, tap, throwError } from "rxjs";
 import { ApiClinicItem, Clinic } from "../interfaces";
 import { ApiEndpoint } from "@core/enum/api.endpoint";
 import { ClinicApi } from "@core/base/clinic.api";
@@ -15,6 +15,7 @@ export class ClinicDataService extends ClinicApi {
   private readonly _clinics = signal<Clinic[]>([]);
   private readonly _loading = signal<boolean>(false);
   private readonly _error = signal<string | null>(null);
+  private static readonly PAGE_SIZE = 100;
 
   readonly clinics = this._clinics.asReadonly();
   readonly loading = this._loading.asReadonly();
@@ -54,12 +55,17 @@ export class ClinicDataService extends ClinicApi {
   }
 
   getAllClinics() {
-    return this.http
-      .get<{ data: ApiClinicItem[] }>(this.API_URL)
-      .pipe(
-        map((response) => response.data ?? []),
-        map((rows) => this.clinicAdapter.ClinicAdapter(rows)),
-      );
+    return this.loadClinicsPage(1).pipe(
+      expand((pageResult) =>
+        pageResult.page < pageResult.totalPages
+          ? this.loadClinicsPage(pageResult.page + 1)
+          : EMPTY,
+      ),
+      reduce(
+        (all, pageResult) => all.concat(pageResult.items),
+        [] as Clinic[],
+      ),
+    );
   }
 
   createClinic$(
@@ -79,5 +85,37 @@ export class ClinicDataService extends ClinicApi {
 
   addClinic(clinic: Clinic): void {
     this._clinics.update((current) => [clinic, ...current]);
+  }
+
+  private loadClinicsPage(page: number) {
+    return this.http
+      .get<{
+        data: ApiClinicItem[];
+        meta?: {
+          pagination?: {
+            page?: number;
+            totalPages?: number;
+          };
+        };
+      }>(this.API_URL, {
+        params: {
+          page,
+          pageSize: ClinicDataService.PAGE_SIZE,
+        },
+      })
+      .pipe(
+        map((response) => ({
+          page:
+            response.meta?.pagination?.page && response.meta.pagination.page > 0
+              ? response.meta.pagination.page
+              : page,
+          totalPages:
+            response.meta?.pagination?.totalPages &&
+            response.meta.pagination.totalPages > 0
+              ? response.meta.pagination.totalPages
+              : 1,
+          items: this.clinicAdapter.ClinicAdapter(response.data ?? []),
+        })),
+      );
   }
 }

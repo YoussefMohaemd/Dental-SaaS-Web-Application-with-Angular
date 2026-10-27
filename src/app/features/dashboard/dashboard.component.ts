@@ -15,6 +15,7 @@ import { NavigationService } from "@core/services/navigation.service";
 import { NotificationDataService } from "@core/services/notification-data.service";
 import { OrderDataService } from "@core/services/order-data.service";
 import { AuthorizationService } from "@core/services/authorization.service";
+import { AuthService } from "@core/services/auth.service";
 import {
   QuickStatData,
   StatCardData,
@@ -61,6 +62,7 @@ export class DashboardComponent implements OnInit {
   private readonly notificationService = inject(NotificationDataService);
   private readonly changeRequestService = inject(ChangeRequestDataService);
   private readonly authorizationService = inject(AuthorizationService);
+  private readonly authService = inject(AuthService);
   readonly formatUtils = inject(FormatUtils);
 
   readonly orders = this.orderService.orders;
@@ -72,6 +74,9 @@ export class DashboardComponent implements OnInit {
   readonly activityLoading = this.notificationService.loading;
   readonly canCreateOrders = computed(() =>
     this.authorizationService.has("orders.create"),
+  );
+  readonly currentUserName = computed(
+    () => this.authService.user()?.fullName?.trim() || "there",
   );
 
   readonly totalOrders = computed(() => this.orders().length);

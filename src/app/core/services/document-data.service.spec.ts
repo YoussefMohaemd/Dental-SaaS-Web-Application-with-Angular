@@ -37,18 +37,20 @@ describe("DocumentDataService", () => {
       },
     ];
     service.loadDocuments();
-    httpMock
-      .expectOne(ApiEndpoint.DOCUMENTS)
-      .flush({ data: mock });
+    const request = httpMock.expectOne((req) => req.url === ApiEndpoint.DOCUMENTS);
+    expect(request.request.params.get("page")).toBe("1");
+    expect(request.request.params.get("pageSize")).toBe("100");
+    request.flush({ data: mock });
     expect(service.documents().length).toBe(1);
     expect(service.getDocumentById("d1")?.name).toBe("rx_test.pdf");
   });
 
   it("should surface an error when the request fails", () => {
     service.loadDocuments();
-    httpMock
-      .expectOne(ApiEndpoint.DOCUMENTS)
-      .error(new ProgressEvent("error"));
+    const request = httpMock.expectOne((req) => req.url === ApiEndpoint.DOCUMENTS);
+    expect(request.request.params.get("page")).toBe("1");
+    expect(request.request.params.get("pageSize")).toBe("100");
+    request.error(new ProgressEvent("error"));
     expect(service.error()).not.toBeNull();
     expect(service.documents().length).toBe(0);
   });

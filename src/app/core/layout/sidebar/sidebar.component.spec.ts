@@ -6,6 +6,7 @@ import { SidebarComponent } from "./sidebar.component";
 import { NavigationService } from "@core/services/navigation.service";
 import { ThemeService } from "@core/services/theme.service";
 import { AuthService } from "@core/services/auth.service";
+import { ChangeRequestDataService } from "@core/services/change-request-data.service";
 
 describe("SidebarComponent", () => {
   let component: SidebarComponent;
@@ -46,6 +47,13 @@ describe("SidebarComponent", () => {
             }),
           },
         },
+        {
+          provide: ChangeRequestDataService,
+          useValue: {
+            loadChangeRequests: jasmine.createSpy("loadChangeRequests"),
+            totalChangeRequests: signal(3),
+          },
+        },
       ],
     }).compileComponents();
 
@@ -73,6 +81,15 @@ describe("SidebarComponent", () => {
   it("should display navigation items", () => {
     const navButtons = fixture.debugElement.queryAll(By.css("nav button"));
     expect(navButtons.length).toBeGreaterThan(0);
+  });
+
+  it("should render a dynamic change request badge", () => {
+    const navButtons = fixture.debugElement.queryAll(By.css("nav button"));
+    const badgeHost = navButtons.find((button) =>
+      (button.nativeElement.textContent ?? "").includes("Change Requests"),
+    );
+    expect(badgeHost).toBeTruthy();
+    expect((badgeHost?.nativeElement.textContent ?? "").includes("3")).toBeTrue();
   });
 
   it("should display user info", () => {

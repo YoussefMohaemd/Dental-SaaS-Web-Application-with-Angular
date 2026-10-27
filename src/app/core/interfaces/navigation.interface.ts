@@ -74,7 +74,6 @@ export const NAV_ITEMS: NavItem[] = [
     id: "changeRequests",
     label: "Change Requests",
     icon: "refresh-ccw",
-    badge: 4,
   },
   { id: "reports", label: "Reports", icon: "bar-chart-3" },
   { id: "grid", label: "Grid", icon: "layers" },

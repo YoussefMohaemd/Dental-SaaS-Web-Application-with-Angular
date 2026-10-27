@@ -60,6 +60,10 @@ cd ../dental-saas-backend
 npm run seed:dev
 ```
 
+To switch the frontend between seeded tenants during local verification, update `defaultTenantId` in [environment.development.ts](./src/environments/environment.development.ts):
+- Tenant 1: `66f100000000000000000001`
+- Tenant 2: `66f100000000000000000101`
+
 ## Tests
 
 ```text
@@ -105,6 +109,7 @@ Raw logs live under `evidence/`.
 
 - Orders page with shared header toolbar, shared status badges, and service-driven preview states (normal/loading/empty/error)
 - Role-aware UX wiring: navigation, order creation/edit entry points, and bulk/order action buttons are now gated by backend-issued user capabilities to prevent unsupported actions before API calls
+- Dashboard greeting and sidebar identity now come from the authenticated session user, and the sidebar Change Requests badge reflects tenant-scoped open requests (`Pending` + `In Review`) from backend data
 - Order detail, sub-order detail, and create/edit order flows with patient autocomplete, doctor lookup by name/ID (required on create), bill-to targeting (Doctor/Scan Center), service pricing summaries, service-specific form capture, automatic due-date generation, and teeth-aware validation
 - Workflow board drag/drop transitions
 - Forms, scan/file, patient, doctor, clinic, billing, change-request, report, notification, and settings pages

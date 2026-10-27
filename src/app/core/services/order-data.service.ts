@@ -1,6 +1,6 @@
 import { Injectable, signal, computed, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import { catchError, map, Observable, tap, throwError } from "rxjs";
+import { EMPTY, catchError, expand, map, Observable, reduce, tap, throwError } from "rxjs";
 import { ApiOrderItem, Order, OrdersViewState } from "../interfaces";
 import { ApiEndpoint } from "@core/enum/api.endpoint";
 import { OrdersApi } from "@core/base/orders.api";
@@ -20,6 +20,7 @@ export class OrderDataService extends OrdersApi {
   private readonly _loading = signal<boolean>(false);
   private readonly _error = signal<string | null>(null);
   private snapshotOrders: Order[] = [];
+  private static readonly PAGE_SIZE = 100;
 
   readonly orders = this._orders.asReadonly();
   readonly loading = this._loading.asReadonly();
@@ -64,12 +65,17 @@ export class OrderDataService extends OrdersApi {
   }
 
   getAllOrders() {
-    return this.http
-      .get<{ data: ApiOrderItem[] }>(this.API_URL)
-      .pipe(
-        map((response) => response.data ?? []),
-        map((orders) => this.orderAdapter.OrdersAdapter(orders)),
-      );
+    return this.loadOrdersPage(1).pipe(
+      expand((pageResult) =>
+        pageResult.page < pageResult.totalPages
+          ? this.loadOrdersPage(pageResult.page + 1)
+          : EMPTY,
+      ),
+      reduce(
+        (all, pageResult) => all.concat(pageResult.items),
+        [] as Order[],
+      ),
+    );
   }
 
   getOrderById$(id: string): Observable<Order> {
@@ -267,5 +273,37 @@ export class OrderDataService extends OrdersApi {
         .filter((key) => payload[key] !== undefined && payload[key] !== "")
         .map((key) => [key, payload[key]]),
     );
+  }
+
+  private loadOrdersPage(page: number) {
+    return this.http
+      .get<{
+        data: ApiOrderItem[];
+        meta?: {
+          pagination?: {
+            page?: number;
+            totalPages?: number;
+          };
+        };
+      }>(this.API_URL, {
+        params: {
+          page,
+          pageSize: OrderDataService.PAGE_SIZE,
+        },
+      })
+      .pipe(
+        map((response) => ({
+          page:
+            response.meta?.pagination?.page && response.meta.pagination.page > 0
+              ? response.meta.pagination.page
+              : page,
+          totalPages:
+            response.meta?.pagination?.totalPages &&
+            response.meta.pagination.totalPages > 0
+              ? response.meta.pagination.totalPages
+              : 1,
+          items: this.orderAdapter.OrdersAdapter(response.data ?? []),
+        })),
+      );
   }
 }
