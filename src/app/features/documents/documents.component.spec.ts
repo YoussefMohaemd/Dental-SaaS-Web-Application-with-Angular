@@ -53,7 +53,13 @@ describe("DocumentsComponent", () => {
     component = fixture.componentInstance;
     fixture.detectChanges();
     httpMock
-      .expectOne(ApiEndpoint.DOCUMENTS)
+      .expectOne(
+        (request) =>
+          request.method === "GET" &&
+          request.url === ApiEndpoint.DOCUMENTS &&
+          request.params.get("page") === "1" &&
+          request.params.get("pageSize") === "100",
+      )
       .flush({ data: MOCK_DOCS });
   });
 

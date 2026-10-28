@@ -29,7 +29,15 @@ describe("CreateOrderComponent", () => {
     component = fixture.componentInstance;
     httpMock = TestBed.inject(HttpTestingController);
     fixture.detectChanges();
-    httpMock.expectOne(ApiEndpoint.PATIENTS).flush({
+    httpMock
+      .expectOne(
+        (request) =>
+          request.method === "GET" &&
+          request.url === ApiEndpoint.PATIENTS &&
+          request.params.get("page") === "1" &&
+          request.params.get("pageSize") === "100",
+      )
+      .flush({
       data: [
         {
           id: "p1",
@@ -48,7 +56,15 @@ describe("CreateOrderComponent", () => {
         },
       ],
     });
-    httpMock.expectOne(ApiEndpoint.DOCTORS).flush({
+    httpMock
+      .expectOne(
+        (request) =>
+          request.method === "GET" &&
+          request.url === ApiEndpoint.DOCTORS &&
+          request.params.get("page") === "1" &&
+          request.params.get("pageSize") === "100",
+      )
+      .flush({
       data: [
         {
           id: "d1",
@@ -65,7 +81,15 @@ describe("CreateOrderComponent", () => {
         },
       ],
     });
-    httpMock.expectOne(ApiEndpoint.CLINICS).flush({
+    httpMock
+      .expectOne(
+        (request) =>
+          request.method === "GET" &&
+          request.url === ApiEndpoint.CLINICS &&
+          request.params.get("page") === "1" &&
+          request.params.get("pageSize") === "100",
+      )
+      .flush({
       data: [
         {
           id: "c1",
@@ -75,7 +99,9 @@ describe("CreateOrderComponent", () => {
         },
       ],
     });
-    const orderRequests = httpMock.match(ApiEndpoint.ORDERS);
+    const orderRequests = httpMock.match(
+      (request) => request.method === "GET" && request.url === ApiEndpoint.ORDERS,
+    );
     expect(orderRequests.length).toBe(2);
     orderRequests.forEach((request) => request.flush({ data: [] }));
     httpMock.expectOne(ApiEndpoint.SCAN_CENTERS).flush({
