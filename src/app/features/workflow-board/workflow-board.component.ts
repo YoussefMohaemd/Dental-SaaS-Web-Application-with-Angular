@@ -51,7 +51,7 @@ export class WorkflowBoardComponent implements OnInit {
   protected readonly formatUtils = inject(FormatUtils);
 
   ngOnInit(): void {
-    this.orderService.loadOrders();
+    this.orderService.loadAllOrders();
   }
 
   readonly orders = this.orderService.orders;

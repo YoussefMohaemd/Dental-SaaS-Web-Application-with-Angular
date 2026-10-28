@@ -95,7 +95,7 @@ export class PatientsComponent implements OnInit {
     this.patientService.loadPatients();
     this.clinicService.loadClinics();
     this.doctorService.loadDoctors();
-    this.orderService.loadOrders();
+    this.orderService.loadAllOrders();
   }
 
   readonly orderCountByPatientId = computed(() => {

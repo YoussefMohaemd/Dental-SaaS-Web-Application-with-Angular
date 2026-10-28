@@ -38,7 +38,7 @@ describe("DoctorDetailsComponent", () => {
           provide: OrderDataService,
           useValue: {
             getOrdersByDoctor: () => [],
-            loadOrders: jasmine.createSpy("loadOrders"),
+            loadAllOrders: jasmine.createSpy("loadAllOrders"),
             orders: signal([]),
           },
         },

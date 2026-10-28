@@ -189,4 +189,61 @@ describe("OrderDataService", () => {
     expect(service.loading()).toBeFalse();
     expect(service.orders().length).toBe(1);
   });
+
+  it("should load all order pages for aggregate views", () => {
+    service.loadAllOrders();
+
+    const firstPageRequest = httpMock.expectOne(
+      (req) =>
+        req.url === ApiEndpoint.ORDERS &&
+        req.params.get("page") === "1" &&
+        req.params.get("pageSize") === "100",
+    );
+    firstPageRequest.flush({
+      data: [
+        {
+          id: "ord-1",
+          orderNumber: "DL-000001",
+          patientId: "pt-1",
+          doctorId: "dr-1",
+          clinicId: "cl-1",
+          status: "New",
+        },
+      ],
+      meta: { pagination: { page: 1, pageSize: 100, totalItems: 3, totalPages: 2 } },
+    });
+
+    const secondPageRequest = httpMock.expectOne(
+      (req) =>
+        req.url === ApiEndpoint.ORDERS &&
+        req.params.get("page") === "2" &&
+        req.params.get("pageSize") === "100",
+    );
+    secondPageRequest.flush({
+      data: [
+        {
+          id: "ord-2",
+          orderNumber: "DL-000002",
+          patientId: "pt-2",
+          doctorId: "dr-2",
+          clinicId: "cl-1",
+          status: "Review",
+        },
+        {
+          id: "ord-3",
+          orderNumber: "DL-000003",
+          patientId: "pt-3",
+          doctorId: "dr-1",
+          clinicId: "cl-2",
+          status: "Design",
+        },
+      ],
+      meta: { pagination: { page: 2, pageSize: 100, totalItems: 3, totalPages: 2 } },
+    });
+
+    expect(service.orders().length).toBe(3);
+    expect(service.pagination().totalItems).toBe(3);
+    expect(service.loading()).toBeFalse();
+    expect(service.error()).toBeNull();
+  });
 });

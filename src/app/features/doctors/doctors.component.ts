@@ -83,7 +83,7 @@ export class DoctorsComponent implements OnInit {
   ngOnInit(): void {
     this.doctorService.loadDoctors();
     this.clinicService.loadClinics();
-    this.orderService.loadOrders();
+    this.orderService.loadAllOrders();
   }
   readonly newPhone = signal("");
 

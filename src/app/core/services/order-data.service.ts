@@ -1,6 +1,6 @@
 import { Injectable, signal, computed, inject } from "@angular/core";
 import { HttpClient, HttpParams } from "@angular/common/http";
-import { catchError, map, Observable, tap, throwError } from "rxjs";
+import { EMPTY, catchError, expand, map, Observable, reduce, tap, throwError } from "rxjs";
 import { ApiOrderItem, Order, OrdersViewState } from "../interfaces";
 import { ApiEndpoint } from "@core/enum/api.endpoint";
 import { OrdersApi } from "@core/base/orders.api";
@@ -48,6 +48,7 @@ export class OrderDataService extends OrdersApi {
   private readonly _error = signal<string | null>(null);
   private snapshotOrders: Order[] = [];
   private static readonly PAGE_SIZE = 20;
+  private static readonly BULK_PAGE_SIZE = 100;
   private readonly _pagination = signal<OrderPaginationState>({
     page: 1,
     pageSize: OrderDataService.PAGE_SIZE,
@@ -110,6 +111,53 @@ export class OrderDataService extends OrdersApi {
             totalItems: 0,
             totalPages: 1,
           }));
+          this._loading.set(false);
+        },
+      });
+  }
+
+  loadAllOrders(query: Omit<OrderPageQuery, "page" | "pageSize"> = {}): void {
+    const normalizedQuery: Omit<OrderPageQuery, "page" | "pageSize"> = {
+      sortBy: query.sortBy ?? "receivedAt",
+      sortDirection: query.sortDirection ?? "desc",
+      ...(query.search !== undefined ? { search: query.search } : {}),
+      ...(query.duration !== undefined ? { duration: query.duration } : {}),
+      ...(query.status !== undefined ? { status: query.status } : {}),
+      ...(query.service !== undefined ? { service: query.service } : {}),
+    };
+
+    this._loading.set(true);
+    this._error.set(null);
+
+    this.loadAllOrdersPages(normalizedQuery)
+      .pipe(
+        catchError((apiError) => {
+          console.error("Error loading all orders:", apiError);
+          return throwError(() => apiError);
+        }),
+      )
+      .subscribe({
+        next: (result) => {
+          this._orders.set(result.items);
+          this._pagination.set({
+            page: 1,
+            pageSize: result.pageSize,
+            totalItems: result.totalItems,
+            totalPages: result.totalPages,
+          });
+          this.snapshotOrders = [...result.items];
+          this._loading.set(false);
+        },
+        error: () => {
+          this._error.set("Failed to load orders");
+          this._orders.set([]);
+          this.snapshotOrders = [];
+          this._pagination.set({
+            page: 1,
+            pageSize: OrderDataService.BULK_PAGE_SIZE,
+            totalItems: 0,
+            totalPages: 1,
+          });
           this._loading.set(false);
         },
       });
@@ -374,5 +422,39 @@ export class OrderDataService extends OrdersApi {
           },
         })),
       );
+  }
+
+  private loadAllOrdersPages(query: Omit<OrderPageQuery, "page" | "pageSize">) {
+    const firstPageQuery: OrderPageQuery = {
+      ...query,
+      page: 1,
+      pageSize: OrderDataService.BULK_PAGE_SIZE,
+    };
+
+    return this.loadOrdersPage(firstPageQuery).pipe(
+      expand((pageResult) =>
+        pageResult.pagination.page < pageResult.pagination.totalPages
+          ? this.loadOrdersPage({
+              ...query,
+              page: pageResult.pagination.page + 1,
+              pageSize: OrderDataService.BULK_PAGE_SIZE,
+            })
+          : EMPTY,
+      ),
+      reduce(
+        (accumulator, pageResult) => ({
+          items: [...accumulator.items, ...pageResult.items],
+          totalItems: pageResult.pagination.totalItems,
+          totalPages: pageResult.pagination.totalPages,
+          pageSize: pageResult.pagination.pageSize,
+        }),
+        {
+          items: [] as Order[],
+          totalItems: 0,
+          totalPages: 1,
+          pageSize: OrderDataService.BULK_PAGE_SIZE,
+        },
+      ),
+    );
   }
 }

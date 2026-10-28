@@ -83,7 +83,7 @@ export class DoctorDetailsComponent implements OnInit {
 
   ngOnInit(): void {
     this.doctorService.loadDoctors();
-    this.orderService.loadOrders();
+    this.orderService.loadAllOrders();
     this.doctorId.set(this.route.snapshot.paramMap.get("doctorId") || "");
   }
 

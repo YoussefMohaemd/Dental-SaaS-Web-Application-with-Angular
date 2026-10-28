@@ -78,7 +78,7 @@ describe("PatientsComponent", () => {
               { id: "o-2", patientId: "p-1", doctorId: "d-2" },
               { id: "o-3", patientId: "p-2", doctorId: "d-2" },
             ]),
-            loadOrders: jasmine.createSpy("loadOrders"),
+            loadAllOrders: jasmine.createSpy("loadAllOrders"),
           },
         },
       ],

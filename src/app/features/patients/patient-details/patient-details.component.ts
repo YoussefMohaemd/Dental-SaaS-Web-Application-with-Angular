@@ -166,7 +166,7 @@ export class PatientDetailsComponent implements OnInit {
 
   ngOnInit(): void {
     this.patientService.loadPatients();
-    this.orderService.loadOrders();
+    this.orderService.loadAllOrders();
     this.caseService.loadCases();
     this.documentService.loadDocuments();
     this.patientId.set(this.route.snapshot.paramMap.get("patientId") || "");
