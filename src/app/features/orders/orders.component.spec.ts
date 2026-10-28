@@ -212,6 +212,43 @@ describe("OrdersComponent", () => {
     expect(component.search()).toBe("");
   });
 
+  it("should include backend search fields in client-side filtering", () => {
+    (orderService as any)._orders.set([
+      {
+        id: "ord-1",
+        orderNumber: "DL-1001",
+        patientId: "pt-1",
+        patientName: "Alice",
+        doctorId: "doc-1",
+        doctorName: "Dr. Sam",
+        clinicId: "cl-1",
+        clinicName: "Main Clinic",
+        status: "New",
+        priority: "Normal",
+        restoration: "Crown",
+        arch: "Maxilla",
+        format: "Digital",
+        shade: "A2",
+        units: 1,
+        amount: 250,
+        billed: false,
+        billTo: "Doctor",
+        vouchers: 0,
+        isLocked: false,
+        hasNotes: false,
+        notes: "urgent night case",
+        receivedAt: "2026-01-01T00:00:00.000Z",
+        dueDate: "2026-01-02T00:00:00.000Z",
+        createdAt: "2026-01-01T00:00:00.000Z",
+        updatedAt: "2026-01-01T00:00:00.000Z",
+      },
+    ]);
+
+    component.onSearchInput("night case");
+
+    expect(component.pageData().length).toBe(1);
+  });
+
   it("should expose Lucide-equivalent SVG icons for actions", () => {
     for (const name of [
       "plus",

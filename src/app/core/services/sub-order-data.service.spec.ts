@@ -130,6 +130,35 @@ describe("SubOrderDataService", () => {
     expect(service.getDetailByContext("ord-99", "so-58")).toBeUndefined();
   });
 
+  it("should cap parallel sub-order requests while loading", () => {
+    service.load();
+    httpMock
+      .expectOne(
+        (request) =>
+          request.url === ApiEndpoint.ORDERS &&
+          request.params.get("page") === "1" &&
+          request.params.get("pageSize") === "100",
+      )
+      .flush({
+        data: Array.from({ length: 10 }, (_, index) => ({
+          id: `ord-${index + 1}`,
+        })),
+        meta: { pagination: { page: 1, totalPages: 1 } },
+      });
+
+    const firstWave = httpMock.match((request) =>
+      request.url.includes("/sub-orders"),
+    );
+    expect(firstWave.length).toBe(8);
+    firstWave.forEach((request) => request.flush({ data: [] }));
+
+    const secondWave = httpMock.match((request) =>
+      request.url.includes("/sub-orders"),
+    );
+    expect(secondWave.length).toBe(2);
+    secondWave.forEach((request) => request.flush({ data: [] }));
+  });
+
   it("should replace existing sub-orders for an order when editing", () => {
     service.replaceForOrder("ord-1", [
       {

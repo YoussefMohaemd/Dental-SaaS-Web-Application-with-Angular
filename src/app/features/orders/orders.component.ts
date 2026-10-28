@@ -316,6 +316,9 @@ export class OrdersComponent implements OnInit {
   readonly filtered = computed(() => {
     return filterTableRows(this.orders(), this.search().trim(), [
       (order) => order.orderNumber,
+      (order) => order.notes,
+      (order) => order.format,
+      (order) => order.shade,
       (order) => order.patientName,
       (order) => order.doctorName,
       (order) => order.clinicName,
@@ -326,9 +329,7 @@ export class OrdersComponent implements OnInit {
   readonly totalRecords = computed(
     () => this.orderService.pagination().totalItems,
   );
-  readonly pageData = computed(() => {
-    return this.filtered();
-  });
+  readonly pageData = computed(() => this.filtered());
 
   readonly expandedIds = signal<Set<string>>(new Set());
 

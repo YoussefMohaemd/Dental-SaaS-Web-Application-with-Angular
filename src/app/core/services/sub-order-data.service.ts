@@ -4,13 +4,13 @@ import {
   EMPTY,
   catchError,
   expand,
+  filter,
   finalize,
-  forkJoin,
+  from,
   map,
+  mergeMap,
   Observable,
-  of,
   reduce,
-  switchMap,
   tap,
   throwError,
 } from "rxjs";
@@ -242,6 +242,7 @@ export class SubOrderDataService {
   private readonly http = inject(HttpClient);
   private readonly URL = ApiEndpoint.ORDERS;
   private static readonly ORDER_PAGE_SIZE = 100;
+  private static readonly SUB_ORDER_REQUEST_CONCURRENCY = 8;
 
   private readonly _subOrders = signal<SubOrder[]>([]);
   private readonly _details = signal<Record<string, SubOrderDetail>>({});
@@ -262,20 +263,8 @@ export class SubOrderDataService {
   load(): void {
     this._loading.set(true);
     this._error.set(null);
-    this.loadAllOrderIds$()
+    this.loadAllSubOrders$()
       .pipe(
-        switchMap((orderIds) => {
-          if (orderIds.length === 0) return of([] as SubOrderJson[]);
-          return forkJoin(
-            orderIds.map((orderId) =>
-              this.http
-                .get<{ data: SubOrderJson[] }>(
-                  ApiEndpoint.orderSubOrders(orderId),
-                )
-                .pipe(map((response) => response.data ?? [])),
-            ),
-          ).pipe(map((groups) => groups.flat()));
-        }),
         map((rows) =>
           rows.map(
             (row) =>
@@ -323,7 +312,7 @@ export class SubOrderDataService {
     return this._subOrders().find((s) => s.id === id);
   }
 
-  private loadAllOrderIds$(): Observable<string[]> {
+  private loadAllSubOrders$(): Observable<SubOrderJson[]> {
     return this.loadOrdersPage$(1).pipe(
       expand((response) => {
         const page = response.meta?.pagination?.page ?? 1;
@@ -333,12 +322,17 @@ export class SubOrderDataService {
         }
         return this.loadOrdersPage$(page + 1);
       }),
-      map((response) =>
-        (response.data ?? [])
-          .map((order) => order.id)
-          .filter((id): id is string => typeof id === "string" && id.length > 0),
+      mergeMap((response) => from(response.data ?? [])),
+      map((order) => order.id),
+      filter((id): id is string => typeof id === "string" && id.length > 0),
+      mergeMap(
+        (orderId) =>
+          this.http
+            .get<{ data: SubOrderJson[] }>(ApiEndpoint.orderSubOrders(orderId))
+            .pipe(map((response) => response.data ?? [])),
+        SubOrderDataService.SUB_ORDER_REQUEST_CONCURRENCY,
       ),
-      reduce((allOrderIds, pageIds) => [...allOrderIds, ...pageIds], [] as string[]),
+      reduce((allRows, pageRows) => [...allRows, ...pageRows], [] as SubOrderJson[]),
     );
   }
 
