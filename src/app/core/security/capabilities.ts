@@ -161,7 +161,11 @@ export function fallbackCapabilitiesFromRoles(
   roles: readonly string[],
 ): DentalCapability[] {
   const normalizedRoles = Array.from(
-    new Set(roles.map((role) => normalizeRoleAlias(role)).filter((role) => role.length > 0)),
+    new Set(
+      roles
+        .map((role) => normalizeRoleAlias(role))
+        .filter((role) => role.length > 0),
+    ),
   );
   const resolved = new Set<DentalCapability>();
 

@@ -76,7 +76,6 @@ export type RestoType =
 
 export type ArchType = "Maxilla" | "Mandible" | "Both";
 
-
 export interface Order {
   id: string;
   orderNumber: string;

@@ -43,8 +43,17 @@ export const IMPLANT_SYSTEMS = [
   "Neodent",
   "Other",
 ];
-export const OCCLUSAL_CONTACTS = ["Light contact", "Full contact", "No contact"];
-export const MARGIN_TYPES = ["Chamfer", "Shoulder", "Feather edge", "Knife edge"];
+export const OCCLUSAL_CONTACTS = [
+  "Light contact",
+  "Full contact",
+  "No contact",
+];
+export const MARGIN_TYPES = [
+  "Chamfer",
+  "Shoulder",
+  "Feather edge",
+  "Knife edge",
+];
 export const MATERIALS = [
   "Zirconia (Multilayer)",
   "PFM",
@@ -209,7 +218,9 @@ export function normalizeLookup(value: string): string {
 
 export function uniqueSortedValues(values: readonly string[]): string[] {
   return Array.from(
-    new Set(values.map((value) => value.trim()).filter((value) => value.length > 0)),
+    new Set(
+      values.map((value) => value.trim()).filter((value) => value.length > 0),
+    ),
   ).sort((a, b) => a.localeCompare(b));
 }
 

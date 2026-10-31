@@ -47,7 +47,8 @@ export class ChangeRequestDataService extends ChangeRequestApi {
 
   loadChangeRequests(forceRefresh = false): void {
     const sessionKey = this.currentSessionKey();
-    const hasSessionChanged = this._loadedSessionKey !== null && this._loadedSessionKey !== sessionKey;
+    const hasSessionChanged =
+      this._loadedSessionKey !== null && this._loadedSessionKey !== sessionKey;
     if (hasSessionChanged) {
       this._loaded = false;
       this._changeRequests.set([]);
@@ -57,7 +58,11 @@ export class ChangeRequestDataService extends ChangeRequestApi {
       return;
     }
 
-    if (this._loaded && !forceRefresh && this._loadedSessionKey === sessionKey) {
+    if (
+      this._loaded &&
+      !forceRefresh &&
+      this._loadedSessionKey === sessionKey
+    ) {
       return;
     }
 

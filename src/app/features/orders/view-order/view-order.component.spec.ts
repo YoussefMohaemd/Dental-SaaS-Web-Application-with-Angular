@@ -1,5 +1,9 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
-import { ActivatedRoute, convertToParamMap, provideRouter } from "@angular/router";
+import {
+  ActivatedRoute,
+  convertToParamMap,
+  provideRouter,
+} from "@angular/router";
 import { signal } from "@angular/core";
 import { of } from "rxjs";
 import { ViewOrderComponent } from "./view-order.component";
@@ -59,7 +63,11 @@ const subOrders: SubOrder[] = [
   },
 ];
 
-function configureComponent(orderId: string, currentOrder?: Order, currentSubOrders = subOrders) {
+function configureComponent(
+  orderId: string,
+  currentOrder?: Order,
+  currentSubOrders = subOrders,
+) {
   return TestBed.configureTestingModule({
     imports: [ViewOrderComponent],
     providers: [
@@ -75,7 +83,8 @@ function configureComponent(orderId: string, currentOrder?: Order, currentSubOrd
         useValue: {
           orders: signal(currentOrder ? [currentOrder] : []),
           loadOrders: jasmine.createSpy("loadOrders"),
-          getOrderById: (id: string) => (id === currentOrder?.id ? currentOrder : undefined),
+          getOrderById: (id: string) =>
+            id === currentOrder?.id ? currentOrder : undefined,
           updateOrder$: () => of(currentOrder),
           deleteOrder$: () => of(void 0),
         },
@@ -216,7 +225,12 @@ describe("ViewOrderComponent invalid route", () => {
 describe("ViewOrderComponent exact order flow", () => {
   let component: ViewOrderComponent;
   let fixture: ComponentFixture<ViewOrderComponent>;
-  const exactOrder = { ...order, id: "ord-33", patientName: "Hannah Lindqvist", doctorName: "Dr. Jennifer Walsh" };
+  const exactOrder = {
+    ...order,
+    id: "ord-33",
+    patientName: "Hannah Lindqvist",
+    doctorName: "Dr. Jennifer Walsh",
+  };
   const exactSubOrders: SubOrder[] = [
     { ...subOrders[0], id: "so-57", orderId: "ord-33", status: "done" },
     { ...subOrders[0], id: "so-58", orderId: "ord-33", status: "in-progress" },

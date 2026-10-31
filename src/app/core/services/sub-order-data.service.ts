@@ -332,7 +332,10 @@ export class SubOrderDataService {
             .pipe(map((response) => response.data ?? [])),
         SubOrderDataService.SUB_ORDER_REQUEST_CONCURRENCY,
       ),
-      reduce((allRows, pageRows) => [...allRows, ...pageRows], [] as SubOrderJson[]),
+      reduce(
+        (allRows, pageRows) => [...allRows, ...pageRows],
+        [] as SubOrderJson[],
+      ),
     );
   }
 

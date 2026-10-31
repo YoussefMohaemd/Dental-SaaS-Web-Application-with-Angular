@@ -5,7 +5,10 @@ import { type DentalCapability } from "@core/security/capabilities";
 
 export const capabilityGuard: CanActivateFn = (route) => {
   const requiredCapabilities = route.data?.["requiredCapabilities"];
-  if (!Array.isArray(requiredCapabilities) || requiredCapabilities.length === 0) {
+  if (
+    !Array.isArray(requiredCapabilities) ||
+    requiredCapabilities.length === 0
+  ) {
     return true;
   }
 

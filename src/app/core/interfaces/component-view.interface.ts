@@ -1,5 +1,9 @@
 import { Order } from "./order.interface";
-import { QuarterMonthDetail, QuarterReportDetail, ServiceQuarterMetric } from "./reporting.interface";
+import {
+  QuarterMonthDetail,
+  QuarterReportDetail,
+  ServiceQuarterMetric,
+} from "./reporting.interface";
 import { SubOrder } from "./sub-order.interface";
 
 export interface SelectOption {

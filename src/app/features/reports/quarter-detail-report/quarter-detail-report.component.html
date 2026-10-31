@@ -72,10 +72,7 @@
     </div>
   } @else if (!quarterReport()) {
     <div class="enterprise-table-panel">
-      <app-table-feedback
-        mode="empty"
-        [message]="quarterFeedbackMessage()"
-      />
+      <app-table-feedback mode="empty" [message]="quarterFeedbackMessage()" />
     </div>
   } @else {
     <section class="grid grid-cols-1 gap-4 xl:grid-cols-2">

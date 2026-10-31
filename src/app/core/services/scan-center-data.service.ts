@@ -55,12 +55,10 @@ export class ScanCenterDataService extends ScanCenterApi {
   }
 
   getAllScanCenters() {
-    return this.http
-      .get<{ data: ScanCenter[] }>(this.API_URL)
-      .pipe(
-        map((response) => response.data ?? []),
-        map((rows) => this.scanCenterAdapter.ScanCenterAdapter(rows)),
-      );
+    return this.http.get<{ data: ScanCenter[] }>(this.API_URL).pipe(
+      map((response) => response.data ?? []),
+      map((rows) => this.scanCenterAdapter.ScanCenterAdapter(rows)),
+    );
   }
 
   getCenterById(id: string): ScanCenter | undefined {

@@ -252,7 +252,11 @@
               [title]="!card.hasData ? 'Quarter data is not available yet' : ''"
               (onClick)="openQuarterDetails(card.report.quarter)"
             >
-              {{ card.hasData ? 'Open ' + card.report.quarterLabel + ' details' : 'Awaiting data entry' }}
+              {{
+                card.hasData
+                  ? "Open " + card.report.quarterLabel + " details"
+                  : "Awaiting data entry"
+              }}
             </app-button>
           </div>
         </article>

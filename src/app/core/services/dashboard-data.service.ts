@@ -38,15 +38,20 @@ export class DashboardDataService {
     ),
   );
 
-  constructor() {
-  }
+  constructor() {}
 
   loadVolume(): void {
     this._loading.set(true);
     this._error.set(null);
 
     this.http
-      .get<{ data: { weeks?: VolumeWeek[] | Array<{ week: string; orders: number; completed: number }> } }>(this.API_URL)
+      .get<{
+        data: {
+          weeks?:
+            | VolumeWeek[]
+            | Array<{ week: string; orders: number; completed: number }>;
+        };
+      }>(this.API_URL)
       .pipe(
         map((response) => this.normalizeWeeksPayload(response.data)),
         catchError((err) => {
@@ -69,7 +74,11 @@ export class DashboardDataService {
 
   private normalizeWeeksPayload(
     payload:
-      | { weeks?: VolumeWeek[] | Array<{ week: string; orders: number; completed: number }> }
+      | {
+          weeks?:
+            | VolumeWeek[]
+            | Array<{ week: string; orders: number; completed: number }>;
+        }
       | undefined,
   ): VolumeWeek[] {
     const weeks = payload?.weeks ?? [];
@@ -80,7 +89,11 @@ export class DashboardDataService {
       return weeks as VolumeWeek[];
     }
 
-    const compactWeeks = weeks as Array<{ week: string; orders: number; completed: number }>;
+    const compactWeeks = weeks as Array<{
+      week: string;
+      orders: number;
+      completed: number;
+    }>;
     const sorted = [...compactWeeks].slice(-7);
     const days: VolumeDay[] = sorted.map((weekPoint) => ({
       day: weekPoint.week,

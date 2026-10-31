@@ -43,11 +43,9 @@ describe("HeaderComponent", () => {
         unreadCount: signal(0),
       },
     );
-    const authSpy = jasmine.createSpyObj(
-      "AuthService",
-      ["logout"],
-      { user: signal(null) },
-    );
+    const authSpy = jasmine.createSpyObj("AuthService", ["logout"], {
+      user: signal(null),
+    });
     authSpy.logout.and.returnValue(of(void 0));
 
     await TestBed.configureTestingModule({

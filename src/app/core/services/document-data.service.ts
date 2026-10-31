@@ -1,6 +1,15 @@
 import { Injectable, inject, signal } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import { EMPTY, catchError, expand, map, Observable, reduce, tap, throwError } from "rxjs";
+import {
+  EMPTY,
+  catchError,
+  expand,
+  map,
+  Observable,
+  reduce,
+  tap,
+  throwError,
+} from "rxjs";
 import { LabDocument } from "../interfaces";
 import { ApiEndpoint } from "@core/enum/api.endpoint";
 import { DocumentApi } from "@core/base/document.api";
@@ -69,17 +78,23 @@ export class DocumentDataService extends DocumentApi {
     type: string;
     sizeBytes: number;
   }): Observable<LabDocument> {
-    return this.http
-      .post<{ data: LabDocument }>(this.API_URL, payload)
-      .pipe(
-        map((response) => this.documentAdapter.DocumentAdapter([response.data])[0]),
-        tap((created) => this._documents.update((current) => [created, ...current])),
-      );
+    return this.http.post<{ data: LabDocument }>(this.API_URL, payload).pipe(
+      map(
+        (response) => this.documentAdapter.DocumentAdapter([response.data])[0],
+      ),
+      tap((created) =>
+        this._documents.update((current) => [created, ...current]),
+      ),
+    );
   }
 
   deleteDocument(id: string): Observable<void> {
     return this.http.delete<void>(`${this.API_URL}/${id}`).pipe(
-      tap(() => this._documents.update((current) => current.filter((document) => document.id !== id))),
+      tap(() =>
+        this._documents.update((current) =>
+          current.filter((document) => document.id !== id),
+        ),
+      ),
       map(() => void 0),
     );
   }

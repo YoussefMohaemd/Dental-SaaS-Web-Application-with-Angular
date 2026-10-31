@@ -35,7 +35,9 @@ export class ReportingDataService
 {
   private readonly http = inject(HttpClient);
   private readonly ordersRangeAdapter = inject(OrdersRangeReportAdapter);
-  private readonly teamPerformanceAdapter = inject(TeamPerformanceReportAdapter);
+  private readonly teamPerformanceAdapter = inject(
+    TeamPerformanceReportAdapter,
+  );
 
   private readonly _seed = signal<ReportingSeedData>(EMPTY_SEED);
   private readonly _orderArchive = signal<OrderArchiveRecord[]>([]);
@@ -202,7 +204,8 @@ export class ReportingDataService
   ): QuarterReportDetail | null {
     const monthsInQuarter = this.getMonthsForQuarter(quarter);
     const metrics = this.monthlyServiceMetrics().filter(
-      (metric) => metric.year === year && monthsInQuarter.includes(metric.month),
+      (metric) =>
+        metric.year === year && monthsInQuarter.includes(metric.month),
     );
     if (metrics.length === 0) return null;
 

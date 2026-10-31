@@ -89,7 +89,9 @@ describe("SidebarComponent", () => {
       (button.nativeElement.textContent ?? "").includes("Change Requests"),
     );
     expect(badgeHost).toBeTruthy();
-    expect((badgeHost?.nativeElement.textContent ?? "").includes("3")).toBeTrue();
+    expect(
+      (badgeHost?.nativeElement.textContent ?? "").includes("3"),
+    ).toBeTrue();
   });
 
   it("should display user info", () => {

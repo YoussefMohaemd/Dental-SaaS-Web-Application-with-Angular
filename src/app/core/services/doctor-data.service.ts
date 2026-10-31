@@ -1,6 +1,15 @@
 import { Injectable, signal, computed, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import { EMPTY, catchError, expand, map, Observable, reduce, tap, throwError } from "rxjs";
+import {
+  EMPTY,
+  catchError,
+  expand,
+  map,
+  Observable,
+  reduce,
+  tap,
+  throwError,
+} from "rxjs";
 import { ApiDoctorItem, Doctor } from "../interfaces";
 import { ApiEndpoint } from "@core/enum/api.endpoint";
 import { DoctorApi } from "@core/base/doctor.api";
@@ -61,10 +70,7 @@ export class DoctorDataService extends DoctorApi {
           ? this.loadDoctorsPage(pageResult.page + 1)
           : EMPTY,
       ),
-      reduce(
-        (all, pageResult) => all.concat(pageResult.items),
-        [] as Doctor[],
-      ),
+      reduce((all, pageResult) => all.concat(pageResult.items), [] as Doctor[]),
     );
   }
 

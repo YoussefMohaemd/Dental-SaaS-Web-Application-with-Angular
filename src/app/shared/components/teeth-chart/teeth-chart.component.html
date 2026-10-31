@@ -50,7 +50,8 @@
 
     @if (selected().length > 0) {
       <p class="selected-list">
-        <span>{{ selected().length }} selected:</span> {{ selected().join(", ") }}
+        <span>{{ selected().length }} selected:</span>
+        {{ selected().join(", ") }}
       </p>
     }
   </div>
@@ -75,7 +76,7 @@
                     isUpper: true,
                     idx: i,
                     total: upperRightTeeth.length,
-                    side: 'right'
+                    side: 'right',
                   }
                 "
               ></ng-container>
@@ -92,7 +93,7 @@
                     isUpper: true,
                     idx: i,
                     total: upperLeftTeeth.length,
-                    side: 'left'
+                    side: 'left',
                   }
                 "
               ></ng-container>
@@ -123,7 +124,7 @@
                     isUpper: false,
                     idx: i,
                     total: lowerRightTeeth.length,
-                    side: 'right'
+                    side: 'right',
                   }
                 "
               ></ng-container>
@@ -140,7 +141,7 @@
                     isUpper: false,
                     idx: i,
                     total: lowerLeftTeeth.length,
-                    side: 'left'
+                    side: 'left',
                   }
                 "
               ></ng-container>
@@ -215,9 +216,7 @@
     [style.--tooth-border]="borderOf(num)"
     [style.--tooth-glow]="glowOf(num)"
     [style.marginTop.px]="isUpper ? getArchCurveOffset(idx, total, side) : 0"
-    [style.marginBottom.px]="
-      isUpper ? 0 : getArchCurveOffset(idx, total, side)
-    "
+    [style.marginBottom.px]="isUpper ? 0 : getArchCurveOffset(idx, total, side)"
     [attr.title]="'Tooth ' + num"
     [class.is-interactive]="!readOnly()"
   >

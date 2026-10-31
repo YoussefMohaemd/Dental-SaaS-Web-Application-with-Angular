@@ -1,4 +1,4 @@
-import { WorkflowTimelineStage } from '@core/interfaces';
+import { WorkflowTimelineStage } from "@core/interfaces";
 import { CommonModule } from "@angular/common";
 import { Component, input } from "@angular/core";
 

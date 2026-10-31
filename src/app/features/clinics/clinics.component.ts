@@ -87,18 +87,20 @@ export class ClinicsComponent implements OnInit {
       console.error("Clinic requires a name, city, and account manager.");
       return;
     }
-    this.clinicService.createClinic$({
-      name,
-      address: "1200 Innovation Drive",
-      city,
-      phone: "+1 (555) 000-0000",
-      email: "info@clinic.com",
-      status: "Active",
-      accountManager,
-    }).subscribe({
-      next: () => this.showAddDialog.set(false),
-      error: (error) => console.error("Failed to create clinic:", error),
-    });
+    this.clinicService
+      .createClinic$({
+        name,
+        address: "1200 Innovation Drive",
+        city,
+        phone: "+1 (555) 000-0000",
+        email: "info@clinic.com",
+        status: "Active",
+        accountManager,
+      })
+      .subscribe({
+        next: () => this.showAddDialog.set(false),
+        error: (error) => console.error("Failed to create clinic:", error),
+      });
   }
 
   getStatusClass(status: string): string {

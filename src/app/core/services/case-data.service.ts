@@ -1,6 +1,15 @@
 import { Injectable, signal, computed, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import { EMPTY, catchError, expand, map, Observable, reduce, tap, throwError } from "rxjs";
+import {
+  EMPTY,
+  catchError,
+  expand,
+  map,
+  Observable,
+  reduce,
+  tap,
+  throwError,
+} from "rxjs";
 import { ApiCaseItem, Case } from "../interfaces";
 import { ApiEndpoint } from "@core/enum/api.endpoint";
 import { CaseApi } from "@core/base/case.api";
@@ -61,10 +70,7 @@ export class CaseDataService extends CaseApi {
           ? this.loadCasesPage(pageResult.page + 1)
           : EMPTY,
       ),
-      reduce(
-        (all, pageResult) => all.concat(pageResult.items),
-        [] as Case[],
-      ),
+      reduce((all, pageResult) => all.concat(pageResult.items), [] as Case[]),
     );
   }
 

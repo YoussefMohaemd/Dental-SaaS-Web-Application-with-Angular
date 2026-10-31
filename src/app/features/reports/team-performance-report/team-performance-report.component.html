@@ -233,7 +233,7 @@
                 <p class="text-muted-foreground">
                   Revenue:
                   <span class="font-semibold text-foreground">{{
-                    (record.revenueCollected | displayCurrency)
+                    record.revenueCollected | displayCurrency
                   }}</span>
                 </p>
                 <p class="text-muted-foreground">
@@ -264,7 +264,9 @@
 
         <div class="mt-4 space-y-3">
           @for (role of roleSummaries(); track role.type) {
-            <div class="space-y-2 rounded-xl border border-border/70 bg-muted/20 p-3">
+            <div
+              class="space-y-2 rounded-xl border border-border/70 bg-muted/20 p-3"
+            >
               <div class="flex items-center justify-between gap-3">
                 <div class="min-w-0">
                   <p class="truncate text-xs font-semibold text-foreground">
@@ -282,7 +284,7 @@
                 <p class="text-muted-foreground">
                   Revenue:
                   <span class="font-semibold text-foreground">{{
-                    (role.totalRevenue | displayCurrency)
+                    role.totalRevenue | displayCurrency
                   }}</span>
                 </p>
                 <p class="text-muted-foreground">
@@ -293,7 +295,9 @@
                 </p>
               </div>
               <div class="space-y-1">
-                <div class="flex items-center justify-between gap-2 text-[11px]">
+                <div
+                  class="flex items-center justify-between gap-2 text-[11px]"
+                >
                   <p class="text-muted-foreground">Role revenue share</p>
                   <p class="font-mono text-muted-foreground">
                     {{ roleRevenueShare(role) }}%

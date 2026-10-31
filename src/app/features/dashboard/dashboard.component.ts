@@ -72,7 +72,8 @@ export class DashboardComponent implements OnInit {
   readonly completedTodayCount = this.orderService.completedTodayCount;
   readonly volumeLoading = this.volumeService.loading;
   readonly activityLoading = this.notificationService.loading;
-  readonly pendingChangeRequests = this.changeRequestService.pendingChangeRequests;
+  readonly pendingChangeRequests =
+    this.changeRequestService.pendingChangeRequests;
   readonly canCreateOrders = computed(() =>
     this.authorizationService.has("orders.create"),
   );

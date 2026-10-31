@@ -1,9 +1,6 @@
 import { Injectable } from "@angular/core";
 import { LabDocument } from "@core/interfaces";
-import {
-  ApiDocumentItem,
-  ApiDocumentResponse,
-} from "@core/interfaces";
+import { ApiDocumentItem, ApiDocumentResponse } from "@core/interfaces";
 
 @Injectable({ providedIn: "root" })
 export class DocumentAdapter {

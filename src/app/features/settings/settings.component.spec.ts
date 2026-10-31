@@ -26,9 +26,9 @@ describe("SettingsComponent", () => {
             user: signal(user),
             isAuthenticated: signal(true),
             loadCurrentUser: () => of(user),
-            changePassword: jasmine.createSpy("changePassword").and.returnValue(
-              of(void 0),
-            ),
+            changePassword: jasmine
+              .createSpy("changePassword")
+              .and.returnValue(of(void 0)),
           },
         },
         {

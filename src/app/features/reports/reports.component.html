@@ -77,14 +77,16 @@
         {{ averageOrderValue() | displayCurrency }}
       </p>
       <p class="mt-2 text-xs text-muted-foreground">
-        Backlog ratio {{ openCaseShare() }}% ·
-        {{ workflowTotalCount() }} active workflow orders
+        Backlog ratio {{ openCaseShare() }}% · {{ workflowTotalCount() }} active
+        workflow orders
       </p>
     </article>
   </section>
 
   <section class="grid grid-cols-1 gap-6 xl:grid-cols-3">
-    <div class="rounded-2xl border border-border bg-card p-5 sm:p-6 xl:col-span-2">
+    <div
+      class="rounded-2xl border border-border bg-card p-5 sm:p-6 xl:col-span-2"
+    >
       <div class="mb-4 flex items-start justify-between gap-3">
         <div>
           <h2 class="font-display text-base font-semibold text-foreground">
@@ -136,7 +138,9 @@
             <div class="mt-2 h-1.5 rounded-full bg-muted/70">
               <div
                 class="h-1.5 rounded-full transition-all"
-                [style.background]="workflowProgressColor(item.stage, item.contribution)"
+                [style.background]="
+                  workflowProgressColor(item.stage, item.contribution)
+                "
                 [style.width.%]="clampedPercent(item.contribution)"
               ></div>
             </div>
@@ -154,13 +158,15 @@
             Average Turnaround
           </h2>
           <p class="mt-1 text-xs text-muted-foreground">
-            {{ fastestTurnaround()
-              ? 'Fastest day: ' +
-                fastestTurnaround()!.day +
-                ' (' +
-                fastestTurnaround()!.days.toFixed(1) +
-                'd)'
-              : 'Daily completion speed this week.' }}
+            {{
+              fastestTurnaround()
+                ? "Fastest day: " +
+                  fastestTurnaround()!.day +
+                  " (" +
+                  fastestTurnaround()!.days.toFixed(1) +
+                  "d)"
+                : "Daily completion speed this week."
+            }}
           </p>
         </div>
         <app-button
@@ -172,16 +178,22 @@
         </app-button>
       </div>
       <div class="mb-4 grid grid-cols-2 gap-2">
-        <article class="rounded-lg border border-border/70 bg-muted/20 px-3 py-2">
+        <article
+          class="rounded-lg border border-border/70 bg-muted/20 px-3 py-2"
+        >
           <p class="text-[11px] text-muted-foreground">Weekly average</p>
           <p class="mt-1 font-mono text-sm font-semibold text-foreground">
             {{ turnaroundAverageDays() }}d
           </p>
         </article>
-        <article class="rounded-lg border border-border/70 bg-muted/20 px-3 py-2">
+        <article
+          class="rounded-lg border border-border/70 bg-muted/20 px-3 py-2"
+        >
           <p class="text-[11px] text-muted-foreground">Slowest day</p>
           <p class="mt-1 font-mono text-sm font-semibold text-foreground">
-            {{ slowestTurnaround() ? slowestTurnaround()!.days.toFixed(1) : 0 }}d
+            {{
+              slowestTurnaround() ? slowestTurnaround()!.days.toFixed(1) : 0
+            }}d
           </p>
         </article>
       </div>
@@ -203,18 +215,24 @@
           Restoration Mix
         </h2>
         <p class="mt-1 text-xs text-muted-foreground">
-          Leader: {{ restorationLeader().name }} ({{ restorationLeader().value }}%)
+          Leader: {{ restorationLeader().name }} ({{
+            restorationLeader().value
+          }}%)
         </p>
       </div>
 
       <div class="mb-4 grid grid-cols-2 gap-2">
-        <article class="rounded-lg border border-border/70 bg-muted/20 px-3 py-2">
+        <article
+          class="rounded-lg border border-border/70 bg-muted/20 px-3 py-2"
+        >
           <p class="text-[11px] text-muted-foreground">Top share</p>
           <p class="mt-1 font-mono text-sm font-semibold text-foreground">
             {{ restorationLeader().value }}%
           </p>
         </article>
-        <article class="rounded-lg border border-border/70 bg-muted/20 px-3 py-2">
+        <article
+          class="rounded-lg border border-border/70 bg-muted/20 px-3 py-2"
+        >
           <p class="text-[11px] text-muted-foreground">Active categories</p>
           <p class="mt-1 font-mono text-sm font-semibold text-foreground">
             {{ restorationCoverage() }} · Avg {{ restorationAverageShare() }}%
@@ -239,7 +257,9 @@
           track slice.name;
           let index = $index
         ) {
-          <div class="space-y-1.5 rounded-lg border border-border/70 bg-muted/20 p-2.5">
+          <div
+            class="space-y-1.5 rounded-lg border border-border/70 bg-muted/20 p-2.5"
+          >
             <div class="flex items-center justify-between gap-3 text-xs">
               <div class="flex min-w-0 items-center gap-2">
                 <span

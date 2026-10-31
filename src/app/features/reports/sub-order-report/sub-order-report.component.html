@@ -32,7 +32,10 @@
 
   @if (loading()) {
     <div class="enterprise-table-panel">
-      <app-table-feedback mode="loading" message="Loading sub-order report..." />
+      <app-table-feedback
+        mode="loading"
+        message="Loading sub-order report..."
+      />
     </div>
   } @else if (error()) {
     <div class="enterprise-table-panel">
@@ -85,13 +88,25 @@
             <tbody>
               @for (row of report().byService; track row.service) {
                 <tr class="border-b border-border/70 last:border-0">
-                  <td class="px-3 py-3 font-medium text-foreground">{{ row.service }}</td>
-                  <td class="px-3 py-3 text-muted-foreground">{{ row.total }}</td>
-                  <td class="px-3 py-3 text-muted-foreground">{{ row.completed }}</td>
-                  <td class="px-3 py-3 text-muted-foreground">{{ row.inProgress }}</td>
-                  <td class="px-3 py-3 text-muted-foreground">{{ row.pending }}</td>
+                  <td class="px-3 py-3 font-medium text-foreground">
+                    {{ row.service }}
+                  </td>
+                  <td class="px-3 py-3 text-muted-foreground">
+                    {{ row.total }}
+                  </td>
+                  <td class="px-3 py-3 text-muted-foreground">
+                    {{ row.completed }}
+                  </td>
+                  <td class="px-3 py-3 text-muted-foreground">
+                    {{ row.inProgress }}
+                  </td>
+                  <td class="px-3 py-3 text-muted-foreground">
+                    {{ row.pending }}
+                  </td>
                   <td class="px-3 py-3 text-danger">{{ row.overdue }}</td>
-                  <td class="px-3 py-3 text-muted-foreground">{{ row.completionRate }}%</td>
+                  <td class="px-3 py-3 text-muted-foreground">
+                    {{ row.completionRate }}%
+                  </td>
                 </tr>
               }
             </tbody>

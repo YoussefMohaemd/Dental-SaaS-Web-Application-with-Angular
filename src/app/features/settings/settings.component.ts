@@ -2,10 +2,7 @@ import { Component, computed, inject, OnInit, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { ReactiveFormsModule, FormBuilder, Validators } from "@angular/forms";
 import { ThemeService } from "@core/services/theme.service";
-import {
-  AuthService,
-  AuthenticatedUser,
-} from "@core/services/auth.service";
+import { AuthService, AuthenticatedUser } from "@core/services/auth.service";
 import {
   SettingsPreferencesService,
   UserPreferences,
@@ -229,11 +226,11 @@ export class SettingsComponent implements OnInit {
       });
   }
 
-  private applyCurrentUser(
-    user: AuthenticatedUser | null | undefined,
-  ): void {
+  private applyCurrentUser(user: AuthenticatedUser | null | undefined): void {
     if (!user) return;
-    const [firstName = "", ...lastNameParts] = user.fullName.trim().split(/\s+/);
+    const [firstName = "", ...lastNameParts] = user.fullName
+      .trim()
+      .split(/\s+/);
     this.profileForm.patchValue({
       firstName,
       lastName: lastNameParts.join(" "),

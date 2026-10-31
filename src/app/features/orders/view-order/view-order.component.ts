@@ -248,9 +248,7 @@ export class ViewOrderComponent implements OnInit {
         },
         error: (error) => {
           this.noteSaving.set(false);
-          this.flashAction(
-            error?.error?.message ?? "Unable to save the note.",
-          );
+          this.flashAction(error?.error?.message ?? "Unable to save the note.");
         },
       });
   }

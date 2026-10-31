@@ -75,7 +75,11 @@ export class AuthService {
       .pipe(
         map((response) => response.data),
         tap((result) =>
-          this.setSession(result.accessToken, result.user, credentials.rememberMe ?? true),
+          this.setSession(
+            result.accessToken,
+            result.user,
+            credentials.rememberMe ?? true,
+          ),
         ),
         map((result) => result.user),
         catchError((error) => {
@@ -87,11 +91,7 @@ export class AuthService {
 
   logout(): Observable<void> {
     return this.http
-      .post(
-        ApiEndpoint.AUTH_LOGOUT,
-        {},
-        { withCredentials: true },
-      )
+      .post(ApiEndpoint.AUTH_LOGOUT, {}, { withCredentials: true })
       .pipe(
         map(() => void 0),
         catchError((error) => {
@@ -148,12 +148,10 @@ export class AuthService {
   }
 
   loadCurrentUser(): Observable<AuthenticatedUser> {
-    return this.http
-      .get<{ data: AuthenticatedUser }>(ApiEndpoint.AUTH_ME)
-      .pipe(
-        map((response) => response.data),
-        tap((user) => this._user.set(user)),
-      );
+    return this.http.get<{ data: AuthenticatedUser }>(ApiEndpoint.AUTH_ME).pipe(
+      map((response) => response.data),
+      tap((user) => this._user.set(user)),
+    );
   }
 
   changePassword(payload: {
@@ -184,7 +182,11 @@ export class AuthService {
   }
 
   getTenantId(): string {
-    return this._user()?.tenantId ?? this.getStoredTenantId() ?? environment.defaultTenantId;
+    return (
+      this._user()?.tenantId ??
+      this.getStoredTenantId() ??
+      environment.defaultTenantId
+    );
   }
 
   getUserId(): string | null {

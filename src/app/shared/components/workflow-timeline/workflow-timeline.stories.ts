@@ -1,7 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/angular-vite";
-import {
-  WorkflowTimelineComponent,
-} from "./workflow-timeline.component";
+import { WorkflowTimelineComponent } from "./workflow-timeline.component";
 import type { WorkflowTimelineStage } from "@core/interfaces";
 
 const STAGES: WorkflowTimelineStage[] = [

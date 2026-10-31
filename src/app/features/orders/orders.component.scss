@@ -85,7 +85,11 @@
     margin-left: 0;
   }
 
-  :host ::ng-deep .orders-paginator .enterprise-prime-paginator .p-paginator-content {
+  :host
+    ::ng-deep
+    .orders-paginator
+    .enterprise-prime-paginator
+    .p-paginator-content {
     flex-wrap: nowrap;
     justify-content: flex-start;
     min-width: max-content;

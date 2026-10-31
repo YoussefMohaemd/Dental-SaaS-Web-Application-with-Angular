@@ -37,7 +37,9 @@ describe("DocumentDataService", () => {
       },
     ];
     service.loadDocuments();
-    const request = httpMock.expectOne((req) => req.url === ApiEndpoint.DOCUMENTS);
+    const request = httpMock.expectOne(
+      (req) => req.url === ApiEndpoint.DOCUMENTS,
+    );
     expect(request.request.params.get("page")).toBe("1");
     expect(request.request.params.get("pageSize")).toBe("100");
     request.flush({ data: mock });
@@ -47,7 +49,9 @@ describe("DocumentDataService", () => {
 
   it("should surface an error when the request fails", () => {
     service.loadDocuments();
-    const request = httpMock.expectOne((req) => req.url === ApiEndpoint.DOCUMENTS);
+    const request = httpMock.expectOne(
+      (req) => req.url === ApiEndpoint.DOCUMENTS,
+    );
     expect(request.request.params.get("page")).toBe("1");
     expect(request.request.params.get("pageSize")).toBe("100");
     request.error(new ProgressEvent("error"));

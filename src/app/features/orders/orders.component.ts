@@ -1,10 +1,4 @@
-import {
-  Component,
-  computed,
-  inject,
-  OnInit,
-  signal,
-} from "@angular/core";
+import { Component, computed, inject, OnInit, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { TreeTableModule } from "primeng/treetable";
 import { TreeNode } from "primeng/api";
@@ -325,7 +319,9 @@ export class OrdersComponent implements OnInit {
     ]);
   });
 
-  readonly totalPages = computed(() => this.orderService.pagination().totalPages);
+  readonly totalPages = computed(
+    () => this.orderService.pagination().totalPages,
+  );
   readonly totalRecords = computed(
     () => this.orderService.pagination().totalItems,
   );

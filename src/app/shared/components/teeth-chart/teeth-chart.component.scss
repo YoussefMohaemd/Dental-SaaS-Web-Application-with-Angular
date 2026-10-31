@@ -424,10 +424,13 @@
   --surface-border: color-mix(in srgb, var(--border) 86%, transparent);
   --tooth-fill: #cbd5e1;
   --tooth-border: #334155;
-  --tooth-glow:
-    0 0 0 1px rgb(148 163 184 / 0.14), 0 7px 14px rgb(2 6 23 / 0.5);
+  --tooth-glow: 0 0 0 1px rgb(148 163 184 / 0.14), 0 7px 14px rgb(2 6 23 / 0.5);
   background:
-    radial-gradient(circle at top right, rgb(59 130 246 / 0.2), transparent 42%),
+    radial-gradient(
+      circle at top right,
+      rgb(59 130 246 / 0.2),
+      transparent 42%
+    ),
     linear-gradient(
       180deg,
       color-mix(in srgb, var(--card) 92%, #0f172a) 0%,

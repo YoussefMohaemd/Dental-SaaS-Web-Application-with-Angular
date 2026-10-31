@@ -45,7 +45,9 @@ export class OrderAdapter {
     }));
   }
 
-  private adaptCreationData(creationData: ApiOrderItem["creationData"]): Order["creationData"] {
+  private adaptCreationData(
+    creationData: ApiOrderItem["creationData"],
+  ): Order["creationData"] {
     if (!creationData) return undefined;
     return {
       services: creationData.services.map((service) => ({
@@ -59,7 +61,9 @@ export class OrderAdapter {
       communication: creationData.communication
         ? {
             internalCaseNote: creationData.communication.internalCaseNote,
-            internalCaseFiles: [...creationData.communication.internalCaseFiles],
+            internalCaseFiles: [
+              ...creationData.communication.internalCaseFiles,
+            ],
             sendMailTo: [...creationData.communication.sendMailTo],
             sendIhTaskTo: creationData.communication.sendIhTaskTo,
             rushTask: creationData.communication.rushTask,

@@ -56,11 +56,9 @@ export class ReportsDataService extends ReportsApi {
   }
 
   getReportsOverview() {
-    return this.http
-      .get<{ data: ReportsData }>(this.API_URL)
-      .pipe(
-        map((response) => response.data ?? EMPTY_REPORTS),
-        map((response) => this.reportsAdapter.ReportsAdapter(response)),
-      );
+    return this.http.get<{ data: ReportsData }>(this.API_URL).pipe(
+      map((response) => response.data ?? EMPTY_REPORTS),
+      map((response) => this.reportsAdapter.ReportsAdapter(response)),
+    );
   }
 }

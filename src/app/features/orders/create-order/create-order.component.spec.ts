@@ -38,24 +38,24 @@ describe("CreateOrderComponent", () => {
           request.params.get("pageSize") === "100",
       )
       .flush({
-      data: [
-        {
-          id: "p1",
-          name: "Alice Johnson",
-          gender: "F",
-          dob: "1988-04-12",
-          status: "Active",
-          ordersCount: 0,
-          lastVisit: "2024-12-01",
-          email: "alice@example.com",
-          phone: "555-0101",
-          clinicId: "c1",
-          clinicName: "Bright Smile Dental",
-          doctorId: "d1",
-          doctorName: "Dr. Park",
-        },
-      ],
-    });
+        data: [
+          {
+            id: "p1",
+            name: "Alice Johnson",
+            gender: "F",
+            dob: "1988-04-12",
+            status: "Active",
+            ordersCount: 0,
+            lastVisit: "2024-12-01",
+            email: "alice@example.com",
+            phone: "555-0101",
+            clinicId: "c1",
+            clinicName: "Bright Smile Dental",
+            doctorId: "d1",
+            doctorName: "Dr. Park",
+          },
+        ],
+      });
     httpMock
       .expectOne(
         (request) =>
@@ -65,22 +65,22 @@ describe("CreateOrderComponent", () => {
           request.params.get("pageSize") === "100",
       )
       .flush({
-      data: [
-        {
-          id: "d1",
-          lookupId: "2077",
-          name: "Dr. Park",
-          specialty: "Prosthodontics",
-          clinicId: "c1",
-          clinicName: "Bright Smile Dental",
-          status: "Active",
-          email: "dr.park@example.com",
-          phone: "555-0202",
-          ordersCount: 0,
-          joinedDate: "2020-01-01",
-        },
-      ],
-    });
+        data: [
+          {
+            id: "d1",
+            lookupId: "2077",
+            name: "Dr. Park",
+            specialty: "Prosthodontics",
+            clinicId: "c1",
+            clinicName: "Bright Smile Dental",
+            status: "Active",
+            email: "dr.park@example.com",
+            phone: "555-0202",
+            ordersCount: 0,
+            joinedDate: "2020-01-01",
+          },
+        ],
+      });
     httpMock
       .expectOne(
         (request) =>
@@ -90,17 +90,18 @@ describe("CreateOrderComponent", () => {
           request.params.get("pageSize") === "100",
       )
       .flush({
-      data: [
-        {
-          id: "c1",
-          name: "Bright Smile Dental",
-          status: "Active",
-          city: "Seattle",
-        },
-      ],
-    });
+        data: [
+          {
+            id: "c1",
+            name: "Bright Smile Dental",
+            status: "Active",
+            city: "Seattle",
+          },
+        ],
+      });
     const orderRequests = httpMock.match(
-      (request) => request.method === "GET" && request.url === ApiEndpoint.ORDERS,
+      (request) =>
+        request.method === "GET" && request.url === ApiEndpoint.ORDERS,
     );
     expect(orderRequests.length).toBe(2);
     orderRequests.forEach((request) => request.flush({ data: [] }));

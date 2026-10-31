@@ -4,4 +4,3 @@ import { ScanCenter } from "@core/interfaces";
 export abstract class ScanCenterApi {
   abstract getAllScanCenters(): Observable<ScanCenter[]>;
 }
-

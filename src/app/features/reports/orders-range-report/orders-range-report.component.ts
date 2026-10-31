@@ -1,10 +1,7 @@
 import { CommonModule } from "@angular/common";
 import { Component, computed, inject, OnInit, signal } from "@angular/core";
 import { OrderArchiveRecord } from "@core/interfaces";
-import {
-  MonthlyOrderGroup,
-  ServiceMixItem,
-} from "@core/interfaces";
+import { MonthlyOrderGroup, ServiceMixItem } from "@core/interfaces";
 import { FormatUtils } from "@core/services/format-utils.service";
 import { NavigationService } from "@core/services/navigation.service";
 import { ReportingDataService } from "@core/services/reporting-data.service";

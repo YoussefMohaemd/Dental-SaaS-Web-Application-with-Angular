@@ -1,10 +1,6 @@
 export type ToothJaw = "upper" | "lower";
 export type ToothStatus =
-  | "normal"
-  | "planned"
-  | "implant"
-  | "missing"
-  | "extract";
+  "normal" | "planned" | "implant" | "missing" | "extract";
 export type JawFilter = "both" | "upper" | "lower";
 export type ArchSide = "right" | "left";
 

@@ -6,10 +6,7 @@ import { CaseDataService } from "@core/services/case-data.service";
 import { FormatUtils } from "@core/services/format-utils.service";
 import { OrderDataService } from "@core/services/order-data.service";
 import { ReportsDataService } from "@core/services/reports-data.service";
-import {
-  ReportCardSeverity,
-  ReportNavigationCard,
-} from "@core/interfaces";
+import { ReportCardSeverity, ReportNavigationCard } from "@core/interfaces";
 import { AppButtonComponent } from "@shared/components/button/button.component";
 import { DisplayCurrencyPipe } from "@shared/pipes/display-currency.pipe";
 import { ChartConfiguration, ChartData, TooltipItem } from "chart.js";

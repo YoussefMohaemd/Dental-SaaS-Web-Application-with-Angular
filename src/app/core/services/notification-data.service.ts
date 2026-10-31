@@ -124,7 +124,9 @@ export class NotificationDataService extends NotificationApi {
             response.meta.pagination.totalPages > 0
               ? response.meta.pagination.totalPages
               : 1,
-          items: this.notificationAdapter.NotificationAdapter(response.data ?? []),
+          items: this.notificationAdapter.NotificationAdapter(
+            response.data ?? [],
+          ),
         })),
       );
   }

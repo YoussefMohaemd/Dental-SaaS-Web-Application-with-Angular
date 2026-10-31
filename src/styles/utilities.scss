@@ -470,15 +470,27 @@
   background: var(--card) !important;
 }
 
-[data-theme="dark"] .enterprise-prime-table.p-datatable .p-datatable-thead > tr > th {
+[data-theme="dark"]
+  .enterprise-prime-table.p-datatable
+  .p-datatable-thead
+  > tr
+  > th {
   background: color-mix(in srgb, var(--card) 84%, #334155) !important;
 }
 
-[data-theme="dark"] .enterprise-prime-table.p-datatable .p-datatable-tbody > tr > td {
+[data-theme="dark"]
+  .enterprise-prime-table.p-datatable
+  .p-datatable-tbody
+  > tr
+  > td {
   background: color-mix(in srgb, var(--card) 92%, #334155) !important;
 }
 
-[data-theme="dark"] .enterprise-prime-table.p-datatable .p-datatable-tbody > tr:nth-child(even) > td {
+[data-theme="dark"]
+  .enterprise-prime-table.p-datatable
+  .p-datatable-tbody
+  > tr:nth-child(even)
+  > td {
   background: color-mix(in srgb, var(--card) 86%, #334155) !important;
 }
 

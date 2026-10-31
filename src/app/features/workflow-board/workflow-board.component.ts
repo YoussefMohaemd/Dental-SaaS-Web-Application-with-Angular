@@ -161,9 +161,12 @@ export class WorkflowBoardComponent implements OnInit {
     );
 
     if (movedOrder && newStatus && movedOrder.status !== newStatus) {
-      this.orderService.updateOrder$(movedOrder.id, { status: newStatus }).subscribe({
-        error: (error) => console.error("Failed to update order status:", error),
-      });
+      this.orderService
+        .updateOrder$(movedOrder.id, { status: newStatus })
+        .subscribe({
+          error: (error) =>
+            console.error("Failed to update order status:", error),
+        });
     }
 
     this.dragId.set(null);

@@ -656,29 +656,31 @@ export class CreateOrderComponent implements OnDestroy, OnInit {
       })
       .pipe(
         switchMap((createdOrder) =>
-          this.subOrderService.createForOrder$(createdOrder.id, serviceRows).pipe(
-            map(() => createdOrder),
-            catchError((originalError) =>
-              this.orderService.deleteOrder$(createdOrder.id).pipe(
-                map(() => ({
-                  kind: "sub-order-create-failed",
-                  orderId: createdOrder.id,
-                  originalError,
-                  rollbackFailed: false,
-                })),
-                catchError((rollbackError) =>
-                  of({
+          this.subOrderService
+            .createForOrder$(createdOrder.id, serviceRows)
+            .pipe(
+              map(() => createdOrder),
+              catchError((originalError) =>
+                this.orderService.deleteOrder$(createdOrder.id).pipe(
+                  map(() => ({
                     kind: "sub-order-create-failed",
                     orderId: createdOrder.id,
                     originalError,
-                    rollbackFailed: true,
-                    rollbackError,
-                  }),
+                    rollbackFailed: false,
+                  })),
+                  catchError((rollbackError) =>
+                    of({
+                      kind: "sub-order-create-failed",
+                      orderId: createdOrder.id,
+                      originalError,
+                      rollbackFailed: true,
+                      rollbackError,
+                    }),
+                  ),
+                  switchMap((failure) => throwError(() => failure)),
                 ),
-                switchMap((failure) => throwError(() => failure)),
               ),
             ),
-          ),
         ),
       )
       .subscribe({

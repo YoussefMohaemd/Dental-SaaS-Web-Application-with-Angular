@@ -1,5 +1,12 @@
 import { CommonModule } from "@angular/common";
-import { Component, computed, effect, inject, OnInit, signal } from "@angular/core";
+import {
+  Component,
+  computed,
+  effect,
+  inject,
+  OnInit,
+  signal,
+} from "@angular/core";
 import { QuarterReportDetail, ServiceQuarterMetric } from "@core/interfaces";
 import { QuarterCardViewModel } from "@core/interfaces";
 import { NavigationService } from "@core/services/navigation.service";

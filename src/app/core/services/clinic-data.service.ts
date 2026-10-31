@@ -1,6 +1,15 @@
 import { Injectable, signal, computed, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import { EMPTY, catchError, expand, map, Observable, reduce, tap, throwError } from "rxjs";
+import {
+  EMPTY,
+  catchError,
+  expand,
+  map,
+  Observable,
+  reduce,
+  tap,
+  throwError,
+} from "rxjs";
 import { ApiClinicItem, Clinic } from "../interfaces";
 import { ApiEndpoint } from "@core/enum/api.endpoint";
 import { ClinicApi } from "@core/base/clinic.api";
@@ -61,22 +70,22 @@ export class ClinicDataService extends ClinicApi {
           ? this.loadClinicsPage(pageResult.page + 1)
           : EMPTY,
       ),
-      reduce(
-        (all, pageResult) => all.concat(pageResult.items),
-        [] as Clinic[],
-      ),
+      reduce((all, pageResult) => all.concat(pageResult.items), [] as Clinic[]),
     );
   }
 
   createClinic$(
-    payload: Omit<Clinic, "id" | "doctorsCount" | "patientsCount" | "ordersCount">,
+    payload: Omit<
+      Clinic,
+      "id" | "doctorsCount" | "patientsCount" | "ordersCount"
+    >,
   ): Observable<Clinic> {
-    return this.http
-      .post<{ data: ApiClinicItem }>(this.API_URL, payload)
-      .pipe(
-        map((response) => this.clinicAdapter.ClinicAdapter([response.data])[0]),
-        tap((created) => this._clinics.update((current) => [created, ...current])),
-      );
+    return this.http.post<{ data: ApiClinicItem }>(this.API_URL, payload).pipe(
+      map((response) => this.clinicAdapter.ClinicAdapter([response.data])[0]),
+      tap((created) =>
+        this._clinics.update((current) => [created, ...current]),
+      ),
+    );
   }
 
   getClinicById(id: string): Clinic | undefined {

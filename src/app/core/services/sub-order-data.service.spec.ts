@@ -93,9 +93,9 @@ describe("SubOrderDataService", () => {
           request.params.get("pageSize") === "100",
       )
       .flush({
-      data: [{ id: "ord-33" }],
-      meta: { pagination: { page: 1, totalPages: 1 } },
-    });
+        data: [{ id: "ord-33" }],
+        meta: { pagination: { page: 1, totalPages: 1 } },
+      });
     httpMock.expectOne(ApiEndpoint.orderSubOrders("ord-33")).flush({
       data: [
         {
@@ -256,7 +256,9 @@ describe("SubOrderDataService", () => {
       },
     ]);
 
-    const request = httpMock.expectOne(ApiEndpoint.subOrder("ord-7", created.id));
+    const request = httpMock.expectOne(
+      ApiEndpoint.subOrder("ord-7", created.id),
+    );
     expect(request.request.body.scansComplete).toBe(0);
     request.flush({ data: { ...created, scansComplete: 0 } });
   });

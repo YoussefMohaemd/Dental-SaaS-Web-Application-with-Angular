@@ -1,9 +1,6 @@
 import { Injectable } from "@angular/core";
 import { Notification } from "@core/interfaces";
-import {
-  ApiNotificationItem,
-  ApiNotificationResponse,
-} from "@core/interfaces";
+import { ApiNotificationItem, ApiNotificationResponse } from "@core/interfaces";
 
 @Injectable({ providedIn: "root" })
 export class NotificationAdapter {
