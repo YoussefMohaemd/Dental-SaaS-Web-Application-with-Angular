@@ -5,6 +5,7 @@ import { toSignal } from "@angular/core/rxjs-interop";
 import { OrderDataService } from "@core/services/order-data.service";
 import { NavigationService } from "@core/services/navigation.service";
 import { FormatUtils } from "@core/services/format-utils.service";
+import { getApiErrorMessage } from "@shared/utils/api-error";
 import { OrderStatus, WorkflowStage } from "@core/interfaces";
 import { finalize } from "rxjs";
 import { AppButtonComponent } from "@shared/components/button/button.component";
@@ -124,7 +125,9 @@ export class OrderWorkflowComponent implements OnInit {
   readonly stages: WorkflowStage[] = STAGES;
   readonly orderId = computed(() => this.paramMap()?.get("orderId") ?? "");
 
-  readonly order = computed(() => this.orderService.getOrderById(this.orderId()));
+  readonly order = computed(() =>
+    this.orderService.getOrderById(this.orderId()),
+  );
 
   readonly currentIndex = computed(() => {
     const current = this.order();
@@ -173,7 +176,12 @@ export class OrderWorkflowComponent implements OnInit {
       .subscribe({
         error: (error: unknown) => {
           console.error("Failed to advance order:", error);
-          this.workflowError.set(this.extractApiErrorMessage(error));
+          this.workflowError.set(
+            getApiErrorMessage(
+              error,
+              "Unable to move the order to the next stage.",
+            ),
+          );
         },
       });
   }
@@ -188,10 +196,5 @@ export class OrderWorkflowComponent implements OnInit {
 
   getIconSvg(name: string): string {
     return WORKFLOW_ICONS[name] ?? "";
-  }
-
-  private extractApiErrorMessage(error: unknown): string {
-    const payload = error as { error?: { message?: string } } | null | undefined;
-    return payload?.error?.message ?? "Unable to move the order to the next stage.";
   }
 }

@@ -4,16 +4,47 @@ import { provideHttpClientTesting } from "@angular/common/http/testing";
 import {
   ActivatedRoute,
   convertToParamMap,
+  ParamMap,
   provideRouter,
 } from "@angular/router";
-import { of } from "rxjs";
+import { BehaviorSubject } from "rxjs";
 import { OrderFilesComponent } from "./order-files.component";
+import { OrderDataService } from "@core/services/order-data.service";
+import { Order } from "@core/interfaces";
+
+const orderA = {
+  id: "ord-a",
+  orderNumber: "DL-000001",
+  patientId: "pt-1",
+  patientName: "Alice Johnson",
+  status: "New",
+  priority: "Normal",
+} as Order;
+
+const orderB = {
+  id: "ord-b",
+  orderNumber: "DL-000002",
+  patientId: "pt-2",
+  patientName: "Bob Smith",
+  status: "Design",
+  priority: "Urgent",
+} as Order;
+
+const ordersById: Record<string, Order> = {
+  "ord-a": orderA,
+  "ord-b": orderB,
+};
 
 describe("OrderFilesComponent", () => {
   let component: OrderFilesComponent;
   let fixture: ComponentFixture<OrderFilesComponent>;
+  let paramMap$: BehaviorSubject<ParamMap>;
 
   beforeEach(async () => {
+    paramMap$ = new BehaviorSubject(
+      convertToParamMap({ orderId: "missing-order" }),
+    );
+
     await TestBed.configureTestingModule({
       imports: [OrderFilesComponent],
       providers: [
@@ -26,7 +57,14 @@ describe("OrderFilesComponent", () => {
             snapshot: {
               paramMap: convertToParamMap({ orderId: "missing-order" }),
             },
-            paramMap: of(convertToParamMap({ orderId: "missing-order" })),
+            paramMap: paramMap$,
+          },
+        },
+        {
+          provide: OrderDataService,
+          useValue: {
+            loadOrders: jasmine.createSpy("loadOrders"),
+            getOrderById: (id: string) => ordersById[id],
           },
         },
       ],
@@ -63,5 +101,20 @@ describe("OrderFilesComponent", () => {
     expect(component.order()).toBeUndefined();
     fixture.detectChanges();
     expect(fixture.nativeElement.textContent).toContain("Order not found");
+  });
+
+  it("should re-derive orderId() and order() when the route param changes on the same instance", () => {
+    expect(component.orderId()).toBe("missing-order");
+    expect(component.order()).toBeUndefined();
+
+    paramMap$.next(convertToParamMap({ orderId: "ord-a" }));
+    fixture.detectChanges();
+    expect(component.orderId()).toBe("ord-a");
+    expect(component.order()?.id).toBe("ord-a");
+
+    paramMap$.next(convertToParamMap({ orderId: "ord-b" }));
+    fixture.detectChanges();
+    expect(component.orderId()).toBe("ord-b");
+    expect(component.order()?.id).toBe("ord-b");
   });
 });

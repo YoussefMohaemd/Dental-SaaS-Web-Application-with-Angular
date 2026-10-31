@@ -1,6 +1,15 @@
 import { Injectable, signal, computed, inject } from "@angular/core";
 import { HttpClient, HttpParams } from "@angular/common/http";
-import { EMPTY, catchError, expand, map, Observable, reduce, tap, throwError } from "rxjs";
+import {
+  EMPTY,
+  catchError,
+  expand,
+  map,
+  Observable,
+  reduce,
+  tap,
+  throwError,
+} from "rxjs";
 import { ApiOrderItem, Order, OrdersViewState } from "../interfaces";
 import { ApiEndpoint } from "@core/enum/api.endpoint";
 import { OrdersApi } from "@core/base/orders.api";
@@ -99,6 +108,10 @@ export class OrderDataService extends OrdersApi {
   private readonly API_URL = ApiEndpoint.ORDERS;
 
   private readonly _orders = signal<Order[]>([]);
+  // By-id cache for orders fetched/mutated individually. It is consulted by
+  // getOrderById() FIRST so that list loads (applyLoadSuccess) can never wipe
+  // an order that was fetched by id (deep-link scenario).
+  private readonly orderByIdCache = new Map<string, Order>();
   private readonly _loading = signal<boolean>(false);
   private readonly _error = signal<string | null>(null);
   private snapshotOrders: Order[] = [];
@@ -155,7 +168,11 @@ export class OrderDataService extends OrdersApi {
           this.applyLoadSuccess(pageResult.items, pageResult.pagination);
         },
         error: () => {
-          this.applyLoadError({ ...this._pagination(), totalItems: 0, totalPages: 1 });
+          this.applyLoadError({
+            ...this._pagination(),
+            totalItems: 0,
+            totalPages: 1,
+          });
         },
       });
   }
@@ -201,19 +218,21 @@ export class OrderDataService extends OrdersApi {
   }
 
   getOrderById$(id: string): Observable<Order> {
-    return this.http
-      .get<{ data: ApiOrderItem }>(`${this.API_URL}/${id}`)
-      .pipe(
-        map((response) => this.orderAdapter.OrdersAdapter([response.data])[0]),
-        tap((order) => {
-          this._orders.update((orders) => this.upsertOrder(orders, order));
-          this.snapshotOrders = this.upsertOrder(this.snapshotOrders, order);
-        }),
-      );
+    return this.http.get<{ data: ApiOrderItem }>(`${this.API_URL}/${id}`).pipe(
+      map((response) => this.orderAdapter.OrdersAdapter([response.data])[0]),
+      tap((order) => {
+        this.rememberOrder(order);
+        this._orders.update((orders) => this.upsertOrder(orders, order));
+        this.snapshotOrders = this.upsertOrder(this.snapshotOrders, order);
+      }),
+    );
   }
 
   createOrder$(
-    payload: Omit<Order, "id" | "orderNumber" | "receivedAt" | "updatedAt" | "createdAt">,
+    payload: Omit<
+      Order,
+      "id" | "orderNumber" | "receivedAt" | "updatedAt" | "createdAt"
+    >,
   ): Observable<Order> {
     const body = {
       ...this.toApiOrderPayload(payload),
@@ -221,24 +240,17 @@ export class OrderDataService extends OrdersApi {
       receivedAt: new Date().toISOString(),
     };
 
-    return this.http
-      .post<{ data: ApiOrderItem }>(
-        this.API_URL,
-        body,
-      )
-      .pipe(
-        map((response) => this.orderAdapter.OrdersAdapter([response.data])[0]),
-        tap((created) => {
-          this._orders.update((orders) => [created, ...orders]);
-          this.snapshotOrders = [created, ...this.snapshotOrders];
-        }),
-      );
+    return this.http.post<{ data: ApiOrderItem }>(this.API_URL, body).pipe(
+      map((response) => this.orderAdapter.OrdersAdapter([response.data])[0]),
+      tap((created) => {
+        this.rememberOrder(created);
+        this._orders.update((orders) => [created, ...orders]);
+        this.snapshotOrders = [created, ...this.snapshotOrders];
+      }),
+    );
   }
 
-  updateOrder$(
-    id: string,
-    updates: OrderMutation,
-  ): Observable<Order> {
+  updateOrder$(id: string, updates: OrderMutation): Observable<Order> {
     return this.http
       .patch<{ data: ApiOrderItem }>(
         `${this.API_URL}/${id}`,
@@ -247,8 +259,15 @@ export class OrderDataService extends OrdersApi {
       .pipe(
         map((response) => this.orderAdapter.OrdersAdapter([response.data])[0]),
         tap((updated) => {
-          this._orders.update((orders) => this.replaceOrder(orders, id, updated));
-          this.snapshotOrders = this.replaceOrder(this.snapshotOrders, id, updated);
+          this.rememberOrder(updated);
+          this._orders.update((orders) =>
+            this.replaceOrder(orders, id, updated),
+          );
+          this.snapshotOrders = this.replaceOrder(
+            this.snapshotOrders,
+            id,
+            updated,
+          );
         }),
       );
   }
@@ -256,6 +275,7 @@ export class OrderDataService extends OrdersApi {
   deleteOrder$(id: string): Observable<void> {
     return this.http.delete<void>(`${this.API_URL}/${id}`).pipe(
       tap(() => {
+        this.forgetOrder(id);
         this._orders.update((orders) => this.removeOrder(orders, id));
         this.snapshotOrders = this.removeOrder(this.snapshotOrders, id);
       }),
@@ -298,7 +318,9 @@ export class OrderDataService extends OrdersApi {
   }
 
   getOrderById(id: string): Order | undefined {
-    return this._orders().find((o) => o.id === id);
+    return (
+      this.orderByIdCache.get(id) ?? this._orders().find((o) => o.id === id)
+    );
   }
 
   getOrdersByPatient(patientId: string): Order[] {
@@ -324,6 +346,7 @@ export class OrderDataService extends OrdersApi {
       updatedAt: new Date().toISOString(),
     };
     this._orders.update((orders) => [newOrder, ...orders]);
+    this.rememberOrder(newOrder);
     return newOrder;
   }
 
@@ -338,6 +361,9 @@ export class OrderDataService extends OrdersApi {
         return o;
       }),
     );
+    if (updated !== null) {
+      this.rememberOrder(updated);
+    }
     return updated;
   }
 
@@ -351,16 +377,17 @@ export class OrderDataService extends OrdersApi {
       }
       return orders;
     });
+    if (deleted) {
+      this.forgetOrder(id);
+    }
     return deleted;
   }
 
-  private toApiOrderPayload(
-    payload: OrderMutation,
-  ): Record<string, unknown> {
+  private toApiOrderPayload(payload: OrderMutation): Record<string, unknown> {
     return Object.fromEntries(
-      ORDER_MUTATION_FIELDS
-        .filter((key) => payload[key] !== undefined && payload[key] !== "")
-        .map((key) => [key, payload[key]]),
+      ORDER_MUTATION_FIELDS.filter(
+        (key) => payload[key] !== undefined && payload[key] !== "",
+      ).map((key) => [key, payload[key]]),
     );
   }
 
@@ -387,35 +414,32 @@ export class OrderDataService extends OrdersApi {
       params = params.set("service", query.service.join(","));
     }
 
-    return this.http
-      .get<OrdersPageResponse>(this.API_URL, { params })
-      .pipe(
-        map((response) => ({
-          items: this.orderAdapter.OrdersAdapter(response.data ?? []),
-          pagination: {
-            page:
-              response.meta?.pagination?.page &&
-              response.meta.pagination.page > 0
-                ? response.meta.pagination.page
-                : query.page ?? 1,
-            pageSize:
-              response.meta?.pagination?.pageSize &&
-              response.meta.pagination.pageSize > 0
-                ? response.meta.pagination.pageSize
-                : query.pageSize ?? OrderDataService.PAGE_SIZE,
-            totalItems:
-              response.meta?.pagination?.totalItems &&
-              response.meta.pagination.totalItems >= 0
-                ? response.meta.pagination.totalItems
-                : response.data?.length ?? 0,
-            totalPages:
-              response.meta?.pagination?.totalPages &&
-              response.meta.pagination.totalPages > 0
-                ? response.meta.pagination.totalPages
-                : 1,
-          },
-        })),
-      );
+    return this.http.get<OrdersPageResponse>(this.API_URL, { params }).pipe(
+      map((response) => ({
+        items: this.orderAdapter.OrdersAdapter(response.data ?? []),
+        pagination: {
+          page:
+            response.meta?.pagination?.page && response.meta.pagination.page > 0
+              ? response.meta.pagination.page
+              : (query.page ?? 1),
+          pageSize:
+            response.meta?.pagination?.pageSize &&
+            response.meta.pagination.pageSize > 0
+              ? response.meta.pagination.pageSize
+              : (query.pageSize ?? OrderDataService.PAGE_SIZE),
+          totalItems:
+            response.meta?.pagination?.totalItems &&
+            response.meta.pagination.totalItems >= 0
+              ? response.meta.pagination.totalItems
+              : (response.data?.length ?? 0),
+          totalPages:
+            response.meta?.pagination?.totalPages &&
+            response.meta.pagination.totalPages > 0
+              ? response.meta.pagination.totalPages
+              : 1,
+        },
+      })),
+    );
   }
 
   private loadAllOrdersPages(
@@ -455,7 +479,9 @@ export class OrderDataService extends OrdersApi {
   }
 
   private upsertOrder(orders: readonly Order[], order: Order): Order[] {
-    const existingIndex = orders.findIndex((candidate) => candidate.id === order.id);
+    const existingIndex = orders.findIndex(
+      (candidate) => candidate.id === order.id,
+    );
     if (existingIndex === -1) {
       return [order, ...orders];
     }
@@ -465,11 +491,30 @@ export class OrderDataService extends OrdersApi {
     );
   }
 
-  private applyLoadSuccess(items: Order[], pagination: OrderPaginationState): void {
+  private rememberOrder(order: Order): void {
+    this.orderByIdCache.set(order.id, order);
+  }
+
+  private forgetOrder(id: string): void {
+    this.orderByIdCache.delete(id);
+  }
+
+  private applyLoadSuccess(
+    items: Order[],
+    pagination: OrderPaginationState,
+  ): void {
     this._orders.set(items);
     this._pagination.set(pagination);
     this.snapshotOrders = [...items];
     this._loading.set(false);
+    // Refresh (but never add to) the by-id cache so cached deep-linked orders
+    // that also appear on the loaded page stay fresh. Orders absent from the
+    // page keep their cached copy — list loads must not wipe them.
+    for (const item of items) {
+      if (this.orderByIdCache.has(item.id)) {
+        this.rememberOrder(item);
+      }
+    }
   }
 
   private applyLoadError(pagination: OrderPaginationState): void {
@@ -480,7 +525,11 @@ export class OrderDataService extends OrdersApi {
     this._loading.set(false);
   }
 
-  private replaceOrder(orders: readonly Order[], id: string, updated: Order): Order[] {
+  private replaceOrder(
+    orders: readonly Order[],
+    id: string,
+    updated: Order,
+  ): Order[] {
     return orders.map((order) => (order.id === id ? updated : order));
   }
 

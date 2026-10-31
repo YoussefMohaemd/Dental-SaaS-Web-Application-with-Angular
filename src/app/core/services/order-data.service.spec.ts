@@ -235,6 +235,100 @@ describe("OrderDataService", () => {
     expect(service.getOrderById("ord-99")?.id).toBe("ord-99");
   });
 
+  it("should keep an order fetched by id when a later page load omits it", () => {
+    service.getOrderById$("ord-99").subscribe();
+    httpMock.expectOne(`${ApiEndpoint.ORDERS}/ord-99`).flush({
+      data: {
+        id: "ord-99",
+        orderNumber: "DL-099999",
+        patientId: "pt-1",
+        patientName: "Alice Johnson",
+        doctorId: "dr-1",
+        doctorName: "Dr. Park",
+        clinicId: "cl-1",
+        clinicName: "Bright Smile Dental",
+        scanCenterId: "scan-1",
+        scanCenterName: "Main Scan Center",
+        status: "Review",
+        priority: "Normal",
+        restoration: "Crown",
+        arch: "Maxilla",
+        format: "STL",
+        shade: "A2",
+        units: 1,
+        amount: 250,
+        billed: false,
+        billTo: "Bright Smile Dental",
+        vouchers: 0,
+        isLocked: false,
+        hasNotes: false,
+        notes: "Deep-linked order",
+        receivedAt: "2026-09-26T10:00:00.000Z",
+        updatedAt: "2026-09-26T10:00:00.000Z",
+        dueDate: "2026-10-01",
+      },
+    });
+
+    expect(service.getOrderById("ord-99")?.id).toBe("ord-99");
+
+    // Simulates the destination page's ngOnInit list load whose response
+    // does NOT include the deep-linked order (e.g. it lives on another page).
+    service.loadOrders();
+    httpMock
+      .expectOne((req) => req.url === ApiEndpoint.ORDERS)
+      .flush({
+        data: [
+          {
+            id: "ord-1",
+            orderNumber: "DL-000001",
+            patientId: "pt-2",
+            doctorId: "dr-1",
+            clinicId: "cl-1",
+            status: "New",
+          },
+        ],
+        meta: {
+          pagination: { page: 1, pageSize: 20, totalItems: 1, totalPages: 1 },
+        },
+      });
+
+    expect(service.orders().length).toBe(1);
+    expect(service.orders()[0].id).toBe("ord-1");
+    expect(service.getOrderById("ord-99")?.id).toBe("ord-99");
+    expect(service.getOrderById("ord-99")?.notes).toBe("Deep-linked order");
+  });
+
+  it("should keep the by-id cache fresh across update and delete", () => {
+    service.getOrderById$("ord-99").subscribe();
+    httpMock.expectOne(`${ApiEndpoint.ORDERS}/ord-99`).flush({
+      data: {
+        id: "ord-99",
+        orderNumber: "DL-099999",
+        patientId: "pt-1",
+        status: "Review",
+        notes: "Before update",
+      },
+    });
+
+    service.updateOrder$("ord-99", { notes: "After update" }).subscribe();
+    httpMock.expectOne(`${ApiEndpoint.ORDERS}/ord-99`).flush({
+      data: {
+        id: "ord-99",
+        orderNumber: "DL-099999",
+        patientId: "pt-1",
+        status: "Review",
+        notes: "After update",
+      },
+    });
+
+    expect(service.getOrderById("ord-99")?.notes).toBe("After update");
+
+    service.deleteOrder$("ord-99").subscribe();
+    httpMock.expectOne(`${ApiEndpoint.ORDERS}/ord-99`).flush({});
+
+    expect(service.getOrderById("ord-99")).toBeUndefined();
+  });
+
   it("should load all order pages for aggregate views", () => {
     service.loadAllOrders();
 
@@ -255,7 +349,9 @@ describe("OrderDataService", () => {
           status: "New",
         },
       ],
-      meta: { pagination: { page: 1, pageSize: 100, totalItems: 3, totalPages: 2 } },
+      meta: {
+        pagination: { page: 1, pageSize: 100, totalItems: 3, totalPages: 2 },
+      },
     });
 
     const secondPageRequest = httpMock.expectOne(
@@ -283,7 +379,9 @@ describe("OrderDataService", () => {
           status: "Design",
         },
       ],
-      meta: { pagination: { page: 2, pageSize: 100, totalItems: 3, totalPages: 2 } },
+      meta: {
+        pagination: { page: 2, pageSize: 100, totalItems: 3, totalPages: 2 },
+      },
     });
 
     expect(service.orders().length).toBe(3);

@@ -88,8 +88,7 @@ const IMAGE_FILE_TYPES = new Set(["JPG", "PNG"]);
 const SCAN_FILE_TYPES = new Set(["STL", "PLY", "OBJ", "DCM"]);
 
 const ORDER_FILE_ACTION_ICONS = {
-  back:
-    '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>',
+  back: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>',
   preview:
     '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>',
   download:
@@ -138,7 +137,9 @@ export class OrderFilesComponent implements OnInit {
   readonly uploadMessage = signal<string | null>(null);
   readonly orderId = computed(() => this.paramMap()?.get("orderId") ?? "");
 
-  readonly order = computed(() => this.orderService.getOrderById(this.orderId()));
+  readonly order = computed(() =>
+    this.orderService.getOrderById(this.orderId()),
+  );
 
   readonly uploadedFiles = computed(() =>
     this.files().filter((f) => f.status === "uploaded"),
@@ -195,7 +196,12 @@ export class OrderFilesComponent implements OnInit {
     const additions: OrderFileEntry[] = [];
 
     for (const [index, file] of Array.from(fileList).slice(0, 10).entries()) {
-      const nextEntry = this.toUploadingEntry(file, index, existingNames, rejected);
+      const nextEntry = this.toUploadingEntry(
+        file,
+        index,
+        existingNames,
+        rejected,
+      );
       if (nextEntry) {
         additions.push(nextEntry);
       }
@@ -214,9 +220,7 @@ export class OrderFilesComponent implements OnInit {
   retryUpload(fileId: string): void {
     this.files.update((current) =>
       current.map((f) =>
-        f.id === fileId
-          ? { ...f, status: "uploading", progress: 8 }
-          : f,
+        f.id === fileId ? { ...f, status: "uploading", progress: 8 } : f,
       ),
     );
     this.simulateUpload(fileId);

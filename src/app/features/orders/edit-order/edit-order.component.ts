@@ -24,6 +24,7 @@ import { AppTextFieldComponent } from "@shared/components/input/input.component"
 import { AppSelectComponent } from "@shared/components/select/select.component";
 import { TeethChartComponent } from "@shared/components/teeth-chart/teeth-chart.component";
 import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
+import { getApiErrorMessage } from "@shared/utils/api-error";
 import { statusDisplayLabel } from "@shared/utils/status-label";
 import {
   ArchType,
@@ -117,7 +118,10 @@ export class EditOrderComponent implements OnDestroy, OnInit {
   readonly patientAutocompleteQuery = signal("");
   readonly doctorAutocompleteQuery = signal("");
 
-  private readonly autocompleteTimers: Record<"patient" | "doctor", number | null> = {
+  private readonly autocompleteTimers: Record<
+    "patient" | "doctor",
+    number | null
+  > = {
     patient: null,
     doctor: null,
   };
@@ -127,7 +131,9 @@ export class EditOrderComponent implements OnDestroy, OnInit {
   });
   readonly orderId = computed(() => this.paramMap()?.get("orderId") ?? "");
 
-  readonly order = computed(() => this.orderService.getOrderById(this.orderId()));
+  readonly order = computed(() =>
+    this.orderService.getOrderById(this.orderId()),
+  );
 
   readonly editForm = this.fb.nonNullable.group({
     patientName: ["", Validators.required],
@@ -491,7 +497,12 @@ export class EditOrderComponent implements OnDestroy, OnInit {
     const dueDate = raw.dueDate || current.dueDate || this.defaultDueDate();
     const selectedServices = this.selectedServices();
     const allTeeth = this.collectAllTeeth();
-    const rows = this.buildServiceRows(raw.priority, dueDate, selectedServices, current);
+    const rows = this.buildServiceRows(
+      raw.priority,
+      dueDate,
+      selectedServices,
+      current,
+    );
 
     this.orderService
       .updateOrder$(current.id, {
@@ -533,13 +544,17 @@ export class EditOrderComponent implements OnDestroy, OnInit {
             },
             error: (error) => {
               console.error("Failed to save sub-orders:", error);
-              this.saveError.set(this.extractApiErrorMessage(error, "Failed to save sub-orders."));
+              this.saveError.set(
+                getApiErrorMessage(error, "Failed to save sub-orders."),
+              );
             },
           });
         },
         error: (error) => {
           console.error("Failed to update order:", error);
-          this.saveError.set(this.extractApiErrorMessage(error, "Failed to update order."));
+          this.saveError.set(
+            getApiErrorMessage(error, "Failed to update order."),
+          );
         },
       });
   }
@@ -694,7 +709,9 @@ export class EditOrderComponent implements OnDestroy, OnInit {
     return "other";
   }
 
-  private toServiceArch(arch: ArchType): "Maxilla (Upper)" | "Mandible (Lower)" | "Both" {
+  private toServiceArch(
+    arch: ArchType,
+  ): "Maxilla (Upper)" | "Mandible (Lower)" | "Both" {
     if (arch === "Maxilla") return "Maxilla (Upper)";
     if (arch === "Mandible") return "Mandible (Lower)";
     return "Both";
@@ -791,7 +808,9 @@ export class EditOrderComponent implements OnDestroy, OnInit {
     this.clearAutocompleteTimer(type);
     this.autocompleteTimers[type] = window.setTimeout(() => {
       const query =
-        type === "patient" ? this.patientAutocompleteQuery : this.doctorAutocompleteQuery;
+        type === "patient"
+          ? this.patientAutocompleteQuery
+          : this.doctorAutocompleteQuery;
       query.set(value);
     }, EditOrderComponent.AUTOCOMPLETE_DEBOUNCE_MS);
   }
@@ -809,27 +828,5 @@ export class EditOrderComponent implements OnDestroy, OnInit {
     }
 
     this.navigationService.navigate("orders");
-  }
-
-  private extractApiErrorMessage(error: unknown, fallback: string): string {
-    const payload = error as {
-      error?: {
-        error?: {
-          message?: unknown;
-        };
-        message?: unknown;
-      };
-    };
-    const nestedMessage = payload.error?.error?.message;
-    if (typeof nestedMessage === "string" && nestedMessage.trim().length > 0) {
-      return nestedMessage;
-    }
-
-    const directMessage = payload.error?.message;
-    if (typeof directMessage === "string" && directMessage.trim().length > 0) {
-      return directMessage;
-    }
-
-    return fallback;
   }
 }
