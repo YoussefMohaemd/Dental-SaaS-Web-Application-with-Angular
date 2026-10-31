@@ -190,6 +190,51 @@ describe("OrderDataService", () => {
     expect(service.orders().length).toBe(1);
   });
 
+  it("should cache an order fetched by id", () => {
+    let fetchedId: string | undefined;
+
+    service.getOrderById$("ord-99").subscribe((order) => {
+      fetchedId = order.id;
+    });
+
+    const request = httpMock.expectOne(`${ApiEndpoint.ORDERS}/ord-99`);
+    expect(request.request.method).toBe("GET");
+    request.flush({
+      data: {
+        id: "ord-99",
+        orderNumber: "DL-099999",
+        patientId: "pt-1",
+        patientName: "Alice Johnson",
+        doctorId: "dr-1",
+        doctorName: "Dr. Park",
+        clinicId: "cl-1",
+        clinicName: "Bright Smile Dental",
+        scanCenterId: "scan-1",
+        scanCenterName: "Main Scan Center",
+        status: "Review",
+        priority: "Normal",
+        restoration: "Crown",
+        arch: "Maxilla",
+        format: "STL",
+        shade: "A2",
+        units: 1,
+        amount: 250,
+        billed: false,
+        billTo: "Bright Smile Dental",
+        vouchers: 0,
+        isLocked: false,
+        hasNotes: false,
+        notes: "",
+        receivedAt: "2026-09-26T10:00:00.000Z",
+        updatedAt: "2026-09-26T10:00:00.000Z",
+        dueDate: "2026-10-01",
+      },
+    });
+
+    expect(fetchedId).toBe("ord-99");
+    expect(service.getOrderById("ord-99")?.id).toBe("ord-99");
+  });
+
   it("should load all order pages for aggregate views", () => {
     service.loadAllOrders();
 

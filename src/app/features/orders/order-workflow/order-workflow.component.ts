@@ -1,11 +1,11 @@
 import { Component, computed, inject, OnInit, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { ActivatedRoute } from "@angular/router";
+import { toSignal } from "@angular/core/rxjs-interop";
 import { OrderDataService } from "@core/services/order-data.service";
 import { NavigationService } from "@core/services/navigation.service";
 import { FormatUtils } from "@core/services/format-utils.service";
-import { OrderStatus } from "@core/interfaces";
-import { WorkflowStage } from "@core/interfaces";
+import { OrderStatus, WorkflowStage } from "@core/interfaces";
 import { finalize } from "rxjs";
 import { AppButtonComponent } from "@shared/components/button/button.component";
 import { IconActionButtonComponent } from "@shared/components/icon-action-button/icon-action-button.component";
@@ -86,6 +86,13 @@ const STAGES: WorkflowStage[] = [
   },
 ];
 
+const WORKFLOW_ICONS: Readonly<Record<string, string>> = {
+  "arrow-left":
+    '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>',
+  "chevron-right":
+    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>',
+};
+
 @Component({
   selector: "app-order-workflow",
   standalone: true,
@@ -104,6 +111,9 @@ export class OrderWorkflowComponent implements OnInit {
   private readonly orderService = inject(OrderDataService);
   protected readonly navigationService = inject(NavigationService);
   protected readonly formatUtils = inject(FormatUtils);
+  private readonly paramMap = toSignal(this.route.paramMap, {
+    initialValue: null,
+  });
 
   ngOnInit(): void {
     this.orderService.loadOrders();
@@ -112,11 +122,9 @@ export class OrderWorkflowComponent implements OnInit {
   readonly advancing = signal(false);
   readonly workflowError = signal<string | null>(null);
   readonly stages: WorkflowStage[] = STAGES;
+  readonly orderId = computed(() => this.paramMap()?.get("orderId") ?? "");
 
-  readonly order = computed(() => {
-    const orderId = this.route.snapshot.paramMap.get("orderId");
-    return this.orderService.getOrderById(orderId ?? "");
-  });
+  readonly order = computed(() => this.orderService.getOrderById(this.orderId()));
 
   readonly currentIndex = computed(() => {
     const current = this.order();
@@ -138,9 +146,12 @@ export class OrderWorkflowComponent implements OnInit {
 
   goBack(): void {
     const current = this.order();
-    if (current)
+    if (current) {
       this.navigationService.navigate("viewOrder", { orderId: current.id });
-    else this.navigationService.navigate("orders");
+      return;
+    }
+
+    this.navigationService.navigate("orders");
   }
 
   isStageDone(index: number): boolean {
@@ -160,11 +171,9 @@ export class OrderWorkflowComponent implements OnInit {
       .updateOrder$(current.id, { status: target.status })
       .pipe(finalize(() => this.advancing.set(false)))
       .subscribe({
-        error: (error) => {
+        error: (error: unknown) => {
           console.error("Failed to advance order:", error);
-          this.workflowError.set(
-            error?.error?.message ?? "Unable to move the order to the next stage.",
-          );
+          this.workflowError.set(this.extractApiErrorMessage(error));
         },
       });
   }
@@ -178,12 +187,11 @@ export class OrderWorkflowComponent implements OnInit {
   }
 
   getIconSvg(name: string): string {
-    const icons: Record<string, string> = {
-      "arrow-left":
-        '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>',
-      "chevron-right":
-        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>',
-    };
-    return icons[name] || "";
+    return WORKFLOW_ICONS[name] ?? "";
+  }
+
+  private extractApiErrorMessage(error: unknown): string {
+    const payload = error as { error?: { message?: string } } | null | undefined;
+    return payload?.error?.message ?? "Unable to move the order to the next stage.";
   }
 }

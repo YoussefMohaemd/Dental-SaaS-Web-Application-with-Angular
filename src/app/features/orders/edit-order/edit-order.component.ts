@@ -10,12 +10,14 @@ import {
 import { CommonModule } from "@angular/common";
 import { ReactiveFormsModule, FormBuilder, Validators } from "@angular/forms";
 import { ActivatedRoute } from "@angular/router";
+import { toSignal } from "@angular/core/rxjs-interop";
 import { OrderDataService } from "@core/services/order-data.service";
 import { PatientDataService } from "@core/services/patient-data.service";
 import { DoctorDataService } from "@core/services/doctor-data.service";
 import { ClinicDataService } from "@core/services/clinic-data.service";
 import { NavigationService } from "@core/services/navigation.service";
 import { SubOrderDataService } from "@core/services/sub-order-data.service";
+import type { CreateSubOrderInput } from "@core/services/sub-order-data.service";
 import { AppButtonComponent } from "@shared/components/button/button.component";
 import { IconActionButtonComponent } from "@shared/components/icon-action-button/icon-action-button.component";
 import { AppTextFieldComponent } from "@shared/components/input/input.component";
@@ -25,6 +27,7 @@ import { SafeHtmlPipe } from "@shared/pipes/safe-html.pipe";
 import { statusDisplayLabel } from "@shared/utils/status-label";
 import {
   ArchType,
+  CreateOrderService,
   Order,
   Patient,
   Doctor,
@@ -51,6 +54,15 @@ import {
   serviceRequiresTeeth,
   SHADES,
 } from "../order-flow.utils";
+
+const EDIT_ORDER_ICONS: Readonly<Record<string, string>> = {
+  "arrow-left":
+    '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>',
+  x: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>',
+  save: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>',
+  check:
+    '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+};
 
 @Component({
   selector: "app-edit-order",
@@ -105,14 +117,17 @@ export class EditOrderComponent implements OnDestroy, OnInit {
   readonly patientAutocompleteQuery = signal("");
   readonly doctorAutocompleteQuery = signal("");
 
-  private patientAutocompleteTimer: number | null = null;
-  private doctorAutocompleteTimer: number | null = null;
+  private readonly autocompleteTimers: Record<"patient" | "doctor", number | null> = {
+    patient: null,
+    doctor: null,
+  };
   private readonly hydratedOrderId = signal<string | null>(null);
-
-  readonly order = computed(() => {
-    const orderId = this.route.snapshot.paramMap.get("orderId");
-    return this.orderService.getOrderById(orderId ?? "");
+  private readonly paramMap = toSignal(this.route.paramMap, {
+    initialValue: null,
   });
+  readonly orderId = computed(() => this.paramMap()?.get("orderId") ?? "");
+
+  readonly order = computed(() => this.orderService.getOrderById(this.orderId()));
 
   readonly editForm = this.fb.nonNullable.group({
     patientName: ["", Validators.required],
@@ -408,9 +423,7 @@ export class EditOrderComponent implements OnDestroy, OnInit {
 
   discard(): void {
     const current = this.order();
-    if (current)
-      this.navigationService.navigate("viewOrder", { orderId: current.id });
-    else this.navigationService.navigate("orders");
+    this.navigateToOrderOrList(current?.id);
   }
 
   saveChanges(): void {
@@ -478,35 +491,7 @@ export class EditOrderComponent implements OnDestroy, OnInit {
     const dueDate = raw.dueDate || current.dueDate || this.defaultDueDate();
     const selectedServices = this.selectedServices();
     const allTeeth = this.collectAllTeeth();
-    const rows = selectedServices.map((service) => {
-      const selectedTeeth = this.teethForService(service.id);
-      const details = this.getServiceDetail(service.id);
-      const serviceForm = this.getServiceForm(service.id);
-      const creationData: SubOrderCreationData = {
-        serviceId: service.id,
-        serviceDetails: { ...details },
-        serviceForm: { ...serviceForm },
-        selectedTeeth: [...selectedTeeth],
-        scanRequirements: [...service.scanRequirements],
-        fileReferences:
-          current.creationData?.services
-            .find((entry) => entry.serviceId === service.id)
-            ?.fileReferences.slice() ?? [],
-      };
-      return {
-        serviceId: service.id,
-        service: service.name,
-        icon: service.icon,
-        priority: raw.priority as Order["priority"],
-        dueDate,
-        notes:
-          this.labNotesValue(service.id).trim() ||
-          this.fallbackServiceNote(service.name, selectedTeeth),
-        teeth: [...selectedTeeth],
-        scanRequirements: [...service.scanRequirements],
-        creationData,
-      };
-    });
+    const rows = this.buildServiceRows(raw.priority, dueDate, selectedServices, current);
 
     this.orderService
       .updateOrder$(current.id, {
@@ -548,21 +533,13 @@ export class EditOrderComponent implements OnDestroy, OnInit {
             },
             error: (error) => {
               console.error("Failed to save sub-orders:", error);
-              this.saveError.set(
-                error?.error?.error?.message ??
-                  error?.error?.message ??
-                  "Failed to save sub-orders.",
-              );
+              this.saveError.set(this.extractApiErrorMessage(error, "Failed to save sub-orders."));
             },
           });
         },
         error: (error) => {
           console.error("Failed to update order:", error);
-          this.saveError.set(
-            error?.error?.error?.message ??
-              error?.error?.message ??
-              "Failed to update order.",
-          );
+          this.saveError.set(this.extractApiErrorMessage(error, "Failed to update order."));
         },
       });
   }
@@ -572,15 +549,7 @@ export class EditOrderComponent implements OnDestroy, OnInit {
   }
 
   getIconSvg(name: string): string {
-    const icons: Record<string, string> = {
-      "arrow-left":
-        '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>',
-      x: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>',
-      save: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>',
-      check:
-        '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
-    };
-    return icons[name] || "";
+    return EDIT_ORDER_ICONS[name] ?? "";
   }
 
   statusLabel(status: string): string {
@@ -590,6 +559,44 @@ export class EditOrderComponent implements OnDestroy, OnInit {
   ngOnDestroy(): void {
     this.clearAutocompleteTimer("patient");
     this.clearAutocompleteTimer("doctor");
+  }
+
+  private buildServiceRows(
+    priority: string,
+    dueDate: string,
+    selectedServices: CreateOrderService[],
+    current: Order,
+  ): CreateSubOrderInput[] {
+    const rowPriority = priority as Order["priority"];
+    return selectedServices.map((service) => {
+      const selectedTeeth = this.teethForService(service.id);
+      const details = this.getServiceDetail(service.id);
+      const serviceForm = this.getServiceForm(service.id);
+      const creationData: SubOrderCreationData = {
+        serviceId: service.id,
+        serviceDetails: { ...details },
+        serviceForm: { ...serviceForm },
+        selectedTeeth: [...selectedTeeth],
+        scanRequirements: [...service.scanRequirements],
+        fileReferences:
+          current.creationData?.services
+            .find((entry) => entry.serviceId === service.id)
+            ?.fileReferences.slice() ?? [],
+      };
+      return {
+        serviceId: service.id,
+        service: service.name,
+        icon: service.icon,
+        priority: rowPriority,
+        dueDate,
+        notes:
+          this.labNotesValue(service.id).trim() ||
+          this.fallbackServiceNote(service.name, selectedTeeth),
+        teeth: [...selectedTeeth],
+        scanRequirements: [...service.scanRequirements],
+        creationData,
+      };
+    });
   }
 
   private hydrateFromOrder(order: Order): void {
@@ -651,12 +658,7 @@ export class EditOrderComponent implements OnDestroy, OnInit {
           serviceNotes: subOrder.notes,
           shade: order.shade,
           fileFormat: order.format,
-          arch:
-            order.arch === "Maxilla"
-              ? "Maxilla (Upper)"
-              : order.arch === "Mandible"
-                ? "Mandible (Lower)"
-                : "Both",
+          arch: this.toServiceArch(order.arch),
         };
       }
       if (!(serviceId in nextForms)) {
@@ -690,6 +692,12 @@ export class EditOrderComponent implements OnDestroy, OnInit {
     if (order.restoration === "Bridge") return "fmb";
     if (order.restoration === "Veneer") return "final-restoration";
     return "other";
+  }
+
+  private toServiceArch(arch: ArchType): "Maxilla (Upper)" | "Mandible (Lower)" | "Both" {
+    if (arch === "Maxilla") return "Maxilla (Upper)";
+    if (arch === "Mandible") return "Mandible (Lower)";
+    return "Both";
   }
 
   private ensureServiceState(serviceId: string): void {
@@ -781,22 +789,47 @@ export class EditOrderComponent implements OnDestroy, OnInit {
     value: string,
   ): void {
     this.clearAutocompleteTimer(type);
-    const timer = window.setTimeout(() => {
-      if (type === "patient") this.patientAutocompleteQuery.set(value);
-      else this.doctorAutocompleteQuery.set(value);
+    this.autocompleteTimers[type] = window.setTimeout(() => {
+      const query =
+        type === "patient" ? this.patientAutocompleteQuery : this.doctorAutocompleteQuery;
+      query.set(value);
     }, EditOrderComponent.AUTOCOMPLETE_DEBOUNCE_MS);
-
-    if (type === "patient") this.patientAutocompleteTimer = timer;
-    else this.doctorAutocompleteTimer = timer;
   }
 
   private clearAutocompleteTimer(type: "patient" | "doctor"): void {
-    const current =
-      type === "patient"
-        ? this.patientAutocompleteTimer
-        : this.doctorAutocompleteTimer;
-    if (current !== null) window.clearTimeout(current);
-    if (type === "patient") this.patientAutocompleteTimer = null;
-    else this.doctorAutocompleteTimer = null;
+    const timer = this.autocompleteTimers[type];
+    if (timer !== null) window.clearTimeout(timer);
+    this.autocompleteTimers[type] = null;
+  }
+
+  private navigateToOrderOrList(orderId?: string): void {
+    if (orderId) {
+      this.navigationService.navigate("viewOrder", { orderId });
+      return;
+    }
+
+    this.navigationService.navigate("orders");
+  }
+
+  private extractApiErrorMessage(error: unknown, fallback: string): string {
+    const payload = error as {
+      error?: {
+        error?: {
+          message?: unknown;
+        };
+        message?: unknown;
+      };
+    };
+    const nestedMessage = payload.error?.error?.message;
+    if (typeof nestedMessage === "string" && nestedMessage.trim().length > 0) {
+      return nestedMessage;
+    }
+
+    const directMessage = payload.error?.message;
+    if (typeof directMessage === "string" && directMessage.trim().length > 0) {
+      return directMessage;
+    }
+
+    return fallback;
   }
 }

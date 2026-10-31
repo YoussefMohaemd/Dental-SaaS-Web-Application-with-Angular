@@ -10,6 +10,37 @@ type OrderMutation = Omit<Partial<Order>, "archiveDate"> & {
   archiveDate?: string | null;
 };
 
+const ORDER_MUTATION_FIELDS = [
+  "orderNumber",
+  "patientId",
+  "doctorId",
+  "clinicId",
+  "scanCenterId",
+  "status",
+  "priority",
+  "restoration",
+  "arch",
+  "format",
+  "shade",
+  "units",
+  "amount",
+  "billed",
+  "billedAmount",
+  "billTo",
+  "vouchers",
+  "isLocked",
+  "hasNotes",
+  "notes",
+  "archiveDate",
+  "receivedAt",
+  "sentAt",
+  "chargedAt",
+  "dueDate",
+  "csTask",
+  "technicianId",
+  "creationData",
+] as const satisfies readonly (keyof OrderMutation)[];
+
 export interface OrderPageQuery {
   page?: number;
   pageSize?: number;
@@ -35,6 +66,30 @@ interface OrderPaginationState {
   pageSize: number;
   totalItems: number;
   totalPages: number;
+}
+
+interface OrdersPageResponse {
+  data: ApiOrderItem[];
+  meta?: {
+    pagination?: {
+      page?: number;
+      pageSize?: number;
+      totalItems?: number;
+      totalPages?: number;
+    };
+  };
+}
+
+interface OrdersPageResult {
+  items: Order[];
+  pagination: OrderPaginationState;
+}
+
+interface AggregatedOrdersResult {
+  items: Order[];
+  totalItems: number;
+  totalPages: number;
+  pageSize: number;
 }
 
 @Injectable({ providedIn: "root" })
@@ -97,21 +152,10 @@ export class OrderDataService extends OrdersApi {
       )
       .subscribe({
         next: (pageResult) => {
-          this._orders.set(pageResult.items);
-          this._pagination.set(pageResult.pagination);
-          this.snapshotOrders = [...pageResult.items];
-          this._loading.set(false);
+          this.applyLoadSuccess(pageResult.items, pageResult.pagination);
         },
         error: () => {
-          this._error.set("Failed to load orders");
-          this._orders.set([]);
-          this.snapshotOrders = [];
-          this._pagination.update((current) => ({
-            ...current,
-            totalItems: 0,
-            totalPages: 1,
-          }));
-          this._loading.set(false);
+          this.applyLoadError({ ...this._pagination(), totalItems: 0, totalPages: 1 });
         },
       });
   }
@@ -138,27 +182,20 @@ export class OrderDataService extends OrdersApi {
       )
       .subscribe({
         next: (result) => {
-          this._orders.set(result.items);
-          this._pagination.set({
+          this.applyLoadSuccess(result.items, {
             page: 1,
             pageSize: result.pageSize,
             totalItems: result.totalItems,
             totalPages: result.totalPages,
           });
-          this.snapshotOrders = [...result.items];
-          this._loading.set(false);
         },
         error: () => {
-          this._error.set("Failed to load orders");
-          this._orders.set([]);
-          this.snapshotOrders = [];
-          this._pagination.set({
+          this.applyLoadError({
             page: 1,
             pageSize: OrderDataService.BULK_PAGE_SIZE,
             totalItems: 0,
             totalPages: 1,
           });
-          this._loading.set(false);
         },
       });
   }
@@ -168,6 +205,10 @@ export class OrderDataService extends OrdersApi {
       .get<{ data: ApiOrderItem }>(`${this.API_URL}/${id}`)
       .pipe(
         map((response) => this.orderAdapter.OrdersAdapter([response.data])[0]),
+        tap((order) => {
+          this._orders.update((orders) => this.upsertOrder(orders, order));
+          this.snapshotOrders = this.upsertOrder(this.snapshotOrders, order);
+        }),
       );
   }
 
@@ -206,12 +247,8 @@ export class OrderDataService extends OrdersApi {
       .pipe(
         map((response) => this.orderAdapter.OrdersAdapter([response.data])[0]),
         tap((updated) => {
-          this._orders.update((orders) =>
-            orders.map((order) => (order.id === id ? updated : order)),
-          );
-          this.snapshotOrders = this.snapshotOrders.map((order) =>
-            order.id === id ? updated : order,
-          );
+          this._orders.update((orders) => this.replaceOrder(orders, id, updated));
+          this.snapshotOrders = this.replaceOrder(this.snapshotOrders, id, updated);
         }),
       );
   }
@@ -219,10 +256,8 @@ export class OrderDataService extends OrdersApi {
   deleteOrder$(id: string): Observable<void> {
     return this.http.delete<void>(`${this.API_URL}/${id}`).pipe(
       tap(() => {
-        this._orders.update((orders) => orders.filter((order) => order.id !== id));
-        this.snapshotOrders = this.snapshotOrders.filter(
-          (order) => order.id !== id,
-        );
+        this._orders.update((orders) => this.removeOrder(orders, id));
+        this.snapshotOrders = this.removeOrder(this.snapshotOrders, id);
       }),
       map(() => void 0),
     );
@@ -322,45 +357,14 @@ export class OrderDataService extends OrdersApi {
   private toApiOrderPayload(
     payload: OrderMutation,
   ): Record<string, unknown> {
-    const allowed = [
-      "orderNumber",
-      "patientId",
-      "doctorId",
-      "clinicId",
-      "scanCenterId",
-      "status",
-      "priority",
-      "restoration",
-      "arch",
-      "format",
-      "shade",
-      "units",
-      "amount",
-      "billed",
-      "billedAmount",
-      "billTo",
-      "vouchers",
-      "isLocked",
-      "hasNotes",
-      "notes",
-      "archiveDate",
-      "receivedAt",
-      "sentAt",
-      "chargedAt",
-      "dueDate",
-      "csTask",
-      "technicianId",
-      "creationData",
-    ] as const;
-
     return Object.fromEntries(
-      allowed
+      ORDER_MUTATION_FIELDS
         .filter((key) => payload[key] !== undefined && payload[key] !== "")
         .map((key) => [key, payload[key]]),
     );
   }
 
-  private loadOrdersPage(query: OrderPageQuery) {
+  private loadOrdersPage(query: OrderPageQuery): Observable<OrdersPageResult> {
     let params = new HttpParams()
       .set("page", String(query.page ?? 1))
       .set("pageSize", String(query.pageSize ?? OrderDataService.PAGE_SIZE))
@@ -384,17 +388,7 @@ export class OrderDataService extends OrdersApi {
     }
 
     return this.http
-      .get<{
-        data: ApiOrderItem[];
-        meta?: {
-          pagination?: {
-            page?: number;
-            pageSize?: number;
-            totalItems?: number;
-            totalPages?: number;
-          };
-        };
-      }>(this.API_URL, { params })
+      .get<OrdersPageResponse>(this.API_URL, { params })
       .pipe(
         map((response) => ({
           items: this.orderAdapter.OrdersAdapter(response.data ?? []),
@@ -424,7 +418,9 @@ export class OrderDataService extends OrdersApi {
       );
   }
 
-  private loadAllOrdersPages(query: Omit<OrderPageQuery, "page" | "pageSize">) {
+  private loadAllOrdersPages(
+    query: Omit<OrderPageQuery, "page" | "pageSize">,
+  ): Observable<AggregatedOrdersResult> {
     const firstPageQuery: OrderPageQuery = {
       ...query,
       page: 1,
@@ -456,5 +452,39 @@ export class OrderDataService extends OrdersApi {
         },
       ),
     );
+  }
+
+  private upsertOrder(orders: readonly Order[], order: Order): Order[] {
+    const existingIndex = orders.findIndex((candidate) => candidate.id === order.id);
+    if (existingIndex === -1) {
+      return [order, ...orders];
+    }
+
+    return orders.map((candidate, index) =>
+      index === existingIndex ? order : candidate,
+    );
+  }
+
+  private applyLoadSuccess(items: Order[], pagination: OrderPaginationState): void {
+    this._orders.set(items);
+    this._pagination.set(pagination);
+    this.snapshotOrders = [...items];
+    this._loading.set(false);
+  }
+
+  private applyLoadError(pagination: OrderPaginationState): void {
+    this._error.set("Failed to load orders");
+    this._orders.set([]);
+    this.snapshotOrders = [];
+    this._pagination.set(pagination);
+    this._loading.set(false);
+  }
+
+  private replaceOrder(orders: readonly Order[], id: string, updated: Order): Order[] {
+    return orders.map((order) => (order.id === id ? updated : order));
+  }
+
+  private removeOrder(orders: readonly Order[], id: string): Order[] {
+    return orders.filter((order) => order.id !== id);
   }
 }

@@ -1,6 +1,7 @@
 import { Component, computed, inject, OnInit, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { ActivatedRoute } from "@angular/router";
+import { toSignal } from "@angular/core/rxjs-interop";
 import { OrderDataService } from "@core/services/order-data.service";
 import { NavigationService } from "@core/services/navigation.service";
 import { OrderFileEntry } from "@core/interfaces";
@@ -81,7 +82,29 @@ const INITIAL_FILES: OrderFileEntry[] = [
 ];
 
 const ACCEPTED_TYPES = ["STL", "PLY", "OBJ", "JPG", "PNG", "PDF", "DCM"];
+const ACCEPTED_TYPES_SET = new Set(ACCEPTED_TYPES);
 const MAX_FILE_BYTES = 100 * 1024 * 1024;
+const IMAGE_FILE_TYPES = new Set(["JPG", "PNG"]);
+const SCAN_FILE_TYPES = new Set(["STL", "PLY", "OBJ", "DCM"]);
+
+const ORDER_FILE_ACTION_ICONS = {
+  back:
+    '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>',
+  preview:
+    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>',
+  download:
+    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>',
+  delete:
+    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>',
+} as const;
+
+const FILE_TYPE_ICONS = {
+  image:
+    '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>',
+  pdf: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
+  default:
+    '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',
+} as const;
 
 @Component({
   selector: "app-order-files",
@@ -100,6 +123,9 @@ export class OrderFilesComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly orderService = inject(OrderDataService);
   protected readonly navigationService = inject(NavigationService);
+  private readonly paramMap = toSignal(this.route.paramMap, {
+    initialValue: null,
+  });
 
   ngOnInit(): void {
     this.orderService.loadOrders();
@@ -110,11 +136,9 @@ export class OrderFilesComponent implements OnInit {
   readonly previewFile = signal<OrderFileEntry | null>(null);
   readonly previewVisible = signal(false);
   readonly uploadMessage = signal<string | null>(null);
+  readonly orderId = computed(() => this.paramMap()?.get("orderId") ?? "");
 
-  readonly order = computed(() => {
-    const orderId = this.route.snapshot.paramMap.get("orderId");
-    return this.orderService.getOrderById(orderId ?? "");
-  });
+  readonly order = computed(() => this.orderService.getOrderById(this.orderId()));
 
   readonly uploadedFiles = computed(() =>
     this.files().filter((f) => f.status === "uploaded"),
@@ -128,9 +152,12 @@ export class OrderFilesComponent implements OnInit {
 
   goBack(): void {
     const current = this.order();
-    if (current)
+    if (current) {
       this.navigationService.navigate("viewOrder", { orderId: current.id });
-    else this.navigationService.navigate("orders");
+      return;
+    }
+
+    this.navigationService.navigate("orders");
   }
 
   onDragOver(event: DragEvent): void {
@@ -147,12 +174,16 @@ export class OrderFilesComponent implements OnInit {
     event.preventDefault();
     this.dragOver.set(false);
     const dropped = event.dataTransfer?.files;
-    if (dropped) this.addFiles(dropped);
+    if (dropped) {
+      this.addFiles(dropped);
+    }
   }
 
   onBrowse(event: Event): void {
     const input = event.target as HTMLInputElement;
-    if (input.files) this.addFiles(input.files);
+    if (input.files) {
+      this.addFiles(input.files);
+    }
     input.value = "";
   }
 
@@ -161,46 +192,30 @@ export class OrderFilesComponent implements OnInit {
       this.files().map((file) => file.name.toLowerCase()),
     );
     const rejected: string[] = [];
-    const additions: OrderFileEntry[] = Array.from(fileList)
-      .slice(0, 10)
-      .flatMap((file, index) => {
-        const extension = (file.name.split(".").pop() ?? "").toUpperCase();
-        if (!ACCEPTED_TYPES.includes(extension)) {
-          rejected.push(`${file.name}: unsupported file type`);
-          return [];
-        }
-        if (file.size > MAX_FILE_BYTES) {
-          rejected.push(`${file.name}: exceeds the 100 MB limit`);
-          return [];
-        }
-        if (existingNames.has(file.name.toLowerCase())) {
-          rejected.push(`${file.name}: duplicate file`);
-          return [];
-        }
-        existingNames.add(file.name.toLowerCase());
-        return {
-          id: `upload-${Date.now()}-${index}`,
-          name: file.name,
-          type: extension,
-          size: this.formatBytes(file.size),
-          sizeBytes: file.size,
-          status: "uploading" as FileStatus,
-          progress: 12,
-          uploadedAt: new Date().toISOString().slice(0, 10),
-          uploadedBy: "You",
-        };
-      });
+    const additions: OrderFileEntry[] = [];
+
+    for (const [index, file] of Array.from(fileList).slice(0, 10).entries()) {
+      const nextEntry = this.toUploadingEntry(file, index, existingNames, rejected);
+      if (nextEntry) {
+        additions.push(nextEntry);
+      }
+    }
+
     this.uploadMessage.set(rejected.length > 0 ? rejected.join(" | ") : null);
-    if (additions.length === 0) return;
+    if (additions.length === 0) {
+      return;
+    }
     this.files.update((current) => [...additions, ...current]);
-    for (const entry of additions) this.simulateUpload(entry.id);
+    for (const entry of additions) {
+      this.simulateUpload(entry.id);
+    }
   }
 
   retryUpload(fileId: string): void {
     this.files.update((current) =>
       current.map((f) =>
         f.id === fileId
-          ? { ...f, status: "uploading" as FileStatus, progress: 8 }
+          ? { ...f, status: "uploading", progress: 8 }
           : f,
       ),
     );
@@ -238,32 +253,32 @@ export class OrderFilesComponent implements OnInit {
   }
 
   backIconSvg(): string {
-    return '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>';
+    return ORDER_FILE_ACTION_ICONS.back;
   }
 
   previewActionIconSvg(): string {
-    return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
+    return ORDER_FILE_ACTION_ICONS.preview;
   }
 
   downloadActionIconSvg(): string {
-    return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>';
+    return ORDER_FILE_ACTION_ICONS.download;
   }
 
   deleteActionIconSvg(): string {
-    return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>';
+    return ORDER_FILE_ACTION_ICONS.delete;
   }
 
   downloadAll(): void {}
 
   fileIcon(fileType: string): string {
     const type = (fileType ?? "").toUpperCase();
-    if (type === "JPG" || type === "PNG") {
-      return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>';
+    if (IMAGE_FILE_TYPES.has(type)) {
+      return FILE_TYPE_ICONS.image;
     }
     if (type === "PDF") {
-      return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>';
+      return FILE_TYPE_ICONS.pdf;
     }
-    return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
+    return FILE_TYPE_ICONS.default;
   }
 
   fileIconLarge(fileType: string): string {
@@ -275,9 +290,9 @@ export class OrderFilesComponent implements OnInit {
 
   fileIconLabel(fileType: string): string {
     const type = (fileType ?? "").toUpperCase();
-    if (["JPG", "PNG"].includes(type)) return "image file";
+    if (IMAGE_FILE_TYPES.has(type)) return "image file";
     if (type === "PDF") return "PDF document";
-    if (["STL", "PLY", "OBJ", "DCM"].includes(type)) return "3D scan file";
+    if (SCAN_FILE_TYPES.has(type)) return "3D scan file";
     return "attachment";
   }
 
@@ -290,13 +305,49 @@ export class OrderFilesComponent implements OnInit {
           const next = Math.min(100, f.progress + 22);
           if (next >= 100) {
             finished = true;
-            return { ...f, progress: 100, status: "uploaded" as FileStatus };
+            return { ...f, progress: 100, status: "uploaded" };
           }
           return { ...f, progress: next };
         }),
       );
       if (finished) window.clearInterval(timer);
     }, 320);
+  }
+
+  private toUploadingEntry(
+    file: File,
+    index: number,
+    existingNames: Set<string>,
+    rejected: string[],
+  ): OrderFileEntry | null {
+    const extension = (file.name.split(".").pop() ?? "").toUpperCase();
+    if (!ACCEPTED_TYPES_SET.has(extension)) {
+      rejected.push(`${file.name}: unsupported file type`);
+      return null;
+    }
+    if (file.size > MAX_FILE_BYTES) {
+      rejected.push(`${file.name}: exceeds the 100 MB limit`);
+      return null;
+    }
+
+    const normalizedName = file.name.toLowerCase();
+    if (existingNames.has(normalizedName)) {
+      rejected.push(`${file.name}: duplicate file`);
+      return null;
+    }
+
+    existingNames.add(normalizedName);
+    return {
+      id: `upload-${Date.now()}-${index}`,
+      name: file.name,
+      type: extension,
+      size: this.formatBytes(file.size),
+      sizeBytes: file.size,
+      status: "uploading",
+      progress: 12,
+      uploadedAt: new Date().toISOString().slice(0, 10),
+      uploadedBy: "You",
+    };
   }
 
   private formatBytes(bytes: number): string {
