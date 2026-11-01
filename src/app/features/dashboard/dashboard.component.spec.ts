@@ -140,6 +140,16 @@ describe("DashboardComponent", () => {
     expect(navigationService.navigate).toHaveBeenCalledWith("createOrder");
   });
 
+  it("should render AI workspace entry and navigate when clicked", () => {
+    const aiButton = fixture.debugElement.query(
+      By.css("[data-testid='open-ai-workspace']"),
+    );
+    expect(aiButton).toBeTruthy();
+
+    aiButton.nativeElement.click();
+    expect(navigationService.navigate).toHaveBeenCalledWith("ai" as any);
+  });
+
   it("should render all action icons (no empty icon slots)", () => {
     for (const name of [
       "plus",

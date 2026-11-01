@@ -331,6 +331,7 @@ export class DashboardComponent implements OnInit {
       "chevron-right-lg": { icon: "chevron-right", size: 16 },
       "arrow-right": { icon: "arrow-right", size: 12 },
       activity: { icon: "activity", size: 16 },
+      bot: { icon: "bot", size: 16 },
     };
     const entry = sizes[name];
     if (!entry) return "";

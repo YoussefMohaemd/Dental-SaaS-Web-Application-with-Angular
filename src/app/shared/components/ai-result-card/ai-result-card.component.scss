@@ -1,0 +1,59 @@
+:host {
+  display: block;
+}
+
+.ai-result-card {
+  border: 1px solid var(--border);
+  border-left-width: 3px;
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--card) 91%, var(--background) 9%);
+  padding: 0.88rem 0.92rem;
+  transition:
+    transform 150ms ease,
+    border-color 150ms ease,
+    background 150ms ease;
+}
+
+.ai-result-card:hover {
+  transform: translateY(-1px);
+}
+
+.ai-result-card__title {
+  margin: 0;
+  font-size: 0.84rem;
+  font-weight: 630;
+  line-height: 1.4;
+}
+
+.ai-result-card__summary {
+  margin: 0.38rem 0 0;
+  font-size: 0.79rem;
+  line-height: 1.5;
+  color: var(--foreground);
+}
+
+.ai-result-card__details {
+  margin: 0.36rem 0 0;
+  font-size: 0.72rem;
+  line-height: 1.5;
+  color: var(--muted-foreground);
+}
+
+.ai-result-card__footer {
+  margin-top: 0.66rem;
+}
+
+.ai-result-card--info {
+  border-left-color: var(--primary);
+  background: color-mix(in srgb, var(--card) 82%, #dbeafe 18%);
+}
+
+.ai-result-card--success {
+  border-left-color: var(--success);
+  background: color-mix(in srgb, var(--card) 82%, #d1fae5 18%);
+}
+
+.ai-result-card--warning {
+  border-left-color: var(--warning);
+  background: color-mix(in srgb, var(--card) 82%, #fef3c7 18%);
+}

@@ -1,0 +1,26 @@
+<form class="composer" (ngSubmit)="onSubmit()">
+  <div class="composer__field-wrap">
+    <textarea
+      #promptField
+      id="ai-prompt"
+      rows="1"
+      class="composer__field"
+      placeholder="Ask your dental assistant..."
+      (input)="onInput($event)"
+      (keydown)="onKeyDown($event)"
+    ></textarea>
+
+    <app-button
+      data-testid="ai-submit"
+      type="submit"
+      variant="primary"
+      size="icon"
+      [disabled]="!canSend()"
+      [loading]="loading()"
+      ariaLabel="Send message"
+      buttonClass="composer__send"
+    >
+      ➤
+    </app-button>
+  </div>
+</form>

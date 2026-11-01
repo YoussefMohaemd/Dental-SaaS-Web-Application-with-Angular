@@ -17,3 +17,4 @@ export * from "./scan-center.interface";
 export * from "./sub-order.interface";
 export * from "./sub-order-report.interface";
 export * from "./tooth.interface";
+export * from "./ai.interface";

@@ -1,0 +1,84 @@
+<div
+  #messagesViewport
+  class="messages-viewport"
+  data-testid="messages-viewport"
+  (scroll)="onScroll()"
+>
+  <div class="messages-stack">
+    @for (message of messages(); track message.id) {
+      <article
+        class="chat-message"
+        [class.chat-message--user]="message.role === 'user'"
+        [class.chat-message--assistant]="message.role === 'assistant'"
+        [class.chat-message--thinking]="message.role === 'thinking'"
+      >
+        @if (message.role !== "user") {
+          <span class="chat-message__avatar" aria-hidden="true">AI</span>
+        }
+
+        <div class="chat-message__content">
+          <div class="chat-message__bubble">
+            <div class="chat-message__text" [innerHTML]="renderMessage(message)"></div>
+            @if (message.role === "thinking") {
+              <span class="thinking-dots" aria-hidden="true">
+                <i></i><i></i><i></i>
+              </span>
+            }
+          </div>
+
+          @if (message.resultCards?.length) {
+            <div class="chat-message__results">
+              @for (result of message.resultCards; track result.id) {
+                <app-ai-result-card
+                  [result]="result"
+                  (resultAction)="onResultCardAction($event)"
+                />
+              }
+            </div>
+          }
+
+          @if (message.actions?.length) {
+            <div class="chat-message__actions">
+              @for (action of message.actions; track action.id) {
+                <app-ai-shortcut-card
+                  [action]="action"
+                  [compact]="true"
+                  (actionSelected)="onActionSelected($event)"
+                />
+              }
+            </div>
+          }
+
+          @if (message.role === "assistant" && message.canCopy) {
+            <div class="chat-message__meta">
+              <app-button
+                type="button"
+                variant="ghost"
+                size="sm"
+                buttonClass="!text-xs !px-2 !py-1"
+                (onClick)="onCopyMessage(message.id)"
+              >
+                Copy message
+              </app-button>
+            </div>
+          }
+        </div>
+      </article>
+    }
+  </div>
+</div>
+
+@if (showScrollLatest()) {
+  <app-button
+    data-testid="scroll-latest"
+    type="button"
+    variant="ghost"
+    size="icon"
+    buttonClass="scroll-latest-fab"
+    ariaLabel="Scroll to latest message"
+    title="Scroll to latest"
+    (onClick)="onScrollLatest()"
+  >
+    <span [innerHTML]="getIconSvg('chevron-down') | safeHtml"></span>
+  </app-button>
+}

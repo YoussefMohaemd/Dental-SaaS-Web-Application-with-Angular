@@ -1,0 +1,54 @@
+:host {
+  display: block;
+}
+
+.quick-actions {
+  border: 1px solid color-mix(in srgb, var(--border) 88%, transparent);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--card) 90%, var(--background) 10%);
+  padding: 0.76rem 0.78rem;
+}
+
+.quick-actions__title {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.35;
+  font-weight: 650;
+}
+
+.quick-actions__subtitle {
+  margin: 0.22rem 0 0;
+  color: var(--muted-foreground);
+  font-size: 0.73rem;
+  line-height: 1.45;
+}
+
+.quick-actions__pill-wrap {
+  margin-top: 0.58rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.42rem;
+}
+
+:host ::ng-deep .quick-actions__pill {
+  border-radius: 999px !important;
+  padding-inline: 0.72rem !important;
+  padding-block: 0.34rem !important;
+  min-height: 2rem !important;
+  font-size: 0.71rem !important;
+  font-weight: 620 !important;
+  transition:
+    transform 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease,
+    background 140ms ease !important;
+}
+
+:host ::ng-deep .quick-actions__pill:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.quick-actions__pill-icon {
+  display: inline-flex;
+  color: var(--muted-foreground);
+}

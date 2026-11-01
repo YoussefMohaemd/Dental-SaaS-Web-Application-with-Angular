@@ -135,6 +135,7 @@ export class NavigationService {
 
     const pageMap: Record<string, PageId> = {
       dashboard: "dashboard",
+      ai: "ai",
       orders: "orders",
       cases: "cases",
       "workflow-board": "workflowBoard",
@@ -267,6 +268,7 @@ export class NavigationService {
     }
     const routeMap: Partial<Record<PageId, (params: NavParams) => string>> = {
       dashboard: () => "/dashboard",
+      ai: () => "/ai",
       orders: () => "/orders",
       archivedOrders: () => "/orders/archive",
       viewOrder: (p) =>

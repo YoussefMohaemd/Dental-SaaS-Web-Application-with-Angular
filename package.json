@@ -4,7 +4,7 @@
   "description": "Dental SaaS Web Application with Angular 21",
   "scripts": {
     "ng": "ng",
-    "start": "concurrently \"npm run tailwind:watch\" \"ng serve\"",
+    "start": "npx ng s --o --hmr",
     "tailwind:build": "tailwindcss -i ./src/tailwind.input.css -o ./src/styles/tailwind-generated.css --minify",
     "tailwind:watch": "tailwindcss -i ./src/tailwind.input.css -o ./src/styles/tailwind-generated.css --watch",
     "prebuild": "npm run tailwind:build",

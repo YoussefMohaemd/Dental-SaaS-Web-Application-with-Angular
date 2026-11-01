@@ -8,17 +8,29 @@
         {{ today | date: "EEEE, MMMM d, y" }} · Week {{ today | date: "w" }}
       </p>
     </div>
-    @if (canCreateOrders()) {
+    <div class="flex w-full sm:w-auto items-center justify-end gap-2">
       <button
         type="button"
-        (click)="navigateTo('createOrder')"
-        aria-label="Create new order"
-        class="dashboard-new-order-btn flex w-full sm:w-auto items-center justify-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+        data-testid="open-ai-workspace"
+        (click)="navigateTo('ai')"
+        aria-label="Open AI workspace"
+        class="dashboard-ai-btn flex w-full sm:w-auto items-center justify-center gap-2 rounded-lg border border-primary/35 bg-primary/8 px-4 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary/14 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
       >
-        <span [innerHTML]="getIconSvg('plus') | safeHtml"></span>
-        <span class="hidden sm:inline">New Order</span>
+        <span [innerHTML]="getIconSvg('bot') | safeHtml"></span>
+        <span>AI Workspace</span>
       </button>
-    }
+      @if (canCreateOrders()) {
+        <button
+          type="button"
+          (click)="navigateTo('createOrder')"
+          aria-label="Create new order"
+          class="dashboard-new-order-btn flex w-full sm:w-auto items-center justify-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+        >
+          <span [innerHTML]="getIconSvg('plus') | safeHtml"></span>
+          <span class="hidden sm:inline">New Order</span>
+        </button>
+      }
+    </div>
   </div>
 
   @if (urgentOrdersCount() > 0) {

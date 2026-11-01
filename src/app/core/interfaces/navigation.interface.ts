@@ -1,6 +1,7 @@
 export type PageId =
   | "login"
   | "dashboard"
+  | "ai"
   | "orders"
   | "archivedOrders"
   | "viewOrder"
@@ -85,6 +86,7 @@ export const BREADCRUMB_MAP: Partial<
   Record<PageId, { label: string; parent?: PageId }>
 > = {
   dashboard: { label: "Dashboard" },
+  ai: { label: "AI Workspace", parent: "dashboard" },
   orders: { label: "Orders" },
   archivedOrders: { label: "Archived Orders", parent: "orders" },
   viewOrder: { label: "View Order", parent: "orders" },

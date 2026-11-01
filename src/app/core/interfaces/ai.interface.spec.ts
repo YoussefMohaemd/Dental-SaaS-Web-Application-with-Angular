@@ -1,4 +1,13 @@
-import { AiPromptDraft, AiResultCard, AiShortcutAction } from "./ai.interface";
+import {
+  AiChatMessage,
+  AiConversation,
+  AiConversationSummary,
+  AiFaqTopic,
+  AiPromptDraft,
+  AiQuickAction,
+  AiResultCard,
+  AiShortcutAction,
+} from "./ai.interface";
 
 describe("ai.interface", () => {
   it("should expose AI UI contract types", () => {
@@ -21,5 +30,51 @@ describe("ai.interface", () => {
     expect(shortcut.id).toBe("create-order");
     expect(result.tone).toBe("info");
     expect(prompt.search).toBe("overdue");
+  });
+
+  it("should expose AI chat transcript contract types", () => {
+    const message: AiChatMessage = {
+      id: "msg-1",
+      role: "assistant",
+      text: "I can help with orders and reports.",
+      createdAt: "2026-10-31T12:00:00Z",
+      markdown: true,
+      canCopy: true,
+    };
+    const topic: AiFaqTopic = "services";
+
+    expect(message.role).toBe("assistant");
+    expect(topic).toBe("services");
+  });
+
+  it("should expose AI conversation and quick action types", () => {
+    const action: AiQuickAction = {
+      id: "search-orders",
+      title: "Search orders",
+      description: "Open orders list",
+      intent: "searchOrders",
+      prompt: "search orders",
+      requiredCapability: "orders.read",
+    };
+
+    const conversation: AiConversation = {
+      id: "chat-1",
+      title: "New conversation",
+      updatedAt: "2026-11-01T12:00:00Z",
+      showWelcomeActions: true,
+      messages: [],
+    };
+
+    const summary: AiConversationSummary = {
+      id: "chat-1",
+      title: "New conversation",
+      updatedAt: "2026-11-01T12:00:00Z",
+      preview: "Welcome",
+      isActive: true,
+    };
+
+    expect(action.intent).toBe("searchOrders");
+    expect(conversation.showWelcomeActions).toBeTrue();
+    expect(summary.isActive).toBeTrue();
   });
 });

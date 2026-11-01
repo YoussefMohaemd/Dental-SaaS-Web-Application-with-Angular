@@ -1,0 +1,75 @@
+<div data-testid="ai-page" class="ai-page">
+  <app-ai-chat-history
+    [open]="isHistoryOpen()"
+    [conversations]="conversations()"
+    (close)="closeHistory()"
+    (conversationSelected)="selectConversation($event)"
+    (createConversation)="startNewChat()"
+  />
+
+  <section class="chat-shell" aria-label="AI assistant workspace">
+    <header class="chat-header">
+      <div class="chat-header__meta">
+        <h1 class="chat-title font-display">Dental AI Assistant</h1>
+        <p class="chat-subtitle">
+          {{ activeConversation()?.title ?? "New conversation" }}
+        </p>
+      </div>
+
+      <div class="chat-header__actions">
+        <app-button
+          data-testid="open-history"
+          type="button"
+          variant="ghost"
+          size="icon"
+          buttonClass="chat-header__icon-button chat-header__icon-button--history"
+          ariaLabel="Open chat history"
+          title="Chat history"
+          (onClick)="toggleHistory()"
+        >
+          <span [innerHTML]="getIconSvg('history') | safeHtml"></span>
+        </app-button>
+        <app-button
+          data-testid="new-chat"
+          type="button"
+          variant="outline"
+          size="icon"
+          buttonClass="chat-header__icon-button"
+          ariaLabel="Start a new chat"
+          title="New chat"
+          (onClick)="startNewChat()"
+        >
+          <span [innerHTML]="getIconSvg('file-plus') | safeHtml"></span>
+        </app-button>
+      </div>
+    </header>
+
+    <div data-testid="chat-body" class="chat-body chat-body--page-flow">
+      <app-ai-chat-messages
+        [messages]="messages()"
+        (actionSelected)="onShortcutAction($event)"
+        (copyRequested)="copyMessage($event)"
+      />
+
+      @if (showWelcome()) {
+        <section class="chat-welcome">
+          <app-ai-quick-actions
+            [actions]="quickActions()"
+            [disabled]="isResponding()"
+            (actionInvoked)="onQuickAction($event)"
+          />
+        </section>
+      }
+    </div>
+
+    <footer class="chat-composer">
+      <app-ai-chat-composer
+        [draft]="draft()"
+        [canSend]="canSend()"
+        [loading]="isResponding()"
+        (draftChanged)="onDraftChanged($event)"
+        (submitted)="submitPrompt($event)"
+      />
+    </footer>
+  </section>
+</div>

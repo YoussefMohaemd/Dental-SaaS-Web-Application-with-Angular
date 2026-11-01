@@ -1,0 +1,28 @@
+<section class="quick-actions" data-testid="welcome-block">
+  <p class="quick-actions__title font-display">Quick actions</p>
+  <p class="quick-actions__subtitle">
+    Start with the most requested requests.
+  </p>
+
+  <div class="quick-actions__pill-wrap">
+    @for (action of actions(); track action.id) {
+      <app-button
+        data-testid="quick-action"
+        type="button"
+        variant="outline"
+        size="sm"
+        buttonClass="quick-actions__pill"
+        [disabled]="disabled()"
+        [title]="action.description"
+        (onClick)="onActionSelected(action)"
+      >
+        <span
+          class="quick-actions__pill-icon"
+          [innerHTML]="iconFor(action) | safeHtml"
+          aria-hidden="true"
+        ></span>
+        {{ action.title }}
+      </app-button>
+    }
+  </div>
+</section>

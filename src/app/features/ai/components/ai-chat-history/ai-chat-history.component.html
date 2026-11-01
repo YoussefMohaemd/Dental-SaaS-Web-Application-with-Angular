@@ -1,0 +1,63 @@
+@if (open()) {
+  <button
+    type="button"
+    class="history-backdrop"
+    aria-label="Close chat history"
+    (click)="onClose()"
+  ></button>
+}
+
+<aside
+  class="history-panel"
+  [class.history-panel--open]="open()"
+  aria-label="Chat history"
+>
+  <header class="history-header">
+    <app-button
+      class="history-close"
+      type="button"
+      variant="ghost"
+      size="icon-sm"
+      buttonClass="history-header__close"
+      ariaLabel="Close chat history"
+      title="Close"
+      (onClick)="onClose()"
+    >
+      <span [innerHTML]="getIconSvg('x') | safeHtml"></span>
+    </app-button>
+    <div class="history-header__row">
+      <h2 class="history-title font-display">Chat history</h2>
+      <app-button
+        data-testid="history-new-chat"
+        type="button"
+        variant="outline"
+        size="sm"
+        buttonClass="history-header__new-chat"
+        ariaLabel="Start a new chat"
+        title="New chat"
+        (onClick)="onCreateConversation()"
+      >
+        <span [innerHTML]="getIconSvg('file-plus') | safeHtml"></span>
+        New chat
+      </app-button>
+    </div>
+  </header>
+
+  <div class="history-list" role="list">
+    @for (conversation of conversations(); track conversation.id) {
+      <button
+        type="button"
+        role="listitem"
+        class="history-item"
+        [class.history-item--active]="conversation.isActive"
+        (click)="onSelect(conversation.id)"
+      >
+        <span class="history-item__title">{{ conversation.title }}</span>
+        <span class="history-item__preview">{{ conversation.preview }}</span>
+        <time class="history-item__time">{{
+          conversation.updatedAt | date: "MMM d, h:mm a"
+        }}</time>
+      </button>
+    }
+  </div>
+</aside>

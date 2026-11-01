@@ -1,0 +1,65 @@
+:host {
+  display: block;
+}
+
+.ai-shortcut-card {
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--card) 90%, var(--background) 10%);
+  padding: 0.84rem 0.88rem;
+  transition:
+    border-color 140ms ease,
+    background 140ms ease,
+    transform 140ms ease;
+}
+
+.ai-shortcut-card:hover {
+  border-color: color-mix(in srgb, var(--primary) 34%, var(--border));
+  background: color-mix(in srgb, var(--primary) 10%, var(--card));
+  transform: translateY(-0.5px);
+}
+
+.ai-shortcut-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.ai-shortcut-card__title {
+  margin: 0;
+  font-size: 0.81rem;
+  line-height: 1.4;
+  font-weight: 620;
+}
+
+.ai-shortcut-card__badge {
+  border: 1px solid color-mix(in srgb, var(--muted-foreground) 35%, var(--border));
+  border-radius: 999px;
+  padding: 0.18rem 0.56rem;
+  color: var(--muted-foreground);
+  font-size: 0.67rem;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.ai-shortcut-card__badge--accent {
+  border-color: color-mix(in srgb, var(--primary) 36%, var(--border));
+  color: color-mix(in srgb, var(--primary) 84%, var(--foreground));
+  background: color-mix(in srgb, var(--primary) 12%, var(--card));
+}
+
+.ai-shortcut-card__description {
+  margin: 0.45rem 0 0;
+  color: var(--muted-foreground);
+  font-size: 0.73rem;
+  line-height: 1.45;
+}
+
+.ai-shortcut-card__footer {
+  margin-top: 0.65rem;
+}
+
+.ai-shortcut-card--compact {
+  padding: 0.72rem;
+}

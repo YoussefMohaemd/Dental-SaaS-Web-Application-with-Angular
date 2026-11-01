@@ -1,0 +1,25 @@
+<article
+  class="ai-result-card"
+  [class]="toneClass()"
+>
+  <h3 class="ai-result-card__title font-display">{{ result().title }}</h3>
+  <p class="ai-result-card__summary">{{ result().summary }}</p>
+  @if (result().details) {
+    <p class="ai-result-card__details">
+      {{ result().details }}
+    </p>
+  }
+  @if (result().ctaLabel && result().ctaIntent) {
+    <div class="ai-result-card__footer">
+      <app-button
+        data-testid="result-cta"
+        variant="ghost"
+        size="sm"
+        type="button"
+        (onClick)="onResultAction()"
+      >
+        {{ result().ctaLabel }}
+      </app-button>
+    </div>
+  }
+</article>

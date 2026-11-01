@@ -27,6 +27,11 @@ export const appRoutes: Routes = [
           ),
       },
       {
+        path: "ai",
+        loadComponent: () =>
+          import("./features/ai/ai.component").then((m) => m.AiComponent),
+      },
+      {
         path: "orders",
         loadComponent: () =>
           import("./features/orders/orders.component").then(

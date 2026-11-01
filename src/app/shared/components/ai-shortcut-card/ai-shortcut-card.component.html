@@ -1,0 +1,29 @@
+<article
+  class="ai-shortcut-card"
+  [class.ai-shortcut-card--compact]="compact()"
+>
+  <div class="ai-shortcut-card__header">
+    <h3 class="ai-shortcut-card__title font-display">{{ action().title }}</h3>
+    @if (action().badge) {
+      <span class="ai-shortcut-card__badge ai-shortcut-card__badge--accent">
+        {{ action().badge }}
+      </span>
+    } @else {
+      <span class="ai-shortcut-card__badge">
+        {{ intentLabel() }}
+      </span>
+    }
+  </div>
+
+  @if (action().description) {
+    <p class="ai-shortcut-card__description">
+      {{ action().description }}
+    </p>
+  }
+
+  <div class="ai-shortcut-card__footer">
+    <app-button variant="outline" size="sm" type="button" (onClick)="onSelect()">
+      Run action
+    </app-button>
+  </div>
+</article>
