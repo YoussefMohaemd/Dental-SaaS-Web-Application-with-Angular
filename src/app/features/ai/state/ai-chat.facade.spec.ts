@@ -3,7 +3,7 @@ import { TestBed } from "@angular/core/testing";
 import { AuthorizationService } from "@core/services/authorization.service";
 import { AssistantDataService } from "@core/services/assistant-data.service";
 import { NavigationService } from "@core/services/navigation.service";
-import { of } from "rxjs";
+import { of, throwError } from "rxjs";
 import { AiChatFacade } from "./ai-chat.facade";
 
 describe("AiChatFacade", () => {
@@ -98,5 +98,50 @@ describe("AiChatFacade", () => {
     const latest = facade.messages().at(-1)?.text.toLowerCase() ?? "";
     expect(latest).toContain("don't have access");
     expect(assistantDataService.postMessage$).not.toHaveBeenCalled();
+  });
+
+  it("should show permission-denied message from backend 403", async () => {
+    assistantDataService.postMessage$.and.returnValue(
+      throwError(() => ({
+        status: 403,
+        error: {
+          error: {
+            message: "Assistant tool permission denied",
+          },
+        },
+      })),
+    );
+
+    await facade.submitPrompt("update order");
+
+    const latest = facade.messages().at(-1)?.text.toLowerCase() ?? "";
+    expect(latest).toContain("don't have access");
+  });
+
+  it("should show explicit confirmation affordance for write responses", async () => {
+    assistantDataService.postMessage$.and.returnValue(
+      of({
+        conversationId: "conv-backend-1",
+        messageId: "m2",
+        result: {
+          type: "confirmation",
+          text: "Please confirm before execution.",
+          pendingActions: [
+            {
+              actionId: "a1",
+              tool: "update_order",
+              expiresAt: new Date().toISOString(),
+              confirmationToken: "token",
+            },
+          ],
+        },
+      }),
+    );
+
+    await facade.submitPrompt("update order");
+
+    const latest = facade.messages().at(-1);
+    expect(latest?.type).toBe("confirmation");
+    expect(latest?.text).toContain("1 pending action");
   });
 });

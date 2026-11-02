@@ -59,8 +59,8 @@ export class AiComponent {
     this.facade.updateDraft(prompt);
   }
 
-  submitPrompt(prompt: string): void {
-    this.facade.submitPrompt(prompt);
+  async submitPrompt(prompt: string): Promise<void> {
+    await this.facade.submitPrompt(prompt);
   }
 
   onShortcutAction(action: AiShortcutAction): void {

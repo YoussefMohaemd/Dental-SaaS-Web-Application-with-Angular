@@ -169,11 +169,12 @@ export class AiChatFacade implements OnDestroy {
         thinkingId,
         this.toAssistantMessage(response),
       );
-    } catch {
+    } catch (error) {
+      const text = this.resolveAssistantErrorText(error);
       this.replaceMessage(conversationId, thinkingId, {
         id: this.nextMessageId(),
         role: "assistant",
-        text: "Assistant service is currently unavailable. Please try again.",
+        text,
         createdAt: new Date().toISOString(),
         type: "error",
         markdown: true,
@@ -645,10 +646,12 @@ export class AiChatFacade implements OnDestroy {
 
   private toAssistantMessage(response: AssistantMessageResponseDto): AiChatMessage {
     if (response.result.type === "confirmation") {
+      const pendingCount = response.result.pendingActions.length;
+      const text = `${response.result.text}\n\n${pendingCount} pending action${pendingCount === 1 ? "" : "s"} require confirmation.`;
       return {
         id: this.nextMessageId(),
         role: "assistant",
-        text: response.result.text,
+        text,
         createdAt: new Date().toISOString(),
         type: "confirmation",
         markdown: true,
@@ -665,6 +668,25 @@ export class AiChatFacade implements OnDestroy {
       markdown: true,
       canCopy: true,
     };
+  }
+
+  private resolveAssistantErrorText(error: unknown): string {
+    const candidate = error as
+      | {
+          status?: number;
+          error?: {
+            error?: {
+              message?: string;
+            };
+          };
+        }
+      | undefined;
+    const message = candidate?.error?.error?.message?.toLowerCase() ?? "";
+    if (candidate?.status === 403 || message.includes("permission denied")) {
+      return "You don't have access for that action in this account.";
+    }
+
+    return "Assistant service is currently unavailable. Please try again.";
   }
 
   private clearPendingTimer(): void {
