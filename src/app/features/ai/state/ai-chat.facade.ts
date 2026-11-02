@@ -8,9 +8,14 @@ import {
   AiQuickAction,
   AiShortcutAction,
 } from "@core/interfaces";
+import {
+  AssistantDataService,
+  AssistantMessageResponseDto,
+} from "@core/services/assistant-data.service";
 import { AuthorizationService } from "@core/services/authorization.service";
 import { NavigationService } from "@core/services/navigation.service";
 import { DentalCapability } from "@core/security/capabilities";
+import { firstValueFrom } from "rxjs";
 import {
   AI_FAQ_PROMPTS,
   AI_QUICK_ACTIONS,
@@ -22,10 +27,12 @@ import {
 export class AiChatFacade implements OnDestroy {
   private readonly authorizationService = inject(AuthorizationService);
   private readonly navigationService = inject(NavigationService);
+  private readonly assistantDataService = inject(AssistantDataService);
 
   private conversationSequence = 0;
   private messageSequence = 0;
   private pendingReplyTimer: ReturnType<typeof setTimeout> | null = null;
+  private readonly backendConversationByLocalId = new Map<string, string>();
 
   private readonly initialConversation = this.createFreshConversation();
 
@@ -99,6 +106,7 @@ export class AiChatFacade implements OnDestroy {
   startNewChat(): void {
     const fresh = this.createFreshConversation();
     this.conversations.update((state) => [fresh, ...state]);
+    this.backendConversationByLocalId.delete(fresh.id);
     this.activeConversationId.set(fresh.id);
     this.promptDraft.update((state) => ({ ...state, prompt: "" }));
     this.closeHistory();
@@ -106,6 +114,7 @@ export class AiChatFacade implements OnDestroy {
 
   clearCurrentConversation(): void {
     const activeId = this.activeConversationId();
+    this.backendConversationByLocalId.delete(activeId);
     this.updateConversation(activeId, () => {
       const fresh = this.createFreshConversation(activeId);
       return {
@@ -120,7 +129,7 @@ export class AiChatFacade implements OnDestroy {
     this.promptDraft.update((state) => ({ ...state, prompt }));
   }
 
-  submitPrompt(rawPrompt?: string): void {
+  async submitPrompt(rawPrompt?: string): Promise<void> {
     const prompt = (rawPrompt ?? this.promptDraft().prompt).trim();
     if (!prompt || this.isResponding()) {
       return;
@@ -148,14 +157,31 @@ export class AiChatFacade implements OnDestroy {
 
     this.refreshConversationTitle(conversationId, prompt);
     this.isResponding.set(true);
-    this.clearPendingTimer();
-
-    this.pendingReplyTimer = setTimeout(() => {
-      const response = this.resolveAssistantReply(prompt);
-      this.replaceMessage(conversationId, thinkingId, response);
+    try {
+      const backendConversationId = await this.ensureBackendConversationId(
+        conversationId,
+      );
+      const response = await firstValueFrom(
+        this.assistantDataService.postMessage$(backendConversationId, prompt),
+      );
+      this.replaceMessage(
+        conversationId,
+        thinkingId,
+        this.toAssistantMessage(response),
+      );
+    } catch {
+      this.replaceMessage(conversationId, thinkingId, {
+        id: this.nextMessageId(),
+        role: "assistant",
+        text: "Assistant service is currently unavailable. Please try again.",
+        createdAt: new Date().toISOString(),
+        type: "error",
+        markdown: true,
+        canCopy: true,
+      });
+    } finally {
       this.isResponding.set(false);
-      this.pendingReplyTimer = null;
-    }, 650);
+    }
   }
 
   runQuickAction(action: AiQuickAction): void {
@@ -599,6 +625,46 @@ export class AiChatFacade implements OnDestroy {
       markdown: true,
       canCopy: true,
     });
+  }
+
+  private async ensureBackendConversationId(
+    localConversationId: string,
+  ): Promise<string> {
+    const existing = this.backendConversationByLocalId.get(localConversationId);
+    if (existing) {
+      return existing;
+    }
+
+    const title = this.activeConversation()?.title;
+    const created = await firstValueFrom(
+      this.assistantDataService.createConversation$(title),
+    );
+    this.backendConversationByLocalId.set(localConversationId, created.id);
+    return created.id;
+  }
+
+  private toAssistantMessage(response: AssistantMessageResponseDto): AiChatMessage {
+    if (response.result.type === "confirmation") {
+      return {
+        id: this.nextMessageId(),
+        role: "assistant",
+        text: response.result.text,
+        createdAt: new Date().toISOString(),
+        type: "confirmation",
+        markdown: true,
+        canCopy: true,
+      };
+    }
+
+    return {
+      id: this.nextMessageId(),
+      role: "assistant",
+      text: response.result.text,
+      createdAt: new Date().toISOString(),
+      type: "text",
+      markdown: true,
+      canCopy: true,
+    };
   }
 
   private clearPendingTimer(): void {

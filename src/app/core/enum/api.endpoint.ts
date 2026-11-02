@@ -11,6 +11,8 @@ export class ApiEndpoint {
   static readonly CHANGE_REQUESTS = `${environment.apiBaseUrl}/v1/change-requests`;
   static readonly CLINICS = `${environment.apiBaseUrl}/v1/clinics`;
   static readonly DASHBOARD_VOLUME = `${environment.apiBaseUrl}/v1/dashboard/volume`;
+  static readonly AI_SUGGESTIONS = `${environment.apiBaseUrl}/v1/ai/suggestions`;
+  static readonly AI_CONVERSATIONS = `${environment.apiBaseUrl}/v1/ai/conversations`;
   static readonly DOCTORS = `${environment.apiBaseUrl}/v1/doctors`;
   static readonly DOCUMENTS = `${environment.apiBaseUrl}/v1/documents`;
   static readonly NOTIFICATIONS = `${environment.apiBaseUrl}/v1/notifications`;
@@ -34,5 +36,17 @@ export class ApiEndpoint {
 
   static changeRequestStatus(requestId: string): string {
     return `${this.CHANGE_REQUESTS}/${requestId}/status`;
+  }
+
+  static aiConversation(conversationId: string): string {
+    return `${this.AI_CONVERSATIONS}/${conversationId}`;
+  }
+
+  static aiConversationMessages(conversationId: string): string {
+    return `${this.aiConversation(conversationId)}/messages`;
+  }
+
+  static aiConfirmAction(actionId: string): string {
+    return `${environment.apiBaseUrl}/v1/ai/actions/${actionId}/confirm`;
   }
 }
