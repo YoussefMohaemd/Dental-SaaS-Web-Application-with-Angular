@@ -3,6 +3,7 @@ import { provideHttpClient, withInterceptors } from "@angular/common/http";
 import { providePrimeNG } from "primeng/config";
 import { provideAnimationsAsync } from "@angular/platform-browser/animations/async";
 import { TUI_ENGLISH_LANGUAGE, TUI_LANGUAGE } from "@taiga-ui/i18n";
+import { provideEventPlugins } from "@taiga-ui/event-plugins";
 import { of } from "rxjs";
 import Aura from "@primeng/themes/aura";
 import { AppComponent } from "./app.component";
@@ -17,6 +18,7 @@ import {
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZonelessChangeDetection(),
+    provideEventPlugins(),
     provideAnimationsAsync(),
     provideHttpClient(withInterceptors([authInterceptor])),
     provideRouter(appRoutes),

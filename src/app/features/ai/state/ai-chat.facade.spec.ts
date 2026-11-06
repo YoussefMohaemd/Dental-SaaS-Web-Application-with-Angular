@@ -1,5 +1,6 @@
 import { signal } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
+import { AuthService, type AuthenticatedUser } from "@core/services/auth.service";
 import { AuthorizationService } from "@core/services/authorization.service";
 import { AssistantDataService } from "@core/services/assistant-data.service";
 import { NavigationService } from "@core/services/navigation.service";
@@ -8,11 +9,21 @@ import { AiChatFacade } from "./ai-chat.facade";
 
 describe("AiChatFacade", () => {
   let facade: AiChatFacade;
+  let currentUser: ReturnType<typeof signal<AuthenticatedUser | null>>;
   let authorizationService: jasmine.SpyObj<AuthorizationService>;
   let navigationService: jasmine.SpyObj<NavigationService>;
   let assistantDataService: jasmine.SpyObj<AssistantDataService>;
 
+  const makeUser = (userId: string): AuthenticatedUser => ({
+    userId,
+    tenantId: "tenant-1",
+    fullName: userId,
+    email: `${userId}@example.com`,
+    roles: ["admin"],
+  });
+
   beforeEach(async () => {
+    currentUser = signal<AuthenticatedUser | null>(makeUser("user-doctor"));
     authorizationService = jasmine.createSpyObj<AuthorizationService>(
       "AuthorizationService",
       ["has"],
@@ -94,6 +105,7 @@ describe("AiChatFacade", () => {
     TestBed.configureTestingModule({
       providers: [
         AiChatFacade,
+        { provide: AuthService, useValue: { user: currentUser.asReadonly() } },
         { provide: AuthorizationService, useValue: authorizationService },
         { provide: NavigationService, useValue: navigationService },
         { provide: AssistantDataService, useValue: assistantDataService },
@@ -109,6 +121,8 @@ describe("AiChatFacade", () => {
     expect(facade.showWelcome()).toBeTrue();
     expect(facade.messages().length).toBeGreaterThan(0);
     expect(facade.quickActions().length).toBeGreaterThan(0);
+    expect(facade.quickActions().some((action) => action.id === "nav-open-doctors")).toBeTrue();
+    expect(facade.quickActions().some((action) => action.id === "nav-open-clinics")).toBeTrue();
   });
 
   it("should append backend assistant reply and hide welcome after submit", async () => {
@@ -124,9 +138,59 @@ describe("AiChatFacade", () => {
   });
 
   async function flushAsyncFacadeInit(): Promise<void> {
+    TestBed.tick();
+    await Promise.resolve();
     await Promise.resolve();
     await Promise.resolve();
   }
+
+  it("should always open on a brand-new chat even when history exists", async () => {
+    currentUser.set(makeUser("user-with-history"));
+    assistantDataService.listConversations$.and.returnValue(
+      of([
+        {
+          id: "old-1",
+          title: "Old chat",
+          preview: "Old preview",
+          status: "active",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
+      ]),
+    );
+    TestBed.tick();
+    await flushAsyncFacadeInit();
+
+    expect(facade.activeConversation()?.title).toBe("New conversation");
+    expect(facade.showWelcome()).toBeTrue();
+    expect(facade.conversations().some((item) => item.id === "old-1")).toBeTrue();
+    expect(facade.activeConversationId()).not.toBe("old-1");
+  });
+
+  it("should drop the previous user's chats when another user signs in", async () => {
+    await facade.submitPrompt("doctor private message");
+    expect(
+      facade.messages().some((message) => message.text === "doctor private message"),
+    ).toBeTrue();
+
+    currentUser.set(makeUser("user-admin"));
+    TestBed.tick();
+    await flushAsyncFacadeInit();
+
+    expect(
+      facade.conversations().flatMap((item) => item.messages.map((m) => m.text)),
+    ).not.toContain("doctor private message");
+    expect(facade.showWelcome()).toBeTrue();
+  });
+
+  it("should clear everything on logout", async () => {
+    currentUser.set(null);
+    TestBed.tick();
+    await flushAsyncFacadeInit();
+
+    expect(facade.conversations().length).toBe(0);
+    expect(facade.activeConversationId()).toBeNull();
+  });
 
   it("should route quick action denial before backend call", async () => {
     authorizationService.has.and.callFake((capability: string) =>
@@ -148,6 +212,19 @@ describe("AiChatFacade", () => {
     const latest = facade.messages().at(-1)?.text.toLowerCase() ?? "";
     expect(latest).toContain("don't have access");
     expect(assistantDataService.postMessage$).not.toHaveBeenCalled();
+  });
+
+  it("should prompt for order id when open-order-detail quick action is used", () => {
+    const quick = facade.quickActions().find((action) => action.id === "ops-open-order-detail");
+    expect(quick).toBeDefined();
+    if (!quick) {
+      throw new Error("Expected ops-open-order-detail action");
+    }
+
+    facade.runQuickAction(quick);
+
+    expect(facade.promptDraft().prompt.toLowerCase()).toContain("open order details");
+    expect(facade.messages().at(-1)?.text.toLowerCase()).toContain("order id");
   });
 
   it("should show permission-denied message from backend 403", async () => {

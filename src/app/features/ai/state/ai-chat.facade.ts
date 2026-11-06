@@ -1,4 +1,4 @@
-import { computed, Injectable, inject, signal } from "@angular/core";
+import { computed, effect, Injectable, inject, signal, untracked } from "@angular/core";
 import {
   AiChatMessage,
   AiConversation,
@@ -15,14 +15,16 @@ import {
   AssistantMessageResponseDto,
   AssistantSuggestionDto,
 } from "@core/services/assistant-data.service";
+import { AuthService } from "@core/services/auth.service";
 import { AuthorizationService } from "@core/services/authorization.service";
 import { NavigationService } from "@core/services/navigation.service";
 import { DentalCapability } from "@core/security/capabilities";
 import { firstValueFrom } from "rxjs";
-import { AI_QUICK_ACTIONS, AI_WELCOME_MESSAGE } from "../data/ai-chat.mock";
+import { AI_QUICK_ACTIONS, AI_WELCOME_MESSAGE } from "../data/ai-chat.config";
 
 @Injectable({ providedIn: "root" })
 export class AiChatFacade {
+  private readonly authService = inject(AuthService);
   private readonly authorizationService = inject(AuthorizationService);
   private readonly navigationService = inject(NavigationService);
   private readonly assistantDataService = inject(AssistantDataService);
@@ -31,6 +33,12 @@ export class AiChatFacade {
   private localConversationSequence = 0;
   private readonly backendConversationByLocalId = new Map<string, string>();
   private backendAllowedSuggestionIds = new Set<string>();
+  // Identifies the signed-in user this state belongs to. This facade is a root
+  // singleton, so without it chats would leak across logout/login in the SPA.
+  private currentUserId: string | null = null;
+  // Bumped on every session change so late async responses from the previous
+  // user are discarded instead of being written into the new user's state.
+  private sessionGeneration = 0;
 
   readonly promptDraft = signal<AiPromptDraft>({
     search: "",
@@ -71,7 +79,10 @@ export class AiChatFacade {
   );
 
   public constructor() {
-    void this.bootstrap();
+    effect(() => {
+      const userId = this.authService.user()?.userId ?? null;
+      untracked(() => this.onSessionChanged(userId));
+    });
   }
 
   toggleHistory(): void {
@@ -97,6 +108,14 @@ export class AiChatFacade {
   }
 
   startNewChat(): void {
+    const active = this.activeConversation();
+    if (active && active.showWelcomeActions && !this.backendConversationByLocalId.has(active.id)) {
+      // Already on an untouched new chat; don't stack empty ones.
+      this.promptDraft.update((state) => ({ ...state, prompt: "" }));
+      this.closeHistory();
+      return;
+    }
+
     const localId = this.nextLocalConversationId();
     const conversation = this.createConversationShell(localId, "New conversation");
     this.conversations.update((state) => [conversation, ...state]);
@@ -136,9 +155,13 @@ export class AiChatFacade {
     });
 
     this.refreshConversationTitle(conversationId, prompt);
+    const generation = this.sessionGeneration;
     this.isResponding.set(true);
     try {
       const response = await this.postMessageWithConversationRecovery(conversationId, prompt);
+      if (generation !== this.sessionGeneration) {
+        return;
+      }
       this.replaceMessage(
         conversationId,
         loadingMessageId,
@@ -146,6 +169,9 @@ export class AiChatFacade {
       );
       this.touchConversation(conversationId);
     } catch (error) {
+      if (generation !== this.sessionGeneration) {
+        return;
+      }
       this.replaceMessage(conversationId, loadingMessageId, {
         id: this.nextMessageId(),
         role: "assistant",
@@ -156,7 +182,9 @@ export class AiChatFacade {
         canCopy: true,
       });
     } finally {
-      this.isResponding.set(false);
+      if (generation === this.sessionGeneration) {
+        this.isResponding.set(false);
+      }
     }
   }
 
@@ -165,6 +193,14 @@ export class AiChatFacade {
       this.appendAssistantText(
         "You don't have access for that action in this account.",
         "error",
+      );
+      return;
+    }
+
+    if (action.id === "ops-open-order-detail") {
+      this.updateDraft(action.prefillPrompt);
+      this.appendAssistantText(
+        "Please enter the order ID or order number (example: DL-026015), and I'll open its details.",
       );
       return;
     }
@@ -203,42 +239,65 @@ export class AiChatFacade {
     );
   }
 
-  private async bootstrap(): Promise<void> {
-    try {
-      const [suggestions, summaries] = await Promise.all([
-        firstValueFrom(this.assistantDataService.getSuggestions$()),
-        firstValueFrom(this.assistantDataService.listConversations$()),
-      ]);
-      this.backendAllowedSuggestionIds = new Set(
-        suggestions.filter((item) => item.enabled).map((item) => item.id),
-      );
-      this.seedConversationHistory(summaries);
-    } catch {
-      const localId = this.nextLocalConversationId();
-      const fallback = this.createConversationShell(localId, "New conversation");
-      this.conversations.set([fallback]);
-      this.activeConversationId.set(localId);
-    }
-  }
-
-  private seedConversationHistory(summaries: AssistantConversationSummaryDto[]): void {
-    if (summaries.length === 0) {
-      const localId = this.nextLocalConversationId();
-      const fresh = this.createConversationShell(localId, "New conversation");
-      this.conversations.set([fresh]);
-      this.activeConversationId.set(localId);
+  private onSessionChanged(userId: string | null): void {
+    if (userId === this.currentUserId) {
       return;
     }
 
-    const mapped = summaries.map((summary) => {
+    this.currentUserId = userId;
+    this.resetState();
+    if (userId) {
+      void this.bootstrap(this.sessionGeneration);
+    }
+  }
+
+  private resetState(): void {
+    this.sessionGeneration += 1;
+    this.backendConversationByLocalId.clear();
+    this.backendAllowedSuggestionIds = new Set<string>();
+    this.messageSequence = 0;
+    this.localConversationSequence = 0;
+    this.conversations.set([]);
+    this.activeConversationId.set(null);
+    this.promptDraft.set({ search: "", prompt: "" });
+    this.historyOpen.set(false);
+    this.isResponding.set(false);
+  }
+
+  private async bootstrap(generation: number): Promise<void> {
+    let summaries: AssistantConversationSummaryDto[] = [];
+    try {
+      const [suggestions, loaded] = await Promise.all([
+        firstValueFrom(this.assistantDataService.getSuggestions$()),
+        firstValueFrom(this.assistantDataService.listConversations$()),
+      ]);
+      if (generation !== this.sessionGeneration) {
+        return;
+      }
+      this.backendAllowedSuggestionIds = new Set(
+        suggestions.filter((item) => item.enabled).map((item) => item.id),
+      );
+      summaries = loaded;
+    } catch {
+      if (generation !== this.sessionGeneration) {
+        return;
+      }
+    }
+
+    this.seedConversationHistory(summaries);
+  }
+
+  // Every visit starts on a brand-new chat; previous chats are only reachable
+  // from the history panel and are loaded lazily when selected.
+  private seedConversationHistory(summaries: AssistantConversationSummaryDto[]): void {
+    const localId = this.nextLocalConversationId();
+    const fresh = this.createConversationShell(localId, "New conversation");
+    const history = summaries.map((summary) => {
       this.backendConversationByLocalId.set(summary.id, summary.id);
       return this.fromConversationSummary(summary);
     });
-    this.conversations.set(mapped);
-    this.activeConversationId.set(mapped[0]?.id ?? null);
-    if (mapped[0]) {
-      void this.loadConversationMessages(mapped[0].id);
-    }
+    this.conversations.set([fresh, ...history]);
+    this.activeConversationId.set(localId);
   }
 
   private fromConversationSummary(summary: AssistantConversationSummaryDto): AiConversation {
@@ -257,10 +316,14 @@ export class AiChatFacade {
       return;
     }
 
+    const generation = this.sessionGeneration;
     try {
       const conversation = await firstValueFrom(
         this.assistantDataService.getConversation$(backendConversationId),
       );
+      if (generation !== this.sessionGeneration) {
+        return;
+      }
       this.updateConversation(localConversationId, () =>
         this.fromBackendConversation(conversation, localConversationId),
       );
@@ -362,10 +425,7 @@ export class AiChatFacade {
     return {
       id: this.nextMessageId(),
       role: "assistant",
-      text:
-        response.result.executions.length > 0
-          ? `${response.result.text}\n\n${this.formatExecutionResults(response.result.executions)}`
-          : response.result.text,
+      text: response.result.text,
       createdAt: new Date().toISOString(),
       type: "text",
       markdown: true,
@@ -382,18 +442,26 @@ export class AiChatFacade {
       return;
     }
 
+    const generation = this.sessionGeneration;
     this.isResponding.set(true);
     try {
       const result = await firstValueFrom(
         this.assistantDataService.confirmAction$(actionId, confirmationToken),
       );
+      if (generation !== this.sessionGeneration) {
+        return;
+      }
       this.appendConfirmationResultMessage(conversationId, result);
       this.touchConversation(conversationId);
       await this.loadConversationMessages(conversationId);
     } catch (error) {
-      this.appendAssistantText(this.resolveAssistantErrorText(error), "error");
+      if (generation === this.sessionGeneration) {
+        this.appendAssistantText(this.resolveAssistantErrorText(error), "error");
+      }
     } finally {
-      this.isResponding.set(false);
+      if (generation === this.sessionGeneration) {
+        this.isResponding.set(false);
+      }
     }
   }
 
@@ -575,18 +643,6 @@ export class AiChatFacade {
       markdown: true,
       canCopy: true,
     });
-  }
-
-  private formatExecutionResults(
-    executions: Array<{ tool: string; result?: unknown }>,
-  ): string {
-    const lines = executions.map((execution) => {
-      if (!execution.result) {
-        return `- ${execution.tool}: executed`;
-      }
-      return `- ${execution.tool}: executed with result`;
-    });
-    return `Tool execution results:\n${lines.join("\n")}`;
   }
 }
 

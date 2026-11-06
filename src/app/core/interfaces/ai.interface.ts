@@ -1,3 +1,5 @@
+import { PageId } from "./navigation.interface";
+
 export type AiActionIntent =
   | "createOrder"
   | "updateOrder"
@@ -6,6 +8,9 @@ export type AiActionIntent =
   | "openReports"
   | "searchOrders"
   | "searchPatients"
+  | "addDoctor"
+  | "addPatient"
+  | "addClinic"
   | "aboutCompany"
   | "servicePricing"
   | "serviceCatalog"
@@ -102,7 +107,7 @@ export interface AiQuickAction {
   prefillPrompt: string;
   behavior: "send" | "prefill" | "navigate";
   category: "faq" | "operational" | "navigation";
-  route?: "orders" | "reports" | "patients";
+  route?: PageId;
   badge?: string;
   requiredCapability?: string;
 }

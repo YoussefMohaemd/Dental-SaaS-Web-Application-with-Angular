@@ -43,6 +43,12 @@ export class AiChatComposerComponent implements AfterViewInit, OnChanges {
     this.resize();
   }
 
+  onFormSubmit(event: Event): void {
+    // Native form submission reloads the page; the chat must stay in the SPA.
+    event.preventDefault();
+    this.onSubmit();
+  }
+
   onSubmit(): void {
     const field = this.promptField()?.nativeElement;
     const prompt = (field?.value ?? this.draft()).trim();
