@@ -20,6 +20,7 @@ export class AiShortcutCardComponent {
     const labels: Record<AiShortcutAction["intent"], string> = {
       createOrder: "Create",
       updateOrder: "Update",
+      openOrderDetails: "Open",
       generateReport: "Report",
       openOrders: "Orders",
       openReports: "Reports",

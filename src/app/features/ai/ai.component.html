@@ -51,7 +51,7 @@
         (copyRequested)="copyMessage($event)"
       />
 
-      @if (showWelcome()) {
+      @if (showWelcome() && !orderWorkflow()) {
         <section class="chat-welcome">
           <app-ai-quick-actions
             [actions]="quickActions()"
@@ -59,6 +59,21 @@
             (actionInvoked)="onQuickAction($event)"
           />
         </section>
+      }
+
+      @if (orderWorkflow(); as workflow) {
+        <app-ai-order-workflow-panel
+          [workflow]="workflow"
+          (inputChanged)="onWorkflowInputChanged($event)"
+          (continueRequested)="onWorkflowContinue()"
+          (candidatePicked)="onWorkflowCandidatePicked($event)"
+          (billToChanged)="onWorkflowBillToChanged($event)"
+          (serviceToggled)="onWorkflowServiceToggled($event)"
+          (toothToggled)="onWorkflowToothToggled($event)"
+          (notesChanged)="onWorkflowNotesChanged($event)"
+          (submitRequested)="onWorkflowSubmit()"
+          (cancelRequested)="onWorkflowCancel()"
+        />
       }
     </div>
 

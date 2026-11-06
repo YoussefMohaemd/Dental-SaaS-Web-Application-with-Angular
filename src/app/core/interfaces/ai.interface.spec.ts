@@ -80,4 +80,16 @@ describe("ai.interface", () => {
     expect(conversation.showWelcomeActions).toBeTrue();
     expect(summary.isActive).toBeTrue();
   });
+
+  it("should expose open-order-details shortcut intent metadata", () => {
+    const shortcut: AiShortcutAction = {
+      id: "open-order",
+      title: "Open order details",
+      intent: "openOrderDetails",
+      orderId: "ord-1",
+    };
+
+    expect(shortcut.intent).toBe("openOrderDetails");
+    expect(shortcut.orderId).toBe("ord-1");
+  });
 });

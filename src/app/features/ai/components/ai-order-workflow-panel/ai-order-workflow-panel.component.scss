@@ -1,0 +1,125 @@
+:host {
+  display: block;
+}
+
+.workflow-panel {
+  margin-top: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 0.9rem;
+  padding: 0.85rem;
+  background: var(--card);
+}
+
+.workflow-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.workflow-panel__title {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.workflow-panel__notice {
+  margin: 0.6rem 0 0;
+  color: var(--primary);
+  font-size: 0.82rem;
+}
+
+.workflow-panel__error {
+  margin: 0.6rem 0 0;
+  color: var(--destructive);
+  font-size: 0.82rem;
+}
+
+.workflow-panel__field {
+  margin-top: 0.75rem;
+}
+
+.workflow-panel__label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.78rem;
+  color: var(--muted-foreground);
+}
+
+.workflow-panel__input,
+.workflow-panel__textarea {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 0.6rem;
+  background: var(--background);
+  color: var(--foreground);
+  padding: 0.55rem 0.65rem;
+}
+
+.workflow-panel__textarea {
+  min-height: 88px;
+  resize: vertical;
+}
+
+.workflow-panel__choices {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.workflow-panel__services {
+  margin-top: 0.75rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.5rem;
+}
+
+.workflow-panel__service-card {
+  text-align: left;
+  border: 1px solid var(--border);
+  border-radius: 0.7rem;
+  padding: 0.55rem;
+  background: var(--background);
+  color: inherit;
+  cursor: pointer;
+}
+
+.workflow-panel__service-card.is-selected {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 9%, var(--background));
+}
+
+.workflow-panel__service-card p {
+  margin: 0.4rem 0;
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+
+.workflow-panel__service-header {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.workflow-panel__candidates {
+  margin-top: 0.65rem;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.workflow-panel__candidates button {
+  border: 1px solid var(--border);
+  border-radius: 0.6rem;
+  background: var(--background);
+  color: inherit;
+  text-align: left;
+  padding: 0.45rem 0.55rem;
+  cursor: pointer;
+}
+
+.workflow-panel__actions {
+  margin-top: 0.85rem;
+  display: flex;
+  justify-content: flex-end;
+}
+

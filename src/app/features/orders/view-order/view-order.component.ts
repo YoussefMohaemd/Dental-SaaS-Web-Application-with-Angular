@@ -30,6 +30,7 @@ import { DisplayDatePipe } from "@shared/pipes/display-date.pipe";
 import { lucideSvg } from "@shared/icons/lucide-icons";
 import { SubOrderDataService } from "@core/services/sub-order-data.service";
 import { statusDisplayLabel } from "@shared/utils/status-label";
+import { getApiErrorMessage } from "@shared/utils/api-error";
 
 const STAGES = [
   "Received",
@@ -305,7 +306,9 @@ export class ViewOrderComponent implements OnInit {
       }
       this.orderService.deleteOrder$(current.id).subscribe({
         next: () => this.navigationService.navigate("orders"),
-        error: (error) => console.error("Failed to delete order:", error),
+        error: (error) => {
+          this.flashAction(getApiErrorMessage(error, "Unable to delete order."));
+        },
       });
       this.confirmDeleteVisible.set(false);
       return;

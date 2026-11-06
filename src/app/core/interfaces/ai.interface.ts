@@ -3,6 +3,7 @@ import { PageId } from "./navigation.interface";
 export type AiActionIntent =
   | "createOrder"
   | "updateOrder"
+  | "openOrderDetails"
   | "generateReport"
   | "openOrders"
   | "openReports"
@@ -22,6 +23,7 @@ export interface AiShortcutAction {
   intent: AiActionIntent;
   description?: string;
   badge?: string;
+  orderId?: string;
   confirmation?: {
     actionId: string;
     confirmationToken: string;

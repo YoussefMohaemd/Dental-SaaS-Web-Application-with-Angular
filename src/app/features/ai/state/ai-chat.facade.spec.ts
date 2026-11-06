@@ -1,9 +1,15 @@
 import { signal } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
+import { Clinic, Doctor, Patient } from "@core/interfaces";
 import { AuthService, type AuthenticatedUser } from "@core/services/auth.service";
 import { AuthorizationService } from "@core/services/authorization.service";
 import { AssistantDataService } from "@core/services/assistant-data.service";
+import { ClinicDataService } from "@core/services/clinic-data.service";
+import { DoctorDataService } from "@core/services/doctor-data.service";
 import { NavigationService } from "@core/services/navigation.service";
+import { OrderDataService } from "@core/services/order-data.service";
+import { PatientDataService } from "@core/services/patient-data.service";
+import { SubOrderDataService } from "@core/services/sub-order-data.service";
 import { of, throwError } from "rxjs";
 import { AiChatFacade } from "./ai-chat.facade";
 
@@ -13,6 +19,14 @@ describe("AiChatFacade", () => {
   let authorizationService: jasmine.SpyObj<AuthorizationService>;
   let navigationService: jasmine.SpyObj<NavigationService>;
   let assistantDataService: jasmine.SpyObj<AssistantDataService>;
+  let patientDataService: jasmine.SpyObj<PatientDataService>;
+  let doctorDataService: jasmine.SpyObj<DoctorDataService>;
+  let clinicDataService: jasmine.SpyObj<ClinicDataService>;
+  let orderDataService: jasmine.SpyObj<OrderDataService>;
+  let subOrderDataService: jasmine.SpyObj<SubOrderDataService>;
+  let patientsSignal: ReturnType<typeof signal<Patient[]>>;
+  let doctorsSignal: ReturnType<typeof signal<Doctor[]>>;
+  let clinicsSignal: ReturnType<typeof signal<Clinic[]>>;
 
   const makeUser = (userId: string): AuthenticatedUser => ({
     userId,
@@ -58,6 +72,16 @@ describe("AiChatFacade", () => {
           resultType: "order-list",
           enabled: true,
         },
+        {
+          id: "assistant-create-order",
+          title: "Create",
+          description: "Create",
+          category: "orders",
+          template: "Create",
+          requiredCapabilities: ["orders.create"],
+          resultType: "confirmation",
+          enabled: true,
+        },
       ]),
     );
     assistantDataService.listConversations$.and.returnValue(of([]));
@@ -101,6 +125,40 @@ describe("AiChatFacade", () => {
         },
       }),
     );
+    patientsSignal = signal<Patient[]>([]);
+    doctorsSignal = signal<Doctor[]>([]);
+    clinicsSignal = signal<Clinic[]>([]);
+    patientDataService = jasmine.createSpyObj<PatientDataService>(
+      "PatientDataService",
+      ["loadPatients"],
+      { patients: patientsSignal },
+    );
+    doctorDataService = jasmine.createSpyObj<DoctorDataService>(
+      "DoctorDataService",
+      ["loadDoctors"],
+      { doctors: doctorsSignal },
+    );
+    clinicDataService = jasmine.createSpyObj<ClinicDataService>(
+      "ClinicDataService",
+      ["loadClinics"],
+      { clinics: clinicsSignal },
+    );
+    orderDataService = jasmine.createSpyObj<OrderDataService>(
+      "OrderDataService",
+      ["loadOrders", "getOrderById$", "createOrder$", "updateOrder$"],
+      { orders: signal([]) },
+    );
+    orderDataService.getOrderById$.and.returnValue(
+      throwError(() => ({ status: 404 })),
+    );
+    orderDataService.createOrder$.and.returnValue(throwError(() => new Error("not-used")));
+    orderDataService.updateOrder$.and.returnValue(throwError(() => new Error("not-used")));
+    subOrderDataService = jasmine.createSpyObj<SubOrderDataService>(
+      "SubOrderDataService",
+      ["createForOrder$", "replaceForOrder$"],
+    );
+    subOrderDataService.createForOrder$.and.returnValue(of([]));
+    subOrderDataService.replaceForOrder$.and.returnValue(of([]));
 
     TestBed.configureTestingModule({
       providers: [
@@ -109,6 +167,11 @@ describe("AiChatFacade", () => {
         { provide: AuthorizationService, useValue: authorizationService },
         { provide: NavigationService, useValue: navigationService },
         { provide: AssistantDataService, useValue: assistantDataService },
+        { provide: PatientDataService, useValue: patientDataService },
+        { provide: DoctorDataService, useValue: doctorDataService },
+        { provide: ClinicDataService, useValue: clinicDataService },
+        { provide: OrderDataService, useValue: orderDataService },
+        { provide: SubOrderDataService, useValue: subOrderDataService },
       ],
     });
 
@@ -239,7 +302,7 @@ describe("AiChatFacade", () => {
       })),
     );
 
-    await facade.submitPrompt("update order");
+    await facade.submitPrompt("delete order");
 
     const latest = facade.messages().at(-1)?.text.toLowerCase() ?? "";
     expect(latest).toContain("don't have access");
@@ -265,7 +328,7 @@ describe("AiChatFacade", () => {
       }),
     );
 
-    await facade.submitPrompt("update order");
+    await facade.submitPrompt("confirm pending action");
 
     const latest = facade.messages().at(-1);
     expect(latest?.type).toBe("confirmation");
@@ -322,5 +385,144 @@ describe("AiChatFacade", () => {
     expect(assistantDataService.postMessage$.calls.argsFor(0)[0]).toBe("conv-backend-stale");
     expect(assistantDataService.postMessage$.calls.argsFor(1)[0]).toBe("conv-backend-fresh");
     expect(facade.messages().at(-1)?.text).toContain("Recovered from stale conversation");
+  });
+
+  it("starts create workflow from quick action", () => {
+    const quick = facade.quickActions().find((action) => action.id === "ops-create-order");
+    expect(quick).toBeDefined();
+    if (!quick) {
+      throw new Error("Missing create workflow quick action");
+    }
+
+    facade.runQuickAction(quick);
+
+    expect(facade.orderWorkflow()?.mode).toBe("create");
+    expect(facade.orderWorkflow()?.step).toBe("patient");
+  });
+
+  it("starts update workflow from typed intent", async () => {
+    await facade.submitPrompt("update order");
+
+    expect(facade.orderWorkflow()?.mode).toBe("update");
+    expect(facade.orderWorkflow()?.step).toBe("lookupOrder");
+  });
+
+  it("shows quick actions again when user asks to show quick actions", async () => {
+    await facade.submitPrompt("show services");
+    expect(facade.showWelcome()).toBeFalse();
+
+    await facade.submitPrompt("show quick actions");
+
+    expect(facade.showWelcome()).toBeTrue();
+    expect(facade.orderWorkflow()).toBeNull();
+    expect(facade.messages().at(-1)?.text.toLowerCase()).toContain(
+      "quick actions are shown again",
+    );
+  });
+
+  it("creates sub-orders when create workflow submits", async () => {
+    patientsSignal.set([
+      {
+        id: "pat-1",
+        name: "Ali",
+        dob: "1990-01-01",
+        gender: "M",
+        phone: "1",
+        email: "a@x.com",
+        clinicId: "cl-1",
+        clinicName: "Clinic A",
+        doctorId: "doc-1",
+        doctorName: "Dr A",
+        status: "Active",
+        ordersCount: 0,
+        lastVisit: "2026-01-01",
+      },
+    ]);
+    doctorsSignal.set([
+      {
+        id: "doc-1",
+        name: "Dr A",
+        specialty: "General",
+        clinicId: "cl-1",
+        clinicName: "Clinic A",
+        email: "d@x.com",
+        phone: "2",
+        status: "Active",
+        ordersCount: 0,
+        joinedDate: "2020-01-01",
+        avatar: "",
+      },
+    ]);
+    clinicsSignal.set([
+      {
+        id: "cl-1",
+        name: "Clinic A",
+        address: "Addr",
+        city: "C",
+        phone: "3",
+        email: "c@x.com",
+        doctorsCount: 1,
+        patientsCount: 1,
+        ordersCount: 0,
+        status: "Active",
+        accountManager: "M",
+      },
+    ]);
+    orderDataService.createOrder$.and.returnValue(
+      of({
+        id: "ord-1",
+        orderNumber: "DL-1",
+        patientId: "pat-1",
+        patientName: "Ali",
+        doctorId: "doc-1",
+        doctorName: "Dr A",
+        clinicId: "cl-1",
+        clinicName: "Clinic A",
+        scanCenterId: "",
+        scanCenterName: "",
+        status: "New",
+        priority: "Normal",
+        restoration: "Crown",
+        arch: "Both",
+        format: "STL",
+        shade: "A2",
+        units: 1,
+        amount: 10,
+        billed: false,
+        billTo: "Doctor - Dr A",
+        vouchers: 0,
+        isLocked: false,
+        hasNotes: false,
+        notes: "",
+        receivedAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        dueDate: new Date().toISOString(),
+      }),
+    );
+
+    facade.runQuickAction({
+      id: "ops-create-order",
+      title: "Create Order",
+      description: "Create",
+      icon: "file-plus",
+      intent: "createOrder",
+      prefillPrompt: "",
+      behavior: "prefill",
+      category: "operational",
+      requiredCapability: "orders.create",
+    });
+
+    facade.updateWorkflowInput("Ali");
+    await facade.advanceOrderWorkflow();
+    await facade.advanceOrderWorkflow();
+    await facade.advanceOrderWorkflow();
+    await facade.advanceOrderWorkflow();
+    facade.toggleWorkflowService("treatment-plan");
+    await facade.advanceOrderWorkflow();
+    facade.toggleWorkflowTooth(11);
+    await facade.advanceOrderWorkflow();
+    await facade.submitOrderWorkflow();
+
+    expect(subOrderDataService.createForOrder$).toHaveBeenCalled();
   });
 });

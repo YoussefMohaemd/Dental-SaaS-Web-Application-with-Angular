@@ -1,0 +1,197 @@
+<section class="workflow-panel" data-testid="ai-order-workflow-panel">
+  <header class="workflow-panel__header">
+    <h3 class="workflow-panel__title font-display">{{ heading() }}</h3>
+    <app-button
+      type="button"
+      variant="ghost"
+      size="sm"
+      (onClick)="cancelRequested.emit()"
+    >
+      Cancel
+    </app-button>
+  </header>
+
+  @if (workflow().notice) {
+    <p class="workflow-panel__notice">{{ workflow().notice }}</p>
+  }
+
+  @if (workflow().error) {
+    <p class="workflow-panel__error">{{ workflow().error }}</p>
+  }
+
+  @if (
+    workflow().step === "patient" ||
+    workflow().step === "doctor" ||
+    workflow().step === "clinic" ||
+    workflow().step === "lookupOrder"
+  ) {
+    <div class="workflow-panel__field">
+      <label class="workflow-panel__label">
+        @if (workflow().step === "patient") {
+          Patient name or ID
+        } @else if (workflow().step === "doctor") {
+          Doctor name or ID
+        } @else if (workflow().step === "clinic") {
+          Clinic name or ID
+        } @else {
+          Order ID / order number / patient name
+        }
+      </label>
+      <input
+        class="workflow-panel__input"
+        [value]="workflow().input"
+        (input)="inputChanged.emit($any($event.target).value)"
+        placeholder="Type and continue"
+      />
+    </div>
+  }
+
+  @if (workflow().step === "billTo") {
+    <div class="workflow-panel__choices">
+      <app-button
+        type="button"
+        variant="outline"
+        [buttonClass]="workflow().create?.billToTarget === 'doctor' ? '!border-primary' : ''"
+        (onClick)="billToChanged.emit('doctor')"
+      >
+        Bill to Doctor
+      </app-button>
+      <app-button
+        type="button"
+        variant="outline"
+        [buttonClass]="workflow().create?.billToTarget === 'scan-center' ? '!border-primary' : ''"
+        (onClick)="billToChanged.emit('scan-center')"
+      >
+        Bill to Scan Center
+      </app-button>
+    </div>
+  }
+
+  @if (workflow().step === "services" || workflow().step === "editOrder") {
+    <div class="workflow-panel__services">
+      @for (service of workflow().services; track service.id) {
+        <button
+          type="button"
+          class="workflow-panel__service-card"
+          [class.is-selected]="
+            (workflow().mode === 'create'
+              ? workflow().create?.selectedServiceIds
+              : workflow().update?.selectedServiceIds
+            )?.includes(service.id)
+          "
+          (click)="serviceToggled.emit(service.id)"
+        >
+          <div class="workflow-panel__service-header">
+            <span>{{ service.icon }}</span>
+            <strong>{{ service.name }}</strong>
+          </div>
+          <p>{{ service.description }}</p>
+          <small>${{ service.basePrice }}</small>
+        </button>
+      }
+    </div>
+  }
+
+  @if (workflow().step === "teeth" || workflow().step === "editOrder") {
+    <app-teeth-chart
+      [selected]="
+        workflow().mode === 'create'
+          ? workflow().create?.selectedTeeth ?? []
+          : workflow().update?.selectedTeeth ?? []
+      "
+      [services]="selectedServiceNames() ? [selectedServiceNames()] : []"
+      [serviceTeeth]="{}"
+      (toothToggle)="toothToggled.emit($event)"
+    />
+  }
+
+  @if (workflow().step === "editOrder") {
+    <div class="workflow-panel__field">
+      <label class="workflow-panel__label">Order notes</label>
+      <textarea
+        class="workflow-panel__textarea"
+        [value]="workflow().update?.notes ?? ''"
+        (input)="notesChanged.emit($any($event.target).value)"
+      ></textarea>
+    </div>
+    <div class="workflow-panel__choices">
+      <app-button
+        type="button"
+        variant="outline"
+        [buttonClass]="workflow().update?.billToTarget === 'doctor' ? '!border-primary' : ''"
+        (onClick)="billToChanged.emit('doctor')"
+      >
+        Bill to Doctor
+      </app-button>
+      <app-button
+        type="button"
+        variant="outline"
+        [buttonClass]="workflow().update?.billToTarget === 'scan-center' ? '!border-primary' : ''"
+        (onClick)="billToChanged.emit('scan-center')"
+      >
+        Bill to Scan Center
+      </app-button>
+    </div>
+  }
+
+  @if (
+    workflow().step === "patient" && workflow().create?.patientCandidates?.length
+  ) {
+    <div class="workflow-panel__candidates">
+      @for (item of workflow().create?.patientCandidates ?? []; track item.id) {
+        <button type="button" (click)="onPick(item.id)">
+          {{ item.name }} ({{ item.id }})
+        </button>
+      }
+    </div>
+  }
+
+  @if (
+    workflow().step === "doctor" && workflow().create?.doctorCandidates?.length
+  ) {
+    <div class="workflow-panel__candidates">
+      @for (item of workflow().create?.doctorCandidates ?? []; track item.id) {
+        <button type="button" (click)="onPick(item.id)">
+          {{ item.name }} ({{ item.id }})
+        </button>
+      }
+    </div>
+  }
+
+  @if (
+    workflow().step === "clinic" && workflow().create?.clinicCandidates?.length
+  ) {
+    <div class="workflow-panel__candidates">
+      @for (item of workflow().create?.clinicCandidates ?? []; track item.id) {
+        <button type="button" (click)="onPick(item.id)">
+          {{ item.name }} ({{ item.id }})
+        </button>
+      }
+    </div>
+  }
+
+  @if (
+    workflow().step === "selectOrder" && workflow().update?.orderCandidates?.length
+  ) {
+    <div class="workflow-panel__candidates">
+      @for (item of workflow().update?.orderCandidates ?? []; track item.id) {
+        <button type="button" (click)="onPick(item.id)">
+          {{ item.orderNumber }} — {{ item.patientName }}
+        </button>
+      }
+    </div>
+  }
+
+  <footer class="workflow-panel__actions">
+    @if (workflow().step === "review" || workflow().step === "reviewUpdate") {
+      <app-button type="button" (onClick)="submitRequested.emit()">
+        Submit
+      </app-button>
+    } @else {
+      <app-button type="button" (onClick)="continueRequested.emit()">
+        Continue
+      </app-button>
+    }
+  </footer>
+</section>
+

@@ -5,7 +5,7 @@ import {
   provideRouter,
 } from "@angular/router";
 import { signal } from "@angular/core";
-import { of } from "rxjs";
+import { Observable, of, throwError } from "rxjs";
 import { ViewOrderComponent } from "./view-order.component";
 import { OrderDataService } from "@core/services/order-data.service";
 import { PatientDataService } from "@core/services/patient-data.service";
@@ -62,6 +62,7 @@ const subOrders: SubOrder[] = [
     notes: "Case note",
   },
 ];
+let deleteOrderResult: Observable<void> = of(void 0);
 
 function configureComponent(
   orderId: string,
@@ -86,7 +87,7 @@ function configureComponent(
           getOrderById: (id: string) =>
             id === currentOrder?.id ? currentOrder : undefined,
           updateOrder$: () => of(currentOrder),
-          deleteOrder$: () => of(void 0),
+          deleteOrder$: () => deleteOrderResult,
         },
       },
       {
@@ -135,6 +136,7 @@ describe("ViewOrderComponent", () => {
   let fixture: ComponentFixture<ViewOrderComponent>;
 
   beforeEach(async () => {
+    deleteOrderResult = of(void 0);
     await configureComponent("ord-1", order);
     fixture = TestBed.createComponent(ViewOrderComponent);
     component = fixture.componentInstance;
@@ -192,6 +194,16 @@ describe("ViewOrderComponent", () => {
     expect(component.confirmDeleteVisible()).toBeFalse();
   });
 
+  it("should show an action message when delete request fails", async () => {
+    deleteOrderResult = throwError(() => ({
+      error: { message: "Delete failed from API" },
+    }));
+    component.askDelete();
+    component.confirmDelete();
+
+    expect(component.actionMessage()).toContain("Delete failed from API");
+  });
+
   it("should preserve the order id on the view-order breadcrumb", () => {
     component["navigationService"].currentPage.set("subOrder");
     component["navigationService"].currentParams.set({
@@ -210,6 +222,7 @@ describe("ViewOrderComponent invalid route", () => {
   let fixture: ComponentFixture<ViewOrderComponent>;
 
   beforeEach(async () => {
+    deleteOrderResult = of(void 0);
     await configureComponent("missing-order");
     fixture = TestBed.createComponent(ViewOrderComponent);
     component = fixture.componentInstance;
@@ -237,6 +250,7 @@ describe("ViewOrderComponent exact order flow", () => {
   ];
 
   beforeEach(async () => {
+    deleteOrderResult = of(void 0);
     await configureComponent("ord-33", exactOrder, exactSubOrders);
     fixture = TestBed.createComponent(ViewOrderComponent);
     component = fixture.componentInstance;
