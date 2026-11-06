@@ -17,6 +17,11 @@ export interface AiShortcutAction {
   intent: AiActionIntent;
   description?: string;
   badge?: string;
+  confirmation?: {
+    actionId: string;
+    confirmationToken: string;
+    tool: string;
+  };
 }
 
 export interface AiResultCardBase {
@@ -93,7 +98,11 @@ export interface AiQuickAction {
   title: string;
   description: string;
   intent: AiActionIntent;
-  prompt: string;
+  icon: string;
+  prefillPrompt: string;
+  behavior: "send" | "prefill" | "navigate";
+  category: "faq" | "operational" | "navigation";
+  route?: "orders" | "reports" | "patients";
   badge?: string;
   requiredCapability?: string;
 }

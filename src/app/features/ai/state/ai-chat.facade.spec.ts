@@ -12,7 +12,7 @@ describe("AiChatFacade", () => {
   let navigationService: jasmine.SpyObj<NavigationService>;
   let assistantDataService: jasmine.SpyObj<AssistantDataService>;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     authorizationService = jasmine.createSpyObj<AuthorizationService>(
       "AuthorizationService",
       ["has"],
@@ -26,7 +26,39 @@ describe("AiChatFacade", () => {
     );
     assistantDataService = jasmine.createSpyObj<AssistantDataService>(
       "AssistantDataService",
-      ["createConversation$", "postMessage$"],
+      [
+        "getSuggestions$",
+        "listConversations$",
+        "getConversation$",
+        "createConversation$",
+        "postMessage$",
+        "confirmAction$",
+      ],
+    );
+    assistantDataService.getSuggestions$.and.returnValue(
+      of([
+        {
+          id: "assistant-search-orders",
+          title: "Search",
+          description: "Search",
+          category: "orders",
+          template: "Search",
+          requiredCapabilities: ["orders.read"],
+          resultType: "order-list",
+          enabled: true,
+        },
+      ]),
+    );
+    assistantDataService.listConversations$.and.returnValue(of([]));
+    assistantDataService.getConversation$.and.returnValue(
+      of({
+        id: "conv-backend-1",
+        title: "Backend",
+        status: "active",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        messages: [],
+      }),
     );
     assistantDataService.createConversation$.and.returnValue(
       of({
@@ -36,6 +68,14 @@ describe("AiChatFacade", () => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         messages: [],
+      }),
+    );
+    assistantDataService.confirmAction$.and.returnValue(
+      of({
+        actionId: "a1",
+        conversationId: "conv-backend-1",
+        status: "confirmed",
+        message: "Action confirmed and executed",
       }),
     );
     assistantDataService.postMessage$.and.returnValue(
@@ -61,9 +101,11 @@ describe("AiChatFacade", () => {
     });
 
     facade = TestBed.inject(AiChatFacade);
+    await flushAsyncFacadeInit();
   });
 
   it("should start with welcome state", () => {
+    expect(assistantDataService.listConversations$).toHaveBeenCalled();
     expect(facade.showWelcome()).toBeTrue();
     expect(facade.messages().length).toBeGreaterThan(0);
     expect(facade.quickActions().length).toBeGreaterThan(0);
@@ -81,6 +123,11 @@ describe("AiChatFacade", () => {
     expect(assistantDataService.postMessage$).toHaveBeenCalled();
   });
 
+  async function flushAsyncFacadeInit(): Promise<void> {
+    await Promise.resolve();
+    await Promise.resolve();
+  }
+
   it("should route quick action denial before backend call", async () => {
     authorizationService.has.and.callFake((capability: string) =>
       capability === "reports.read" ? false : true,
@@ -90,8 +137,11 @@ describe("AiChatFacade", () => {
       id: "qa-create-report",
       title: "Create report",
       description: "Generate report",
+      icon: "chart-column",
       intent: "generateReport",
-      prompt: "generate report",
+      prefillPrompt: "generate report",
+      behavior: "prefill",
+      category: "operational",
       requiredCapability: "reports.read",
     });
 
@@ -142,6 +192,58 @@ describe("AiChatFacade", () => {
 
     const latest = facade.messages().at(-1);
     expect(latest?.type).toBe("confirmation");
-    expect(latest?.text).toContain("1 pending action");
+    expect(latest?.actions?.length).toBe(1);
+  });
+
+  it("recreates backend conversation and retries when message post returns conversation not found", async () => {
+    assistantDataService.createConversation$.and.returnValues(
+      of({
+        id: "conv-backend-stale",
+        title: "Stale",
+        status: "active",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        messages: [],
+      }),
+      of({
+        id: "conv-backend-fresh",
+        title: "Fresh",
+        status: "active",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        messages: [],
+      }),
+    );
+    assistantDataService.postMessage$.and.callFake((conversationId: string) => {
+      if (conversationId === "conv-backend-stale") {
+        return throwError(() => ({
+          status: 404,
+          error: {
+            error: {
+              message: "Conversation was not found",
+            },
+          },
+        }));
+      }
+
+      return of({
+        conversationId: "conv-backend-fresh",
+        messageId: "m3",
+        result: {
+          type: "text" as const,
+          text: "Recovered from stale conversation",
+          plannedActions: 0,
+          executions: [],
+        },
+      });
+    });
+
+    await facade.submitPrompt("retry message");
+
+    expect(assistantDataService.createConversation$).toHaveBeenCalledTimes(2);
+    expect(assistantDataService.postMessage$).toHaveBeenCalledTimes(2);
+    expect(assistantDataService.postMessage$.calls.argsFor(0)[0]).toBe("conv-backend-stale");
+    expect(assistantDataService.postMessage$.calls.argsFor(1)[0]).toBe("conv-backend-fresh");
+    expect(facade.messages().at(-1)?.text).toContain("Recovered from stale conversation");
   });
 });

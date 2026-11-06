@@ -1,168 +1,124 @@
-import {
-  AiConversation,
-  AiFaqTopic,
-  AiQuickAction,
-  AiShortcutAction,
-} from "@core/interfaces";
-
-function minutesAgo(minutes: number): string {
-  return new Date(Date.now() - minutes * 60_000).toISOString();
-}
+import { AiFaqTopic, AiQuickAction } from "@core/interfaces";
 
 export const AI_WELCOME_MESSAGE =
-  "Hello, I am your Dental AI Assistant. I can help with services, pricing, standards, reports, and order workflows.";
+  "Hello, I am your Dental AI Assistant. Ask about orders, patients, reports, or FAQs.";
 
 export const AI_FAQ_PROMPTS: Record<AiFaqTopic, string> = {
   company: "Tell me about the company.",
-  services: "List available services.",
-  pricing: "Show service pricing.",
-  standards: "What submission standards are required?",
+  services: "List company services.",
+  pricing: "Show service pricing and billing notes.",
+  standards: "What are the submission standards?",
 };
 
 export const AI_QUICK_ACTIONS: readonly AiQuickAction[] = [
   {
-    id: "qa-about-company",
-    title: "About company",
-    description: "See a short company overview.",
+    id: "faq-about-company",
+    title: "About Company",
+    description: "Get a short company overview.",
+    icon: "info",
     intent: "aboutCompany",
-    prompt: AI_FAQ_PROMPTS.company,
+    prefillPrompt: AI_FAQ_PROMPTS.company,
+    behavior: "send",
+    category: "faq",
   },
   {
-    id: "qa-service-catalog",
-    title: "Services",
-    description: "List all available service lines.",
+    id: "faq-services",
+    title: "Company Services",
+    description: "List available services.",
+    icon: "briefcase-business",
     intent: "serviceCatalog",
-    prompt: AI_FAQ_PROMPTS.services,
+    prefillPrompt: AI_FAQ_PROMPTS.services,
+    behavior: "send",
+    category: "faq",
   },
   {
-    id: "qa-service-pricing",
-    title: "Pricing",
-    description: "Get pricing guidance for services.",
+    id: "faq-pricing",
+    title: "Service Pricing",
+    description: "Get service pricing details.",
+    icon: "circle-dollar-sign",
     intent: "servicePricing",
-    prompt: AI_FAQ_PROMPTS.pricing,
+    prefillPrompt: AI_FAQ_PROMPTS.pricing,
+    behavior: "send",
+    category: "faq",
   },
   {
-    id: "qa-submit-standards",
-    title: "Submit standards",
-    description: "Check required case submission standards.",
+    id: "faq-submission-standards",
+    title: "Submission Standards",
+    description: "Show required submission standards.",
+    icon: "clipboard-check",
     intent: "submissionStandards",
-    prompt: AI_FAQ_PROMPTS.standards,
+    prefillPrompt: AI_FAQ_PROMPTS.standards,
+    behavior: "send",
+    category: "faq",
   },
   {
-    id: "qa-create-order",
-    title: "Create order",
-    description: "Start a new order workflow.",
-    intent: "createOrder",
-    prompt: "Create a draft for a zirconia crown order and include required fields.",
-    requiredCapability: "orders.create",
-  },
-  {
-    id: "qa-update-order",
-    title: "Update order",
-    description: "Prepare an order update request.",
-    intent: "updateOrder",
-    prompt: "Update order ORD-245 with a revised due date and restoration notes.",
-    requiredCapability: "orders.update",
-  },
-  {
-    id: "qa-create-report",
-    title: "Create report",
-    description: "Generate a weekly operations report.",
-    intent: "generateReport",
-    prompt: "Generate a weekly operations report for completion, delay, and revenue.",
-    requiredCapability: "reports.read",
-  },
-  {
-    id: "qa-view-reports",
-    title: "View reports",
-    description: "Open the reports area directly.",
-    intent: "openReports",
-    prompt: "Open reports",
-    requiredCapability: "reports.read",
-  },
-  {
-    id: "qa-search-orders",
-    title: "Search orders",
-    description: "Open orders and search cases.",
+    id: "ops-search-orders",
+    title: "Search Orders",
+    description: "Prepare an order search request.",
+    icon: "search",
     intent: "searchOrders",
-    prompt: "Search orders for delayed cases this week.",
+    prefillPrompt: "Search orders by status, patient, doctor, or date range.",
+    behavior: "prefill",
+    category: "operational",
     requiredCapability: "orders.read",
   },
   {
-    id: "qa-search-patients",
-    title: "Search patients",
-    description: "Open patient records and search.",
+    id: "ops-create-order",
+    title: "Create Order",
+    description: "Prepare a new order draft request.",
+    icon: "file-plus",
+    intent: "createOrder",
+    prefillPrompt:
+      "Create a new order draft with patientId, doctorId, clinicId, restoration, arch, units, amount, dueDate, and notes.",
+    behavior: "prefill",
+    category: "operational",
+    requiredCapability: "orders.create",
+  },
+  {
+    id: "ops-update-order",
+    title: "Update Order",
+    description: "Prepare an order update request.",
+    icon: "square-pen",
+    intent: "updateOrder",
+    prefillPrompt:
+      "Update an existing order by orderId. Specify only fields to change, such as status, dueDate, notes, or priority.",
+    behavior: "prefill",
+    category: "operational",
+    requiredCapability: "orders.update",
+  },
+  {
+    id: "ops-search-patients",
+    title: "Search Patients",
+    description: "Prepare a patient search request.",
+    icon: "users-round",
     intent: "searchPatients",
-    prompt: "Search patients with active crown orders.",
+    prefillPrompt: "Search patients by name, phone, status, or recent visit.",
+    behavior: "prefill",
+    category: "operational",
     requiredCapability: "patients.read",
   },
+  {
+    id: "nav-open-orders",
+    title: "Open Orders",
+    description: "Open the Orders page.",
+    icon: "clipboard-list",
+    intent: "openOrders",
+    prefillPrompt: "",
+    behavior: "navigate",
+    category: "navigation",
+    route: "orders",
+    requiredCapability: "orders.read",
+  },
+  {
+    id: "nav-open-reports",
+    title: "Open Reports",
+    description: "Open the Reports page.",
+    icon: "layout-dashboard",
+    intent: "openReports",
+    prefillPrompt: "",
+    behavior: "navigate",
+    category: "navigation",
+    route: "reports",
+    requiredCapability: "reports.read",
+  },
 ];
-
-const ordersShortcut: AiShortcutAction = {
-  id: "open-orders",
-  title: "Open Orders",
-  description: "Go to active orders to continue this task.",
-  intent: "openOrders",
-  badge: "Navigate",
-};
-
-const reportsShortcut: AiShortcutAction = {
-  id: "open-reports",
-  title: "Open Reports",
-  description: "View throughput and turnaround metrics.",
-  intent: "openReports",
-  badge: "Navigate",
-};
-
-export function createInitialConversations(): AiConversation[] {
-  return [
-    {
-      id: "conv-100",
-      title: "Weekly operations report",
-      updatedAt: minutesAgo(14),
-      showWelcomeActions: false,
-      messages: [
-        {
-          id: "conv-100-msg-1",
-          role: "user",
-          text: "I need a quick summary for this week performance.",
-          createdAt: minutesAgo(16),
-        },
-        {
-          id: "conv-100-msg-2",
-          role: "assistant",
-          text:
-            "I can guide a weekly review. Open Reports to inspect completion rate, delay reasons, and team throughput.",
-          createdAt: minutesAgo(15),
-          actions: [reportsShortcut],
-          markdown: true,
-          canCopy: true,
-        },
-      ],
-    },
-    {
-      id: "conv-101",
-      title: "Service pricing help",
-      updatedAt: minutesAgo(53),
-      showWelcomeActions: false,
-      messages: [
-        {
-          id: "conv-101-msg-1",
-          role: "user",
-          text: "Share pricing for crown and veneers.",
-          createdAt: minutesAgo(55),
-        },
-        {
-          id: "conv-101-msg-2",
-          role: "assistant",
-          text:
-            "Sample pricing:\n- Crown: 120 USD\n- Bridge unit: 95 USD\n- Veneer: 85 USD\n- Implant abutment: 150 USD\n\nFinal billing follows lab policy and insurance rules.",
-          createdAt: minutesAgo(53),
-          markdown: true,
-          canCopy: true,
-          actions: [ordersShortcut],
-        },
-      ],
-    },
-  ];
-}

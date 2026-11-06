@@ -18,8 +18,11 @@ describe("AiQuickActionsComponent", () => {
         id: "qa-services",
         title: "Services",
         description: "List services",
+        icon: "info",
         intent: "aboutCompany",
-        prompt: "show services",
+        prefillPrompt: "show services",
+        behavior: "send",
+        category: "faq",
       },
     ]);
     fixture.componentRef.setInput("disabled", false);

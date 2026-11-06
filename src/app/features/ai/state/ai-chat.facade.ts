@@ -1,40 +1,36 @@
-import { computed, Injectable, inject, OnDestroy, signal } from "@angular/core";
+import { computed, Injectable, inject, signal } from "@angular/core";
 import {
   AiChatMessage,
   AiConversation,
   AiConversationSummary,
-  AiFaqTopic,
   AiPromptDraft,
   AiQuickAction,
   AiShortcutAction,
 } from "@core/interfaces";
 import {
+  AssistantConfirmActionResponseDto,
+  AssistantConversationSummaryDto,
+  AssistantConversationViewDto,
   AssistantDataService,
   AssistantMessageResponseDto,
+  AssistantSuggestionDto,
 } from "@core/services/assistant-data.service";
 import { AuthorizationService } from "@core/services/authorization.service";
 import { NavigationService } from "@core/services/navigation.service";
 import { DentalCapability } from "@core/security/capabilities";
 import { firstValueFrom } from "rxjs";
-import {
-  AI_FAQ_PROMPTS,
-  AI_QUICK_ACTIONS,
-  AI_WELCOME_MESSAGE,
-  createInitialConversations,
-} from "../data/ai-chat.mock";
+import { AI_QUICK_ACTIONS, AI_WELCOME_MESSAGE } from "../data/ai-chat.mock";
 
 @Injectable({ providedIn: "root" })
-export class AiChatFacade implements OnDestroy {
+export class AiChatFacade {
   private readonly authorizationService = inject(AuthorizationService);
   private readonly navigationService = inject(NavigationService);
   private readonly assistantDataService = inject(AssistantDataService);
 
-  private conversationSequence = 0;
   private messageSequence = 0;
-  private pendingReplyTimer: ReturnType<typeof setTimeout> | null = null;
+  private localConversationSequence = 0;
   private readonly backendConversationByLocalId = new Map<string, string>();
-
-  private readonly initialConversation = this.createFreshConversation();
+  private backendAllowedSuggestionIds = new Set<string>();
 
   readonly promptDraft = signal<AiPromptDraft>({
     search: "",
@@ -42,11 +38,8 @@ export class AiChatFacade implements OnDestroy {
   });
   readonly isResponding = signal(false);
   readonly historyOpen = signal(false);
-  readonly conversations = signal<AiConversation[]>([
-    this.initialConversation,
-    ...createInitialConversations(),
-  ]);
-  readonly activeConversationId = signal(this.initialConversation.id);
+  readonly conversations = signal<AiConversation[]>([]);
+  readonly activeConversationId = signal<string | null>(null);
 
   readonly activeConversation = computed(() =>
     this.conversations().find((item) => item.id === this.activeConversationId()),
@@ -70,17 +63,15 @@ export class AiChatFacade implements OnDestroy {
   });
 
   readonly quickActions = computed(() =>
-    AI_QUICK_ACTIONS.filter((action) => this.hasRequiredCapability(action)),
+    AI_QUICK_ACTIONS.filter((action) => this.isQuickActionVisible(action)),
   );
 
-  readonly isPromptValid = computed(
+  readonly canSend = computed(
     () => this.promptDraft().prompt.trim().length > 0 && !this.isResponding(),
   );
 
-  readonly canSend = computed(() => this.isPromptValid());
-
-  ngOnDestroy(): void {
-    this.clearPendingTimer();
+  public constructor() {
+    void this.bootstrap();
   }
 
   toggleHistory(): void {
@@ -101,28 +92,17 @@ export class AiChatFacade implements OnDestroy {
     if (this.navigationService.isMobile()) {
       this.historyOpen.set(false);
     }
+
+    void this.loadConversationMessages(conversationId);
   }
 
   startNewChat(): void {
-    const fresh = this.createFreshConversation();
-    this.conversations.update((state) => [fresh, ...state]);
-    this.backendConversationByLocalId.delete(fresh.id);
-    this.activeConversationId.set(fresh.id);
+    const localId = this.nextLocalConversationId();
+    const conversation = this.createConversationShell(localId, "New conversation");
+    this.conversations.update((state) => [conversation, ...state]);
+    this.activeConversationId.set(localId);
     this.promptDraft.update((state) => ({ ...state, prompt: "" }));
     this.closeHistory();
-  }
-
-  clearCurrentConversation(): void {
-    const activeId = this.activeConversationId();
-    this.backendConversationByLocalId.delete(activeId);
-    this.updateConversation(activeId, () => {
-      const fresh = this.createFreshConversation(activeId);
-      return {
-        ...fresh,
-        title: "New conversation",
-      };
-    });
-    this.promptDraft.update((state) => ({ ...state, prompt: "" }));
   }
 
   updateDraft(prompt: string): void {
@@ -131,11 +111,11 @@ export class AiChatFacade implements OnDestroy {
 
   async submitPrompt(rawPrompt?: string): Promise<void> {
     const prompt = (rawPrompt ?? this.promptDraft().prompt).trim();
-    if (!prompt || this.isResponding()) {
+    const conversationId = this.activeConversationId();
+    if (!prompt || !conversationId || this.isResponding()) {
       return;
     }
 
-    const conversationId = this.activeConversationId();
     this.promptDraft.update((state) => ({ ...state, prompt: "" }));
     this.setWelcomeActions(conversationId, false);
     this.appendMessage(conversationId, {
@@ -146,9 +126,9 @@ export class AiChatFacade implements OnDestroy {
       type: "text",
     });
 
-    const thinkingId = this.nextMessageId();
+    const loadingMessageId = this.nextMessageId();
     this.appendMessage(conversationId, {
-      id: thinkingId,
+      id: loadingMessageId,
       role: "thinking",
       text: "Thinking through your request...",
       createdAt: new Date().toISOString(),
@@ -158,23 +138,18 @@ export class AiChatFacade implements OnDestroy {
     this.refreshConversationTitle(conversationId, prompt);
     this.isResponding.set(true);
     try {
-      const backendConversationId = await this.ensureBackendConversationId(
-        conversationId,
-      );
-      const response = await firstValueFrom(
-        this.assistantDataService.postMessage$(backendConversationId, prompt),
-      );
+      const response = await this.postMessageWithConversationRecovery(conversationId, prompt);
       this.replaceMessage(
         conversationId,
-        thinkingId,
+        loadingMessageId,
         this.toAssistantMessage(response),
       );
+      this.touchConversation(conversationId);
     } catch (error) {
-      const text = this.resolveAssistantErrorText(error);
-      this.replaceMessage(conversationId, thinkingId, {
+      this.replaceMessage(conversationId, loadingMessageId, {
         id: this.nextMessageId(),
         role: "assistant",
-        text,
+        text: this.resolveAssistantErrorText(error),
         createdAt: new Date().toISOString(),
         type: "error",
         markdown: true,
@@ -186,7 +161,7 @@ export class AiChatFacade implements OnDestroy {
   }
 
   runQuickAction(action: AiQuickAction): void {
-    if (!this.hasRequiredCapability(action)) {
+    if (!this.isQuickActionVisible(action)) {
       this.appendAssistantText(
         "You don't have access for that action in this account.",
         "error",
@@ -194,49 +169,31 @@ export class AiChatFacade implements OnDestroy {
       return;
     }
 
-    if (action.intent === "openReports") {
-      this.navigationService.navigate("reports");
-      this.appendAssistantText(
-        "Opening Reports now. You can review throughput and trend details there.",
-        "confirmation",
-      );
+    if (action.behavior === "navigate") {
+      if (action.route) {
+        this.navigationService.navigate(action.route);
+      }
       return;
     }
 
-    if (action.intent === "openOrders" || action.intent === "searchOrders") {
-      this.navigationService.navigate("orders");
-      this.appendAssistantText(
-        "Opening Orders now. You can apply search filters from the toolbar.",
-        "confirmation",
-      );
+    if (action.behavior === "prefill") {
+      this.updateDraft(action.prefillPrompt);
       return;
     }
 
-    if (action.intent === "searchPatients") {
-      this.navigationService.navigate("patients");
-      this.appendAssistantText(
-        "Opening Patients now. Use search to find matching records.",
-        "confirmation",
-      );
-      return;
-    }
-
-    this.submitPrompt(action.prompt);
+    void this.submitPrompt(action.prefillPrompt);
   }
 
   runShortcutAction(action: AiShortcutAction): void {
-    const quickAction: AiQuickAction = {
-      id: action.id,
-      title: action.title,
-      description: action.description ?? "",
-      intent: action.intent,
-      prompt: action.title,
-    };
-    this.runQuickAction(quickAction);
-  }
+    if (action.confirmation) {
+      void this.confirmPendingAction(action.confirmation.actionId, action.confirmation.confirmationToken);
+      return;
+    }
 
-  runFaq(topic: AiFaqTopic): void {
-    this.submitPrompt(AI_FAQ_PROMPTS[topic]);
+    const mapped = AI_QUICK_ACTIONS.find((item) => item.intent === action.intent);
+    if (mapped) {
+      this.runQuickAction(mapped);
+    }
   }
 
   resolveCopyMessage(messageId: string): string | null {
@@ -246,391 +203,99 @@ export class AiChatFacade implements OnDestroy {
     );
   }
 
-  private resolveAssistantReply(prompt: string): AiChatMessage {
-    const lowered = prompt.toLowerCase();
-    if (this.isDeleteIntent(lowered)) {
-      return {
-        id: this.nextMessageId(),
-        role: "assistant",
-        text:
-          "I can't delete records from chat. If this order must be removed, ask a Director or Admin to open Orders, verify ownership, and run the approved deletion process with an audit note.",
-        createdAt: new Date().toISOString(),
-        type: "error",
-        markdown: true,
-        canCopy: true,
-      };
+  private async bootstrap(): Promise<void> {
+    try {
+      const [suggestions, summaries] = await Promise.all([
+        firstValueFrom(this.assistantDataService.getSuggestions$()),
+        firstValueFrom(this.assistantDataService.listConversations$()),
+      ]);
+      this.backendAllowedSuggestionIds = new Set(
+        suggestions.filter((item) => item.enabled).map((item) => item.id),
+      );
+      this.seedConversationHistory(summaries);
+    } catch {
+      const localId = this.nextLocalConversationId();
+      const fallback = this.createConversationShell(localId, "New conversation");
+      this.conversations.set([fallback]);
+      this.activeConversationId.set(localId);
+    }
+  }
+
+  private seedConversationHistory(summaries: AssistantConversationSummaryDto[]): void {
+    if (summaries.length === 0) {
+      const localId = this.nextLocalConversationId();
+      const fresh = this.createConversationShell(localId, "New conversation");
+      this.conversations.set([fresh]);
+      this.activeConversationId.set(localId);
+      return;
     }
 
-    const capabilityDenied = this.resolveCapabilityDenial(lowered);
-    if (capabilityDenied) {
-      return capabilityDenied;
-    }
-
-    if (this.matchesAny(lowered, ["service", "services"])) {
-      const actions: AiShortcutAction[] = [];
-      if (this.authorizationService.has("orders.read")) {
-        actions.push({
-          id: "open-orders",
-          title: "Open Orders",
-          description: "Go to active orders to start a case.",
-          intent: "openOrders",
-          badge: "Navigate",
-        });
-      }
-
-      return {
-        id: this.nextMessageId(),
-        role: "assistant",
-        text:
-          "### Service catalog\n- Crowns and bridges\n- Veneers and esthetic restorations\n- Implant restorations\n- Aligner support workflows\n\nIf you want, I can open Orders now and prepare a draft request.",
-        createdAt: new Date().toISOString(),
-        type: "text",
-        markdown: true,
-        canCopy: true,
-        resultCards: [
-          {
-            id: "service-card-restorative",
-            title: "Restorative services",
-            summary: "Crowns, bridges, and implant restorations are available.",
-            details: "Suitable for most fixed prosthetic case requests.",
-            tone: "info",
-          },
-          {
-            id: "service-card-esthetic",
-            title: "Esthetic services",
-            summary: "Veneers and smile-design workflows are supported.",
-            details: "Share target shade and prep notes for better planning.",
-            tone: "success",
-          },
-        ],
-        actions: actions.length > 0 ? actions : undefined,
-      };
-    }
-
-    if (this.matchesAny(lowered, ["price", "pricing", "cost"])) {
-      return {
-        id: this.nextMessageId(),
-        role: "assistant",
-        text:
-          "### Service pricing guide\n| Service | Price |\n|---|---|\n| Crown | 120 USD |\n| Bridge unit | 95 USD |\n| Veneer | 85 USD |\n| Implant abutment | 150 USD |\n\nPricing can vary by material, urgency, and insurance policy.",
-        createdAt: new Date().toISOString(),
-        type: "table",
-        markdown: true,
-        canCopy: true,
-        resultCards: [
-          {
-            id: "pricing-card-base",
-            title: "Base pricing",
-            summary: "Use this as an estimate before case-level adjustments.",
-            details: "Final quote is confirmed after material and timeline review.",
-            tone: "info",
-          },
-        ],
-      };
-    }
-
-    if (this.matchesAny(lowered, ["standard", "requirements", "submission"])) {
-      return {
-        id: this.nextMessageId(),
-        role: "assistant",
-        text:
-          "### Submission standards checklist\n- Clear patient identifier\n- Restoration type\n- Due date\n- Shade and material\n- Scan quality check\n- Doctor approval notes before production",
-        createdAt: new Date().toISOString(),
-        type: "confirmation",
-        markdown: true,
-        canCopy: true,
-        resultCards: [
-          {
-            id: "standards-card",
-            title: "Before you submit",
-            summary: "Confirm patient ID, restoration details, and due date first.",
-            details: "Cases with full scan + doctor notes move faster to production.",
-            tone: "warning",
-          },
-        ],
-      };
-    }
-
-    if (this.matchesAny(lowered, ["company", "about", "who are you"])) {
-      return {
-        id: this.nextMessageId(),
-        role: "assistant",
-        text:
-          "### About DentaLab\nDentaLab is the operational workspace for handling dental orders, clinical coordination, and performance tracking across teams.",
-        createdAt: new Date().toISOString(),
-        type: "text",
-        markdown: true,
-        canCopy: true,
-        resultCards: [
-          {
-            id: "company-card",
-            title: "What it helps with",
-            summary: "Order tracking, reporting, and team workflow coordination.",
-            details: "Designed for clinics, doctors, and lab operations teams.",
-            tone: "info",
-          },
-        ],
-      };
-    }
-
-    if (this.matchesAny(lowered, ["report", "performance", "analytics"])) {
-      const actions: AiShortcutAction[] = [];
-      if (this.authorizationService.has("reports.read")) {
-        actions.push({
-          id: "open-reports",
-          title: "Open Reports",
-          description: "View team and service metrics.",
-          intent: "openReports",
-          badge: "Navigate",
-        });
-      }
-
-      return {
-        id: this.nextMessageId(),
-        role: "assistant",
-        text:
-          "### Performance support\nI can guide weekly and quarterly performance reviews.\nOpen Reports to inspect throughput, delays, and turnaround trends.",
-        createdAt: new Date().toISOString(),
-        type: "reportCard",
-        markdown: true,
-        canCopy: true,
-        resultCards: [
-          {
-            id: "report-card",
-            title: "Recommended review flow",
-            summary: "Check throughput, delay reasons, and revenue trend in one pass.",
-            details: "Start with weekly summary, then drill down by service line.",
-            tone: "info",
-          },
-        ],
-        actions: actions.length > 0 ? actions : undefined,
-      };
-    }
-
-    return {
-      id: this.nextMessageId(),
-      role: "assistant",
-      text:
-        "I can help with service details, pricing, submission standards, order requests, and reporting guidance.\n\nTell me your exact task and I will format the answer step by step.",
-      createdAt: new Date().toISOString(),
-      type: "text",
-      markdown: true,
-      canCopy: true,
-      resultCards: [
-        {
-          id: "fallback-services",
-          title: "Services and pricing",
-          summary: "Ask about available services or current pricing guidance.",
-          tone: "info",
-        },
-        {
-          id: "fallback-standards",
-          title: "Submission standards",
-          summary: "Get the full checklist before case submission.",
-          tone: "success",
-        },
-      ],
-      actions: this.availableFallbackActions(),
-    };
-  }
-
-  private resolveCapabilityDenial(promptLowered: string): AiChatMessage | null {
-    if (
-      this.matchesAny(promptLowered, ["update", "edit"]) &&
-      !this.authorizationService.has("orders.update")
-    ) {
-      return {
-        id: this.nextMessageId(),
-        role: "assistant",
-        text:
-          "You don't have access to update orders in this account. Please contact your manager to request the orders.update permission.",
-        createdAt: new Date().toISOString(),
-        type: "error",
-        canCopy: true,
-      };
-    }
-
-    if (
-      this.matchesAny(promptLowered, ["create", "new order"]) &&
-      !this.authorizationService.has("orders.create")
-    ) {
-      return {
-        id: this.nextMessageId(),
-        role: "assistant",
-        text:
-          "You don't have access to create orders in this account. Ask an Admin to grant orders.create access.",
-        createdAt: new Date().toISOString(),
-        type: "error",
-        canCopy: true,
-      };
-    }
-
-    if (
-      this.matchesAny(promptLowered, ["report", "analytics"]) &&
-      !this.authorizationService.has("reports.read")
-    ) {
-      return {
-        id: this.nextMessageId(),
-        role: "assistant",
-        text:
-          "You don't have access to reports in this account. A manager can grant reports.read permission.",
-        createdAt: new Date().toISOString(),
-        type: "error",
-        canCopy: true,
-      };
-    }
-
-    return null;
-  }
-
-  private isDeleteIntent(promptLowered: string): boolean {
-    return this.matchesAny(promptLowered, [
-      "delete",
-      "remove",
-      "archive",
-      "archiving",
-      "erase",
-      "drop order",
-      "cancel permanently",
-    ]);
-  }
-
-  private matchesAny(input: string, terms: readonly string[]): boolean {
-    return terms.some((term) => input.includes(term));
-  }
-
-  private nextConversationId(): string {
-    this.conversationSequence += 1;
-    return `conv-new-${this.conversationSequence}`;
-  }
-
-  private nextMessageId(): string {
-    this.messageSequence += 1;
-    return `ai-msg-${this.messageSequence}`;
-  }
-
-  private createWelcomeMessage(): AiChatMessage {
-    return {
-      id: this.nextMessageId(),
-      role: "assistant",
-      text: AI_WELCOME_MESSAGE,
-      createdAt: new Date().toISOString(),
-      type: "text",
-      markdown: true,
-      canCopy: true,
-    };
-  }
-
-  private createFreshConversation(id?: string): AiConversation {
-    return {
-      id: id ?? this.nextConversationId(),
-      title: "New conversation",
-      updatedAt: new Date().toISOString(),
-      showWelcomeActions: true,
-      messages: [this.createWelcomeMessage()],
-    };
-  }
-
-  private updateConversation(
-    conversationId: string,
-    updater: (conversation: AiConversation) => AiConversation,
-  ): void {
-    this.conversations.update((state) =>
-      state.map((conversation) =>
-        conversation.id === conversationId ? updater(conversation) : conversation,
-      ),
-    );
-  }
-
-  private appendMessage(conversationId: string, message: AiChatMessage): void {
-    this.updateConversation(conversationId, (conversation) => ({
-      ...conversation,
-      updatedAt: new Date().toISOString(),
-      messages: [...conversation.messages, message],
-    }));
-  }
-
-  private replaceMessage(
-    conversationId: string,
-    targetMessageId: string,
-    replacement: AiChatMessage,
-  ): void {
-    this.updateConversation(conversationId, (conversation) => ({
-      ...conversation,
-      updatedAt: new Date().toISOString(),
-      messages: conversation.messages.map((message) =>
-        message.id === targetMessageId ? replacement : message,
-      ),
-    }));
-  }
-
-  private setWelcomeActions(conversationId: string, showWelcomeActions: boolean): void {
-    this.updateConversation(conversationId, (conversation) => ({
-      ...conversation,
-      showWelcomeActions,
-    }));
-  }
-
-  private refreshConversationTitle(conversationId: string, prompt: string): void {
-    this.updateConversation(conversationId, (conversation) => {
-      if (conversation.title !== "New conversation") {
-        return conversation;
-      }
-
-      return {
-        ...conversation,
-        title: prompt.slice(0, 42),
-      };
+    const mapped = summaries.map((summary) => {
+      this.backendConversationByLocalId.set(summary.id, summary.id);
+      return this.fromConversationSummary(summary);
     });
-  }
-
-  private hasRequiredCapability(action: AiQuickAction): boolean {
-    if (!action.requiredCapability) {
-      return true;
+    this.conversations.set(mapped);
+    this.activeConversationId.set(mapped[0]?.id ?? null);
+    if (mapped[0]) {
+      void this.loadConversationMessages(mapped[0].id);
     }
-    return this.authorizationService.has(
-      action.requiredCapability as DentalCapability,
-    );
   }
 
-  private availableFallbackActions(): AiShortcutAction[] | undefined {
-    const actions: AiShortcutAction[] = [];
-    if (this.authorizationService.has("orders.create")) {
-      actions.push({
-        id: "suggest-create",
-        title: "Create order draft",
-        description: "Prepare a new order request template.",
-        intent: "createOrder",
-        badge: "Shortcut",
-      });
+  private fromConversationSummary(summary: AssistantConversationSummaryDto): AiConversation {
+    return {
+      id: summary.id,
+      title: summary.title,
+      updatedAt: summary.updatedAt,
+      showWelcomeActions: false,
+      messages: [],
+    };
+  }
+
+  private async loadConversationMessages(localConversationId: string): Promise<void> {
+    const backendConversationId = this.backendConversationByLocalId.get(localConversationId);
+    if (!backendConversationId) {
+      return;
     }
-    if (this.authorizationService.has("orders.update")) {
-      actions.push({
-        id: "suggest-update",
-        title: "Update existing order",
-        description: "Prepare an order update request template.",
-        intent: "updateOrder",
-        badge: "Shortcut",
-      });
+
+    try {
+      const conversation = await firstValueFrom(
+        this.assistantDataService.getConversation$(backendConversationId),
+      );
+      this.updateConversation(localConversationId, () =>
+        this.fromBackendConversation(conversation, localConversationId),
+      );
+    } catch {
+      return;
     }
-    return actions.length > 0 ? actions : undefined;
   }
 
-  private appendAssistantText(text: string, type: AiChatMessage["type"] = "text"): void {
-    this.appendMessage(this.activeConversationId(), {
-      id: this.nextMessageId(),
-      role: "assistant",
-      text,
-      createdAt: new Date().toISOString(),
-      type,
-      markdown: true,
-      canCopy: true,
-    });
+  private fromBackendConversation(
+    conversation: AssistantConversationViewDto,
+    localId: string,
+  ): AiConversation {
+    return {
+      id: localId,
+      title: conversation.title,
+      updatedAt: conversation.updatedAt,
+      showWelcomeActions: conversation.messages.length <= 1,
+      messages: conversation.messages.map((message) => ({
+        id: message.id,
+        role: message.role,
+        text: message.text,
+        createdAt: message.createdAt,
+        type:
+          message.resultType === "confirmation"
+            ? "confirmation"
+            : message.resultType === "error"
+              ? "error"
+              : "text",
+        markdown: true,
+        canCopy: message.role === "assistant",
+      })),
+    };
   }
 
-  private async ensureBackendConversationId(
-    localConversationId: string,
-  ): Promise<string> {
+  private async ensureBackendConversationId(localConversationId: string): Promise<string> {
     const existing = this.backendConversationByLocalId.get(localConversationId);
     if (existing) {
       return existing;
@@ -644,30 +309,107 @@ export class AiChatFacade implements OnDestroy {
     return created.id;
   }
 
+  private async postMessageWithConversationRecovery(
+    localConversationId: string,
+    prompt: string,
+  ): Promise<AssistantMessageResponseDto> {
+    const backendConversationId = await this.ensureBackendConversationId(localConversationId);
+    try {
+      return await firstValueFrom(
+        this.assistantDataService.postMessage$(backendConversationId, prompt),
+      );
+    } catch (error) {
+      if (!this.isConversationNotFoundError(error)) {
+        throw error;
+      }
+
+      this.backendConversationByLocalId.delete(localConversationId);
+      const recreatedConversationId =
+        await this.ensureBackendConversationId(localConversationId);
+      return firstValueFrom(
+        this.assistantDataService.postMessage$(recreatedConversationId, prompt),
+      );
+    }
+  }
+
   private toAssistantMessage(response: AssistantMessageResponseDto): AiChatMessage {
     if (response.result.type === "confirmation") {
-      const pendingCount = response.result.pendingActions.length;
-      const text = `${response.result.text}\n\n${pendingCount} pending action${pendingCount === 1 ? "" : "s"} require confirmation.`;
+      const pendingActions = response.result.pendingActions;
+      const actions: AiShortcutAction[] = pendingActions.map((item) => ({
+        id: `confirm-${item.actionId}`,
+        title: `Confirm ${item.tool}`,
+        intent: "updateOrder",
+        description: `Confirm pending action for ${item.tool}`,
+        badge: "Confirm",
+        confirmation: {
+          actionId: item.actionId,
+          confirmationToken: item.confirmationToken,
+          tool: item.tool,
+        },
+      }));
       return {
         id: this.nextMessageId(),
         role: "assistant",
-        text,
+        text: response.result.text,
         createdAt: new Date().toISOString(),
         type: "confirmation",
         markdown: true,
         canCopy: true,
+        actions,
       };
     }
 
     return {
       id: this.nextMessageId(),
       role: "assistant",
-      text: response.result.text,
+      text:
+        response.result.executions.length > 0
+          ? `${response.result.text}\n\n${this.formatExecutionResults(response.result.executions)}`
+          : response.result.text,
       createdAt: new Date().toISOString(),
       type: "text",
       markdown: true,
       canCopy: true,
     };
+  }
+
+  private async confirmPendingAction(
+    actionId: string,
+    confirmationToken: string,
+  ): Promise<void> {
+    const conversationId = this.activeConversationId();
+    if (!conversationId || this.isResponding()) {
+      return;
+    }
+
+    this.isResponding.set(true);
+    try {
+      const result = await firstValueFrom(
+        this.assistantDataService.confirmAction$(actionId, confirmationToken),
+      );
+      this.appendConfirmationResultMessage(conversationId, result);
+      this.touchConversation(conversationId);
+      await this.loadConversationMessages(conversationId);
+    } catch (error) {
+      this.appendAssistantText(this.resolveAssistantErrorText(error), "error");
+    } finally {
+      this.isResponding.set(false);
+    }
+  }
+
+  private appendConfirmationResultMessage(
+    conversationId: string,
+    result: AssistantConfirmActionResponseDto,
+  ): void {
+    this.appendMessage(conversationId, {
+      id: this.nextMessageId(),
+      role: "assistant",
+      text: result.message,
+      createdAt: new Date().toISOString(),
+      type: "confirmation",
+      markdown: true,
+      canCopy: true,
+    });
   }
 
   private resolveAssistantErrorText(error: unknown): string {
@@ -686,14 +428,177 @@ export class AiChatFacade implements OnDestroy {
       return "You don't have access for that action in this account.";
     }
 
+    if (candidate?.status === 409 || message.includes("expired")) {
+      return "This pending action is no longer valid. Please send a new request.";
+    }
+
+    if (this.isConversationNotFoundError(error)) {
+      return "This conversation is no longer available. Please try sending your message again.";
+    }
+
     return "Assistant service is currently unavailable. Please try again.";
   }
 
-  private clearPendingTimer(): void {
-    if (!this.pendingReplyTimer) {
+  private isConversationNotFoundError(error: unknown): boolean {
+    const candidate = error as
+      | {
+          status?: number;
+          error?: {
+            error?: {
+              message?: string;
+            };
+          };
+        }
+      | undefined;
+    const message = candidate?.error?.error?.message?.toLowerCase() ?? "";
+    return candidate?.status === 404 && message.includes("conversation was not found");
+  }
+
+  private isQuickActionVisible(action: AiQuickAction): boolean {
+    if (action.requiredCapability) {
+      const hasCapability = this.authorizationService.has(
+        action.requiredCapability as DentalCapability,
+      );
+      if (!hasCapability) {
+        return false;
+      }
+    }
+
+    const suggestionDependency = quickActionSuggestionDependency(action.id);
+    if (suggestionDependency && this.backendAllowedSuggestionIds.size > 0) {
+      return this.backendAllowedSuggestionIds.has(suggestionDependency);
+    }
+
+    return true;
+  }
+
+  private createConversationShell(id: string, title: string): AiConversation {
+    return {
+      id,
+      title,
+      updatedAt: new Date().toISOString(),
+      showWelcomeActions: true,
+      messages: [
+        {
+          id: this.nextMessageId(),
+          role: "assistant",
+          text: AI_WELCOME_MESSAGE,
+          createdAt: new Date().toISOString(),
+          type: "text",
+          markdown: true,
+          canCopy: true,
+        },
+      ],
+    };
+  }
+
+  private nextLocalConversationId(): string {
+    this.localConversationSequence += 1;
+    return `local-conv-${this.localConversationSequence}`;
+  }
+
+  private nextMessageId(): string {
+    this.messageSequence += 1;
+    return `msg-${this.messageSequence}`;
+  }
+
+  private setWelcomeActions(conversationId: string, showWelcomeActions: boolean): void {
+    this.updateConversation(conversationId, (conversation) => ({
+      ...conversation,
+      showWelcomeActions,
+    }));
+  }
+
+  private refreshConversationTitle(conversationId: string, prompt: string): void {
+    this.updateConversation(conversationId, (conversation) => {
+      if (conversation.title !== "New conversation") {
+        return conversation;
+      }
+      return {
+        ...conversation,
+        title: prompt.slice(0, 42),
+      };
+    });
+  }
+
+  private touchConversation(conversationId: string): void {
+    this.updateConversation(conversationId, (conversation) => ({
+      ...conversation,
+      updatedAt: new Date().toISOString(),
+    }));
+  }
+
+  private appendMessage(conversationId: string, message: AiChatMessage): void {
+    this.updateConversation(conversationId, (conversation) => ({
+      ...conversation,
+      updatedAt: message.createdAt,
+      messages: [...conversation.messages, message],
+    }));
+  }
+
+  private replaceMessage(
+    conversationId: string,
+    targetMessageId: string,
+    replacement: AiChatMessage,
+  ): void {
+    this.updateConversation(conversationId, (conversation) => ({
+      ...conversation,
+      updatedAt: replacement.createdAt,
+      messages: conversation.messages.map((message) =>
+        message.id === targetMessageId ? replacement : message,
+      ),
+    }));
+  }
+
+  private updateConversation(
+    conversationId: string,
+    updater: (conversation: AiConversation) => AiConversation,
+  ): void {
+    this.conversations.update((state) =>
+      state.map((conversation) =>
+        conversation.id === conversationId ? updater(conversation) : conversation,
+      ),
+    );
+  }
+
+  private appendAssistantText(text: string, type: AiChatMessage["type"] = "text"): void {
+    const conversationId = this.activeConversationId();
+    if (!conversationId) {
       return;
     }
-    clearTimeout(this.pendingReplyTimer);
-    this.pendingReplyTimer = null;
+    this.appendMessage(conversationId, {
+      id: this.nextMessageId(),
+      role: "assistant",
+      text,
+      createdAt: new Date().toISOString(),
+      type,
+      markdown: true,
+      canCopy: true,
+    });
+  }
+
+  private formatExecutionResults(
+    executions: Array<{ tool: string; result?: unknown }>,
+  ): string {
+    const lines = executions.map((execution) => {
+      if (!execution.result) {
+        return `- ${execution.tool}: executed`;
+      }
+      return `- ${execution.tool}: executed with result`;
+    });
+    return `Tool execution results:\n${lines.join("\n")}`;
+  }
+}
+
+function quickActionSuggestionDependency(actionId: string): string | undefined {
+  switch (actionId) {
+    case "ops-search-orders":
+      return "assistant-search-orders";
+    case "ops-create-order":
+      return "assistant-create-order";
+    case "ops-search-patients":
+      return "assistant-search-patients";
+    default:
+      return undefined;
   }
 }

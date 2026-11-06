@@ -52,8 +52,11 @@ describe("ai.interface", () => {
       id: "search-orders",
       title: "Search orders",
       description: "Open orders list",
+      icon: "search",
       intent: "searchOrders",
-      prompt: "search orders",
+      prefillPrompt: "search orders",
+      behavior: "prefill",
+      category: "operational",
       requiredCapability: "orders.read",
     };
 

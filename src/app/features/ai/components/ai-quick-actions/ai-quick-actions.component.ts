@@ -26,20 +26,6 @@ export class AiQuickActionsComponent {
   }
 
   iconFor(action: AiQuickAction): string {
-    const names: Record<AiQuickAction["intent"], string> = {
-      aboutCompany: "info",
-      serviceCatalog: "briefcase",
-      servicePricing: "circle-dollar-sign",
-      submissionStandards: "square-check-big",
-      createOrder: "file-plus",
-      updateOrder: "square-pen",
-      generateReport: "chart-column",
-      openReports: "layout-dashboard",
-      searchOrders: "search",
-      searchPatients: "users-round",
-      openOrders: "clipboard-list",
-    };
-
-    return lucideSvg(names[action.intent] ?? "info", 14);
+    return lucideSvg(action.icon || "info", 14);
   }
 }
