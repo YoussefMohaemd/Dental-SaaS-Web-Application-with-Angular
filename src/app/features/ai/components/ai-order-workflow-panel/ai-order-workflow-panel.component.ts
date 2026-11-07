@@ -21,6 +21,7 @@ export class AiOrderWorkflowPanelComponent {
   readonly candidatePicked = output<string>();
   readonly billToChanged = output<"doctor" | "scan-center">();
   readonly serviceToggled = output<string>();
+  readonly activeServiceChanged = output<string>();
   readonly toothToggled = output<number>();
   readonly notesChanged = output<string>();
   readonly submitRequested = output<void>();
@@ -45,8 +46,49 @@ export class AiOrderWorkflowPanelComponent {
       .join(", ");
   });
 
+  readonly activeServiceId = computed(() => {
+    const state = this.workflow();
+    if (state.mode === "create") {
+      return state.create?.activeServiceId ?? null;
+    }
+    return state.update?.activeServiceId ?? null;
+  });
+
+  readonly activeServiceTeeth = computed(() => {
+    const state = this.workflow();
+    const activeServiceId = this.activeServiceId();
+    if (!activeServiceId) {
+      return [];
+    }
+    if (state.mode === "create") {
+      return state.create?.selectedTeethByService[activeServiceId] ?? [];
+    }
+    return state.update?.selectedTeethByService[activeServiceId] ?? [];
+  });
+
+  readonly selectedServiceTeethMap = computed<Record<string, number[]>>(() => {
+    const state = this.workflow();
+    if (state.mode === "create") {
+      return state.create?.selectedTeethByService ?? {};
+    }
+    return state.update?.selectedTeethByService ?? {};
+  });
+
+  readonly selectedServiceItems = computed(() => {
+    const state = this.workflow();
+    const selectedIds =
+      state.mode === "create"
+        ? state.create?.selectedServiceIds ?? []
+        : state.update?.selectedServiceIds ?? [];
+    const map = this.selectedServiceTeethMap();
+    return selectedIds.map((id) => ({
+      id,
+      name: state.services.find((service) => service.id === id)?.name ?? id,
+      teeth: map[id] ?? [],
+    }));
+  });
+
   onPick(id: string): void {
     this.candidatePicked.emit(id);
   }
 }
-

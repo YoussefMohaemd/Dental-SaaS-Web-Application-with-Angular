@@ -114,6 +114,10 @@ export class AiComponent {
     this.facade.toggleOrderWorkflowService(serviceId);
   }
 
+  onOrderWorkflowActiveServiceChanged(serviceId: string): void {
+    this.facade.setOrderWorkflowActiveService(serviceId);
+  }
+
   onOrderWorkflowToothToggled(tooth: number): void {
     this.facade.toggleOrderWorkflowTooth(tooth);
   }

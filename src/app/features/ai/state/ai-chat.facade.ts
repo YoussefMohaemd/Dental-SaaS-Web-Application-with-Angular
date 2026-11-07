@@ -6,6 +6,7 @@ import {
   Doctor,
   AiConversation,
   AiConversationSummary,
+  Order,
   Patient,
   AiPromptDraft,
   AiQuickAction,
@@ -23,7 +24,9 @@ import { DoctorDataService } from "@core/services/doctor-data.service";
 import { AuthService } from "@core/services/auth.service";
 import { AuthorizationService } from "@core/services/authorization.service";
 import { NavigationService } from "@core/services/navigation.service";
+import { OrderDataService } from "@core/services/order-data.service";
 import { PatientDataService } from "@core/services/patient-data.service";
+import { SubOrderDataService } from "@core/services/sub-order-data.service";
 import { type DentalCapability } from "@core/security/capabilities";
 import { firstValueFrom } from "rxjs";
 import { AI_QUICK_ACTIONS, AI_WELCOME_MESSAGE } from "../data/ai-chat.config";
@@ -42,6 +45,8 @@ export class AiChatFacade {
   private readonly patientDataService = inject(PatientDataService);
   private readonly doctorDataService = inject(DoctorDataService);
   private readonly clinicDataService = inject(ClinicDataService);
+  private readonly orderDataService = inject(OrderDataService);
+  private readonly subOrderDataService = inject(SubOrderDataService);
 
   private messageSequence = 0;
   private localConversationSequence = 0;
@@ -212,9 +217,13 @@ export class AiChatFacade {
     }
 
     const prompt = this.buildWorkflowPrompt(workflow);
+    const titlePrompt = this.buildWorkflowTitlePrompt(workflow);
     this.activeWorkflow.set(null);
     this.activeOrderWorkflow.set(null);
-    void this.submitPrompt(prompt);
+    void this.submitPrompt(prompt, {
+      displayPrompt: titlePrompt,
+      titlePrompt,
+    });
   }
 
   cancelWorkflow(): void {
@@ -301,9 +310,25 @@ export class AiChatFacade {
       const selected = workflow.create.selectedServiceIds.includes(serviceId)
         ? workflow.create.selectedServiceIds.filter((id) => id !== serviceId)
         : [...workflow.create.selectedServiceIds, serviceId];
+      const selectedTeethByService = { ...workflow.create.selectedTeethByService };
+      if (selected.includes(serviceId)) {
+        selectedTeethByService[serviceId] = selectedTeethByService[serviceId] ?? [];
+      } else {
+        delete selectedTeethByService[serviceId];
+      }
+      const activeServiceId =
+        workflow.create.activeServiceId === serviceId && !selected.includes(serviceId)
+          ? (selected[0] ?? null)
+          : (workflow.create.activeServiceId ?? selected[0] ?? null);
       this.activeOrderWorkflow.set({
         ...workflow,
-        create: { ...workflow.create, selectedServiceIds: selected },
+        create: {
+          ...workflow.create,
+          selectedServiceIds: selected,
+          selectedTeethByService,
+          selectedTeeth: flattenSelectedTeeth(selectedTeethByService, selected),
+          activeServiceId,
+        },
         error: null,
       });
       return;
@@ -313,9 +338,60 @@ export class AiChatFacade {
       const selected = workflow.update.selectedServiceIds.includes(serviceId)
         ? workflow.update.selectedServiceIds.filter((id) => id !== serviceId)
         : [...workflow.update.selectedServiceIds, serviceId];
+      const selectedTeethByService = { ...workflow.update.selectedTeethByService };
+      if (selected.includes(serviceId)) {
+        selectedTeethByService[serviceId] =
+          selectedTeethByService[serviceId] ??
+          workflow.update.baselineTeethByService[serviceId] ??
+          [];
+      } else {
+        delete selectedTeethByService[serviceId];
+      }
+      const activeServiceId =
+        workflow.update.activeServiceId === serviceId && !selected.includes(serviceId)
+          ? (selected[0] ?? null)
+          : (workflow.update.activeServiceId ?? selected[0] ?? null);
       this.activeOrderWorkflow.set({
         ...workflow,
-        update: { ...workflow.update, selectedServiceIds: selected },
+        update: {
+          ...workflow.update,
+          selectedServiceIds: selected,
+          selectedTeethByService,
+          selectedTeeth: flattenSelectedTeeth(selectedTeethByService, selected),
+          activeServiceId,
+        },
+        error: null,
+      });
+    }
+  }
+
+  setOrderWorkflowActiveService(serviceId: string): void {
+    const workflow = this.activeOrderWorkflow();
+    if (!workflow) {
+      return;
+    }
+
+    if (
+      workflow.mode === "create" &&
+      workflow.create &&
+      workflow.create.selectedServiceIds.includes(serviceId)
+    ) {
+      this.activeOrderWorkflow.set({
+        ...workflow,
+        create: { ...workflow.create, activeServiceId: serviceId },
+        error: null,
+      });
+      return;
+    }
+
+    if (
+      workflow.mode === "update" &&
+      workflow.update &&
+      workflow.update.selectedServiceIds.includes(serviceId)
+    ) {
+      this.activeOrderWorkflow.set({
+        ...workflow,
+        update: { ...workflow.update, activeServiceId: serviceId },
         error: null,
       });
     }
@@ -327,22 +403,59 @@ export class AiChatFacade {
       return;
     }
 
-    const toggle = (values: number[]) =>
-      values.includes(tooth) ? values.filter((value) => value !== tooth) : [...values, tooth];
-
     if (workflow.mode === "create" && workflow.create) {
+      const activeServiceId = workflow.create.activeServiceId;
+      if (!activeServiceId) {
+        this.setOrderWorkflowError("Please choose a service before selecting teeth.");
+        return;
+      }
+      const current = workflow.create.selectedTeethByService[activeServiceId] ?? [];
+      const nextTeeth = current.includes(tooth)
+        ? current.filter((value) => value !== tooth)
+        : [...current, tooth];
+      const selectedTeethByService = {
+        ...workflow.create.selectedTeethByService,
+        [activeServiceId]: nextTeeth,
+      };
       this.activeOrderWorkflow.set({
         ...workflow,
-        create: { ...workflow.create, selectedTeeth: toggle(workflow.create.selectedTeeth) },
+        create: {
+          ...workflow.create,
+          selectedTeethByService,
+          selectedTeeth: flattenSelectedTeeth(
+            selectedTeethByService,
+            workflow.create.selectedServiceIds,
+          ),
+        },
         error: null,
       });
       return;
     }
 
     if (workflow.mode === "update" && workflow.update) {
+      const activeServiceId = workflow.update.activeServiceId;
+      if (!activeServiceId) {
+        this.setOrderWorkflowError("Please choose a service before selecting teeth.");
+        return;
+      }
+      const current = workflow.update.selectedTeethByService[activeServiceId] ?? [];
+      const nextTeeth = current.includes(tooth)
+        ? current.filter((value) => value !== tooth)
+        : [...current, tooth];
+      const selectedTeethByService = {
+        ...workflow.update.selectedTeethByService,
+        [activeServiceId]: nextTeeth,
+      };
       this.activeOrderWorkflow.set({
         ...workflow,
-        update: { ...workflow.update, selectedTeeth: toggle(workflow.update.selectedTeeth) },
+        update: {
+          ...workflow.update,
+          selectedTeethByService,
+          selectedTeeth: flattenSelectedTeeth(
+            selectedTeethByService,
+            workflow.update.selectedServiceIds,
+          ),
+        },
         error: null,
       });
     }
@@ -369,18 +482,31 @@ export class AiChatFacade {
 
     if (workflow.mode === "create") {
       const prompt = this.buildCreateOrderWorkflowPrompt(workflow);
+      const titlePrompt = this.buildCreateOrderTitlePrompt(workflow);
       this.activeOrderWorkflow.set(null);
-      void this.submitPrompt(prompt);
+      void this.submitPrompt(prompt, {
+        displayPrompt: titlePrompt,
+        titlePrompt,
+      });
       return;
     }
 
     const prompt = this.buildUpdateOrderWorkflowPrompt(workflow);
+    const titlePrompt = this.buildUpdateOrderTitlePrompt(workflow);
     this.activeOrderWorkflow.set(null);
-    void this.submitPrompt(prompt);
+    void this.submitPrompt(prompt, {
+      displayPrompt: titlePrompt,
+      titlePrompt,
+    });
   }
 
-  async submitPrompt(rawPrompt?: string): Promise<void> {
+  async submitPrompt(
+    rawPrompt?: string,
+    options?: { displayPrompt?: string; titlePrompt?: string },
+  ): Promise<void> {
     const prompt = (rawPrompt ?? this.promptDraft().prompt).trim();
+    const displayPrompt = (options?.displayPrompt ?? prompt).trim();
+    const titlePrompt = (options?.titlePrompt ?? displayPrompt).trim();
     const conversationId = this.activeConversationId();
     if (!prompt || !conversationId || this.isResponding()) {
       return;
@@ -393,7 +519,7 @@ export class AiChatFacade {
     this.appendMessage(conversationId, {
       id: this.nextMessageId(),
       role: "user",
-      text: prompt,
+      text: displayPrompt,
       createdAt: new Date().toISOString(),
       type: "text",
     });
@@ -413,7 +539,7 @@ export class AiChatFacade {
       type: "loading",
     });
 
-    this.refreshConversationTitle(conversationId, prompt);
+    this.refreshConversationTitle(conversationId, titlePrompt);
     const generation = this.sessionGeneration;
     this.isResponding.set(true);
     try {
@@ -845,6 +971,8 @@ export class AiChatFacade {
       }
       this.appendConfirmationResultMessage(conversationId, result);
       this.touchConversation(conversationId);
+      this.orderDataService.loadOrders();
+      this.subOrderDataService.load();
       await this.loadConversationMessages(conversationId);
     } catch (error) {
       if (generation === this.sessionGeneration) {
@@ -1001,6 +1129,10 @@ export class AiChatFacade {
     const guardrails = getWorkflowGuardrails(workflow.action.id);
     const guardrailBlock = guardrails.length ? `\n\n${guardrails.join("\n")}` : "";
     return `${workflow.action.prefillPrompt}${guardrailBlock}\n\nUse the following user-provided values:\n${lines.join("\n")}\n\nProceed with this request now.`;
+  }
+
+  private buildWorkflowTitlePrompt(workflow: AiActionWorkflowState): string {
+    return workflow.action.title;
   }
 
   private startOrderWorkflow(action: AiQuickAction): void {
@@ -1217,13 +1349,25 @@ export class AiChatFacade {
         this.setOrderWorkflowError("Please select at least one service.");
         return;
       }
-      this.activeOrderWorkflow.set({ ...workflow, step: "teeth", input: "", error: null });
+      this.activeOrderWorkflow.set({
+        ...workflow,
+        step: "teeth",
+        input: "",
+        error: null,
+        create: {
+          ...create,
+          activeServiceId: create.activeServiceId ?? create.selectedServiceIds[0] ?? null,
+        },
+      });
       return;
     }
 
     if (workflow.step === "teeth") {
-      if (create.selectedTeeth.length === 0) {
-        this.setOrderWorkflowError("Please select at least one tooth.");
+      const servicesWithoutTeeth = create.selectedServiceIds.filter(
+        (serviceId) => (create.selectedTeethByService[serviceId] ?? []).length === 0,
+      );
+      if (servicesWithoutTeeth.length > 0) {
+        this.setOrderWorkflowError("Please select at least one tooth for each selected service.");
         return;
       }
       this.activeOrderWorkflow.set({ ...workflow, step: "review", input: "", error: null });
@@ -1242,6 +1386,27 @@ export class AiChatFacade {
         this.setOrderWorkflowError("Order ID or number is required.");
         return;
       }
+      const candidates = this.findOrderCandidates(orderReference);
+      if (candidates.length > 1) {
+        this.activeOrderWorkflow.set({
+          ...workflow,
+          step: "selectOrder",
+          notice: "Multiple orders match this value. Pick one order to continue.",
+          update: {
+            ...update,
+            orderReference,
+            orderCandidates: candidates,
+          },
+          input: "",
+          error: null,
+        });
+        return;
+      }
+      const selectedOrder = candidates[0] ?? null;
+      if (!selectedOrder) {
+        this.setOrderWorkflowError("No matching order found.");
+        return;
+      }
       this.activeOrderWorkflow.set({
         ...workflow,
         step: "editOrder",
@@ -1249,7 +1414,52 @@ export class AiChatFacade {
         notice: null,
         update: {
           ...update,
-          orderReference,
+          orderReference: selectedOrder.id,
+          selectedOrder,
+          orderCandidates: [],
+          baselineServiceIds: selectedOrder.creationData?.services.map((service) => service.serviceId) ?? [],
+          selectedServiceIds: selectedOrder.creationData?.services.map((service) => service.serviceId) ?? [],
+          baselineTeeth: selectedOrder.creationData?.services.flatMap((service) => service.selectedTeeth) ?? [],
+          selectedTeeth: selectedOrder.creationData?.services.flatMap((service) => service.selectedTeeth) ?? [],
+          baselineTeethByService: buildServiceTeethMap(selectedOrder),
+          selectedTeethByService: buildServiceTeethMap(selectedOrder),
+          activeServiceId: selectedOrder.creationData?.services[0]?.serviceId ?? null,
+        },
+        error: null,
+      });
+      return;
+    }
+
+    if (workflow.step === "selectOrder") {
+      const orderReference = workflow.input.trim() || update.orderReference.trim();
+      if (!orderReference) {
+        this.setOrderWorkflowError("Order selection is required.");
+        return;
+      }
+      const selectedOrder =
+        update.orderCandidates.find((item) => item.id === orderReference || item.orderNumber === orderReference) ??
+        null;
+      if (!selectedOrder) {
+        this.setOrderWorkflowError("Please pick one of the listed orders.");
+        return;
+      }
+      this.activeOrderWorkflow.set({
+        ...workflow,
+        step: "editOrder",
+        input: "",
+        notice: null,
+        update: {
+          ...update,
+          orderReference: selectedOrder.id,
+          selectedOrder,
+          orderCandidates: [],
+          baselineServiceIds: selectedOrder.creationData?.services.map((service) => service.serviceId) ?? [],
+          selectedServiceIds: selectedOrder.creationData?.services.map((service) => service.serviceId) ?? [],
+          baselineTeeth: selectedOrder.creationData?.services.flatMap((service) => service.selectedTeeth) ?? [],
+          selectedTeeth: selectedOrder.creationData?.services.flatMap((service) => service.selectedTeeth) ?? [],
+          baselineTeethByService: buildServiceTeethMap(selectedOrder),
+          selectedTeethByService: buildServiceTeethMap(selectedOrder),
+          activeServiceId: selectedOrder.creationData?.services[0]?.serviceId ?? null,
         },
         error: null,
       });
@@ -1257,10 +1467,7 @@ export class AiChatFacade {
     }
 
     if (workflow.step === "editOrder") {
-      const hasChanges =
-        update.selectedServiceIds.length > 0 ||
-        update.selectedTeeth.length > 0 ||
-        update.notes.trim().length > 0;
+      const hasChanges = this.hasUpdateWorkflowChanges(update);
       if (!hasChanges) {
         this.setOrderWorkflowError("Please provide at least one update.");
         return;
@@ -1281,6 +1488,32 @@ export class AiChatFacade {
     });
   }
 
+  private hasUpdateWorkflowChanges(update: NonNullable<AiOrderWorkflowState["update"]>): boolean {
+    if (this.hasUpdateServiceChanges(update)) {
+      return true;
+    }
+
+    return update.notes.trim().length > 0;
+  }
+
+  private hasUpdateServiceChanges(update: NonNullable<AiOrderWorkflowState["update"]>): boolean {
+    const baselineServiceIds = normalizedArray(update.baselineServiceIds);
+    const selectedServiceIds = normalizedArray(update.selectedServiceIds);
+    if (!areStringArraysEqual(baselineServiceIds, selectedServiceIds)) {
+      return true;
+    }
+
+    for (const serviceId of selectedServiceIds) {
+      const baselineTeeth = normalizedNumberArray(update.baselineTeethByService[serviceId] ?? []);
+      const selectedTeeth = normalizedNumberArray(update.selectedTeethByService[serviceId] ?? []);
+      if (!areNumberArraysEqual(baselineTeeth, selectedTeeth)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   private buildCreateOrderWorkflowPrompt(workflow: AiOrderWorkflowState): string {
     const create = workflow.create;
     if (!create) {
@@ -1298,35 +1531,38 @@ export class AiChatFacade {
     const serviceNames = selectedServices
       .map((service) => `${service.name} [${service.id}]`)
       .join(", ");
-    const patient = create.patient?.name || create.patientReference || "(missing)";
-    const doctor =
-      create.doctor?.name ||
-      create.patient?.doctorName ||
-      create.doctorReference ||
-      "(missing)";
-    const clinic =
-      create.clinic?.name ||
-      create.doctor?.clinicName ||
-      create.patient?.clinicName ||
-      create.clinicReference ||
-      "(missing)";
+    const patientId = create.patient?.id || create.patientReference || "";
+    const doctorId = create.doctor?.id || create.doctorReference || create.patient?.doctorId || "";
+    const clinicId =
+      create.clinic?.id || create.clinicReference || create.doctor?.clinicId || create.patient?.clinicId || "";
+    const payload = {
+      payload: {
+        patientId,
+        doctorId,
+        clinicId,
+        billTo: create.billToTarget === "scan-center" ? "scan-center" : "doctor",
+        creationData: {
+          services: selectedServices.map((service) => ({
+            serviceId: service.id,
+            selectedTeeth: create.selectedTeethByService[service.id] ?? [],
+          })),
+        },
+      },
+    };
+    const serviceTeethSummary = selectedServices
+      .map((service) => {
+        const teeth = create.selectedTeethByService[service.id] ?? [];
+        return `${service.name} [${service.id}]: ${teeth.join(", ") || "(none)"}`;
+      })
+      .join(" | ");
     return [
       "Create order using assistant tools.",
       "MANDATORY: MUST include a create_order action in this same response.",
-      "Resolve patient/doctor/clinic to IDs first if needed, then include create_order payload.",
-      "Do not return search result lists when creating this order.",
-      "If multiple patients share the same name, select the one matching both doctor and clinic from this request.",
-      "Only ask for clarification when no single patient matches doctor+clinic.",
+      "Use the exact IDs supplied below.",
       "Backend confirmation is required automatically for write actions.",
-      `Patient: ${patient}`,
-      `Doctor: ${doctor}`,
-      `Clinic: ${clinic}`,
-      `Bill to target: ${create.billToTarget}`,
       `Services: ${serviceNames}`,
-      `Selected teeth: ${create.selectedTeeth.join(", ")}`,
-      "For creationData.services, each creationData.services item must include serviceId and selectedTeeth.",
-      "Use this item shape: {\"serviceId\":\"<service-id>\",\"selectedTeeth\":[...]}",
-      "Use backend-compatible create_order payload and include creationData.services from selected services and teeth.",
+      `Selected teeth by service: ${serviceTeethSummary}`,
+      `Action JSON: ${JSON.stringify({ tool: "create_order", arguments: payload })}`,
     ].join("\n");
   }
 
@@ -1336,21 +1572,61 @@ export class AiChatFacade {
       return "Update order";
     }
 
+    const selectedOrder = update.selectedOrder;
     const serviceNames = update.selectedServiceIds
       .map((id) => workflow.services.find((service) => service.id === id)?.name ?? id)
       .join(", ");
+    const includeServiceChanges = this.hasUpdateServiceChanges(update);
+    const payload = {
+      orderId: selectedOrder?.id || update.orderReference,
+      payload: {
+        ...(includeServiceChanges
+          ? {
+              creationData: {
+                services: update.selectedServiceIds.map((serviceId) => ({
+                  serviceId,
+                  selectedTeeth: update.selectedTeethByService[serviceId] ?? [],
+                })),
+              },
+            }
+          : {}),
+        ...(update.notes.trim() ? { notes: update.notes.trim() } : {}),
+        ...(update.billToTarget ? { billTo: update.billToTarget === "scan-center" ? "scan-center" : "doctor" } : {}),
+      },
+    };
+    const serviceTeethSummary = update.selectedServiceIds
+      .map((serviceId) => {
+        const serviceName =
+          workflow.services.find((service) => service.id === serviceId)?.name ?? serviceId;
+        const teeth = update.selectedTeethByService[serviceId] ?? [];
+        return `${serviceName} [${serviceId}]: ${teeth.join(", ") || "(none)"}`;
+      })
+      .join(" | ");
     return [
       "Update order using assistant tools.",
       "MANDATORY: MUST include an update_order action in this same response.",
-      "Resolve order reference to orderId if needed, then include update_order payload with changed fields.",
       "Backend confirmation is required automatically for write actions.",
-      `Order reference: ${update.orderReference || "(missing)"}`,
+      `Order reference: ${selectedOrder?.orderNumber || update.orderReference || "(missing)"}`,
       `Updated services: ${serviceNames || "(unchanged)"}`,
-      `Updated teeth: ${update.selectedTeeth.length ? update.selectedTeeth.join(", ") : "(unchanged)"}`,
+      `Updated teeth by service: ${serviceTeethSummary || "(unchanged)"}`,
       `Bill to target: ${update.billToTarget}`,
       `Notes update: ${update.notes || "(none)"}`,
-      "Use backend-compatible update_order payload with changed fields only.",
+      `Action JSON: ${JSON.stringify({ tool: "update_order", arguments: payload })}`,
     ].join("\n");
+  }
+
+  private buildCreateOrderTitlePrompt(workflow: AiOrderWorkflowState): string {
+    const patientName = workflow.create?.patient?.name || workflow.create?.patientReference || "patient";
+    return `Create order for ${patientName}`;
+  }
+
+  private buildUpdateOrderTitlePrompt(workflow: AiOrderWorkflowState): string {
+    const reference =
+      workflow.update?.selectedOrder?.orderNumber ||
+      workflow.update?.selectedOrder?.id ||
+      workflow.update?.orderReference ||
+      "order";
+    return `Update order ${reference}`;
   }
 
   private findPatientCandidates(reference: string): Patient[] {
@@ -1422,6 +1698,32 @@ export class AiChatFacade {
     );
   }
 
+  private findOrderCandidates(reference: string): Order[] {
+    const normalized = normalizeLookup(reference);
+    if (!normalized) {
+      return [];
+    }
+    const orders = this.orderDataService.orders();
+    const byId = orders.filter((item) => normalizeLookup(item.id) === normalized);
+    if (byId.length > 0) {
+      return byId;
+    }
+    const byOrderNumber = orders.filter((item) => normalizeLookup(item.orderNumber) === normalized);
+    if (byOrderNumber.length > 0) {
+      return byOrderNumber;
+    }
+    const byPatientName = orders.filter((item) => normalizeLookup(item.patientName) === normalized);
+    if (byPatientName.length > 0) {
+      return byPatientName;
+    }
+    return orders.filter(
+      (item) =>
+        normalizeLookup(item.orderNumber).includes(normalized) ||
+        normalizeLookup(item.patientName).includes(normalized) ||
+        normalizeLookup(item.doctorName).includes(normalized),
+    );
+  }
+
   private findDoctorById(doctorId: string): Doctor | null {
     if (!doctorId.trim()) {
       return null;
@@ -1459,6 +1761,58 @@ export class AiChatFacade {
 
 function normalizeLookup(value: string): string {
   return value.trim().toLowerCase();
+}
+
+function flattenSelectedTeeth(
+  selectedTeethByService: Record<string, number[]>,
+  selectedServiceIds: readonly string[],
+): number[] {
+  const all = selectedServiceIds.flatMap((serviceId) => selectedTeethByService[serviceId] ?? []);
+  return normalizedNumberArray(all);
+}
+
+function normalizedNumberArray(values: readonly number[]): number[] {
+  return Array.from(new Set(values)).sort((left, right) => left - right);
+}
+
+function normalizedArray(values: readonly string[]): string[] {
+  return Array.from(new Set(values)).sort((left, right) => left.localeCompare(right));
+}
+
+function areNumberArraysEqual(left: readonly number[], right: readonly number[]): boolean {
+  if (left.length !== right.length) {
+    return false;
+  }
+
+  for (let index = 0; index < left.length; index += 1) {
+    if (left[index] !== right[index]) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function areStringArraysEqual(left: readonly string[], right: readonly string[]): boolean {
+  if (left.length !== right.length) {
+    return false;
+  }
+
+  for (let index = 0; index < left.length; index += 1) {
+    if (left[index] !== right[index]) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function buildServiceTeethMap(order: Order): Record<string, number[]> {
+  const entries = order.creationData?.services ?? [];
+  return entries.reduce<Record<string, number[]>>((map, service) => {
+    map[service.serviceId] = normalizedNumberArray(service.selectedTeeth);
+    return map;
+  }, {});
 }
 
 function mapQuickActionToSuggestionId(actionId: string): string | null {
@@ -1532,6 +1886,9 @@ function getWorkflowFields(actionId: string): readonly AiActionWorkflowField[] {
         { key: "name", label: "Doctor name", placeholder: "Enter doctor name" },
         { key: "specialty", label: "Specialty", placeholder: "Enter specialty" },
         { key: "clinic", label: "Clinic", placeholder: "Enter clinic id/name" },
+        { key: "email", label: "Email", placeholder: "Enter doctor email" },
+        { key: "phone", label: "Phone", placeholder: "Enter doctor phone" },
+        { key: "joinedDate", label: "Joined date (YYYY-MM-DD)", placeholder: "e.g. 2026-01-15" },
       ];
     case "ops-update-doctor":
       return [
@@ -1543,16 +1900,17 @@ function getWorkflowFields(actionId: string): readonly AiActionWorkflowField[] {
     case "ops-create-clinic":
       return [
         { key: "name", label: "Clinic name", placeholder: "Enter clinic name" },
+        { key: "address", label: "Address", placeholder: "Enter clinic address" },
         { key: "city", label: "City", placeholder: "Enter city" },
-        { key: "phone", label: "Phone", placeholder: "Enter phone", optional: true },
+        { key: "phone", label: "Phone", placeholder: "Enter phone" },
+        { key: "email", label: "Email", placeholder: "Enter clinic email" },
+        { key: "accountManager", label: "Account manager", placeholder: "Enter account manager" },
       ];
     case "ops-update-clinic":
       return [
         { key: "clinic", label: "Clinic ID", placeholder: "Enter clinic id" },
         { key: "changes", label: "Required updates", placeholder: "Describe updates" },
       ];
-    case "ops-search-cases":
-      return [{ key: "query", label: "Case search value", placeholder: "Patient, order, or status" }];
     case "ops-change-workflow":
       return [
         { key: "order", label: "Order ID or number", placeholder: "Enter order id/number" },
@@ -1562,11 +1920,6 @@ function getWorkflowFields(actionId: string): readonly AiActionWorkflowField[] {
       return [
         { key: "order", label: "Order ID or number", placeholder: "Enter order id/number" },
         { key: "scanCenter", label: "Scan center ID", placeholder: "Enter scan center id" },
-      ];
-    case "ops-change-settings":
-      return [
-        { key: "setting", label: "Setting key", placeholder: "e.g. theme" },
-        { key: "value", label: "Setting value", placeholder: "e.g. dark" },
       ];
     case "ops-open-order-detail":
       return [
@@ -1620,6 +1973,8 @@ function buildInitialCreateOrderWorkflow(): AiOrderWorkflowState {
       billToTarget: "doctor",
       selectedServiceIds: [],
       selectedTeeth: [],
+      selectedTeethByService: {},
+      activeServiceId: null,
       patientCandidates: [],
       doctorCandidates: [],
       clinicCandidates: [],
@@ -1646,6 +2001,9 @@ function buildInitialUpdateOrderWorkflow(): AiOrderWorkflowState {
       selectedServiceIds: [],
       baselineTeeth: [],
       selectedTeeth: [],
+      baselineTeethByService: {},
+      selectedTeethByService: {},
+      activeServiceId: null,
       notes: "",
       billToTarget: "doctor",
     },

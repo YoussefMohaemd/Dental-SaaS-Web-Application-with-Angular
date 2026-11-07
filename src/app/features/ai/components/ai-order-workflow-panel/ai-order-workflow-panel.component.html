@@ -71,8 +71,7 @@
   @if (workflow().step === "services" || workflow().step === "editOrder") {
     <div class="workflow-panel__services">
       @for (service of workflow().services; track service.id) {
-        <button
-          type="button"
+        <div
           class="workflow-panel__service-card"
           [class.is-selected]="
             (workflow().mode === 'create'
@@ -80,6 +79,7 @@
               : workflow().update?.selectedServiceIds
             )?.includes(service.id)
           "
+          [class.is-active]="activeServiceId() === service.id"
           (click)="serviceToggled.emit(service.id)"
         >
           <div class="workflow-panel__service-header">
@@ -88,20 +88,37 @@
           </div>
           <p>{{ service.description }}</p>
           <small>${{ service.basePrice }}</small>
-        </button>
+        </div>
       }
     </div>
   }
 
   @if (workflow().step === "teeth" || workflow().step === "editOrder") {
+    <div class="workflow-panel__active-services">
+      @for (service of selectedServiceItems(); track service.id) {
+        <button
+          type="button"
+          class="workflow-panel__active-service-chip"
+          [class.is-active]="activeServiceId() === service.id"
+          (click)="activeServiceChanged.emit(service.id)"
+        >
+          <strong>{{ service.name }}</strong>
+          <span>
+            @if (service.teeth.length > 0) {
+              {{ service.teeth.join(", ") }}
+            } @else {
+              No teeth yet
+            }
+          </span>
+        </button>
+      }
+    </div>
     <app-teeth-chart
       [selected]="
-        workflow().mode === 'create'
-          ? workflow().create?.selectedTeeth ?? []
-          : workflow().update?.selectedTeeth ?? []
+        activeServiceTeeth()
       "
       [services]="selectedServiceNames() ? [selectedServiceNames()] : []"
-      [serviceTeeth]="{}"
+      [serviceTeeth]="selectedServiceTeethMap()"
       (toothToggle)="toothToggled.emit($event)"
     />
   }

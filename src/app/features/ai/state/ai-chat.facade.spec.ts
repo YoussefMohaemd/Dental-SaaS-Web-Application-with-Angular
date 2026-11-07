@@ -1,4 +1,4 @@
-import { signal } from "@angular/core";
+import { signal, type Signal } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 import { AuthService, type AuthenticatedUser } from "@core/services/auth.service";
 import { AuthorizationService } from "@core/services/authorization.service";
@@ -6,8 +6,10 @@ import { AssistantDataService } from "@core/services/assistant-data.service";
 import { ClinicDataService } from "@core/services/clinic-data.service";
 import { DoctorDataService } from "@core/services/doctor-data.service";
 import { NavigationService } from "@core/services/navigation.service";
+import { OrderDataService } from "@core/services/order-data.service";
 import { PatientDataService } from "@core/services/patient-data.service";
-import { Clinic, Doctor, Patient } from "@core/interfaces";
+import { SubOrderDataService } from "@core/services/sub-order-data.service";
+import { Clinic, Doctor, Order, Patient } from "@core/interfaces";
 import { of, throwError } from "rxjs";
 import { AiChatFacade } from "./ai-chat.facade";
 
@@ -20,6 +22,9 @@ describe("AiChatFacade", () => {
   let patientsState: ReturnType<typeof signal<Patient[]>>;
   let doctorsState: ReturnType<typeof signal<Doctor[]>>;
   let clinicsState: ReturnType<typeof signal<Clinic[]>>;
+  let ordersState: ReturnType<typeof signal<Order[]>>;
+  let orderDataServiceMock: { orders: Signal<Order[]>; loadOrders: jasmine.Spy };
+  let subOrderDataServiceMock: { load: jasmine.Spy };
 
   const makeUser = (userId: string): AuthenticatedUser => ({
     userId,
@@ -198,6 +203,48 @@ describe("AiChatFacade", () => {
         accountManager: "B",
       },
     ]);
+    ordersState = signal<Order[]>([
+      {
+        id: "order-1",
+        orderNumber: "ORD-1",
+        patientId: "patient-1",
+        patientName: "youssef",
+        doctorId: "doctor-1",
+        doctorName: "Omar Khalil",
+        clinicId: "clinic-2",
+        clinicName: "Dental Care Clinic 2",
+        scanCenterId: "",
+        scanCenterName: "",
+        status: "New",
+        priority: "Normal",
+        restoration: "Crown",
+        arch: "Both",
+        format: "STL",
+        shade: "A2",
+        units: 1,
+        amount: 250,
+        billed: false,
+        billTo: "doctor",
+        vouchers: 0,
+        isLocked: false,
+        hasNotes: false,
+        notes: "",
+        receivedAt: "2026-10-01",
+        updatedAt: "2026-10-01",
+        dueDate: "2026-10-10",
+        creationData: {
+          services: [{ serviceId: "treatment-plan", selectedTeeth: [11], serviceDetails: {}, serviceForm: {}, scanRequirements: [], fileReferences: [] }],
+        },
+      },
+    ]);
+
+    orderDataServiceMock = {
+      orders: ordersState.asReadonly(),
+      loadOrders: jasmine.createSpy("loadOrders"),
+    };
+    subOrderDataServiceMock = {
+      load: jasmine.createSpy("load"),
+    };
 
     TestBed.configureTestingModule({
       providers: [
@@ -218,6 +265,11 @@ describe("AiChatFacade", () => {
           provide: ClinicDataService,
           useValue: { clinics: clinicsState.asReadonly() },
         },
+        {
+          provide: OrderDataService,
+          useValue: orderDataServiceMock,
+        },
+        { provide: SubOrderDataService, useValue: subOrderDataServiceMock },
       ],
     });
 
@@ -302,6 +354,46 @@ describe("AiChatFacade", () => {
     expect(latest?.actions?.length).toBe(1);
   });
 
+  it("refreshes orders and sub-orders after confirming a pending action", async () => {
+    assistantDataService.postMessage$.and.returnValue(
+      of({
+        conversationId: "conv-backend-1",
+        messageId: "m2",
+        result: {
+          type: "confirmation",
+          text: "Review and confirm",
+          pendingActions: [
+            {
+              actionId: "a-pending-refresh",
+              tool: "update_order",
+              expiresAt: new Date().toISOString(),
+              confirmationToken: "token-refresh",
+              payload: { orderId: "order-1" },
+            },
+          ],
+        },
+      }),
+    );
+
+    await facade.submitPrompt("update order order-1");
+    const action = facade.messages().at(-1)?.actions?.[0];
+    expect(action).toBeDefined();
+    if (!action) {
+      throw new Error("Missing confirmation action");
+    }
+
+    facade.runShortcutAction(action);
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(assistantDataService.confirmAction$).toHaveBeenCalledWith(
+      "a-pending-refresh",
+      "token-refresh",
+    );
+    expect(orderDataServiceMock.loadOrders).toHaveBeenCalled();
+    expect(subOrderDataServiceMock.load).toHaveBeenCalled();
+  });
+
   it("hides quick actions after selecting an action", () => {
     const action = facade.quickActions().find((item) => item.id === "faq-services");
     expect(action).toBeDefined();
@@ -384,12 +476,52 @@ describe("AiChatFacade", () => {
 
     const prompt = assistantDataService.postMessage$.calls.mostRecent().args[1] as string;
     expect(prompt).toContain("MUST include a create_order action in this same response.");
-    expect(prompt).toContain("each creationData.services item must include serviceId");
-    expect(prompt).toContain("Do not return search result lists when creating this order.");
-    expect(prompt).toContain("If multiple patients share the same name, select the one matching both doctor and clinic from this request.");
-    expect(prompt).toContain("Patient: youssef");
-    expect(prompt).toContain("Doctor: Omar Khalil");
-    expect(prompt).toContain("Clinic: Dental Care Clinic 2");
+    expect(prompt).toContain("Use the exact IDs supplied below.");
+    expect(prompt).toContain("\"tool\":\"create_order\"");
+    expect(prompt).toContain("\"patientId\":\"patient-1\"");
+    expect(prompt).toContain("\"doctorId\":\"doctor-1\"");
+    expect(prompt).toContain("\"clinicId\":\"clinic-2\"");
+  });
+
+  it("builds create-order payload with per-service teeth mapping", async () => {
+    const action = facade.quickActions().find((item) => item.id === "ops-create-order");
+    expect(action).toBeDefined();
+    if (!action) {
+      throw new Error("Missing ops-create-order quick action");
+    }
+
+    facade.runQuickAction(action);
+    facade.updateOrderWorkflowInput("patient-1");
+    facade.continueOrderWorkflow();
+    facade.updateOrderWorkflowInput("doctor-1");
+    facade.continueOrderWorkflow();
+    facade.updateOrderWorkflowInput("clinic-1");
+    facade.continueOrderWorkflow();
+    facade.continueOrderWorkflow();
+
+    const services = facade.activeOrderWorkflow()?.services ?? [];
+    expect(services.length).toBeGreaterThanOrEqual(2);
+    const firstService = services[0]?.id;
+    const secondService = services[1]?.id;
+    if (!firstService || !secondService) {
+      throw new Error("Expected at least two services");
+    }
+
+    facade.toggleOrderWorkflowService(firstService);
+    facade.toggleOrderWorkflowService(secondService);
+    facade.setOrderWorkflowActiveService(firstService);
+    facade.toggleOrderWorkflowTooth(11);
+    facade.toggleOrderWorkflowTooth(41);
+    facade.setOrderWorkflowActiveService(secondService);
+    facade.toggleOrderWorkflowTooth(24);
+    facade.continueOrderWorkflow();
+    facade.continueOrderWorkflow();
+    facade.submitOrderWorkflow();
+    await flushAsyncFacadeInit();
+
+    const prompt = assistantDataService.postMessage$.calls.mostRecent().args[1] as string;
+    expect(prompt).toContain('"serviceId":"treatment-plan","selectedTeeth":[11,41]');
+    expect(prompt).toContain('"selectedTeeth":[24]');
   });
 
   it("shows patient candidates when patient lookup is ambiguous", () => {
@@ -451,6 +583,44 @@ describe("AiChatFacade", () => {
 
     const prompt = assistantDataService.postMessage$.calls.mostRecent().args[1] as string;
     expect(prompt).toContain("MUST include an update_order action in this same response.");
+  });
+
+  it("asks full create-doctor required fields in workflow", () => {
+    const action = facade.quickActions().find((item) => item.id === "ops-create-doctor");
+    expect(action).toBeDefined();
+    if (!action) {
+      throw new Error("Missing ops-create-doctor quick action");
+    }
+
+    facade.runQuickAction(action);
+    const workflow = facade.activeWorkflow();
+    expect(workflow?.fields.map((field) => field.key)).toEqual([
+      "name",
+      "specialty",
+      "clinic",
+      "email",
+      "phone",
+      "joinedDate",
+    ]);
+  });
+
+  it("asks full create-clinic required fields in workflow", () => {
+    const action = facade.quickActions().find((item) => item.id === "ops-create-clinic");
+    expect(action).toBeDefined();
+    if (!action) {
+      throw new Error("Missing ops-create-clinic quick action");
+    }
+
+    facade.runQuickAction(action);
+    const workflow = facade.activeWorkflow();
+    expect(workflow?.fields.map((field) => field.key)).toEqual([
+      "name",
+      "address",
+      "city",
+      "phone",
+      "email",
+      "accountManager",
+    ]);
   });
 
   it("asks full create-patient required fields in workflow", () => {

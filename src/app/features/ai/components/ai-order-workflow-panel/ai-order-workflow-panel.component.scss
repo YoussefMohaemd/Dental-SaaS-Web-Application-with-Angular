@@ -91,6 +91,10 @@
   background: color-mix(in srgb, var(--primary) 9%, var(--background));
 }
 
+.workflow-panel__service-card.is-active {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--primary) 40%, transparent);
+}
+
 .workflow-panel__service-card p {
   margin: 0.4rem 0;
   font-size: 0.75rem;
@@ -101,6 +105,35 @@
   display: flex;
   gap: 0.4rem;
   align-items: center;
+}
+
+.workflow-panel__active-services {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.workflow-panel__active-service-chip {
+  border: 1px solid var(--border);
+  border-radius: 0.65rem;
+  background: var(--background);
+  color: inherit;
+  text-align: left;
+  padding: 0.4rem 0.55rem;
+  cursor: pointer;
+  display: grid;
+  gap: 0.12rem;
+}
+
+.workflow-panel__active-service-chip span {
+  color: var(--muted-foreground);
+  font-size: 0.72rem;
+}
+
+.workflow-panel__active-service-chip.is-active {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 9%, var(--background));
 }
 
 .workflow-panel__candidates {
