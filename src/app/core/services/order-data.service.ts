@@ -384,9 +384,12 @@ export class OrderDataService extends OrdersApi {
   }
 
   private toApiOrderPayload(payload: OrderMutation): Record<string, unknown> {
+    const allowEmptyStringFields = new Set<keyof OrderMutation>(["notes"]);
     return Object.fromEntries(
       ORDER_MUTATION_FIELDS.filter(
-        (key) => payload[key] !== undefined && payload[key] !== "",
+        (key) =>
+          payload[key] !== undefined &&
+          (allowEmptyStringFields.has(key) || payload[key] !== ""),
       ).map((key) => [key, payload[key]]),
     );
   }

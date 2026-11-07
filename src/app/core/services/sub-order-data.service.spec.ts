@@ -186,6 +186,164 @@ describe("SubOrderDataService", () => {
     expect(rows[0].service).toBe("Final Restoration");
   });
 
+  it("should reconcile sub-orders with patch/create/delete calls instead of destructive bulk replace", () => {
+    service
+      .replaceForOrder$("ord-1", [
+        {
+          serviceId: "gfmr",
+          service: "GFMR",
+          icon: "clipboard",
+          priority: "High",
+          dueDate: "2024-12-28",
+          notes: "Updated GFMR",
+          teeth: [11, 12],
+          scanRequirements: ["Upper scan"],
+          creationData: {
+            serviceId: "gfmr",
+            serviceDetails: {},
+            serviceForm: {},
+            selectedTeeth: [11, 12],
+            scanRequirements: ["Upper scan"],
+            fileReferences: [],
+          },
+        },
+        {
+          serviceId: "final-restoration",
+          service: "Final Restoration",
+          icon: "✨",
+          priority: "Normal",
+          dueDate: "2024-12-29",
+          notes: "New row",
+          teeth: [21],
+          scanRequirements: ["Prep scan"],
+          creationData: {
+            serviceId: "final-restoration",
+            serviceDetails: {},
+            serviceForm: {},
+            selectedTeeth: [21],
+            scanRequirements: ["Prep scan"],
+            fileReferences: [],
+          },
+        },
+      ])
+      .subscribe();
+
+    const listRequest = httpMock.expectOne(ApiEndpoint.orderSubOrders("ord-1"));
+    expect(listRequest.request.method).toBe("GET");
+    listRequest.flush({
+      data: [
+        {
+          id: "sub-1",
+          orderId: "ord-1",
+          service: "GFMR",
+          icon: "clipboard",
+          status: "in-progress",
+          formsComplete: 1,
+          formsTotal: 3,
+          scansComplete: 0,
+          scansTotal: 1,
+          teeth: [11],
+          priority: "Normal",
+          dueDate: "2024-12-24",
+          notes: "Original",
+          creationData: {
+            serviceId: "gfmr",
+            serviceDetails: {},
+            serviceForm: {},
+            selectedTeeth: [11],
+            scanRequirements: ["Upper scan"],
+            fileReferences: [],
+          },
+        },
+        {
+          id: "sub-2",
+          orderId: "ord-1",
+          service: "Wax-up",
+          icon: "sparkles",
+          status: "pending",
+          formsComplete: 0,
+          formsTotal: 1,
+          scansComplete: 0,
+          scansTotal: 1,
+          teeth: [31],
+          priority: "Normal",
+          dueDate: "2024-12-24",
+          notes: "Remove me",
+          creationData: {
+            serviceId: "treatment-plan",
+            serviceDetails: {},
+            serviceForm: {},
+            selectedTeeth: [31],
+            scanRequirements: ["Bite registration"],
+            fileReferences: [],
+          },
+        },
+      ],
+    });
+
+    const patchRequest = httpMock.expectOne(ApiEndpoint.subOrder("ord-1", "sub-1"));
+    expect(patchRequest.request.method).toBe("PATCH");
+    patchRequest.flush({
+      data: {
+        id: "sub-1",
+        orderId: "ord-1",
+        service: "GFMR",
+        icon: "clipboard",
+        status: "in-progress",
+        formsComplete: 1,
+        formsTotal: 3,
+        scansComplete: 0,
+        scansTotal: 1,
+        teeth: [11, 12],
+        priority: "High",
+        dueDate: "2024-12-28",
+        notes: "Updated GFMR",
+        creationData: {
+          serviceId: "gfmr",
+          serviceDetails: {},
+          serviceForm: {},
+          selectedTeeth: [11, 12],
+          scanRequirements: ["Upper scan"],
+          fileReferences: [],
+        },
+      },
+    });
+
+    const createRequest = httpMock.expectOne(ApiEndpoint.orderSubOrders("ord-1"));
+    expect(createRequest.request.method).toBe("POST");
+    createRequest.flush({
+      data: [
+        {
+          id: "sub-3",
+          orderId: "ord-1",
+          service: "Final Restoration",
+          icon: "sparkles",
+          status: "pending",
+          formsComplete: 0,
+          formsTotal: 3,
+          scansComplete: 0,
+          scansTotal: 1,
+          teeth: [21],
+          priority: "Normal",
+          dueDate: "2024-12-29",
+          notes: "New row",
+          creationData: {
+            serviceId: "final-restoration",
+            serviceDetails: {},
+            serviceForm: {},
+            selectedTeeth: [21],
+            scanRequirements: ["Prep scan"],
+            fileReferences: [],
+          },
+        },
+      ],
+    });
+
+    const deleteRequest = httpMock.expectOne(ApiEndpoint.subOrder("ord-1", "sub-2"));
+    expect(deleteRequest.request.method).toBe("DELETE");
+    deleteRequest.flush({});
+  });
+
   it("should persist sub-order activity through the backend update", () => {
     const [created] = service.createForOrder("ord-1", [
       {

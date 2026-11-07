@@ -188,7 +188,7 @@ export class AiChatFacade {
       return;
     }
 
-    const detectedMode = this.detectOrderWorkflowMode(prompt);
+    const detectedMode = this.detectGuidedOrderWorkflowMode(prompt);
     if (detectedMode) {
       this.startOrderWorkflow(detectedMode);
       return;
@@ -246,13 +246,11 @@ export class AiChatFacade {
       return;
     }
 
-    if (action.id === "ops-create-order") {
-      this.startOrderWorkflow("create");
-      return;
-    }
-
-    if (action.id === "ops-update-order") {
-      this.startOrderWorkflow("update");
+    if (action.id === "ops-create-order" || action.id === "ops-update-order") {
+      this.updateDraft(action.prefillPrompt);
+      this.appendAssistantText(
+        "I prepared the prompt. Send it when you're ready, or ask for guided workflow if you want step-by-step.",
+      );
       return;
     }
 
@@ -1070,7 +1068,14 @@ export class AiChatFacade {
     };
   }
 
-  private detectOrderWorkflowMode(prompt: string): AiOrderWorkflowMode | null {
+  private detectGuidedOrderWorkflowMode(prompt: string): AiOrderWorkflowMode | null {
+    const wantsGuidedWorkflow =
+      /(guided|wizard|workflow|step[\s-]*by[\s-]*step)/i.test(prompt) ||
+      /(خطوة\s*بخطوة|وركفلو|ووركفلو|معالج)/i.test(prompt);
+    if (!wantsGuidedWorkflow) {
+      return null;
+    }
+
     const normalized = normalizeLookup(prompt);
     if (
       /(create\s+order|new\s+order|make\s+order)/i.test(normalized) ||
@@ -1412,18 +1417,24 @@ export class AiChatFacade {
   private toAssistantMessage(response: AssistantMessageResponseDto): AiChatMessage {
     if (response.result.type === "confirmation") {
       const pendingActions = response.result.pendingActions;
-      const actions: AiShortcutAction[] = pendingActions.map((item) => ({
-        id: `confirm-${item.actionId}`,
-        title: `Confirm ${item.tool}`,
-        intent: "updateOrder",
-        description: `Confirm pending action for ${item.tool}`,
-        badge: "Confirm",
-        confirmation: {
-          actionId: item.actionId,
-          confirmationToken: item.confirmationToken,
-          tool: item.tool,
-        },
-      }));
+      const actions: AiShortcutAction[] = pendingActions.map((item) => {
+        const payloadPreview = this.formatPendingActionPayload(item.payload);
+        return {
+          id: `confirm-${item.actionId}`,
+          title: `Confirm ${item.tool}`,
+          intent: "updateOrder",
+          description:
+            payloadPreview.length > 0
+              ? `Confirm pending action for ${item.tool}\n${payloadPreview}`
+              : `Confirm pending action for ${item.tool}`,
+          badge: "Confirm",
+          confirmation: {
+            actionId: item.actionId,
+            confirmationToken: item.confirmationToken,
+            tool: item.tool,
+          },
+        };
+      });
       return {
         id: this.nextMessageId(),
         role: "assistant",
@@ -1519,6 +1530,22 @@ export class AiChatFacade {
     }
 
     return "Assistant service is currently unavailable. Please try again.";
+  }
+
+  private formatPendingActionPayload(payload: Record<string, unknown> | undefined): string {
+    if (!payload) {
+      return "";
+    }
+
+    const serialized = JSON.stringify(payload, null, 2);
+    if (!serialized) {
+      return "";
+    }
+
+    const lines = serialized.split("\n");
+    const maxLines = 8;
+    const clipped = lines.length > maxLines ? [...lines.slice(0, maxLines), "..."] : lines;
+    return `Payload preview:\n${clipped.join("\n")}`;
   }
 
   private isConversationNotFoundError(error: unknown): boolean {

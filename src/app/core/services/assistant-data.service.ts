@@ -66,6 +66,7 @@ export interface AssistantMessageResponseDto {
           tool: string;
           expiresAt: string;
           confirmationToken: string;
+          payload?: Record<string, unknown>;
         }>;
       };
 }

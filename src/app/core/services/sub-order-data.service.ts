@@ -6,11 +6,14 @@ import {
   expand,
   filter,
   finalize,
+  forkJoin,
   from,
   map,
   mergeMap,
   Observable,
+  of,
   reduce,
+  switchMap,
   tap,
   throwError,
 } from "rxjs";
@@ -391,33 +394,106 @@ export class SubOrderDataService {
     orderId: string,
     rows: CreateSubOrderInput[],
   ): Observable<SubOrder[]> {
+    if (!orderId) {
+      return of([]);
+    }
+
     return this.http
-      .put<{ data: SubOrderJson[] }>(
-        ApiEndpoint.orderSubOrders(orderId),
-        rows.map((row) => this.toApiSubOrderPayload(row)),
-      )
+      .get<{ data: SubOrderJson[] }>(ApiEndpoint.orderSubOrders(orderId))
       .pipe(
         map((response) => response.data ?? []),
-        map((replaced) => replaced.map((row) => this.toSubOrder(row))),
-        tap((replaced) => {
-          const replacedIds = new Set(
-            this._subOrders()
-              .filter((row) => row.orderId === orderId)
-              .map((row) => row.id),
-          );
-          this.clearPersistQueueState(replacedIds);
+        switchMap((existingRows) => {
+          const existingById = new Map(existingRows.map((row) => [row.id, row]));
+          const unmatchedExisting = [...existingRows];
+          const updates: Array<{ existing: SubOrderJson; next: CreateSubOrderInput }> = [];
+          const creates: CreateSubOrderInput[] = [];
+
+          for (const row of rows) {
+            const matchIndex = unmatchedExisting.findIndex(
+              (existing) => this.buildServiceMatchKey(existing) === this.buildServiceMatchKey(row),
+            );
+            if (matchIndex >= 0) {
+              const [matched] = unmatchedExisting.splice(matchIndex, 1);
+              updates.push({ existing: matched, next: row });
+            } else {
+              creates.push(row);
+            }
+          }
+
+          const deletes = unmatchedExisting;
+
+          const updateRequests =
+            updates.length === 0
+              ? of([] as SubOrderJson[])
+              : forkJoin(
+                  updates.map(({ existing, next }) =>
+                    this.http
+                      .patch<{ data: SubOrderJson }>(
+                        ApiEndpoint.subOrder(orderId, existing.id),
+                        this.toApiSubOrderUpdatePayload(next),
+                      )
+                      .pipe(map((response) => response.data)),
+                  ),
+                );
+
+          const createRequests =
+            creates.length === 0
+              ? of([] as SubOrderJson[])
+              : this.http
+                  .post<{ data: SubOrderJson[] }>(
+                    ApiEndpoint.orderSubOrders(orderId),
+                    creates.map((row) => this.toApiSubOrderPayload(row)),
+                  )
+                  .pipe(map((response) => response.data ?? []));
+
+          const deleteRequests =
+            deletes.length === 0
+              ? of([] as string[])
+              : forkJoin(
+                  deletes.map((row) =>
+                    this.http
+                      .delete(ApiEndpoint.subOrder(orderId, row.id))
+                      .pipe(map(() => row.id)),
+                  ),
+                );
+
+          return forkJoin({
+            updated: updateRequests,
+            created: createRequests,
+            deletedIds: deleteRequests,
+            existingById: of(existingById),
+          });
+        }),
+        map(({ updated, created, deletedIds, existingById }) => {
+          const replaced = [...updated, ...created].map((row) => this.toSubOrder(row));
+          const deletedSet = new Set(deletedIds);
+          const replacedIdSet = new Set(replaced.map((row) => row.id));
+          this.clearPersistQueueState(deletedSet);
           this._subOrders.update((current) => [
             ...replaced,
-            ...current.filter((row) => !replacedIds.has(row.id)),
+            ...current.filter(
+              (row) =>
+                row.orderId !== orderId ||
+                (!deletedSet.has(row.id) && !replacedIdSet.has(row.id)),
+            ),
           ]);
           this._details.update((current) => {
             const next = { ...current };
-            replacedIds.forEach((id) => delete next[id]);
-            replaced.forEach((row) => {
-              next[row.id] = buildDetailFromSummary(row);
-            });
+            deletedSet.forEach((id) => delete next[id]);
+            for (const row of updated) {
+              const previous = current[row.id];
+              next[row.id] = previous ?? toDetailFromJson(row) ?? buildDetailFromSummary(row);
+            }
+            for (const row of created) {
+              next[row.id] = toDetailFromJson(row) ?? buildDetailFromSummary(row);
+            }
             return next;
           });
+
+          const desiredServiceKeys = new Set(rows.map((row) => this.buildServiceMatchKey(row)));
+          return replaced.filter((row) =>
+            desiredServiceKeys.has(this.buildServiceMatchKey(existingById.get(row.id) ?? row)),
+          );
         }),
       );
   }
@@ -526,6 +602,33 @@ export class SubOrderDataService {
       scansTotal: row.scanRequirements.length,
       creationData: row.creationData,
     };
+  }
+
+  private toApiSubOrderUpdatePayload(
+    row: CreateSubOrderInput,
+  ): Record<string, unknown> {
+    return {
+      service: row.service,
+      icon: row.icon,
+      priority: row.priority,
+      dueDate: row.dueDate,
+      notes: row.notes,
+      teeth: row.teeth,
+      creationData: row.creationData,
+    };
+  }
+
+  private buildServiceMatchKey(
+    row: Pick<CreateSubOrderInput, "serviceId" | "service"> | Pick<SubOrderJson, "creationData" | "service">,
+  ): string {
+    if ("serviceId" in row) {
+      return row.serviceId.trim().toLowerCase();
+    }
+    const serviceId = row.creationData?.serviceId?.trim().toLowerCase();
+    if (serviceId) {
+      return serviceId;
+    }
+    return row.service.trim().toLowerCase();
   }
 
   private toSubOrder(row: SubOrderJson): SubOrder {

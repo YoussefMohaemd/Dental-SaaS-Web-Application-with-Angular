@@ -142,9 +142,11 @@ Raw logs live under `evidence/`.
 - Quarterly target values are sourced from the backend; when no target
   configuration exists, the API returns zero targets rather than inventing
   client-side values.
-- The AI Assistant phase has not started. Any future AI order operation must
-  use authenticated server-derived tenant/doctor scope, confirmation for
-  writes, and audit events.
+- The AI Assistant is wired to authenticated backend endpoints under
+  `/api/v1/ai/*` (and `/api/v1/assistant/*`). Order/patient/doctor/clinic
+  write operations are confirmation-gated and audited server-side. A local
+  guided order workflow still exists, but it starts only when explicitly
+  requested as guided workflow.
 
 ## Demo Notes
 

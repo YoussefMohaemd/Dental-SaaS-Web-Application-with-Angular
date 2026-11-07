@@ -335,6 +335,38 @@ describe("AiChatFacade", () => {
     expect(latest?.actions?.length).toBe(1);
   });
 
+  it("should include pending-action payload preview in confirmation action text", async () => {
+    assistantDataService.postMessage$.and.returnValue(
+      of({
+        conversationId: "conv-backend-1",
+        messageId: "m2",
+        result: {
+          type: "confirmation",
+          text: "Please confirm before execution.",
+          pendingActions: [
+            {
+              actionId: "a1",
+              tool: "create_clinic",
+              expiresAt: new Date().toISOString(),
+              confirmationToken: "token",
+              payload: {
+                payload: {
+                  name: "Nile Clinic",
+                  city: "Cairo",
+                },
+              },
+            },
+          ],
+        },
+      }),
+    );
+
+    await facade.submitPrompt("add clinic");
+
+    const latest = facade.messages().at(-1);
+    expect(latest?.actions?.[0]?.description).toContain("Nile Clinic");
+  });
+
   it("recreates backend conversation and retries when message post returns conversation not found", async () => {
     assistantDataService.createConversation$.and.returnValues(
       of({
@@ -387,7 +419,7 @@ describe("AiChatFacade", () => {
     expect(facade.messages().at(-1)?.text).toContain("Recovered from stale conversation");
   });
 
-  it("starts create workflow from quick action", () => {
+  it("prefills create-order prompt from quick action instead of forcing local workflow", () => {
     const quick = facade.quickActions().find((action) => action.id === "ops-create-order");
     expect(quick).toBeDefined();
     if (!quick) {
@@ -396,15 +428,15 @@ describe("AiChatFacade", () => {
 
     facade.runQuickAction(quick);
 
-    expect(facade.orderWorkflow()?.mode).toBe("create");
-    expect(facade.orderWorkflow()?.step).toBe("patient");
+    expect(facade.orderWorkflow()).toBeNull();
+    expect(facade.promptDraft().prompt).toBe(quick.prefillPrompt);
   });
 
-  it("starts update workflow from typed intent", async () => {
+  it("sends update-order prompts to backend assistant unless guided workflow is requested", async () => {
     await facade.submitPrompt("update order");
 
-    expect(facade.orderWorkflow()?.mode).toBe("update");
-    expect(facade.orderWorkflow()?.step).toBe("lookupOrder");
+    expect(facade.orderWorkflow()).toBeNull();
+    expect(assistantDataService.postMessage$).toHaveBeenCalled();
   });
 
   it("shows quick actions again when user asks to show quick actions", async () => {
@@ -500,17 +532,7 @@ describe("AiChatFacade", () => {
       }),
     );
 
-    facade.runQuickAction({
-      id: "ops-create-order",
-      title: "Create Order",
-      description: "Create",
-      icon: "file-plus",
-      intent: "createOrder",
-      prefillPrompt: "",
-      behavior: "prefill",
-      category: "operational",
-      requiredCapability: "orders.create",
-    });
+    await facade.submitPrompt("start guided create order workflow");
 
     facade.updateWorkflowInput("Ali");
     await facade.advanceOrderWorkflow();

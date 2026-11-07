@@ -139,6 +139,28 @@ describe("OrderDataService", () => {
     });
   });
 
+  it("should keep explicit empty notes when clearing order notes", () => {
+    service
+      .updateOrder$("ord-1", {
+        notes: "",
+        hasNotes: false,
+      })
+      .subscribe();
+
+    const request = httpMock.expectOne(`${ApiEndpoint.ORDERS}/ord-1`);
+    expect(request.request.method).toBe("PATCH");
+    expect(request.request.body.notes).toBe("");
+    expect(request.request.body.hasNotes).toBeFalse();
+    request.flush({
+      data: {
+        id: "ord-1",
+        status: "Review",
+        notes: "",
+        hasNotes: false,
+      },
+    });
+  });
+
   it("should recover from error after reload", () => {
     service.loadOrders();
     httpMock
