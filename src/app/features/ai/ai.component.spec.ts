@@ -5,25 +5,16 @@ import { AssistantDataService } from "@core/services/assistant-data.service";
 import { AiComponent } from "./ai.component";
 import { AuthorizationService } from "@core/services/authorization.service";
 import { AuthService } from "@core/services/auth.service";
-import { ClinicDataService } from "@core/services/clinic-data.service";
-import { DoctorDataService } from "@core/services/doctor-data.service";
 import { NavigationService } from "@core/services/navigation.service";
-import { OrderDataService } from "@core/services/order-data.service";
-import { PatientDataService } from "@core/services/patient-data.service";
-import { SubOrderDataService } from "@core/services/sub-order-data.service";
 import { of, throwError } from "rxjs";
 
 describe("AiComponent", () => {
   let component: AiComponent;
   let fixture: ComponentFixture<AiComponent>;
+  let currentUser: ReturnType<typeof signal>;
   let authorizationService: jasmine.SpyObj<AuthorizationService>;
   let navigationService: jasmine.SpyObj<NavigationService>;
   let assistantDataService: jasmine.SpyObj<AssistantDataService>;
-  let patientDataService: jasmine.SpyObj<PatientDataService>;
-  let doctorDataService: jasmine.SpyObj<DoctorDataService>;
-  let clinicDataService: jasmine.SpyObj<ClinicDataService>;
-  let orderDataService: jasmine.SpyObj<OrderDataService>;
-  let subOrderDataService: jasmine.SpyObj<SubOrderDataService>;
 
   beforeEach(async () => {
     authorizationService = jasmine.createSpyObj<AuthorizationService>(
@@ -48,7 +39,7 @@ describe("AiComponent", () => {
         "confirmAction$",
       ],
     );
-    assistantDataService.getSuggestions$.and.returnValue(of([]));
+    assistantDataService.getSuggestions$.and.returnValue(of([{ id: "assistant-create-order", title: "Create order", description: "", category: "orders", template: "", requiredCapabilities: [], resultType: "text", enabled: true }]));
     assistantDataService.listConversations$.and.returnValue(of([]));
     assistantDataService.createConversation$.and.returnValue(
       of({
@@ -90,37 +81,14 @@ describe("AiComponent", () => {
         message: "confirmed",
       }),
     );
-    patientDataService = jasmine.createSpyObj<PatientDataService>(
-      "PatientDataService",
-      ["loadPatients"],
-      { patients: signal([]) },
-    );
-    doctorDataService = jasmine.createSpyObj<DoctorDataService>(
-      "DoctorDataService",
-      ["loadDoctors"],
-      { doctors: signal([]) },
-    );
-    clinicDataService = jasmine.createSpyObj<ClinicDataService>(
-      "ClinicDataService",
-      ["loadClinics"],
-      { clinics: signal([]) },
-    );
-    orderDataService = jasmine.createSpyObj<OrderDataService>(
-      "OrderDataService",
-      ["loadOrders", "getOrderById$", "createOrder$", "updateOrder$"],
-      { orders: signal([]) },
-    );
-    orderDataService.getOrderById$.and.returnValue(
-      throwError(() => new Error("not-found")),
-    );
-    orderDataService.createOrder$.and.returnValue(throwError(() => new Error("not-used")));
-    orderDataService.updateOrder$.and.returnValue(throwError(() => new Error("not-used")));
-    subOrderDataService = jasmine.createSpyObj<SubOrderDataService>(
-      "SubOrderDataService",
-      ["createForOrder$", "replaceForOrder$"],
-    );
-    subOrderDataService.createForOrder$.and.returnValue(of([]));
-    subOrderDataService.replaceForOrder$.and.returnValue(of([]));
+
+    currentUser = signal({
+      userId: "user-1",
+      tenantId: "tenant-1",
+      fullName: "User",
+      email: "user@example.com",
+      roles: ["admin"],
+    });
 
     await TestBed.configureTestingModule({
       imports: [AiComponent],
@@ -128,23 +96,12 @@ describe("AiComponent", () => {
         {
           provide: AuthService,
           useValue: {
-            user: signal({
-              userId: "user-1",
-              tenantId: "tenant-1",
-              fullName: "User",
-              email: "user@example.com",
-              roles: ["admin"],
-            }),
+            user: currentUser,
           },
         },
         { provide: AuthorizationService, useValue: authorizationService },
         { provide: NavigationService, useValue: navigationService },
         { provide: AssistantDataService, useValue: assistantDataService },
-        { provide: PatientDataService, useValue: patientDataService },
-        { provide: DoctorDataService, useValue: doctorDataService },
-        { provide: ClinicDataService, useValue: clinicDataService },
-        { provide: OrderDataService, useValue: orderDataService },
-        { provide: SubOrderDataService, useValue: subOrderDataService },
       ],
     }).compileComponents();
 
@@ -166,13 +123,16 @@ describe("AiComponent", () => {
     expect(
       fixture.debugElement.query(By.css("[data-testid='new-chat']")),
     ).toBeTruthy();
+    expect(
+      fixture.debugElement.query(By.css("[data-testid='show-quick-actions']")),
+    ).toBeTruthy();
   });
 
   it("should render welcome panel and quick actions for a fresh chat", async () => {
     await fixture.whenStable();
     fixture.detectChanges();
     expect(
-      fixture.debugElement.query(By.css("[data-testid='welcome-block']")),
+      fixture.debugElement.query(By.css("app-ai-quick-actions")),
     ).toBeTruthy();
 
     const quickActions = fixture.debugElement.queryAll(
@@ -191,38 +151,17 @@ describe("AiComponent", () => {
     expect(component.isHistoryOpen()).toBeFalse();
   });
 
-  it("should create new conversation and keep previous conversations in history", async () => {
-    const initialCount = component.conversations().length;
+  it("should append backend response after submit", async () => {
     await component.submitPrompt("show services");
-    fixture.detectChanges();
-
-    component.startNewChat();
-    fixture.detectChanges();
-
-    expect(component.conversations().length).toBe(initialCount + 1);
-    expect(component.showWelcome()).toBeTrue();
-  });
-
-  it("should switch to selected historical conversation", async () => {
-    await component.submitPrompt("show services");
-    component.startNewChat();
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
 
-    const activeId = component.activeConversationId();
-    expect(component.conversations().length).toBeGreaterThan(1);
-    const previous = component.conversations().find((item) => item.id !== activeId);
-    expect(previous).toBeDefined();
-
-    component.selectConversation(previous!.id);
-    fixture.detectChanges();
-
-    expect(component.activeConversationId()).toBe(previous!.id);
-    expect(component.messages().length).toBeGreaterThan(0);
+    const latest = component.messages().at(-1);
+    expect(latest?.text).toContain("Live backend response");
   });
 
-  it("should show backend permission-denied message when assistant API returns 403", async () => {
+  it("should show backend permission denied message", async () => {
     assistantDataService.postMessage$.and.returnValue(
       throwError(() => ({
         status: 403,
@@ -238,35 +177,13 @@ describe("AiComponent", () => {
     expect(latest?.text.toLowerCase()).toContain("don't have access");
   });
 
-  it("should hide quick actions while create workflow is active", async () => {
-    const create = component
-      .quickActions()
-      .find((item) => item.id === "ops-create-order");
-    expect(create).toBeDefined();
-    if (!create) {
-      throw new Error("Missing create quick action");
-    }
-
-    component.onQuickAction(create);
-    fixture.detectChanges();
-    await fixture.whenStable();
-    fixture.detectChanges();
-
-    expect(
-      fixture.debugElement.query(By.css("[data-testid='welcome-block']")),
-    ).toBeNull();
-    expect(
-      fixture.debugElement.query(By.css("[data-testid='ai-order-workflow-panel']")),
-    ).toBeTruthy();
-  });
-
   it("should re-show quick actions when user asks to show quick actions", async () => {
     await component.submitPrompt("show services");
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
     expect(
-      fixture.debugElement.query(By.css("[data-testid='welcome-block']")),
+      fixture.debugElement.query(By.css("app-ai-quick-actions")),
     ).toBeNull();
 
     await component.submitPrompt("show quick actions");
@@ -275,7 +192,115 @@ describe("AiComponent", () => {
     fixture.detectChanges();
 
     expect(
-      fixture.debugElement.query(By.css("[data-testid='welcome-block']")),
+      fixture.debugElement.query(By.css("app-ai-quick-actions")),
     ).toBeTruthy();
+  });
+
+  it("should re-show quick actions when quick actions button is pressed", async () => {
+    await component.submitPrompt("show services");
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(
+      fixture.debugElement.query(By.css("app-ai-quick-actions")),
+    ).toBeNull();
+
+    component.showQuickActions();
+    fixture.detectChanges();
+
+    expect(
+      fixture.debugElement.query(By.css("app-ai-quick-actions")),
+    ).toBeTruthy();
+  });
+
+  it("should show order workflow panel when create-order quick action is selected", () => {
+    const action = component.quickActions().find((item) => item.id === "ops-create-order");
+    expect(action).toBeDefined();
+    if (!action) {
+      throw new Error("Missing ops-create-order quick action");
+    }
+
+    component.onQuickAction(action);
+    fixture.detectChanges();
+
+    expect(
+      fixture.debugElement.query(By.css("app-ai-order-workflow-panel")),
+    ).toBeTruthy();
+  });
+
+  it("should keep composer outside scroll viewport in the chat shell", () => {
+    const shell = fixture.debugElement.query(By.css(".chat-shell"));
+    const body = fixture.debugElement.query(By.css("[data-testid='chat-body']"));
+    const messagesViewport = fixture.debugElement.query(
+      By.css("[data-testid='messages-viewport']"),
+    );
+    const composer = fixture.debugElement.query(By.css(".chat-composer app-ai-chat-composer"));
+
+    expect(shell).toBeTruthy();
+    expect(body).toBeTruthy();
+    expect(messagesViewport).toBeTruthy();
+    expect(composer).toBeTruthy();
+  });
+
+  it("should open with a fresh chat while preserving and loading history conversations", async () => {
+    const updatedAt = new Date().toISOString();
+    assistantDataService.listConversations$.and.returnValue(
+      of([
+        {
+          id: "conv-existing-1",
+          title: "Existing chat",
+          status: "active",
+          createdAt: updatedAt,
+          updatedAt,
+          preview: "History preview",
+        },
+      ]),
+    );
+    assistantDataService.getConversation$.and.returnValue(
+      of({
+        id: "conv-existing-1",
+        title: "Existing chat",
+        status: "active",
+        createdAt: updatedAt,
+        updatedAt,
+        messages: [
+          {
+            id: "m-existing-1",
+            role: "assistant",
+            text: "Existing message",
+            createdAt: updatedAt,
+            resultType: "text",
+          },
+        ],
+      }),
+    );
+
+    currentUser.set({
+      userId: "user-2",
+      tenantId: "tenant-1",
+      fullName: "User 2",
+      email: "user2@example.com",
+      roles: ["admin"],
+    });
+
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(component.activeConversation()?.title).toBe("New conversation");
+    expect(component.showWelcome()).toBeTrue();
+    expect(
+      component.conversations().some((conversation) => conversation.id === "conv-existing-1"),
+    ).toBeTrue();
+
+    component.selectConversation("conv-existing-1");
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(assistantDataService.getConversation$).toHaveBeenCalledWith(
+      "conv-existing-1",
+    );
+    expect(component.messages().at(-1)?.text).toContain("Existing message");
   });
 });

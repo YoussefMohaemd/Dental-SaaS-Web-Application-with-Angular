@@ -26,6 +26,9 @@ export interface AiOrderWorkflowCreateData {
   patient: Patient | null;
   doctor: Doctor | null;
   clinic: Clinic | null;
+  patientReference: string;
+  doctorReference: string;
+  clinicReference: string;
   billToTarget: CreateOrderBillToTarget;
   selectedServiceIds: string[];
   selectedTeeth: number[];
@@ -37,6 +40,7 @@ export interface AiOrderWorkflowCreateData {
 export interface AiOrderWorkflowUpdateData {
   orderCandidates: Order[];
   selectedOrder: Order | null;
+  orderReference: string;
   baselineServiceIds: string[];
   selectedServiceIds: string[];
   baselineTeeth: number[];
@@ -56,4 +60,3 @@ export interface AiOrderWorkflowState {
   create: AiOrderWorkflowCreateData | null;
   update: AiOrderWorkflowUpdateData | null;
 }
-

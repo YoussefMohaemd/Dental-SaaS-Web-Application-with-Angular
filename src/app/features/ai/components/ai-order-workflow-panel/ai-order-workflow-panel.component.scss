@@ -8,6 +8,8 @@
   border-radius: 0.9rem;
   padding: 0.85rem;
   background: var(--card);
+  max-height: min(60vh, 31rem);
+  overflow-y: auto;
 }
 
 .workflow-panel__header {
@@ -105,6 +107,9 @@
   margin-top: 0.65rem;
   display: grid;
   gap: 0.45rem;
+  max-height: 8.5rem;
+  overflow-y: auto;
+  padding-right: 0.2rem;
 }
 
 .workflow-panel__candidates button {
@@ -121,5 +126,19 @@
   margin-top: 0.85rem;
   display: flex;
   justify-content: flex-end;
+  position: sticky;
+  bottom: 0;
+  padding-top: 0.5rem;
+  background: linear-gradient(to top, var(--card) 72%, transparent);
 }
 
+@media (max-width: 640px) {
+  .workflow-panel {
+    max-height: min(52vh, 24rem);
+    padding: 0.7rem;
+  }
+
+  .workflow-panel__services {
+    grid-template-columns: 1fr;
+  }
+}

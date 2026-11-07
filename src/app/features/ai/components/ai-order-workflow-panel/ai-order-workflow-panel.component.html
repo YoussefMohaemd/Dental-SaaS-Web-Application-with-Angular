@@ -41,6 +41,7 @@
         class="workflow-panel__input"
         [value]="workflow().input"
         (input)="inputChanged.emit($any($event.target).value)"
+        (keydown.enter)="continueRequested.emit()"
         placeholder="Type and continue"
       />
     </div>
@@ -194,4 +195,3 @@
     }
   </footer>
 </section>
-

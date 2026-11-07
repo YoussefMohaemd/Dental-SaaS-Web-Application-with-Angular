@@ -1,0 +1,35 @@
+<section class="workflow-panel" data-testid="ai-workflow-panel">
+  <header class="workflow-panel__header">
+    <div>
+      <h3 class="workflow-panel__title">{{ workflow().action.title }}</h3>
+      <p class="workflow-panel__subtitle">{{ workflow().action.description }}</p>
+    </div>
+    <span class="workflow-panel__progress">{{ progressText() }}</span>
+  </header>
+
+  @if (workflow().error) {
+    <p class="workflow-panel__error">{{ workflow().error }}</p>
+  }
+
+  @if (field(); as currentField) {
+    <div class="workflow-panel__field">
+      <label class="workflow-panel__label">{{ currentField.label }}</label>
+      <input
+        class="workflow-panel__input"
+        [value]="workflow().values[currentField.key] ?? ''"
+        [placeholder]="currentField.placeholder"
+        (input)="valueChanged.emit($any($event.target).value)"
+        (keydown.enter)="continueRequested.emit()"
+      />
+    </div>
+  }
+
+  <footer class="workflow-panel__actions">
+    <app-button type="button" variant="ghost" (onClick)="cancelRequested.emit()">
+      Cancel
+    </app-button>
+    <app-button type="button" (onClick)="continueRequested.emit()">
+      {{ workflow().stepIndex + 1 >= workflow().fields.length ? "Submit" : "Continue" }}
+    </app-button>
+  </footer>
+</section>

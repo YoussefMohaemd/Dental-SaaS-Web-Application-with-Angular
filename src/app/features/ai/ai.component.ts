@@ -7,8 +7,9 @@ import { lucideSvg } from "@shared/icons/lucide-icons";
 import { AiChatComposerComponent } from "./components/ai-chat-composer/ai-chat-composer.component";
 import { AiChatHistoryComponent } from "./components/ai-chat-history/ai-chat-history.component";
 import { AiChatMessagesComponent } from "./components/ai-chat-messages/ai-chat-messages.component";
-import { AiQuickActionsComponent } from "./components/ai-quick-actions/ai-quick-actions.component";
 import { AiOrderWorkflowPanelComponent } from "./components/ai-order-workflow-panel/ai-order-workflow-panel.component";
+import { AiQuickActionsComponent } from "./components/ai-quick-actions/ai-quick-actions.component";
+import { AiWorkflowPanelComponent } from "./components/ai-workflow-panel/ai-workflow-panel.component";
 import { AiChatFacade } from "./state/ai-chat.facade";
 
 @Component({
@@ -20,8 +21,9 @@ import { AiChatFacade } from "./state/ai-chat.facade";
     AiChatHistoryComponent,
     AiChatMessagesComponent,
     AiChatComposerComponent,
-    AiQuickActionsComponent,
     AiOrderWorkflowPanelComponent,
+    AiQuickActionsComponent,
+    AiWorkflowPanelComponent,
     SafeHtmlPipe,
   ],
   templateUrl: "./ai.component.html",
@@ -36,11 +38,13 @@ export class AiComponent {
   readonly messages = this.facade.messages;
   readonly showWelcome = this.facade.showWelcome;
   readonly quickActions = this.facade.quickActions;
+  readonly activeWorkflow = this.facade.activeWorkflow;
+  readonly activeOrderWorkflow = this.facade.activeOrderWorkflow;
+  readonly activeWorkflowField = this.facade.activeWorkflowField;
   readonly draft = computed(() => this.facade.promptDraft().prompt);
   readonly canSend = this.facade.canSend;
   readonly isResponding = this.facade.isResponding;
   readonly isHistoryOpen = this.facade.historyOpen;
-  readonly orderWorkflow = this.facade.orderWorkflow;
 
   toggleHistory(): void {
     this.facade.toggleHistory();
@@ -74,40 +78,52 @@ export class AiComponent {
     this.facade.runQuickAction(action);
   }
 
-  onWorkflowInputChanged(value: string): void {
+  showQuickActions(): void {
+    this.facade.showQuickActions();
+  }
+
+  onWorkflowValueChanged(value: string): void {
     this.facade.updateWorkflowInput(value);
   }
 
-  async onWorkflowContinue(): Promise<void> {
-    await this.facade.advanceOrderWorkflow();
-  }
-
-  onWorkflowCandidatePicked(id: string): void {
-    this.facade.pickWorkflowCandidate(id);
-  }
-
-  onWorkflowBillToChanged(value: "doctor" | "scan-center"): void {
-    this.facade.setWorkflowBillTo(value);
-  }
-
-  onWorkflowServiceToggled(serviceId: string): void {
-    this.facade.toggleWorkflowService(serviceId);
-  }
-
-  onWorkflowToothToggled(tooth: number): void {
-    this.facade.toggleWorkflowTooth(tooth);
-  }
-
-  onWorkflowNotesChanged(notes: string): void {
-    this.facade.updateWorkflowNotes(notes);
-  }
-
-  async onWorkflowSubmit(): Promise<void> {
-    await this.facade.submitOrderWorkflow();
+  onWorkflowContinue(): void {
+    this.facade.continueWorkflow();
   }
 
   onWorkflowCancel(): void {
-    this.facade.cancelOrderWorkflow();
+    this.facade.cancelWorkflow();
+  }
+
+  onOrderWorkflowInputChanged(value: string): void {
+    this.facade.updateOrderWorkflowInput(value);
+  }
+
+  onOrderWorkflowContinue(): void {
+    this.facade.continueOrderWorkflow();
+  }
+
+  onOrderWorkflowCandidatePick(id: string): void {
+    this.facade.pickOrderWorkflowCandidate(id);
+  }
+
+  onOrderWorkflowBillToChanged(target: "doctor" | "scan-center"): void {
+    this.facade.setOrderWorkflowBillTo(target);
+  }
+
+  onOrderWorkflowServiceToggled(serviceId: string): void {
+    this.facade.toggleOrderWorkflowService(serviceId);
+  }
+
+  onOrderWorkflowToothToggled(tooth: number): void {
+    this.facade.toggleOrderWorkflowTooth(tooth);
+  }
+
+  onOrderWorkflowNotesChanged(value: string): void {
+    this.facade.updateOrderWorkflowNotes(value);
+  }
+
+  onOrderWorkflowSubmit(): void {
+    this.facade.submitOrderWorkflow();
   }
 
   async copyMessage(messageId: string): Promise<void> {

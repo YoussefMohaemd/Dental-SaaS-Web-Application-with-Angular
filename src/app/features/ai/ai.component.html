@@ -41,6 +41,18 @@
         >
           <span [innerHTML]="getIconSvg('file-plus') | safeHtml"></span>
         </app-button>
+        <app-button
+          data-testid="show-quick-actions"
+          type="button"
+          variant="outline"
+          size="sm"
+          buttonClass="chat-header__quick-actions-button"
+          ariaLabel="Show quick actions"
+          title="Show quick actions"
+          (onClick)="showQuickActions()"
+        >
+          Quick actions
+        </app-button>
       </div>
     </header>
 
@@ -51,7 +63,7 @@
         (copyRequested)="copyMessage($event)"
       />
 
-      @if (showWelcome() && !orderWorkflow()) {
+      @if (showWelcome()) {
         <section class="chat-welcome">
           <app-ai-quick-actions
             [actions]="quickActions()"
@@ -61,17 +73,25 @@
         </section>
       }
 
-      @if (orderWorkflow(); as workflow) {
+      @if (activeOrderWorkflow(); as workflow) {
         <app-ai-order-workflow-panel
           [workflow]="workflow"
-          (inputChanged)="onWorkflowInputChanged($event)"
+          (inputChanged)="onOrderWorkflowInputChanged($event)"
+          (continueRequested)="onOrderWorkflowContinue()"
+          (candidatePicked)="onOrderWorkflowCandidatePick($event)"
+          (billToChanged)="onOrderWorkflowBillToChanged($event)"
+          (serviceToggled)="onOrderWorkflowServiceToggled($event)"
+          (toothToggled)="onOrderWorkflowToothToggled($event)"
+          (notesChanged)="onOrderWorkflowNotesChanged($event)"
+          (submitRequested)="onOrderWorkflowSubmit()"
+          (cancelRequested)="onWorkflowCancel()"
+        />
+      } @else if (activeWorkflow(); as workflow) {
+        <app-ai-workflow-panel
+          [workflow]="workflow"
+          [field]="activeWorkflowField()"
+          (valueChanged)="onWorkflowValueChanged($event)"
           (continueRequested)="onWorkflowContinue()"
-          (candidatePicked)="onWorkflowCandidatePicked($event)"
-          (billToChanged)="onWorkflowBillToChanged($event)"
-          (serviceToggled)="onWorkflowServiceToggled($event)"
-          (toothToggled)="onWorkflowToothToggled($event)"
-          (notesChanged)="onWorkflowNotesChanged($event)"
-          (submitRequested)="onWorkflowSubmit()"
           (cancelRequested)="onWorkflowCancel()"
         />
       }

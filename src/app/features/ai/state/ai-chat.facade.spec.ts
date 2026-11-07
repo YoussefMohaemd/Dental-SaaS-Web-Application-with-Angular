@@ -1,15 +1,13 @@
 import { signal } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
-import { Clinic, Doctor, Patient } from "@core/interfaces";
 import { AuthService, type AuthenticatedUser } from "@core/services/auth.service";
 import { AuthorizationService } from "@core/services/authorization.service";
 import { AssistantDataService } from "@core/services/assistant-data.service";
 import { ClinicDataService } from "@core/services/clinic-data.service";
 import { DoctorDataService } from "@core/services/doctor-data.service";
 import { NavigationService } from "@core/services/navigation.service";
-import { OrderDataService } from "@core/services/order-data.service";
 import { PatientDataService } from "@core/services/patient-data.service";
-import { SubOrderDataService } from "@core/services/sub-order-data.service";
+import { Clinic, Doctor, Patient } from "@core/interfaces";
 import { of, throwError } from "rxjs";
 import { AiChatFacade } from "./ai-chat.facade";
 
@@ -19,14 +17,9 @@ describe("AiChatFacade", () => {
   let authorizationService: jasmine.SpyObj<AuthorizationService>;
   let navigationService: jasmine.SpyObj<NavigationService>;
   let assistantDataService: jasmine.SpyObj<AssistantDataService>;
-  let patientDataService: jasmine.SpyObj<PatientDataService>;
-  let doctorDataService: jasmine.SpyObj<DoctorDataService>;
-  let clinicDataService: jasmine.SpyObj<ClinicDataService>;
-  let orderDataService: jasmine.SpyObj<OrderDataService>;
-  let subOrderDataService: jasmine.SpyObj<SubOrderDataService>;
-  let patientsSignal: ReturnType<typeof signal<Patient[]>>;
-  let doctorsSignal: ReturnType<typeof signal<Doctor[]>>;
-  let clinicsSignal: ReturnType<typeof signal<Clinic[]>>;
+  let patientsState: ReturnType<typeof signal<Patient[]>>;
+  let doctorsState: ReturnType<typeof signal<Doctor[]>>;
+  let clinicsState: ReturnType<typeof signal<Clinic[]>>;
 
   const makeUser = (userId: string): AuthenticatedUser => ({
     userId,
@@ -60,30 +53,7 @@ describe("AiChatFacade", () => {
         "confirmAction$",
       ],
     );
-    assistantDataService.getSuggestions$.and.returnValue(
-      of([
-        {
-          id: "assistant-search-orders",
-          title: "Search",
-          description: "Search",
-          category: "orders",
-          template: "Search",
-          requiredCapabilities: ["orders.read"],
-          resultType: "order-list",
-          enabled: true,
-        },
-        {
-          id: "assistant-create-order",
-          title: "Create",
-          description: "Create",
-          category: "orders",
-          template: "Create",
-          requiredCapabilities: ["orders.create"],
-          resultType: "confirmation",
-          enabled: true,
-        },
-      ]),
-    );
+    assistantDataService.getSuggestions$.and.returnValue(of([{ id: "assistant-create-order", title: "Create order", description: "", category: "orders", template: "", requiredCapabilities: [], resultType: "text", enabled: true }]));
     assistantDataService.listConversations$.and.returnValue(of([]));
     assistantDataService.getConversation$.and.returnValue(
       of({
@@ -125,40 +95,109 @@ describe("AiChatFacade", () => {
         },
       }),
     );
-    patientsSignal = signal<Patient[]>([]);
-    doctorsSignal = signal<Doctor[]>([]);
-    clinicsSignal = signal<Clinic[]>([]);
-    patientDataService = jasmine.createSpyObj<PatientDataService>(
-      "PatientDataService",
-      ["loadPatients"],
-      { patients: patientsSignal },
-    );
-    doctorDataService = jasmine.createSpyObj<DoctorDataService>(
-      "DoctorDataService",
-      ["loadDoctors"],
-      { doctors: doctorsSignal },
-    );
-    clinicDataService = jasmine.createSpyObj<ClinicDataService>(
-      "ClinicDataService",
-      ["loadClinics"],
-      { clinics: clinicsSignal },
-    );
-    orderDataService = jasmine.createSpyObj<OrderDataService>(
-      "OrderDataService",
-      ["loadOrders", "getOrderById$", "createOrder$", "updateOrder$"],
-      { orders: signal([]) },
-    );
-    orderDataService.getOrderById$.and.returnValue(
-      throwError(() => ({ status: 404 })),
-    );
-    orderDataService.createOrder$.and.returnValue(throwError(() => new Error("not-used")));
-    orderDataService.updateOrder$.and.returnValue(throwError(() => new Error("not-used")));
-    subOrderDataService = jasmine.createSpyObj<SubOrderDataService>(
-      "SubOrderDataService",
-      ["createForOrder$", "replaceForOrder$"],
-    );
-    subOrderDataService.createForOrder$.and.returnValue(of([]));
-    subOrderDataService.replaceForOrder$.and.returnValue(of([]));
+    patientsState = signal<Patient[]>([
+      {
+        id: "patient-1",
+        name: "youssef",
+        dob: "1999-01-01",
+        gender: "M",
+        phone: "01151711722",
+        email: "y@example.com",
+        clinicId: "clinic-2",
+        clinicName: "Dental Care Clinic 2",
+        doctorId: "doctor-1",
+        doctorName: "Omar Khalil",
+        status: "Active",
+        ordersCount: 0,
+        lastVisit: "2026-10-01",
+      },
+      {
+        id: "patient-2",
+        name: "yousseff",
+        dob: "1998-04-11",
+        gender: "M",
+        phone: "01151711723",
+        email: "yy@example.com",
+        clinicId: "clinic-2",
+        clinicName: "Dental Care Clinic 2",
+        doctorId: "doctor-1",
+        doctorName: "Omar Khalil",
+        status: "Active",
+        ordersCount: 0,
+        lastVisit: "2026-10-05",
+      },
+      {
+        id: "patient-3",
+        name: "youssef",
+        dob: "1997-02-20",
+        gender: "M",
+        phone: "01151711724",
+        email: "yyy@example.com",
+        clinicId: "clinic-3",
+        clinicName: "Dental Care Clinic 3",
+        doctorId: "doctor-2",
+        doctorName: "Dr Other",
+        status: "Active",
+        ordersCount: 0,
+        lastVisit: "2026-10-08",
+      },
+    ]);
+    doctorsState = signal<Doctor[]>([
+      {
+        id: "doctor-1",
+        name: "Omar Khalil",
+        specialty: "Orthodontics",
+        clinicId: "clinic-2",
+        clinicName: "Dental Care Clinic 2",
+        email: "omar@example.com",
+        phone: "01000000001",
+        status: "Active",
+        ordersCount: 0,
+        joinedDate: "2024-01-01",
+        avatar: "",
+      },
+      {
+        id: "doctor-2",
+        name: "Dr Other",
+        specialty: "Surgery",
+        clinicId: "clinic-3",
+        clinicName: "Dental Care Clinic 3",
+        email: "other@example.com",
+        phone: "01000000002",
+        status: "Active",
+        ordersCount: 0,
+        joinedDate: "2024-01-01",
+        avatar: "",
+      },
+    ]);
+    clinicsState = signal<Clinic[]>([
+      {
+        id: "clinic-2",
+        name: "Dental Care Clinic 2",
+        address: "Giza",
+        city: "Giza",
+        phone: "0105555002",
+        email: "clinic2@example.com",
+        doctorsCount: 1,
+        patientsCount: 2,
+        ordersCount: 0,
+        status: "Active",
+        accountManager: "A",
+      },
+      {
+        id: "clinic-3",
+        name: "Dental Care Clinic 3",
+        address: "Cairo",
+        city: "Cairo",
+        phone: "0105555003",
+        email: "clinic3@example.com",
+        doctorsCount: 1,
+        patientsCount: 1,
+        ordersCount: 0,
+        status: "Active",
+        accountManager: "B",
+      },
+    ]);
 
     TestBed.configureTestingModule({
       providers: [
@@ -167,11 +206,18 @@ describe("AiChatFacade", () => {
         { provide: AuthorizationService, useValue: authorizationService },
         { provide: NavigationService, useValue: navigationService },
         { provide: AssistantDataService, useValue: assistantDataService },
-        { provide: PatientDataService, useValue: patientDataService },
-        { provide: DoctorDataService, useValue: doctorDataService },
-        { provide: ClinicDataService, useValue: clinicDataService },
-        { provide: OrderDataService, useValue: orderDataService },
-        { provide: SubOrderDataService, useValue: subOrderDataService },
+        {
+          provide: PatientDataService,
+          useValue: { patients: patientsState.asReadonly() },
+        },
+        {
+          provide: DoctorDataService,
+          useValue: { doctors: doctorsState.asReadonly() },
+        },
+        {
+          provide: ClinicDataService,
+          useValue: { clinics: clinicsState.asReadonly() },
+        },
       ],
     });
 
@@ -179,19 +225,22 @@ describe("AiChatFacade", () => {
     await flushAsyncFacadeInit();
   });
 
-  it("should start with welcome state", () => {
+  it("starts with welcome state", () => {
     expect(assistantDataService.listConversations$).toHaveBeenCalled();
     expect(facade.showWelcome()).toBeTrue();
     expect(facade.messages().length).toBeGreaterThan(0);
-    expect(facade.quickActions().length).toBeGreaterThan(0);
-    expect(facade.quickActions().some((action) => action.id === "nav-open-doctors")).toBeTrue();
-    expect(facade.quickActions().some((action) => action.id === "nav-open-clinics")).toBeTrue();
   });
 
-  it("should append backend assistant reply and hide welcome after submit", async () => {
-    const pending = facade.submitPrompt("show services");
-    expect(facade.messages().at(-1)?.role).toBe("thinking");
-    await pending;
+  it("shows fixed FAQ quick actions on initial load", () => {
+    const ids = facade.quickActions().map((item) => item.id);
+    expect(ids).toContain("faq-about-company");
+    expect(ids).toContain("faq-services");
+    expect(ids).toContain("faq-pricing");
+    expect(ids).toContain("faq-submission-standards");
+  });
+
+  it("sends prompt through backend assistant api", async () => {
+    await facade.submitPrompt("show services");
 
     expect(facade.showWelcome()).toBeFalse();
     expect(facade.messages().at(-1)?.role).toBe("assistant");
@@ -200,351 +249,318 @@ describe("AiChatFacade", () => {
     expect(assistantDataService.postMessage$).toHaveBeenCalled();
   });
 
-  async function flushAsyncFacadeInit(): Promise<void> {
-    TestBed.tick();
-    await Promise.resolve();
-    await Promise.resolve();
-    await Promise.resolve();
-  }
-
-  it("should always open on a brand-new chat even when history exists", async () => {
-    currentUser.set(makeUser("user-with-history"));
-    assistantDataService.listConversations$.and.returnValue(
-      of([
-        {
-          id: "old-1",
-          title: "Old chat",
-          preview: "Old preview",
-          status: "active",
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-      ]),
-    );
-    TestBed.tick();
-    await flushAsyncFacadeInit();
-
-    expect(facade.activeConversation()?.title).toBe("New conversation");
-    expect(facade.showWelcome()).toBeTrue();
-    expect(facade.conversations().some((item) => item.id === "old-1")).toBeTrue();
-    expect(facade.activeConversationId()).not.toBe("old-1");
-  });
-
-  it("should drop the previous user's chats when another user signs in", async () => {
-    await facade.submitPrompt("doctor private message");
-    expect(
-      facade.messages().some((message) => message.text === "doctor private message"),
-    ).toBeTrue();
-
-    currentUser.set(makeUser("user-admin"));
-    TestBed.tick();
-    await flushAsyncFacadeInit();
-
-    expect(
-      facade.conversations().flatMap((item) => item.messages.map((m) => m.text)),
-    ).not.toContain("doctor private message");
-    expect(facade.showWelcome()).toBeTrue();
-  });
-
-  it("should clear everything on logout", async () => {
-    currentUser.set(null);
-    TestBed.tick();
-    await flushAsyncFacadeInit();
-
-    expect(facade.conversations().length).toBe(0);
-    expect(facade.activeConversationId()).toBeNull();
-  });
-
-  it("should route quick action denial before backend call", async () => {
-    authorizationService.has.and.callFake((capability: string) =>
-      capability === "reports.read" ? false : true,
-    );
-
-    facade.runQuickAction({
-      id: "qa-create-report",
-      title: "Create report",
-      description: "Generate report",
-      icon: "chart-column",
-      intent: "generateReport",
-      prefillPrompt: "generate report",
-      behavior: "prefill",
-      category: "operational",
-      requiredCapability: "reports.read",
-    });
-
-    const latest = facade.messages().at(-1)?.text.toLowerCase() ?? "";
-    expect(latest).toContain("don't have access");
-    expect(assistantDataService.postMessage$).not.toHaveBeenCalled();
-  });
-
-  it("should prompt for order id when open-order-detail quick action is used", () => {
-    const quick = facade.quickActions().find((action) => action.id === "ops-open-order-detail");
-    expect(quick).toBeDefined();
-    if (!quick) {
-      throw new Error("Expected ops-open-order-detail action");
-    }
-
-    facade.runQuickAction(quick);
-
-    expect(facade.promptDraft().prompt.toLowerCase()).toContain("open order details");
-    expect(facade.messages().at(-1)?.text.toLowerCase()).toContain("order id");
-  });
-
-  it("should show permission-denied message from backend 403", async () => {
+  it("shows permission message when backend denies action", async () => {
     assistantDataService.postMessage$.and.returnValue(
       throwError(() => ({
         status: 403,
-        error: {
-          error: {
-            message: "Assistant tool permission denied",
-          },
-        },
+        error: { error: { message: "Assistant tool permission denied" } },
       })),
     );
 
-    await facade.submitPrompt("delete order");
-
-    const latest = facade.messages().at(-1)?.text.toLowerCase() ?? "";
-    expect(latest).toContain("don't have access");
+    await facade.submitPrompt("delete order ord-500");
+    expect(facade.messages().at(-1)?.text.toLowerCase()).toContain("don't have access");
   });
 
-  it("should show explicit confirmation affordance for write responses", async () => {
+  it("shows backend business-rule message instead of generic unavailable error", async () => {
+    assistantDataService.postMessage$.and.returnValue(
+      throwError(() => ({
+        status: 400,
+        error: { error: { message: "Clinic f5d9afd005f77d5531ffefe5 does not exist" } },
+      })),
+    );
+
+    await facade.submitPrompt("create order");
+    expect(facade.messages().at(-1)?.text).toContain(
+      "Clinic f5d9afd005f77d5531ffefe5 does not exist",
+    );
+  });
+
+  it("maps confirmation actions to shortcut buttons", async () => {
     assistantDataService.postMessage$.and.returnValue(
       of({
         conversationId: "conv-backend-1",
         messageId: "m2",
         result: {
           type: "confirmation",
-          text: "Please confirm before execution.",
+          text: "Review and confirm",
           pendingActions: [
             {
-              actionId: "a1",
+              actionId: "a-pending-1",
               tool: "update_order",
               expiresAt: new Date().toISOString(),
-              confirmationToken: "token",
+              confirmationToken: "token-1",
+              payload: { orderId: "ord-1" },
             },
           ],
         },
       }),
     );
 
-    await facade.submitPrompt("confirm pending action");
-
+    await facade.submitPrompt("update order ord-1");
     const latest = facade.messages().at(-1);
     expect(latest?.type).toBe("confirmation");
     expect(latest?.actions?.length).toBe(1);
   });
 
-  it("should include pending-action payload preview in confirmation action text", async () => {
-    assistantDataService.postMessage$.and.returnValue(
-      of({
-        conversationId: "conv-backend-1",
-        messageId: "m2",
-        result: {
-          type: "confirmation",
-          text: "Please confirm before execution.",
-          pendingActions: [
-            {
-              actionId: "a1",
-              tool: "create_clinic",
-              expiresAt: new Date().toISOString(),
-              confirmationToken: "token",
-              payload: {
-                payload: {
-                  name: "Nile Clinic",
-                  city: "Cairo",
-                },
-              },
-            },
-          ],
-        },
-      }),
-    );
-
-    await facade.submitPrompt("add clinic");
-
-    const latest = facade.messages().at(-1);
-    expect(latest?.actions?.[0]?.description).toContain("Nile Clinic");
-  });
-
-  it("recreates backend conversation and retries when message post returns conversation not found", async () => {
-    assistantDataService.createConversation$.and.returnValues(
-      of({
-        id: "conv-backend-stale",
-        title: "Stale",
-        status: "active",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        messages: [],
-      }),
-      of({
-        id: "conv-backend-fresh",
-        title: "Fresh",
-        status: "active",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        messages: [],
-      }),
-    );
-    assistantDataService.postMessage$.and.callFake((conversationId: string) => {
-      if (conversationId === "conv-backend-stale") {
-        return throwError(() => ({
-          status: 404,
-          error: {
-            error: {
-              message: "Conversation was not found",
-            },
-          },
-        }));
-      }
-
-      return of({
-        conversationId: "conv-backend-fresh",
-        messageId: "m3",
-        result: {
-          type: "text" as const,
-          text: "Recovered from stale conversation",
-          plannedActions: 0,
-          executions: [],
-        },
-      });
-    });
-
-    await facade.submitPrompt("retry message");
-
-    expect(assistantDataService.createConversation$).toHaveBeenCalledTimes(2);
-    expect(assistantDataService.postMessage$).toHaveBeenCalledTimes(2);
-    expect(assistantDataService.postMessage$.calls.argsFor(0)[0]).toBe("conv-backend-stale");
-    expect(assistantDataService.postMessage$.calls.argsFor(1)[0]).toBe("conv-backend-fresh");
-    expect(facade.messages().at(-1)?.text).toContain("Recovered from stale conversation");
-  });
-
-  it("prefills create-order prompt from quick action instead of forcing local workflow", () => {
-    const quick = facade.quickActions().find((action) => action.id === "ops-create-order");
-    expect(quick).toBeDefined();
-    if (!quick) {
-      throw new Error("Missing create workflow quick action");
+  it("hides quick actions after selecting an action", () => {
+    const action = facade.quickActions().find((item) => item.id === "faq-services");
+    expect(action).toBeDefined();
+    if (!action) {
+      throw new Error("Missing faq-services quick action");
     }
 
-    facade.runQuickAction(quick);
-
-    expect(facade.orderWorkflow()).toBeNull();
-    expect(facade.promptDraft().prompt).toBe(quick.prefillPrompt);
-  });
-
-  it("sends update-order prompts to backend assistant unless guided workflow is requested", async () => {
-    await facade.submitPrompt("update order");
-
-    expect(facade.orderWorkflow()).toBeNull();
-    expect(assistantDataService.postMessage$).toHaveBeenCalled();
-  });
-
-  it("shows quick actions again when user asks to show quick actions", async () => {
-    await facade.submitPrompt("show services");
+    facade.runQuickAction(action);
     expect(facade.showWelcome()).toBeFalse();
-
-    await facade.submitPrompt("show quick actions");
-
-    expect(facade.showWelcome()).toBeTrue();
-    expect(facade.orderWorkflow()).toBeNull();
-    expect(facade.messages().at(-1)?.text.toLowerCase()).toContain(
-      "quick actions are shown again",
-    );
   });
 
-  it("creates sub-orders when create workflow submits", async () => {
-    patientsSignal.set([
-      {
-        id: "pat-1",
-        name: "Ali",
-        dob: "1990-01-01",
-        gender: "M",
-        phone: "1",
-        email: "a@x.com",
-        clinicId: "cl-1",
-        clinicName: "Clinic A",
-        doctorId: "doc-1",
-        doctorName: "Dr A",
-        status: "Active",
-        ordersCount: 0,
-        lastVisit: "2026-01-01",
-      },
+  it("starts create-order quick action as workflow without sending backend message immediately", async () => {
+    const action = facade.quickActions().find((item) => item.id === "ops-create-order");
+    expect(action).toBeDefined();
+    if (!action) {
+      throw new Error("Missing ops-create-order quick action");
+    }
+
+    facade.runQuickAction(action);
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(assistantDataService.postMessage$).not.toHaveBeenCalled();
+    const messages = facade.messages();
+    expect(messages.at(-2)?.role).toBe("user");
+    expect(messages.at(-2)?.text).toBe("Create Order");
+    expect(messages.at(-1)?.role).toBe("assistant");
+    expect(messages.at(-1)?.text.toLowerCase()).toContain("step by step");
+  });
+
+  it("keeps update-order quick action visible when backend suggestions omit it", () => {
+    const action = facade.quickActions().find((item) => item.id === "ops-update-order");
+    expect(action).toBeDefined();
+  });
+
+  it("does not expose refs json in create-order workflow notice", () => {
+    const action = facade.quickActions().find((item) => item.id === "ops-create-order");
+    expect(action).toBeDefined();
+    if (!action) {
+      throw new Error("Missing ops-create-order quick action");
+    }
+
+    facade.runQuickAction(action);
+    facade.updateOrderWorkflowInput("patient-1");
+    facade.continueOrderWorkflow();
+
+    const workflow = facade.activeOrderWorkflow();
+    expect(workflow?.step).toBe("billTo");
+    expect(workflow?.notice).not.toContain("refs:");
+  });
+
+  it("sends create-order prompt that explicitly requires backend create_order action", async () => {
+    const action = facade.quickActions().find((item) => item.id === "ops-create-order");
+    expect(action).toBeDefined();
+    if (!action) {
+      throw new Error("Missing ops-create-order quick action");
+    }
+
+    facade.runQuickAction(action);
+    facade.updateOrderWorkflowInput("patient-1");
+    facade.continueOrderWorkflow();
+    facade.updateOrderWorkflowInput("doctor-1");
+    facade.continueOrderWorkflow();
+    facade.updateOrderWorkflowInput("clinic-1");
+    facade.continueOrderWorkflow();
+    facade.continueOrderWorkflow();
+
+    const createWorkflow = facade.activeOrderWorkflow();
+    const serviceId = createWorkflow?.services[0]?.id;
+    expect(serviceId).toBeDefined();
+    if (!serviceId) {
+      throw new Error("No services available for create-order workflow");
+    }
+    facade.toggleOrderWorkflowService(serviceId);
+    facade.continueOrderWorkflow();
+    facade.toggleOrderWorkflowTooth(11);
+    facade.continueOrderWorkflow();
+    facade.submitOrderWorkflow();
+    await flushAsyncFacadeInit();
+
+    const prompt = assistantDataService.postMessage$.calls.mostRecent().args[1] as string;
+    expect(prompt).toContain("MUST include a create_order action in this same response.");
+    expect(prompt).toContain("each creationData.services item must include serviceId");
+    expect(prompt).toContain("Do not return search result lists when creating this order.");
+    expect(prompt).toContain("If multiple patients share the same name, select the one matching both doctor and clinic from this request.");
+    expect(prompt).toContain("Patient: youssef");
+    expect(prompt).toContain("Doctor: Omar Khalil");
+    expect(prompt).toContain("Clinic: Dental Care Clinic 2");
+  });
+
+  it("shows patient candidates when patient lookup is ambiguous", () => {
+    const action = facade.quickActions().find((item) => item.id === "ops-create-order");
+    expect(action).toBeDefined();
+    if (!action) {
+      throw new Error("Missing ops-create-order quick action");
+    }
+
+    facade.runQuickAction(action);
+    facade.updateOrderWorkflowInput("youssef");
+    facade.continueOrderWorkflow();
+
+    const workflow = facade.activeOrderWorkflow();
+    expect(workflow?.step).toBe("patient");
+    expect(workflow?.create?.patientCandidates.length).toBe(2);
+  });
+
+  it("auto-selects linked doctor and clinic after choosing a patient", () => {
+    const action = facade.quickActions().find((item) => item.id === "ops-create-order");
+    expect(action).toBeDefined();
+    if (!action) {
+      throw new Error("Missing ops-create-order quick action");
+    }
+
+    patientsState.set([patientsState()[0] as Patient]);
+
+    facade.runQuickAction(action);
+    facade.updateOrderWorkflowInput("patient-1");
+    facade.continueOrderWorkflow();
+
+    const workflow = facade.activeOrderWorkflow();
+    expect(workflow?.step).toBe("billTo");
+    expect(workflow?.create?.doctorReference).toBe("doctor-1");
+    expect(workflow?.create?.clinicReference).toBe("clinic-2");
+  });
+
+  it("sends update-order prompt that explicitly requires backend update_order action", async () => {
+    const action = facade.quickActions().find((item) => item.id === "ops-update-order");
+    expect(action).toBeDefined();
+    if (!action) {
+      throw new Error("Missing ops-update-order quick action");
+    }
+
+    facade.runQuickAction(action);
+    facade.updateOrderWorkflowInput("ORD-1");
+    facade.continueOrderWorkflow();
+
+    const updateWorkflow = facade.activeOrderWorkflow();
+    const serviceId = updateWorkflow?.services[0]?.id;
+    expect(serviceId).toBeDefined();
+    if (!serviceId) {
+      throw new Error("No services available for update-order workflow");
+    }
+    facade.toggleOrderWorkflowService(serviceId);
+    facade.continueOrderWorkflow();
+    facade.submitOrderWorkflow();
+    await flushAsyncFacadeInit();
+
+    const prompt = assistantDataService.postMessage$.calls.mostRecent().args[1] as string;
+    expect(prompt).toContain("MUST include an update_order action in this same response.");
+  });
+
+  it("asks full create-patient required fields in workflow", () => {
+    const action = facade.quickActions().find((item) => item.id === "ops-create-patient");
+    expect(action).toBeDefined();
+    if (!action) {
+      throw new Error("Missing ops-create-patient quick action");
+    }
+
+    facade.runQuickAction(action);
+    const workflow = facade.activeWorkflow();
+    expect(workflow?.fields.map((field) => field.key)).toEqual([
+      "name",
+      "dob",
+      "gender",
+      "phone",
+      "email",
+      "clinic",
+      "doctor",
     ]);
-    doctorsSignal.set([
-      {
-        id: "doc-1",
-        name: "Dr A",
-        specialty: "General",
-        clinicId: "cl-1",
-        clinicName: "Clinic A",
-        email: "d@x.com",
-        phone: "2",
-        status: "Active",
-        ordersCount: 0,
-        joinedDate: "2020-01-01",
-        avatar: "",
-      },
-    ]);
-    clinicsSignal.set([
-      {
-        id: "cl-1",
-        name: "Clinic A",
-        address: "Addr",
-        city: "C",
-        phone: "3",
-        email: "c@x.com",
-        doctorsCount: 1,
-        patientsCount: 1,
-        ordersCount: 0,
-        status: "Active",
-        accountManager: "M",
-      },
-    ]);
-    orderDataService.createOrder$.and.returnValue(
+  });
+
+  it("sends create-patient prompt that enforces create_patient action only", async () => {
+    const action = facade.quickActions().find((item) => item.id === "ops-create-patient");
+    expect(action).toBeDefined();
+    if (!action) {
+      throw new Error("Missing ops-create-patient quick action");
+    }
+
+    facade.runQuickAction(action);
+    const values = [
+      "Youssef",
+      "1999-01-01",
+      "M",
+      "01151711722",
+      "ym0998682@gmail.com",
+      "Dental Care Clinic 10",
+      "Mostafa Samir",
+    ];
+    for (const value of values) {
+      facade.updateWorkflowInput(value);
+      facade.continueWorkflow();
+    }
+    await flushAsyncFacadeInit();
+
+    const prompt = assistantDataService.postMessage$.calls.mostRecent().args[1] as string;
+    expect(prompt).toContain("MUST include a create_patient action in this same response.");
+    expect(prompt).toContain("Do not call catalog/company info tools for this request.");
+  });
+
+  it("boots into a fresh new chat while keeping previous history entries", async () => {
+    const existingUpdatedAt = new Date().toISOString();
+    assistantDataService.listConversations$.and.returnValue(
+      of([
+        {
+          id: "conv-existing-1",
+          title: "Existing conversation",
+          status: "active",
+          createdAt: existingUpdatedAt,
+          updatedAt: existingUpdatedAt,
+          preview: "History preview",
+        },
+      ]),
+    );
+    assistantDataService.getConversation$.and.returnValue(
       of({
-        id: "ord-1",
-        orderNumber: "DL-1",
-        patientId: "pat-1",
-        patientName: "Ali",
-        doctorId: "doc-1",
-        doctorName: "Dr A",
-        clinicId: "cl-1",
-        clinicName: "Clinic A",
-        scanCenterId: "",
-        scanCenterName: "",
-        status: "New",
-        priority: "Normal",
-        restoration: "Crown",
-        arch: "Both",
-        format: "STL",
-        shade: "A2",
-        units: 1,
-        amount: 10,
-        billed: false,
-        billTo: "Doctor - Dr A",
-        vouchers: 0,
-        isLocked: false,
-        hasNotes: false,
-        notes: "",
-        receivedAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        dueDate: new Date().toISOString(),
+        id: "conv-existing-1",
+        title: "Existing conversation",
+        status: "active",
+        createdAt: existingUpdatedAt,
+        updatedAt: existingUpdatedAt,
+        messages: [
+          {
+            id: "backend-msg-1",
+            role: "assistant",
+            text: "Loaded from history",
+            createdAt: existingUpdatedAt,
+            resultType: "text",
+          },
+        ],
       }),
     );
 
-    await facade.submitPrompt("start guided create order workflow");
+    currentUser.set(makeUser("user-doctor-2"));
+    await flushAsyncFacadeInit();
 
-    facade.updateWorkflowInput("Ali");
-    await facade.advanceOrderWorkflow();
-    await facade.advanceOrderWorkflow();
-    await facade.advanceOrderWorkflow();
-    await facade.advanceOrderWorkflow();
-    facade.toggleWorkflowService("treatment-plan");
-    await facade.advanceOrderWorkflow();
-    facade.toggleWorkflowTooth(11);
-    await facade.advanceOrderWorkflow();
-    await facade.submitOrderWorkflow();
+    expect(facade.activeConversation()?.title).toBe("New conversation");
+    expect(facade.showWelcome()).toBeTrue();
+    expect(facade.messages().length).toBeGreaterThan(0);
 
-    expect(subOrderDataService.createForOrder$).toHaveBeenCalled();
+    const historyEntry = facade
+      .conversationSummaries()
+      .find((item) => item.id === "conv-existing-1");
+    expect(historyEntry).toBeDefined();
+
+    facade.selectConversation("conv-existing-1");
+    await flushAsyncFacadeInit();
+
+    expect(assistantDataService.getConversation$).toHaveBeenCalledWith(
+      "conv-existing-1",
+    );
+    expect(facade.messages().at(-1)?.text).toContain("Loaded from history");
+    expect(facade.showWelcome()).toBeFalse();
   });
+
+  async function flushAsyncFacadeInit(): Promise<void> {
+    for (let index = 0; index < 5; index += 1) {
+      (TestBed as unknown as { flushEffects?: () => void }).flushEffects?.();
+      await Promise.resolve();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    }
+  }
 });

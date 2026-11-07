@@ -1,19 +1,22 @@
 :host {
   display: block;
-  min-height: 100%;
+  height: 100%;
 }
 
 .ai-page {
+  height: calc(100dvh - 3.5rem);
   min-height: calc(100vh - 3.5rem);
   display: flex;
   justify-content: center;
   padding: 0.95rem;
   background: var(--background);
+  overflow: hidden;
 }
 
 .chat-shell {
   width: min(100%, 72rem);
-  min-height: calc(100vh - 5.3rem);
+  height: 100%;
+  min-height: 0;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
   border: 1px solid var(--border);
@@ -127,8 +130,8 @@
 }
 
 @media (max-width: 1024px) {
-  .chat-shell {
-    min-height: calc(100vh - 4.8rem);
+  .ai-page {
+    height: calc(100dvh - 3.1rem);
   }
 }
 
@@ -136,10 +139,9 @@
   .ai-page {
     padding: 0.52rem;
   }
-
   .chat-shell {
     border-radius: 1rem;
-    min-height: calc(100vh - 4.45rem);
+    border-radius: 1rem;
   }
 
   .chat-header {
