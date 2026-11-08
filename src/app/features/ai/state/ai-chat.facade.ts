@@ -663,6 +663,11 @@ export class AiChatFacade {
   }
 
   private async bootstrap(generation: number): Promise<void> {
+    this.patientDataService.loadPatients();
+    this.doctorDataService.loadDoctors();
+    this.clinicDataService.loadClinics();
+    this.orderDataService.loadOrders();
+
     let summaries: AssistantConversationSummaryDto[] = [];
     try {
       const [suggestions, loaded] = await Promise.all([
@@ -876,14 +881,20 @@ export class AiChatFacade {
       const pendingActions = response.result.pendingActions;
       const actions: AiShortcutAction[] = pendingActions.map((item) => ({
         id: `confirm-${item.actionId}`,
-        title: `Confirm ${item.tool}`,
-        intent: "updateOrder",
-        description: `Confirm pending action for ${item.tool}`,
+        title: `Confirm ${formatAssistantToolLabel(item.tool)}`,
+        intent: mapAssistantToolToIntent(item.tool),
+        description: this.buildConfirmationActionDescription(
+          item.tool,
+          item.payload,
+          item.expiresAt,
+        ),
         badge: "Confirm",
         confirmation: {
           actionId: item.actionId,
           confirmationToken: item.confirmationToken,
           tool: item.tool,
+          expiresAt: item.expiresAt,
+          payload: item.payload,
         },
       }));
       return {
@@ -1099,7 +1110,31 @@ export class AiChatFacade {
     const status = candidate?.status;
     const code = candidate?.error?.error?.code ?? "";
     const message = candidate?.error?.error?.message?.toLowerCase() ?? "";
-    return status === 404 || code === "ASSISTANT_CONVERSATION_NOT_FOUND" || message.includes("conversation");
+    return (
+      code === "ASSISTANT_CONVERSATION_NOT_FOUND" ||
+      (status === 404 &&
+        (message.includes("conversation") || message.includes("assistant conversation")))
+    );
+  }
+
+  private buildConfirmationActionDescription(
+    tool: string,
+    payload: Record<string, unknown> | undefined,
+    expiresAt?: string,
+  ): string {
+    const label = formatAssistantToolLabel(tool);
+    const segments = [`Confirm pending action for ${label}.`];
+    if (expiresAt) {
+      segments.push(`Expires at: ${expiresAt}`);
+    }
+
+    if (!payload) {
+      return segments.join("\n");
+    }
+
+    const payloadPreview = JSON.stringify(payload);
+    segments.push(`Payload: ${payloadPreview}`);
+    return segments.join("\n");
   }
 
   private startWorkflow(action: AiQuickAction): void {
@@ -1535,11 +1570,15 @@ export class AiChatFacade {
     const doctorId = create.doctor?.id || create.doctorReference || create.patient?.doctorId || "";
     const clinicId =
       create.clinic?.id || create.clinicReference || create.doctor?.clinicId || create.patient?.clinicId || "";
+    const dueDate = this.buildDefaultCreateOrderDueDate();
     const payload = {
       payload: {
         patientId,
         doctorId,
         clinicId,
+        format: "STL",
+        shade: "A2",
+        dueDate,
         billTo: create.billToTarget === "scan-center" ? "scan-center" : "doctor",
         creationData: {
           services: selectedServices.map((service) => ({
@@ -1562,8 +1601,17 @@ export class AiChatFacade {
       "Backend confirmation is required automatically for write actions.",
       `Services: ${serviceNames}`,
       `Selected teeth by service: ${serviceTeethSummary}`,
+      `Default format: STL`,
+      `Default shade: A2`,
+      `Default due date: ${dueDate}`,
       `Action JSON: ${JSON.stringify({ tool: "create_order", arguments: payload })}`,
     ].join("\n");
+  }
+
+  private buildDefaultCreateOrderDueDate(): string {
+    const dueDate = new Date();
+    dueDate.setDate(dueDate.getDate() + 7);
+    return dueDate.toISOString();
   }
 
   private buildUpdateOrderWorkflowPrompt(workflow: AiOrderWorkflowState): string {
@@ -1819,6 +1867,8 @@ function mapQuickActionToSuggestionId(actionId: string): string | null {
   switch (actionId) {
     case "ops-search-orders":
       return "assistant-search-orders";
+    case "ops-overdue-orders":
+      return "assistant-overdue-orders";
     case "ops-create-order":
       return "assistant-create-order";
     case "ops-search-patients":
@@ -2022,4 +2072,47 @@ function deriveConversationTitle(prompt: string): string {
 function isShowQuickActionsCommand(prompt: string): boolean {
   return /(show quick actions|show shortcuts|quick actions)/i.test(prompt) ||
     /(اظهر|أظهر).*(الاختصارات|الكويك|الاكشنز)/i.test(prompt);
+}
+
+function mapAssistantToolToIntent(tool: string): AiShortcutAction["intent"] {
+  switch (tool) {
+    case "create_order":
+      return "createOrder";
+    case "update_order":
+      return "updateOrder";
+    case "search_orders":
+      return "searchOrders";
+    case "create_patient":
+      return "addPatient";
+    case "update_patient":
+      return "updatePatient";
+    case "search_patients":
+      return "searchPatients";
+    case "create_doctor":
+      return "addDoctor";
+    case "update_doctor":
+      return "updateDoctor";
+    case "search_doctors":
+      return "searchDoctors";
+    case "create_clinic":
+      return "addClinic";
+    case "update_clinic":
+      return "updateClinic";
+    case "search_clinics":
+      return "searchClinics";
+    case "get_company_info":
+      return "aboutCompany";
+    case "list_services":
+      return "serviceCatalog";
+    case "list_service_prices":
+      return "servicePricing";
+    case "get_submission_standards":
+      return "submissionStandards";
+    default:
+      return "changeSettings";
+  }
+}
+
+function formatAssistantToolLabel(tool: string): string {
+  return tool.replaceAll("_", " ");
 }

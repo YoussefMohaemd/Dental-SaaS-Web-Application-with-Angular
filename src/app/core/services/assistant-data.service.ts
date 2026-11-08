@@ -74,7 +74,7 @@ export interface AssistantMessageResponseDto {
 export interface AssistantConfirmActionResponseDto {
   actionId: string;
   conversationId: string;
-  status: "confirmed";
+  status: "confirmed" | "failed";
   message: string;
 }
 

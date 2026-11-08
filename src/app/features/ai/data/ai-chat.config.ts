@@ -63,6 +63,17 @@ export const AI_QUICK_ACTIONS: readonly AiQuickAction[] = [
     requiredCapability: "orders.read",
   },
   {
+    id: "ops-overdue-orders",
+    title: "Overdue Orders Report",
+    description: "List overdue orders sorted by priority and due date.",
+    icon: "triangle-alert",
+    intent: "generateReport",
+    prefillPrompt: "Show overdue orders sorted by priority and due date.",
+    behavior: "send",
+    category: "operational",
+    requiredCapability: "orders.read",
+  },
+  {
     id: "ops-create-order",
     title: "Create Order",
     description: "Start guided create-order flow step by step.",

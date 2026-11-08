@@ -23,6 +23,9 @@ describe("AiChatFacade", () => {
   let doctorsState: ReturnType<typeof signal<Doctor[]>>;
   let clinicsState: ReturnType<typeof signal<Clinic[]>>;
   let ordersState: ReturnType<typeof signal<Order[]>>;
+  let patientDataServiceMock: { patients: Signal<Patient[]>; loadPatients: jasmine.Spy };
+  let doctorDataServiceMock: { doctors: Signal<Doctor[]>; loadDoctors: jasmine.Spy };
+  let clinicDataServiceMock: { clinics: Signal<Clinic[]>; loadClinics: jasmine.Spy };
   let orderDataServiceMock: { orders: Signal<Order[]>; loadOrders: jasmine.Spy };
   let subOrderDataServiceMock: { load: jasmine.Spy };
 
@@ -238,6 +241,18 @@ describe("AiChatFacade", () => {
       },
     ]);
 
+    patientDataServiceMock = {
+      patients: patientsState.asReadonly(),
+      loadPatients: jasmine.createSpy("loadPatients"),
+    };
+    doctorDataServiceMock = {
+      doctors: doctorsState.asReadonly(),
+      loadDoctors: jasmine.createSpy("loadDoctors"),
+    };
+    clinicDataServiceMock = {
+      clinics: clinicsState.asReadonly(),
+      loadClinics: jasmine.createSpy("loadClinics"),
+    };
     orderDataServiceMock = {
       orders: ordersState.asReadonly(),
       loadOrders: jasmine.createSpy("loadOrders"),
@@ -255,15 +270,15 @@ describe("AiChatFacade", () => {
         { provide: AssistantDataService, useValue: assistantDataService },
         {
           provide: PatientDataService,
-          useValue: { patients: patientsState.asReadonly() },
+          useValue: patientDataServiceMock,
         },
         {
           provide: DoctorDataService,
-          useValue: { doctors: doctorsState.asReadonly() },
+          useValue: doctorDataServiceMock,
         },
         {
           provide: ClinicDataService,
-          useValue: { clinics: clinicsState.asReadonly() },
+          useValue: clinicDataServiceMock,
         },
         {
           provide: OrderDataService,
@@ -279,6 +294,10 @@ describe("AiChatFacade", () => {
 
   it("starts with welcome state", () => {
     expect(assistantDataService.listConversations$).toHaveBeenCalled();
+    expect(patientDataServiceMock.loadPatients).toHaveBeenCalled();
+    expect(doctorDataServiceMock.loadDoctors).toHaveBeenCalled();
+    expect(clinicDataServiceMock.loadClinics).toHaveBeenCalled();
+    expect(orderDataServiceMock.loadOrders).toHaveBeenCalled();
     expect(facade.showWelcome()).toBeTrue();
     expect(facade.messages().length).toBeGreaterThan(0);
   });
@@ -289,6 +308,38 @@ describe("AiChatFacade", () => {
     expect(ids).toContain("faq-services");
     expect(ids).toContain("faq-pricing");
     expect(ids).toContain("faq-submission-standards");
+  });
+
+  it("shows overdue quick action when backend enables it and sends overdue prompt", async () => {
+    assistantDataService.getSuggestions$.and.returnValue(
+      of([
+        {
+          id: "assistant-overdue-orders",
+          title: "Overdue",
+          description: "",
+          category: "orders",
+          template: "",
+          requiredCapabilities: [],
+          resultType: "order-list",
+          enabled: true,
+        },
+      ]),
+    );
+    currentUser.set(makeUser("user-doctor-overdue"));
+    await flushAsyncFacadeInit();
+
+    const action = facade.quickActions().find((item) => item.id === "ops-overdue-orders");
+    expect(action).toBeDefined();
+    if (!action) {
+      throw new Error("Missing ops-overdue-orders quick action");
+    }
+
+    facade.runQuickAction(action);
+    await flushAsyncFacadeInit();
+
+    expect(assistantDataService.postMessage$).toHaveBeenCalled();
+    const prompt = assistantDataService.postMessage$.calls.mostRecent().args[1] as string;
+    expect(prompt.toLowerCase()).toContain("overdue");
   });
 
   it("sends prompt through backend assistant api", async () => {
@@ -352,6 +403,21 @@ describe("AiChatFacade", () => {
     const latest = facade.messages().at(-1);
     expect(latest?.type).toBe("confirmation");
     expect(latest?.actions?.length).toBe(1);
+    expect(latest?.actions?.[0]?.description).toContain('"orderId":"ord-1"');
+  });
+
+  it("does not recreate conversation for generic 404 errors unrelated to conversation lookup", async () => {
+    assistantDataService.postMessage$.and.returnValue(
+      throwError(() => ({
+        status: 404,
+        error: { error: { code: "NOT_FOUND", message: "Patient not found" } },
+      })),
+    );
+
+    await facade.submitPrompt("create order for missing patient");
+
+    expect(assistantDataService.createConversation$).toHaveBeenCalledTimes(1);
+    expect(assistantDataService.postMessage$).toHaveBeenCalledTimes(1);
   });
 
   it("refreshes orders and sub-orders after confirming a pending action", async () => {

@@ -37,6 +37,8 @@ export interface AiShortcutAction {
     actionId: string;
     confirmationToken: string;
     tool: string;
+    expiresAt?: string;
+    payload?: Record<string, unknown>;
   };
 }
 

@@ -19,6 +19,7 @@
   display: flex;
   align-items: flex-start;
   gap: 0.55rem;
+  min-width: 0;
 }
 
 .chat-message--user {
@@ -44,6 +45,7 @@
   width: min(100%, 48rem);
   display: grid;
   gap: 0.45rem;
+  min-width: 0;
 }
 
 .chat-message--user .chat-message__content {
@@ -57,6 +59,7 @@
   background: color-mix(in srgb, var(--card) 90%, var(--background) 10%);
   padding: 0.66rem 0.78rem;
   animation: message-enter 180ms cubic-bezier(0.21, 1, 0.34, 1);
+  min-width: 0;
 }
 
 .chat-message--assistant .chat-message__bubble {
@@ -77,6 +80,9 @@
   color: var(--foreground);
   font-size: 0.82rem;
   line-height: 1.52;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .thinking-dots {
@@ -148,6 +154,9 @@
 :host ::ng-deep .chat-message__text h3,
 :host ::ng-deep .chat-message__text .markdown-table-wrap {
   margin: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 :host ::ng-deep .chat-message__text ul {
