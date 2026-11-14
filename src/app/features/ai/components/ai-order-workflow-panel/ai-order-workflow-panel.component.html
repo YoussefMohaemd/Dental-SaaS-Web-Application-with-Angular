@@ -28,7 +28,7 @@
     <div class="workflow-panel__field">
       <label class="workflow-panel__label">
         @if (workflow().step === "patient") {
-          Patient name or ID
+          Patient name
         } @else if (workflow().step === "doctor") {
           Doctor name or ID
         } @else if (workflow().step === "clinic") {
@@ -66,6 +66,18 @@
         Bill to Scan Center
       </app-button>
     </div>
+    @if (workflow().create?.billToTarget === "scan-center") {
+      <div class="workflow-panel__field">
+        <label class="workflow-panel__label">Scan center ID</label>
+        <input
+          class="workflow-panel__input"
+          [value]="workflow().input"
+          (input)="inputChanged.emit($any($event.target).value)"
+          (keydown.enter)="continueRequested.emit()"
+          placeholder="Enter scan center id"
+        />
+      </div>
+    }
   }
 
   @if (workflow().step === "services" || workflow().step === "editOrder") {

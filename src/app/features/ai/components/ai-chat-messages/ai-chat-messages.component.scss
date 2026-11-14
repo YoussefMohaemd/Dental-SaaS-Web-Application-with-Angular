@@ -148,7 +148,10 @@
 
 :host ::ng-deep .chat-message__text p,
 :host ::ng-deep .chat-message__text ul,
+:host ::ng-deep .chat-message__text ol,
 :host ::ng-deep .chat-message__text pre,
+:host ::ng-deep .chat-message__text blockquote,
+:host ::ng-deep .chat-message__text hr,
 :host ::ng-deep .chat-message__text h1,
 :host ::ng-deep .chat-message__text h2,
 :host ::ng-deep .chat-message__text h3,
@@ -163,14 +166,30 @@
   padding-inline-start: 1.02rem;
 }
 
+:host ::ng-deep .chat-message__text ol {
+  padding-inline-start: 1.1rem;
+}
+
 :host ::ng-deep .chat-message__text p + p,
 :host ::ng-deep .chat-message__text p + ul,
+:host ::ng-deep .chat-message__text p + ol,
 :host ::ng-deep .chat-message__text ul + p,
+:host ::ng-deep .chat-message__text ol + p,
+:host ::ng-deep .chat-message__text ul + ol,
+:host ::ng-deep .chat-message__text ol + ul,
 :host ::ng-deep .chat-message__text h1 + p,
 :host ::ng-deep .chat-message__text h2 + p,
 :host ::ng-deep .chat-message__text h3 + p,
+:host ::ng-deep .chat-message__text h3 + ul,
+:host ::ng-deep .chat-message__text h3 + ol,
 :host ::ng-deep .chat-message__text p + .markdown-table-wrap,
-:host ::ng-deep .chat-message__text .markdown-table-wrap + p {
+:host ::ng-deep .chat-message__text .markdown-table-wrap + p,
+:host ::ng-deep .chat-message__text p + blockquote,
+:host ::ng-deep .chat-message__text blockquote + p,
+:host ::ng-deep .chat-message__text blockquote + ul,
+:host ::ng-deep .chat-message__text blockquote + ol,
+:host ::ng-deep .chat-message__text p + hr,
+:host ::ng-deep .chat-message__text hr + p {
   margin-top: 0.46rem;
 }
 
@@ -195,6 +214,19 @@
   background: color-mix(in srgb, var(--foreground) 4%, var(--card));
   padding: 0.52rem 0.62rem;
   overflow-x: auto;
+}
+
+:host ::ng-deep .chat-message__text blockquote {
+  border: 1px solid color-mix(in srgb, var(--primary) 28%, var(--border));
+  border-left-width: 3px;
+  border-radius: 0.62rem;
+  background: color-mix(in srgb, var(--primary) 7%, var(--card));
+  padding: 0.42rem 0.56rem;
+}
+
+:host ::ng-deep .chat-message__text hr {
+  border: 0;
+  border-top: 1px solid var(--border);
 }
 
 :host ::ng-deep .chat-message__text .markdown-table-wrap {

@@ -1110,8 +1110,13 @@ export class AiChatFacade {
     const status = candidate?.status;
     const code = candidate?.error?.error?.code ?? "";
     const message = candidate?.error?.error?.message?.toLowerCase() ?? "";
+    const looksInvalidConversation =
+      message.includes("conversation") &&
+      (message.includes("invalid") || message.includes("no longer valid"));
     return (
       code === "ASSISTANT_CONVERSATION_NOT_FOUND" ||
+      code === "ASSISTANT_CONVERSATION_INVALID" ||
+      (status === 400 && looksInvalidConversation) ||
       (status === 404 &&
         (message.includes("conversation") || message.includes("assistant conversation")))
     );
@@ -1208,7 +1213,7 @@ export class AiChatFacade {
     if (workflow.step === "patient") {
       const patientReference = inputValue || create.patientReference.trim();
       if (!patientReference) {
-        this.setOrderWorkflowError("Patient name or ID is required.");
+        this.setOrderWorkflowError("Patient name is required.");
         return;
       }
       const candidates = this.findPatientCandidates(patientReference);
@@ -1228,7 +1233,21 @@ export class AiChatFacade {
 
       const [patient] = candidates;
       if (!patient) {
-        this.setOrderWorkflowError("No matching patient found. Enter a valid patient name or ID.");
+        this.activeOrderWorkflow.set({
+          ...workflow,
+          step: "doctor",
+          input: "",
+          notice: "Patient was not found. Continuing with a new patient entry for this order.",
+          create: {
+            ...create,
+            patient: null,
+            patientReference,
+            patientCandidates: [],
+            doctorCandidates: [],
+            clinicCandidates: [],
+          },
+          error: null,
+        });
         return;
       }
       const doctor = this.findDoctorById(patient.doctorId);
@@ -1248,7 +1267,7 @@ export class AiChatFacade {
           patient,
           doctor: doctor ?? create.doctor,
           clinic: clinic ?? create.clinic,
-          patientReference: patient.id,
+          patientReference: patient.name,
           doctorReference: patient.doctorId || create.doctorReference,
           clinicReference: patient.clinicId || create.clinicReference,
           patientCandidates: [],
@@ -1375,7 +1394,36 @@ export class AiChatFacade {
     }
 
     if (workflow.step === "billTo") {
-      this.activeOrderWorkflow.set({ ...workflow, step: "services", input: "", error: null });
+      if (create.billToTarget === "scan-center") {
+        const scanCenterReference = inputValue || create.scanCenterReference.trim();
+        if (!scanCenterReference) {
+          this.setOrderWorkflowError("Scan center ID is required when billing to scan center.");
+          return;
+        }
+        this.activeOrderWorkflow.set({
+          ...workflow,
+          step: "services",
+          input: "",
+          notice: null,
+          create: {
+            ...create,
+            scanCenterReference,
+          },
+          error: null,
+        });
+        return;
+      }
+      this.activeOrderWorkflow.set({
+        ...workflow,
+        step: "services",
+        input: "",
+        notice: null,
+        create: {
+          ...create,
+          scanCenterReference: "",
+        },
+        error: null,
+      });
       return;
     }
 
@@ -1566,20 +1614,21 @@ export class AiChatFacade {
     const serviceNames = selectedServices
       .map((service) => `${service.name} [${service.id}]`)
       .join(", ");
-    const patientId = create.patient?.id || create.patientReference || "";
+    const patientName = (create.patient?.name || create.patientReference || "").trim();
     const doctorId = create.doctor?.id || create.doctorReference || create.patient?.doctorId || "";
     const clinicId =
       create.clinic?.id || create.clinicReference || create.doctor?.clinicId || create.patient?.clinicId || "";
     const dueDate = this.buildDefaultCreateOrderDueDate();
     const payload = {
       payload: {
-        patientId,
+        ...(patientName ? { patientName } : {}),
         doctorId,
         clinicId,
-        format: "STL",
-        shade: "A2",
         dueDate,
         billTo: create.billToTarget === "scan-center" ? "scan-center" : "doctor",
+        ...(create.billToTarget === "scan-center" && create.scanCenterReference.trim().length > 0
+          ? { scanCenterId: create.scanCenterReference.trim() }
+          : {}),
         creationData: {
           services: selectedServices.map((service) => ({
             serviceId: service.id,
@@ -1599,10 +1648,9 @@ export class AiChatFacade {
       "MANDATORY: MUST include a create_order action in this same response.",
       "Use the exact IDs supplied below.",
       "Backend confirmation is required automatically for write actions.",
+      `Patient name: ${patientName || "(missing)"}`,
       `Services: ${serviceNames}`,
       `Selected teeth by service: ${serviceTeethSummary}`,
-      `Default format: STL`,
-      `Default shade: A2`,
       `Default due date: ${dueDate}`,
       `Action JSON: ${JSON.stringify({ tool: "create_order", arguments: payload })}`,
     ].join("\n");
@@ -1867,8 +1915,6 @@ function mapQuickActionToSuggestionId(actionId: string): string | null {
   switch (actionId) {
     case "ops-search-orders":
       return "assistant-search-orders";
-    case "ops-overdue-orders":
-      return "assistant-overdue-orders";
     case "ops-create-order":
       return "assistant-create-order";
     case "ops-search-patients":
@@ -1898,7 +1944,7 @@ function getWorkflowFields(actionId: string): readonly AiActionWorkflowField[] {
       ];
     case "ops-create-order":
       return [
-        { key: "patient", label: "Patient name or ID", placeholder: "Enter patient" },
+        { key: "patient", label: "Patient name", placeholder: "Enter patient name" },
         { key: "doctor", label: "Doctor name or ID", placeholder: "Enter doctor" },
         { key: "clinic", label: "Clinic name or ID", placeholder: "Enter clinic" },
         { key: "notes", label: "Order notes", placeholder: "Optional notes", optional: true },
@@ -1979,6 +2025,14 @@ function getWorkflowFields(actionId: string): readonly AiActionWorkflowField[] {
           placeholder: "Order number, order id, or patient name",
         },
       ];
+    case "ops-create-report":
+      return [
+        {
+          key: "reportGoal",
+          label: "Report goal",
+          placeholder: "e.g. Last month profit (October 2026)",
+        },
+      ];
     default:
       return [];
   }
@@ -1990,6 +2044,17 @@ function getWorkflowGuardrails(actionId: string): readonly string[] {
       return [
         "MANDATORY: MUST include a create_patient action in this same response.",
         "Do not call catalog/company info tools for this request.",
+      ];
+    case "ops-create-report":
+      return [
+        "MANDATORY: Use only read/report retrieval actions for this request.",
+        "STRICTLY FORBIDDEN: Do NOT include any write action such as create_order, update_order, create_patient, update_patient, create_doctor, update_doctor, create_clinic, update_clinic.",
+        "Use only the exact date scope and conditions provided by the user; do not invent or assume missing inputs.",
+        "If required inputs are missing, ask a concise follow-up question instead of generating write actions.",
+        "MANDATORY: When the user asks for profit/revenue/total amount, return one clear total amount first (sum of order amounts in the requested period), then a very short breakdown.",
+        "Do not return long raw order lists unless the user explicitly asks for detailed order rows.",
+        "Choose the best output style automatically based on the data and keep it concise.",
+        "Format output with short titled sections, bullet points, and compact cards-style highlights.",
       ];
     default:
       return [];
@@ -2020,6 +2085,7 @@ function buildInitialCreateOrderWorkflow(): AiOrderWorkflowState {
       patientReference: "",
       doctorReference: "",
       clinicReference: "",
+      scanCenterReference: "",
       billToTarget: "doctor",
       selectedServiceIds: [],
       selectedTeeth: [],

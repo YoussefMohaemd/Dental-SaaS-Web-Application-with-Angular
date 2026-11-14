@@ -308,38 +308,48 @@ describe("AiChatFacade", () => {
     expect(ids).toContain("faq-services");
     expect(ids).toContain("faq-pricing");
     expect(ids).toContain("faq-submission-standards");
+    expect(ids).toContain("ops-create-report");
+    expect(ids).not.toContain("ops-overdue-orders");
   });
 
-  it("shows overdue quick action when backend enables it and sends overdue prompt", async () => {
-    assistantDataService.getSuggestions$.and.returnValue(
-      of([
-        {
-          id: "assistant-overdue-orders",
-          title: "Overdue",
-          description: "",
-          category: "orders",
-          template: "",
-          requiredCapabilities: [],
-          resultType: "order-list",
-          enabled: true,
-        },
-      ]),
-    );
-    currentUser.set(makeUser("user-doctor-overdue"));
-    await flushAsyncFacadeInit();
-
-    const action = facade.quickActions().find((item) => item.id === "ops-overdue-orders");
+  it("starts create-report quick action as a guided workflow before sending", async () => {
+    const action = facade.quickActions().find((item) => item.id === "ops-create-report");
     expect(action).toBeDefined();
     if (!action) {
-      throw new Error("Missing ops-overdue-orders quick action");
+      throw new Error("Missing ops-create-report quick action");
     }
 
     facade.runQuickAction(action);
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(assistantDataService.postMessage$).not.toHaveBeenCalled();
+    expect(facade.activeWorkflow()?.action.id).toBe("ops-create-report");
+    expect(facade.activeWorkflowField()?.key).toBe("reportGoal");
+    expect(facade.activeWorkflow()?.fields.length).toBe(1);
+  });
+
+  it("sends create-report workflow prompt from one request and enforces aggregate total output", async () => {
+    const action = facade.quickActions().find((item) => item.id === "ops-create-report");
+    expect(action).toBeDefined();
+    if (!action) {
+      throw new Error("Missing ops-create-report quick action");
+    }
+
+    facade.runQuickAction(action);
+    facade.updateWorkflowInput("عايز أرباح الشهر اللي فات (أكتوبر 2026)");
+    facade.continueWorkflow();
     await flushAsyncFacadeInit();
 
-    expect(assistantDataService.postMessage$).toHaveBeenCalled();
     const prompt = assistantDataService.postMessage$.calls.mostRecent().args[1] as string;
-    expect(prompt.toLowerCase()).toContain("overdue");
+    expect(prompt).toContain("Use only read/report retrieval actions");
+    expect(prompt).toContain("STRICTLY FORBIDDEN: Do NOT include any write action");
+    expect(prompt).toContain("MANDATORY: When the user asks for profit/revenue/total amount");
+    expect(prompt).toContain("return one clear total amount");
+    expect(prompt).toContain("- Report goal: عايز أرباح الشهر اللي فات (أكتوبر 2026)");
+    expect(prompt).not.toContain("- Date range:");
+    expect(prompt).not.toContain("- Filters:");
+    expect(prompt).not.toContain("- Output style:");
   });
 
   it("sends prompt through backend assistant api", async () => {
@@ -418,6 +428,50 @@ describe("AiChatFacade", () => {
 
     expect(assistantDataService.createConversation$).toHaveBeenCalledTimes(1);
     expect(assistantDataService.postMessage$).toHaveBeenCalledTimes(1);
+  });
+
+  it("recreates conversation when backend says assistant conversation is invalid", async () => {
+    assistantDataService.postMessage$.and.returnValues(
+      throwError(() => ({
+        status: 400,
+        error: { error: { code: "VALIDATION_ERROR", message: "Assistant conversation is invalid" } },
+      })),
+      of({
+        conversationId: "conv-backend-2",
+        messageId: "m-retry",
+        result: {
+          type: "text",
+          text: "Recovered after recreation",
+          plannedActions: 0,
+          executions: [],
+        },
+      }),
+    );
+
+    assistantDataService.createConversation$.and.returnValues(
+      of({
+        id: "conv-backend-1",
+        title: "Backend",
+        status: "active",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        messages: [],
+      }),
+      of({
+        id: "conv-backend-2",
+        title: "Backend recovered",
+        status: "active",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        messages: [],
+      }),
+    );
+
+    await facade.submitPrompt("show services");
+
+    expect(assistantDataService.createConversation$).toHaveBeenCalledTimes(2);
+    expect(assistantDataService.postMessage$).toHaveBeenCalledTimes(2);
+    expect(facade.messages().at(-1)?.text).toContain("Recovered after recreation");
   });
 
   it("refreshes orders and sub-orders after confirming a pending action", async () => {
@@ -511,7 +565,7 @@ describe("AiChatFacade", () => {
     expect(workflow?.notice).not.toContain("refs:");
   });
 
-  it("sends create-order prompt that explicitly requires backend create_order action", async () => {
+  it("sends create-order prompt that uses patient name and does not force patient id", async () => {
     const action = facade.quickActions().find((item) => item.id === "ops-create-order");
     expect(action).toBeDefined();
     if (!action) {
@@ -544,7 +598,8 @@ describe("AiChatFacade", () => {
     expect(prompt).toContain("MUST include a create_order action in this same response.");
     expect(prompt).toContain("Use the exact IDs supplied below.");
     expect(prompt).toContain("\"tool\":\"create_order\"");
-    expect(prompt).toContain("\"patientId\":\"patient-1\"");
+    expect(prompt).toContain("\"patientName\":\"youssef\"");
+    expect(prompt).not.toContain("\"patientId\":");
     expect(prompt).toContain("\"doctorId\":\"doctor-1\"");
     expect(prompt).toContain("\"clinicId\":\"clinic-2\"");
   });
@@ -590,6 +645,38 @@ describe("AiChatFacade", () => {
     expect(prompt).toContain('"selectedTeeth":[24]');
   });
 
+  it("requires scan center id when bill-to target is scan center and includes it in action payload", async () => {
+    const action = facade.quickActions().find((item) => item.id === "ops-create-order");
+    expect(action).toBeDefined();
+    if (!action) {
+      throw new Error("Missing ops-create-order quick action");
+    }
+
+    facade.runQuickAction(action);
+    facade.updateOrderWorkflowInput("patient-1");
+    facade.continueOrderWorkflow();
+    expect(facade.activeOrderWorkflow()?.step).toBe("billTo");
+    facade.setOrderWorkflowBillTo("scan-center");
+    facade.continueOrderWorkflow();
+    expect(facade.activeOrderWorkflow()?.error).toContain("Scan center ID is required");
+
+    facade.updateOrderWorkflowInput("scan-center-7");
+    facade.continueOrderWorkflow();
+    const serviceId = facade.activeOrderWorkflow()?.services[0]?.id;
+    if (!serviceId) {
+      throw new Error("No services available");
+    }
+    facade.toggleOrderWorkflowService(serviceId);
+    facade.continueOrderWorkflow();
+    facade.toggleOrderWorkflowTooth(11);
+    facade.continueOrderWorkflow();
+    facade.submitOrderWorkflow();
+    await flushAsyncFacadeInit();
+
+    const prompt = assistantDataService.postMessage$.calls.mostRecent().args[1] as string;
+    expect(prompt).toContain('"scanCenterId":"scan-center-7"');
+  });
+
   it("shows patient candidates when patient lookup is ambiguous", () => {
     const action = facade.quickActions().find((item) => item.id === "ops-create-order");
     expect(action).toBeDefined();
@@ -604,6 +691,23 @@ describe("AiChatFacade", () => {
     const workflow = facade.activeOrderWorkflow();
     expect(workflow?.step).toBe("patient");
     expect(workflow?.create?.patientCandidates.length).toBe(2);
+  });
+
+  it("continues create-order flow with new patient when patient is not found", () => {
+    const action = facade.quickActions().find((item) => item.id === "ops-create-order");
+    expect(action).toBeDefined();
+    if (!action) {
+      throw new Error("Missing ops-create-order quick action");
+    }
+
+    facade.runQuickAction(action);
+    facade.updateOrderWorkflowInput("patient-not-found");
+    facade.continueOrderWorkflow();
+
+    const workflow = facade.activeOrderWorkflow();
+    expect(workflow?.step).toBe("doctor");
+    expect(workflow?.create?.patient).toBeNull();
+    expect(workflow?.create?.patientReference).toBe("patient-not-found");
   });
 
   it("auto-selects linked doctor and clinic after choosing a patient", () => {

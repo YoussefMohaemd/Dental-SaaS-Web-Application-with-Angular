@@ -136,14 +136,32 @@ export class AiComponent {
       return;
     }
 
-    if (typeof navigator === "undefined" || !navigator.clipboard) {
-      return;
-    }
-
     try {
-      await navigator.clipboard.writeText(text);
-    } catch {
-      return;
+      if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+        return;
+      }
+
+      if (typeof document === "undefined") {
+        throw new Error("Clipboard API and document are unavailable in this environment.");
+      }
+
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      textarea.setAttribute("readonly", "true");
+      textarea.style.position = "fixed";
+      textarea.style.opacity = "0";
+      textarea.style.pointerEvents = "none";
+      document.body.appendChild(textarea);
+      textarea.select();
+
+      const copied = document.execCommand("copy");
+      document.body.removeChild(textarea);
+      if (!copied) {
+        throw new Error("Document copy command failed.");
+      }
+    } catch (error) {
+      console.error("Failed to copy assistant message:", error);
     }
   }
 

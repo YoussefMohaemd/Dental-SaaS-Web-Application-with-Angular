@@ -29,6 +29,7 @@ export interface AiOrderWorkflowCreateData {
   patientReference: string;
   doctorReference: string;
   clinicReference: string;
+  scanCenterReference: string;
   billToTarget: CreateOrderBillToTarget;
   selectedServiceIds: string[];
   selectedTeeth: number[];

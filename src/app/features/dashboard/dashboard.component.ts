@@ -36,6 +36,7 @@ const WORKFLOW_STAGES: { name: string; color: string; statuses: string[] }[] = [
   { name: "QC", color: "#8B5CF6", statuses: ["Quality Check"] },
   { name: "Ready", color: "#10B981", statuses: ["Ready", "Completed"] },
 ];
+const WEEKDAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
 
 @Component({
   selector: "app-dashboard",
@@ -103,10 +104,19 @@ export class DashboardComponent implements OnInit {
     this.notificationService.notifications().slice(0, 10),
   );
 
-  readonly weeklyData = this.volumeService.currentDays;
+  readonly weeklyData = computed(() => {
+    const serviceDays = this.volumeService.currentDays();
+    if (this.looksLikeWeekdaySeries(serviceDays)) {
+      return serviceDays;
+    }
+    return this.buildCurrentWeekVolumeFromOrders();
+  });
 
   readonly volumeNiceMax = computed(() => {
-    const max = this.volumeService.weekMax();
+    const max = Math.max(
+      ...this.weeklyData().map((day) => Math.max(day.orders, day.completed)),
+      0,
+    );
     if (max <= 0) return 5;
     const magnitude = Math.pow(10, Math.floor(Math.log10(max)));
     const normalized = max / magnitude;
@@ -191,7 +201,7 @@ export class DashboardComponent implements OnInit {
     return WORKFLOW_STAGES.map((stage) => ({
       name: stage.name,
       color: stage.color,
-      count: this.orders().filter((o) => stage.statuses.includes(o.status))
+      count: this.orders().filter((order) => this.matchesWorkflowStage(order.status, stage))
         .length,
     }));
   });
@@ -297,7 +307,7 @@ export class DashboardComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.orderService.loadOrders();
+    this.orderService.loadAllOrders();
     this.caseService.loadCases();
     this.volumeService.loadVolume();
     this.notificationService.loadNotifications();
@@ -357,4 +367,72 @@ export class DashboardComponent implements OnInit {
   getStatusStyles(status: string): { bg: string; fg: string } {
     return this.formatUtils.getStatusStyles(status);
   }
+
+  private buildCurrentWeekVolumeFromOrders(): { day: string; orders: number; completed: number }[] {
+    const start = this.startOfWeek(new Date());
+    const days = Array.from({ length: WEEKDAY_LABELS.length }, (_, index) => {
+      const date = new Date(start);
+      date.setDate(start.getDate() + index);
+      return {
+        day: WEEKDAY_LABELS[index] as string,
+        date,
+        orders: 0,
+        completed: 0,
+      };
+    });
+
+    for (const order of this.orders()) {
+      const receivedAt = new Date(order.receivedAt);
+      if (Number.isNaN(receivedAt.getTime())) {
+        continue;
+      }
+      const dayIndex = Math.floor((receivedAt.getTime() - start.getTime()) / 86400000);
+      if (dayIndex < 0 || dayIndex >= days.length) {
+        continue;
+      }
+      const day = days[dayIndex];
+      if (!day) {
+        continue;
+      }
+      day.orders += 1;
+      if (normalizeWorkflowStatus(order.status) === "completed") {
+        day.completed += 1;
+      }
+    }
+
+    return days.map(({ date: _date, ...entry }) => entry);
+  }
+
+  private looksLikeWeekdaySeries(
+    days: readonly { day: string; orders: number; completed: number }[],
+  ): boolean {
+    if (days.length !== WEEKDAY_LABELS.length) {
+      return false;
+    }
+
+    return days.every((day, index) => normalizeWorkflowStatus(day.day) === normalizeWorkflowStatus(WEEKDAY_LABELS[index]));
+  }
+
+  private startOfWeek(date: Date): Date {
+    const start = new Date(date);
+    const day = start.getDay();
+    const mondayOffset = day === 0 ? -6 : 1 - day;
+    start.setDate(start.getDate() + mondayOffset);
+    start.setHours(0, 0, 0, 0);
+    return start;
+  }
+
+  private matchesWorkflowStage(
+    status: string,
+    stage: { name: string; statuses: string[] },
+  ): boolean {
+    const normalized = normalizeWorkflowStatus(status);
+    return stage.statuses.some(
+      (stageStatus) => normalizeWorkflowStatus(stageStatus) === normalized,
+    );
+  }
+}
+
+function normalizeWorkflowStatus(value: string): string {
+  return value.trim().toLowerCase().replace(/\s+/g, " ");
 }

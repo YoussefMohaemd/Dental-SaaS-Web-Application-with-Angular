@@ -150,6 +150,24 @@ export class AiChatMessagesComponent {
         continue;
       }
 
+      if (/^(-{3,}|\*{3,})$/.test(trimmed)) {
+        blocks.push("<hr/>");
+        index += 1;
+        continue;
+      }
+
+      if (trimmed.startsWith(">")) {
+        const quoteLines: string[] = [];
+        while (index < lines.length && lines[index].trim().startsWith(">")) {
+          quoteLines.push(lines[index].trim().replace(/^>\s?/, ""));
+          index += 1;
+        }
+        blocks.push(
+          `<blockquote><p>${this.applyInline(quoteLines.join(" "))}</p></blockquote>`,
+        );
+        continue;
+      }
+
       if (this.isTableStart(lines, index)) {
         const tableLines: string[] = [];
         tableLines.push(lines[index]);
@@ -163,10 +181,10 @@ export class AiChatMessagesComponent {
         continue;
       }
 
-      if (trimmed.startsWith("- ")) {
+      if (/^[-*•]\s+/.test(trimmed)) {
         const listItems: string[] = [];
-        while (index < lines.length && lines[index].trim().startsWith("- ")) {
-          listItems.push(lines[index].trim().slice(2));
+        while (index < lines.length && /^[-*•]\s+/.test(lines[index].trim())) {
+          listItems.push(lines[index].trim().replace(/^[-*•]\s+/, ""));
           index += 1;
         }
 
@@ -174,6 +192,21 @@ export class AiChatMessagesComponent {
           `<ul>${listItems
             .map((item) => `<li>${this.applyInline(item)}</li>`)
             .join("")}</ul>`,
+        );
+        continue;
+      }
+
+      if (/^\d+\.\s+/.test(trimmed)) {
+        const listItems: string[] = [];
+        while (index < lines.length && /^\d+\.\s+/.test(lines[index].trim())) {
+          listItems.push(lines[index].trim().replace(/^\d+\.\s+/, ""));
+          index += 1;
+        }
+
+        blocks.push(
+          `<ol>${listItems
+            .map((item) => `<li>${this.applyInline(item)}</li>`)
+            .join("")}</ol>`,
         );
         continue;
       }
@@ -191,8 +224,11 @@ export class AiChatMessagesComponent {
       while (
         index < lines.length &&
         lines[index].trim() &&
-        !lines[index].trim().startsWith("- ") &&
+        !/^[-*•]\s+/.test(lines[index].trim()) &&
+        !/^\d+\.\s+/.test(lines[index].trim()) &&
         !lines[index].trim().startsWith("```") &&
+        !lines[index].trim().startsWith(">") &&
+        !/^(-{3,}|\*{3,})$/.test(lines[index].trim()) &&
         !/^#{1,3}\s+/.test(lines[index].trim()) &&
         !this.isTableStart(lines, index)
       ) {
@@ -245,7 +281,8 @@ export class AiChatMessagesComponent {
     const escaped = this.escapeHtml(value);
     return escaped
       .replace(/`([^`]+)`/g, "<code>$1</code>")
-      .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+      .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+      .replace(/__([^_]+)__/g, "<strong>$1</strong>");
   }
 
   private escapeHtml(value: string): string {

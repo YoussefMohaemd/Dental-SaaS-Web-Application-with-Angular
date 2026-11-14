@@ -161,6 +161,28 @@ describe("AiComponent", () => {
     expect(latest?.text).toContain("Live backend response");
   });
 
+  it("should copy assistant message using Clipboard API when available", async () => {
+    await component.submitPrompt("show services");
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const latest = component.messages().at(-1);
+    expect(latest?.id).toBeDefined();
+    if (!latest?.id) {
+      throw new Error("Missing latest message id");
+    }
+
+    const writeText = jasmine.createSpy("writeText").and.returnValue(Promise.resolve());
+    Object.defineProperty(globalThis.navigator, "clipboard", {
+      configurable: true,
+      value: { writeText },
+    });
+
+    await component.copyMessage(latest.id);
+    expect(writeText).toHaveBeenCalledWith("Live backend response");
+  });
+
   it("should show backend permission denied message", async () => {
     assistantDataService.postMessage$.and.returnValue(
       throwError(() => ({

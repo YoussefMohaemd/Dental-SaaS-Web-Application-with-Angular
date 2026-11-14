@@ -30,7 +30,7 @@ describe("DashboardComponent", () => {
   ];
 
   beforeEach(async () => {
-    const orderSpy = jasmine.createSpyObj("OrderDataService", ["loadOrders"], {
+    const orderSpy = jasmine.createSpyObj("OrderDataService", ["loadOrders", "loadAllOrders"], {
       orders: signal([]),
       loading: signal(false),
       urgentOrdersCount: signal(0),
@@ -198,6 +198,78 @@ describe("DashboardComponent", () => {
     const max = Math.max(...component.workflowData().map((w) => w.count));
     expect(component.getWorkflowBarWidth(max)).toBe(0);
     expect(component.getWorkflowBarWidth(0)).toBe(0);
+  });
+
+  it("should normalize workflow statuses for counting", () => {
+    const orderService = TestBed.inject(OrderDataService) as unknown as {
+      orders: WritableSignal<Order[]>;
+    };
+    orderService.orders.set([
+      {
+        id: "ord-1",
+        orderNumber: "DL-100001",
+        patientId: "pat-1",
+        patientName: "Patient A",
+        doctorId: "doc-1",
+        doctorName: "Doctor A",
+        clinicId: "cl-1",
+        clinicName: "Clinic A",
+        scanCenterId: "sc-1",
+        scanCenterName: "Scan Center A",
+        status: "Review",
+        priority: "High",
+        restoration: "Crown",
+        arch: "Maxilla",
+        format: "STL",
+        shade: "A1",
+        units: 1,
+        amount: 100,
+        billed: false,
+        billTo: "Clinic",
+        vouchers: 0,
+        isLocked: false,
+        hasNotes: false,
+        notes: "",
+        receivedAt: "2026-10-01T10:00:00Z",
+        updatedAt: "2026-10-01T11:00:00Z",
+        dueDate: "2026-10-05T10:00:00Z",
+      },
+      {
+        id: "ord-2",
+        orderNumber: "DL-100002",
+        patientId: "pat-2",
+        patientName: "Patient B",
+        doctorId: "doc-2",
+        doctorName: "Doctor B",
+        clinicId: "cl-1",
+        clinicName: "Clinic A",
+        scanCenterId: "sc-1",
+        scanCenterName: "Scan Center A",
+        status: "Production",
+        priority: "Normal",
+        restoration: "Bridge",
+        arch: "Mandible",
+        format: "STL",
+        shade: "A2",
+        units: 1,
+        amount: 120,
+        billed: false,
+        billTo: "Clinic",
+        vouchers: 0,
+        isLocked: false,
+        hasNotes: false,
+        notes: "",
+        receivedAt: "2026-10-02T10:00:00Z",
+        updatedAt: "2026-10-02T11:00:00Z",
+        dueDate: "2026-10-06T10:00:00Z",
+      },
+    ]);
+    fixture.detectChanges();
+
+    const review = component.workflowData().find((item) => item.name === "Review");
+    const production = component.workflowData().find((item) => item.name === "Production");
+    expect(review?.count).toBe(1);
+    expect(production?.count).toBe(1);
   });
 
   it("should render activity from the notification store", () => {
