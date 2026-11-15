@@ -49,3 +49,6 @@ Thumbs.db
 
 *storybook.log
 storybook-static
+
+/docs
+/.superpowers
