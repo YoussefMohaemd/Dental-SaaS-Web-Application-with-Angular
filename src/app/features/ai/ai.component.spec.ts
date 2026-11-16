@@ -39,7 +39,23 @@ describe("AiComponent", () => {
         "confirmAction$",
       ],
     );
-    assistantDataService.getSuggestions$.and.returnValue(of([{ id: "assistant-create-order", title: "Create order", description: "", category: "orders", template: "", requiredCapabilities: [], resultType: "text", enabled: true }]));
+    assistantDataService.getSuggestions$.and.returnValue(
+      of({
+        suggestions: [
+          {
+            id: "assistant-create-order",
+            title: "Create order",
+            description: "",
+            category: "orders",
+            template: "",
+            requiredCapabilities: [],
+            resultType: "text",
+            enabled: true,
+          },
+        ],
+        capabilities: { createEnabled: true },
+      }),
+    );
     assistantDataService.listConversations$.and.returnValue(of([]));
     assistantDataService.createConversation$.and.returnValue(
       of({
@@ -173,7 +189,9 @@ describe("AiComponent", () => {
       throw new Error("Missing latest message id");
     }
 
-    const writeText = jasmine.createSpy("writeText").and.returnValue(Promise.resolve());
+    const writeText = jasmine
+      .createSpy("writeText")
+      .and.returnValue(Promise.resolve());
     Object.defineProperty(globalThis.navigator, "clipboard", {
       configurable: true,
       value: { writeText },
@@ -236,7 +254,9 @@ describe("AiComponent", () => {
   });
 
   it("should show order workflow panel when create-order quick action is selected", () => {
-    const action = component.quickActions().find((item) => item.id === "ops-create-order");
+    const action = component
+      .quickActions()
+      .find((item) => item.id === "ops-create-order");
     expect(action).toBeDefined();
     if (!action) {
       throw new Error("Missing ops-create-order quick action");
@@ -252,11 +272,15 @@ describe("AiComponent", () => {
 
   it("should keep composer outside scroll viewport in the chat shell", () => {
     const shell = fixture.debugElement.query(By.css(".chat-shell"));
-    const body = fixture.debugElement.query(By.css("[data-testid='chat-body']"));
+    const body = fixture.debugElement.query(
+      By.css("[data-testid='chat-body']"),
+    );
     const messagesViewport = fixture.debugElement.query(
       By.css("[data-testid='messages-viewport']"),
     );
-    const composer = fixture.debugElement.query(By.css(".chat-composer app-ai-chat-composer"));
+    const composer = fixture.debugElement.query(
+      By.css(".chat-composer app-ai-chat-composer"),
+    );
 
     expect(shell).toBeTruthy();
     expect(body).toBeTruthy();
@@ -313,7 +337,9 @@ describe("AiComponent", () => {
     expect(component.activeConversation()?.title).toBe("New conversation");
     expect(component.showWelcome()).toBeTrue();
     expect(
-      component.conversations().some((conversation) => conversation.id === "conv-existing-1"),
+      component
+        .conversations()
+        .some((conversation) => conversation.id === "conv-existing-1"),
     ).toBeTrue();
 
     component.selectConversation("conv-existing-1");

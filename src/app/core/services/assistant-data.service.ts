@@ -18,6 +18,15 @@ export interface AssistantSuggestionDto {
   enabled: boolean;
 }
 
+export interface AssistantCapabilitiesDto {
+  createEnabled?: boolean;
+}
+
+export interface AssistantSuggestionsResponseDto {
+  suggestions: AssistantSuggestionDto[];
+  capabilities?: AssistantCapabilitiesDto;
+}
+
 export interface AssistantConversationSummaryDto {
   id: string;
   title: string;
@@ -82,23 +91,32 @@ export interface AssistantConfirmActionResponseDto {
 export class AssistantDataService {
   private readonly http = inject(HttpClient);
 
-  getSuggestions$(): Observable<AssistantSuggestionDto[]> {
+  getSuggestions$(): Observable<AssistantSuggestionsResponseDto> {
     return this.http
-      .get<ApiEnvelope<AssistantSuggestionDto[]>>(ApiEndpoint.AI_SUGGESTIONS)
+      .get<ApiEnvelope<AssistantSuggestionsResponseDto>>(
+        ApiEndpoint.AI_SUGGESTIONS,
+      )
       .pipe(map((response) => response.data));
   }
 
-  listConversations$(limit = 25): Observable<AssistantConversationSummaryDto[]> {
+  listConversations$(
+    limit = 25,
+  ): Observable<AssistantConversationSummaryDto[]> {
     return this.http
-      .get<ApiEnvelope<AssistantConversationSummaryDto[]>>(ApiEndpoint.AI_CONVERSATIONS, {
-        params: {
-          limit,
+      .get<ApiEnvelope<AssistantConversationSummaryDto[]>>(
+        ApiEndpoint.AI_CONVERSATIONS,
+        {
+          params: {
+            limit,
+          },
         },
-      })
+      )
       .pipe(map((response) => response.data));
   }
 
-  createConversation$(title?: string): Observable<AssistantConversationViewDto> {
+  createConversation$(
+    title?: string,
+  ): Observable<AssistantConversationViewDto> {
     return this.http
       .post<ApiEnvelope<AssistantConversationViewDto>>(
         ApiEndpoint.AI_CONVERSATIONS,
@@ -119,7 +137,9 @@ export class AssistantDataService {
       .pipe(map((response) => response.data));
   }
 
-  getConversation$(conversationId: string): Observable<AssistantConversationViewDto> {
+  getConversation$(
+    conversationId: string,
+  ): Observable<AssistantConversationViewDto> {
     return this.http
       .get<ApiEnvelope<AssistantConversationViewDto>>(
         ApiEndpoint.aiConversation(conversationId),

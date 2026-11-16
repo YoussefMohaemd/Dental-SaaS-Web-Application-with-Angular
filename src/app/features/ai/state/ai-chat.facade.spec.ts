@@ -1,6 +1,9 @@
 import { signal, type Signal } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
-import { AuthService, type AuthenticatedUser } from "@core/services/auth.service";
+import {
+  AuthService,
+  type AuthenticatedUser,
+} from "@core/services/auth.service";
 import { AuthorizationService } from "@core/services/authorization.service";
 import { AssistantDataService } from "@core/services/assistant-data.service";
 import { ClinicDataService } from "@core/services/clinic-data.service";
@@ -23,10 +26,22 @@ describe("AiChatFacade", () => {
   let doctorsState: ReturnType<typeof signal<Doctor[]>>;
   let clinicsState: ReturnType<typeof signal<Clinic[]>>;
   let ordersState: ReturnType<typeof signal<Order[]>>;
-  let patientDataServiceMock: { patients: Signal<Patient[]>; loadPatients: jasmine.Spy };
-  let doctorDataServiceMock: { doctors: Signal<Doctor[]>; loadDoctors: jasmine.Spy };
-  let clinicDataServiceMock: { clinics: Signal<Clinic[]>; loadClinics: jasmine.Spy };
-  let orderDataServiceMock: { orders: Signal<Order[]>; loadOrders: jasmine.Spy };
+  let patientDataServiceMock: {
+    patients: Signal<Patient[]>;
+    loadPatients: jasmine.Spy;
+  };
+  let doctorDataServiceMock: {
+    doctors: Signal<Doctor[]>;
+    loadDoctors: jasmine.Spy;
+  };
+  let clinicDataServiceMock: {
+    clinics: Signal<Clinic[]>;
+    loadClinics: jasmine.Spy;
+  };
+  let orderDataServiceMock: {
+    orders: Signal<Order[]>;
+    loadOrders: jasmine.Spy;
+  };
   let subOrderDataServiceMock: { load: jasmine.Spy };
 
   const makeUser = (userId: string): AuthenticatedUser => ({
@@ -61,7 +76,43 @@ describe("AiChatFacade", () => {
         "confirmAction$",
       ],
     );
-    assistantDataService.getSuggestions$.and.returnValue(of([{ id: "assistant-create-order", title: "Create order", description: "", category: "orders", template: "", requiredCapabilities: [], resultType: "text", enabled: true }]));
+    assistantDataService.getSuggestions$.and.returnValue(
+      of({
+        suggestions: [
+          {
+            id: "assistant-create-order",
+            title: "Create order",
+            description: "",
+            category: "orders",
+            template: "",
+            requiredCapabilities: [],
+            resultType: "text",
+            enabled: true,
+          },
+          {
+            id: "assistant-search-orders",
+            title: "Search orders",
+            description: "",
+            category: "orders",
+            template: "",
+            requiredCapabilities: [],
+            resultType: "text",
+            enabled: true,
+          },
+          {
+            id: "assistant-search-patients",
+            title: "Search patients",
+            description: "",
+            category: "patients",
+            template: "",
+            requiredCapabilities: [],
+            resultType: "text",
+            enabled: true,
+          },
+        ],
+        capabilities: { createEnabled: true },
+      }),
+    );
     assistantDataService.listConversations$.and.returnValue(of([]));
     assistantDataService.getConversation$.and.returnValue(
       of({
@@ -236,7 +287,16 @@ describe("AiChatFacade", () => {
         updatedAt: "2026-10-01",
         dueDate: "2026-10-10",
         creationData: {
-          services: [{ serviceId: "treatment-plan", selectedTeeth: [11], serviceDetails: {}, serviceForm: {}, scanRequirements: [], fileReferences: [] }],
+          services: [
+            {
+              serviceId: "treatment-plan",
+              selectedTeeth: [11],
+              serviceDetails: {},
+              serviceForm: {},
+              scanRequirements: [],
+              fileReferences: [],
+            },
+          ],
         },
       },
     ]);
@@ -312,8 +372,90 @@ describe("AiChatFacade", () => {
     expect(ids).not.toContain("ops-overdue-orders");
   });
 
+  it("keeps successful suggestions when conversation loading fails", async () => {
+    assistantDataService.listConversations$.and.returnValue(
+      throwError(() => new Error("conversation service unavailable")),
+    );
+    assistantDataService.getSuggestions$.and.returnValue(
+      of({
+        suggestions: [
+          {
+            id: "assistant-search-orders",
+            title: "Search orders",
+            description: "",
+            category: "orders",
+            template: "",
+            requiredCapabilities: [],
+            resultType: "text",
+            enabled: true,
+          },
+        ],
+        capabilities: { createEnabled: true },
+      }),
+    );
+    currentUser.set(makeUser("user-conversations-failed"));
+    await flushAsyncFacadeInit();
+
+    expect(facade.quickActions().map((item) => item.id)).toContain(
+      "faq-services",
+    );
+    expect(facade.quickActions().map((item) => item.id)).toContain(
+      "ops-search-orders",
+    );
+    expect(facade.activeConversation()?.title).toBe("New conversation");
+  });
+
+  it("keeps conversations when suggestions loading fails and hides operational actions", async () => {
+    assistantDataService.getSuggestions$.and.returnValue(
+      throwError(() => new Error("suggestions service unavailable")),
+    );
+    assistantDataService.listConversations$.and.returnValue(of([]));
+    currentUser.set(makeUser("user-suggestions-failed"));
+    await flushAsyncFacadeInit();
+
+    const ids = facade.quickActions().map((item) => item.id);
+    expect(ids).toContain("faq-services");
+    expect(ids).not.toContain("ops-search-orders");
+    expect(ids).not.toContain("ops-create-order");
+    expect(ids).not.toContain("ops-create-report");
+    expect(ids).toContain("ops-update-order");
+    expect(facade.activeConversation()?.title).toBe("New conversation");
+  });
+
+  it("hides create quick actions when backend create capability is disabled", async () => {
+    assistantDataService.getSuggestions$.and.returnValue(
+      of({
+        suggestions: [
+          {
+            id: "assistant-search-orders",
+            title: "Search orders",
+            description: "",
+            category: "orders",
+            template: "",
+            requiredCapabilities: [],
+            resultType: "text",
+            enabled: true,
+          },
+        ],
+        capabilities: { createEnabled: false },
+      }),
+    );
+    assistantDataService.listConversations$.and.returnValue(of([]));
+    currentUser.set(makeUser("user-create-disabled"));
+    await flushAsyncFacadeInit();
+
+    const ids = facade.quickActions().map((item) => item.id);
+    expect(ids).not.toContain("ops-create-order");
+    expect(ids).not.toContain("ops-create-patient");
+    expect(ids).not.toContain("ops-create-doctor");
+    expect(ids).not.toContain("ops-create-clinic");
+    expect(ids).toContain("ops-update-order");
+  });
+
   it("starts create-report quick action as a guided workflow before sending", async () => {
-    const action = facade.quickActions().find((item) => item.id === "ops-create-report");
+    const action = facade
+      .quickActions()
+      .find((item) => item.id === "ops-create-report");
     expect(action).toBeDefined();
     if (!action) {
       throw new Error("Missing ops-create-report quick action");
@@ -330,7 +472,9 @@ describe("AiChatFacade", () => {
   });
 
   it("sends create-report workflow prompt from one request and enforces aggregate total output", async () => {
-    const action = facade.quickActions().find((item) => item.id === "ops-create-report");
+    const action = facade
+      .quickActions()
+      .find((item) => item.id === "ops-create-report");
     expect(action).toBeDefined();
     if (!action) {
       throw new Error("Missing ops-create-report quick action");
@@ -341,12 +485,19 @@ describe("AiChatFacade", () => {
     facade.continueWorkflow();
     await flushAsyncFacadeInit();
 
-    const prompt = assistantDataService.postMessage$.calls.mostRecent().args[1] as string;
+    const prompt = assistantDataService.postMessage$.calls.mostRecent()
+      .args[1] as string;
     expect(prompt).toContain("Use only read/report retrieval actions");
-    expect(prompt).toContain("STRICTLY FORBIDDEN: Do NOT include any write action");
-    expect(prompt).toContain("MANDATORY: When the user asks for profit/revenue/total amount");
+    expect(prompt).toContain(
+      "STRICTLY FORBIDDEN: Do NOT include any write action",
+    );
+    expect(prompt).toContain(
+      "MANDATORY: When the user asks for profit/revenue/total amount",
+    );
     expect(prompt).toContain("return one clear total amount");
-    expect(prompt).toContain("- Report goal: عايز أرباح الشهر اللي فات (أكتوبر 2026)");
+    expect(prompt).toContain(
+      "- Report goal: عايز أرباح الشهر اللي فات (أكتوبر 2026)",
+    );
     expect(prompt).not.toContain("- Date range:");
     expect(prompt).not.toContain("- Filters:");
     expect(prompt).not.toContain("- Output style:");
@@ -371,14 +522,18 @@ describe("AiChatFacade", () => {
     );
 
     await facade.submitPrompt("delete order ord-500");
-    expect(facade.messages().at(-1)?.text.toLowerCase()).toContain("don't have access");
+    expect(facade.messages().at(-1)?.text.toLowerCase()).toContain(
+      "don't have access",
+    );
   });
 
   it("shows backend business-rule message instead of generic unavailable error", async () => {
     assistantDataService.postMessage$.and.returnValue(
       throwError(() => ({
         status: 400,
-        error: { error: { message: "Clinic f5d9afd005f77d5531ffefe5 does not exist" } },
+        error: {
+          error: { message: "Clinic f5d9afd005f77d5531ffefe5 does not exist" },
+        },
       })),
     );
 
@@ -434,7 +589,12 @@ describe("AiChatFacade", () => {
     assistantDataService.postMessage$.and.returnValues(
       throwError(() => ({
         status: 400,
-        error: { error: { code: "VALIDATION_ERROR", message: "Assistant conversation is invalid" } },
+        error: {
+          error: {
+            code: "VALIDATION_ERROR",
+            message: "Assistant conversation is invalid",
+          },
+        },
       })),
       of({
         conversationId: "conv-backend-2",
@@ -471,7 +631,9 @@ describe("AiChatFacade", () => {
 
     expect(assistantDataService.createConversation$).toHaveBeenCalledTimes(2);
     expect(assistantDataService.postMessage$).toHaveBeenCalledTimes(2);
-    expect(facade.messages().at(-1)?.text).toContain("Recovered after recreation");
+    expect(facade.messages().at(-1)?.text).toContain(
+      "Recovered after recreation",
+    );
   });
 
   it("refreshes orders and sub-orders after confirming a pending action", async () => {
@@ -515,7 +677,9 @@ describe("AiChatFacade", () => {
   });
 
   it("hides quick actions after selecting an action", () => {
-    const action = facade.quickActions().find((item) => item.id === "faq-services");
+    const action = facade
+      .quickActions()
+      .find((item) => item.id === "faq-services");
     expect(action).toBeDefined();
     if (!action) {
       throw new Error("Missing faq-services quick action");
@@ -526,7 +690,9 @@ describe("AiChatFacade", () => {
   });
 
   it("starts create-order quick action as workflow without sending backend message immediately", async () => {
-    const action = facade.quickActions().find((item) => item.id === "ops-create-order");
+    const action = facade
+      .quickActions()
+      .find((item) => item.id === "ops-create-order");
     expect(action).toBeDefined();
     if (!action) {
       throw new Error("Missing ops-create-order quick action");
@@ -545,12 +711,16 @@ describe("AiChatFacade", () => {
   });
 
   it("keeps update-order quick action visible when backend suggestions omit it", () => {
-    const action = facade.quickActions().find((item) => item.id === "ops-update-order");
+    const action = facade
+      .quickActions()
+      .find((item) => item.id === "ops-update-order");
     expect(action).toBeDefined();
   });
 
   it("does not expose refs json in create-order workflow notice", () => {
-    const action = facade.quickActions().find((item) => item.id === "ops-create-order");
+    const action = facade
+      .quickActions()
+      .find((item) => item.id === "ops-create-order");
     expect(action).toBeDefined();
     if (!action) {
       throw new Error("Missing ops-create-order quick action");
@@ -566,7 +736,9 @@ describe("AiChatFacade", () => {
   });
 
   it("sends create-order prompt that uses patient name and does not force patient id", async () => {
-    const action = facade.quickActions().find((item) => item.id === "ops-create-order");
+    const action = facade
+      .quickActions()
+      .find((item) => item.id === "ops-create-order");
     expect(action).toBeDefined();
     if (!action) {
       throw new Error("Missing ops-create-order quick action");
@@ -594,18 +766,72 @@ describe("AiChatFacade", () => {
     facade.submitOrderWorkflow();
     await flushAsyncFacadeInit();
 
-    const prompt = assistantDataService.postMessage$.calls.mostRecent().args[1] as string;
-    expect(prompt).toContain("MUST include a create_order action in this same response.");
+    const prompt = assistantDataService.postMessage$.calls.mostRecent()
+      .args[1] as string;
+    expect(prompt).toContain(
+      "MUST include a create_order action in this same response.",
+    );
     expect(prompt).toContain("Use the exact IDs supplied below.");
-    expect(prompt).toContain("\"tool\":\"create_order\"");
-    expect(prompt).toContain("\"patientName\":\"youssef\"");
-    expect(prompt).not.toContain("\"patientId\":");
-    expect(prompt).toContain("\"doctorId\":\"doctor-1\"");
-    expect(prompt).toContain("\"clinicId\":\"clinic-2\"");
+    expect(prompt).toContain('"tool":"create_order"');
+    expect(prompt).toContain('"patientName":"youssef"');
+    expect(prompt).not.toContain('"patientId":');
+    expect(prompt).toContain('"doctorId":"doctor-1"');
+    expect(prompt).toContain('"clinicId":"clinic-2"');
+  });
+
+  it("resolves Arabic doctor references and keeps linked clinic IDs canonical", async () => {
+    const patient = patientsState()[0];
+    if (!patient) {
+      throw new Error("Missing patient fixture");
+    }
+    patientsState.set([
+      {
+        ...patient,
+        doctorId: "",
+        clinicId: "",
+      },
+    ]);
+
+    const action = facade
+      .quickActions()
+      .find((item) => item.id === "ops-create-order");
+    expect(action).toBeDefined();
+    if (!action) {
+      throw new Error("Missing ops-create-order quick action");
+    }
+
+    facade.runQuickAction(action);
+    facade.updateOrderWorkflowInput(patient.id);
+    facade.continueOrderWorkflow();
+    facade.updateOrderWorkflowInput("عمر خليل");
+    facade.continueOrderWorkflow();
+    facade.updateOrderWorkflowInput("عيادة الأسنان");
+    facade.continueOrderWorkflow();
+    facade.continueOrderWorkflow();
+
+    const serviceId = facade.activeOrderWorkflow()?.services[0]?.id;
+    if (!serviceId) {
+      throw new Error("No services available for create-order workflow");
+    }
+    facade.toggleOrderWorkflowService(serviceId);
+    facade.continueOrderWorkflow();
+    facade.toggleOrderWorkflowTooth(11);
+    facade.continueOrderWorkflow();
+    facade.submitOrderWorkflow();
+    await flushAsyncFacadeInit();
+
+    const prompt = assistantDataService.postMessage$.calls.mostRecent()
+      .args[1] as string;
+    expect(prompt).toContain('"doctorId":"doctor-1"');
+    expect(prompt).toContain('"clinicId":"clinic-2"');
+    expect(prompt).not.toContain('"doctorName":"عمر خليل"');
+    expect(prompt).not.toContain('"clinicName":"عيادة الأسنان"');
   });
 
   it("builds create-order payload with per-service teeth mapping", async () => {
-    const action = facade.quickActions().find((item) => item.id === "ops-create-order");
+    const action = facade
+      .quickActions()
+      .find((item) => item.id === "ops-create-order");
     expect(action).toBeDefined();
     if (!action) {
       throw new Error("Missing ops-create-order quick action");
@@ -640,13 +866,18 @@ describe("AiChatFacade", () => {
     facade.submitOrderWorkflow();
     await flushAsyncFacadeInit();
 
-    const prompt = assistantDataService.postMessage$.calls.mostRecent().args[1] as string;
-    expect(prompt).toContain('"serviceId":"treatment-plan","selectedTeeth":[11,41]');
+    const prompt = assistantDataService.postMessage$.calls.mostRecent()
+      .args[1] as string;
+    expect(prompt).toContain(
+      '"serviceId":"treatment-plan","selectedTeeth":[11,41]',
+    );
     expect(prompt).toContain('"selectedTeeth":[24]');
   });
 
   it("requires scan center id when bill-to target is scan center and includes it in action payload", async () => {
-    const action = facade.quickActions().find((item) => item.id === "ops-create-order");
+    const action = facade
+      .quickActions()
+      .find((item) => item.id === "ops-create-order");
     expect(action).toBeDefined();
     if (!action) {
       throw new Error("Missing ops-create-order quick action");
@@ -658,7 +889,9 @@ describe("AiChatFacade", () => {
     expect(facade.activeOrderWorkflow()?.step).toBe("billTo");
     facade.setOrderWorkflowBillTo("scan-center");
     facade.continueOrderWorkflow();
-    expect(facade.activeOrderWorkflow()?.error).toContain("Scan center ID is required");
+    expect(facade.activeOrderWorkflow()?.error).toContain(
+      "Scan center ID is required",
+    );
 
     facade.updateOrderWorkflowInput("scan-center-7");
     facade.continueOrderWorkflow();
@@ -673,12 +906,15 @@ describe("AiChatFacade", () => {
     facade.submitOrderWorkflow();
     await flushAsyncFacadeInit();
 
-    const prompt = assistantDataService.postMessage$.calls.mostRecent().args[1] as string;
+    const prompt = assistantDataService.postMessage$.calls.mostRecent()
+      .args[1] as string;
     expect(prompt).toContain('"scanCenterId":"scan-center-7"');
   });
 
   it("shows patient candidates when patient lookup is ambiguous", () => {
-    const action = facade.quickActions().find((item) => item.id === "ops-create-order");
+    const action = facade
+      .quickActions()
+      .find((item) => item.id === "ops-create-order");
     expect(action).toBeDefined();
     if (!action) {
       throw new Error("Missing ops-create-order quick action");
@@ -693,8 +929,10 @@ describe("AiChatFacade", () => {
     expect(workflow?.create?.patientCandidates.length).toBe(2);
   });
 
-  it("continues create-order flow with new patient when patient is not found", () => {
-    const action = facade.quickActions().find((item) => item.id === "ops-create-order");
+  it("blocks create-order flow when patient is not found", () => {
+    const action = facade
+      .quickActions()
+      .find((item) => item.id === "ops-create-order");
     expect(action).toBeDefined();
     if (!action) {
       throw new Error("Missing ops-create-order quick action");
@@ -705,13 +943,16 @@ describe("AiChatFacade", () => {
     facade.continueOrderWorkflow();
 
     const workflow = facade.activeOrderWorkflow();
-    expect(workflow?.step).toBe("doctor");
+    expect(workflow?.step).toBe("patient");
     expect(workflow?.create?.patient).toBeNull();
     expect(workflow?.create?.patientReference).toBe("patient-not-found");
+    expect(workflow?.notice).toContain("Patient was not found");
   });
 
   it("auto-selects linked doctor and clinic after choosing a patient", () => {
-    const action = facade.quickActions().find((item) => item.id === "ops-create-order");
+    const action = facade
+      .quickActions()
+      .find((item) => item.id === "ops-create-order");
     expect(action).toBeDefined();
     if (!action) {
       throw new Error("Missing ops-create-order quick action");
@@ -730,7 +971,9 @@ describe("AiChatFacade", () => {
   });
 
   it("sends update-order prompt that explicitly requires backend update_order action", async () => {
-    const action = facade.quickActions().find((item) => item.id === "ops-update-order");
+    const action = facade
+      .quickActions()
+      .find((item) => item.id === "ops-update-order");
     expect(action).toBeDefined();
     if (!action) {
       throw new Error("Missing ops-update-order quick action");
@@ -751,12 +994,17 @@ describe("AiChatFacade", () => {
     facade.submitOrderWorkflow();
     await flushAsyncFacadeInit();
 
-    const prompt = assistantDataService.postMessage$.calls.mostRecent().args[1] as string;
-    expect(prompt).toContain("MUST include an update_order action in this same response.");
+    const prompt = assistantDataService.postMessage$.calls.mostRecent()
+      .args[1] as string;
+    expect(prompt).toContain(
+      "MUST include an update_order action in this same response.",
+    );
   });
 
   it("asks full create-doctor required fields in workflow", () => {
-    const action = facade.quickActions().find((item) => item.id === "ops-create-doctor");
+    const action = facade
+      .quickActions()
+      .find((item) => item.id === "ops-create-doctor");
     expect(action).toBeDefined();
     if (!action) {
       throw new Error("Missing ops-create-doctor quick action");
@@ -775,7 +1023,9 @@ describe("AiChatFacade", () => {
   });
 
   it("asks full create-clinic required fields in workflow", () => {
-    const action = facade.quickActions().find((item) => item.id === "ops-create-clinic");
+    const action = facade
+      .quickActions()
+      .find((item) => item.id === "ops-create-clinic");
     expect(action).toBeDefined();
     if (!action) {
       throw new Error("Missing ops-create-clinic quick action");
@@ -794,7 +1044,9 @@ describe("AiChatFacade", () => {
   });
 
   it("asks full create-patient required fields in workflow", () => {
-    const action = facade.quickActions().find((item) => item.id === "ops-create-patient");
+    const action = facade
+      .quickActions()
+      .find((item) => item.id === "ops-create-patient");
     expect(action).toBeDefined();
     if (!action) {
       throw new Error("Missing ops-create-patient quick action");
@@ -814,7 +1066,9 @@ describe("AiChatFacade", () => {
   });
 
   it("sends create-patient prompt that enforces create_patient action only", async () => {
-    const action = facade.quickActions().find((item) => item.id === "ops-create-patient");
+    const action = facade
+      .quickActions()
+      .find((item) => item.id === "ops-create-patient");
     expect(action).toBeDefined();
     if (!action) {
       throw new Error("Missing ops-create-patient quick action");
@@ -836,9 +1090,14 @@ describe("AiChatFacade", () => {
     }
     await flushAsyncFacadeInit();
 
-    const prompt = assistantDataService.postMessage$.calls.mostRecent().args[1] as string;
-    expect(prompt).toContain("MUST include a create_patient action in this same response.");
-    expect(prompt).toContain("Do not call catalog/company info tools for this request.");
+    const prompt = assistantDataService.postMessage$.calls.mostRecent()
+      .args[1] as string;
+    expect(prompt).toContain(
+      "MUST include a create_patient action in this same response.",
+    );
+    expect(prompt).toContain(
+      "Do not call catalog/company info tools for this request.",
+    );
   });
 
   it("boots into a fresh new chat while keeping previous history entries", async () => {

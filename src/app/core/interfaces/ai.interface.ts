@@ -123,4 +123,5 @@ export interface AiQuickAction {
   route?: PageId;
   badge?: string;
   requiredCapability?: string;
+  requiresCreateTools?: boolean;
 }

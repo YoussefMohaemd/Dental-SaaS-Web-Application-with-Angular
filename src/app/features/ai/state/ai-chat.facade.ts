@@ -1,4 +1,11 @@
-import { computed, effect, Injectable, inject, signal, untracked } from "@angular/core";
+import {
+  computed,
+  effect,
+  Injectable,
+  inject,
+  signal,
+  untracked,
+} from "@angular/core";
 import {
   AVAILABLE_SERVICES,
   AiChatMessage,
@@ -35,6 +42,10 @@ import {
   AiActionWorkflowState,
 } from "./ai-action-workflow.models";
 import { AiOrderWorkflowState } from "./ai-order-workflow.models";
+import {
+  matchesBilingualEntityName,
+  matchesBilingualText,
+} from "./bilingual-lookup";
 
 @Injectable({ providedIn: "root" })
 export class AiChatFacade {
@@ -52,6 +63,8 @@ export class AiChatFacade {
   private localConversationSequence = 0;
   private readonly backendConversationByLocalId = new Map<string, string>();
   private backendAllowedSuggestionIds = new Set<string>();
+  private backendSuggestionsLoaded = false;
+  private backendCreateToolsEnabled = false;
   private currentUserId: string | null = null;
   private sessionGeneration = 0;
 
@@ -67,7 +80,9 @@ export class AiChatFacade {
   readonly activeConversationId = signal<string | null>(null);
 
   readonly activeConversation = computed(() =>
-    this.conversations().find((item) => item.id === this.activeConversationId()),
+    this.conversations().find(
+      (item) => item.id === this.activeConversationId(),
+    ),
   );
 
   readonly messages = computed(() => this.activeConversation()?.messages ?? []);
@@ -118,7 +133,9 @@ export class AiChatFacade {
   }
 
   selectConversation(conversationId: string): void {
-    const exists = this.conversations().some((item) => item.id === conversationId);
+    const exists = this.conversations().some(
+      (item) => item.id === conversationId,
+    );
     if (!exists) {
       return;
     }
@@ -135,7 +152,11 @@ export class AiChatFacade {
 
   startNewChat(): void {
     const active = this.activeConversation();
-    if (active && active.showWelcomeActions && !this.backendConversationByLocalId.has(active.id)) {
+    if (
+      active &&
+      active.showWelcomeActions &&
+      !this.backendConversationByLocalId.has(active.id)
+    ) {
       this.promptDraft.update((state) => ({ ...state, prompt: "" }));
       this.activeWorkflow.set(null);
       this.activeOrderWorkflow.set(null);
@@ -144,7 +165,10 @@ export class AiChatFacade {
     }
 
     const localId = this.nextLocalConversationId();
-    const conversation = this.createConversationShell(localId, "New conversation");
+    const conversation = this.createConversationShell(
+      localId,
+      "New conversation",
+    );
     this.conversations.update((state) => [conversation, ...state]);
     this.activeConversationId.set(localId);
     this.promptDraft.update((state) => ({ ...state, prompt: "" }));
@@ -310,14 +334,18 @@ export class AiChatFacade {
       const selected = workflow.create.selectedServiceIds.includes(serviceId)
         ? workflow.create.selectedServiceIds.filter((id) => id !== serviceId)
         : [...workflow.create.selectedServiceIds, serviceId];
-      const selectedTeethByService = { ...workflow.create.selectedTeethByService };
+      const selectedTeethByService = {
+        ...workflow.create.selectedTeethByService,
+      };
       if (selected.includes(serviceId)) {
-        selectedTeethByService[serviceId] = selectedTeethByService[serviceId] ?? [];
+        selectedTeethByService[serviceId] =
+          selectedTeethByService[serviceId] ?? [];
       } else {
         delete selectedTeethByService[serviceId];
       }
       const activeServiceId =
-        workflow.create.activeServiceId === serviceId && !selected.includes(serviceId)
+        workflow.create.activeServiceId === serviceId &&
+        !selected.includes(serviceId)
           ? (selected[0] ?? null)
           : (workflow.create.activeServiceId ?? selected[0] ?? null);
       this.activeOrderWorkflow.set({
@@ -338,7 +366,9 @@ export class AiChatFacade {
       const selected = workflow.update.selectedServiceIds.includes(serviceId)
         ? workflow.update.selectedServiceIds.filter((id) => id !== serviceId)
         : [...workflow.update.selectedServiceIds, serviceId];
-      const selectedTeethByService = { ...workflow.update.selectedTeethByService };
+      const selectedTeethByService = {
+        ...workflow.update.selectedTeethByService,
+      };
       if (selected.includes(serviceId)) {
         selectedTeethByService[serviceId] =
           selectedTeethByService[serviceId] ??
@@ -348,7 +378,8 @@ export class AiChatFacade {
         delete selectedTeethByService[serviceId];
       }
       const activeServiceId =
-        workflow.update.activeServiceId === serviceId && !selected.includes(serviceId)
+        workflow.update.activeServiceId === serviceId &&
+        !selected.includes(serviceId)
           ? (selected[0] ?? null)
           : (workflow.update.activeServiceId ?? selected[0] ?? null);
       this.activeOrderWorkflow.set({
@@ -406,10 +437,13 @@ export class AiChatFacade {
     if (workflow.mode === "create" && workflow.create) {
       const activeServiceId = workflow.create.activeServiceId;
       if (!activeServiceId) {
-        this.setOrderWorkflowError("Please choose a service before selecting teeth.");
+        this.setOrderWorkflowError(
+          "Please choose a service before selecting teeth.",
+        );
         return;
       }
-      const current = workflow.create.selectedTeethByService[activeServiceId] ?? [];
+      const current =
+        workflow.create.selectedTeethByService[activeServiceId] ?? [];
       const nextTeeth = current.includes(tooth)
         ? current.filter((value) => value !== tooth)
         : [...current, tooth];
@@ -435,10 +469,13 @@ export class AiChatFacade {
     if (workflow.mode === "update" && workflow.update) {
       const activeServiceId = workflow.update.activeServiceId;
       if (!activeServiceId) {
-        this.setOrderWorkflowError("Please choose a service before selecting teeth.");
+        this.setOrderWorkflowError(
+          "Please choose a service before selecting teeth.",
+        );
         return;
       }
-      const current = workflow.update.selectedTeethByService[activeServiceId] ?? [];
+      const current =
+        workflow.update.selectedTeethByService[activeServiceId] ?? [];
       const nextTeeth = current.includes(tooth)
         ? current.filter((value) => value !== tooth)
         : [...current, tooth];
@@ -543,7 +580,10 @@ export class AiChatFacade {
     const generation = this.sessionGeneration;
     this.isResponding.set(true);
     try {
-      const response = await this.postMessageWithConversationRecovery(conversationId, prompt);
+      const response = await this.postMessageWithConversationRecovery(
+        conversationId,
+        prompt,
+      );
       if (generation !== this.sessionGeneration) {
         return;
       }
@@ -614,7 +654,10 @@ export class AiChatFacade {
 
   runShortcutAction(action: AiShortcutAction): void {
     if (action.confirmation) {
-      void this.confirmPendingAction(action.confirmation.actionId, action.confirmation.confirmationToken);
+      void this.confirmPendingAction(
+        action.confirmation.actionId,
+        action.confirmation.confirmationToken,
+      );
       return;
     }
 
@@ -623,14 +666,18 @@ export class AiChatFacade {
       return;
     }
 
-    const mapped = AI_QUICK_ACTIONS.find((item) => item.intent === action.intent);
+    const mapped = AI_QUICK_ACTIONS.find(
+      (item) => item.intent === action.intent,
+    );
     if (mapped) {
       this.runQuickAction(mapped);
     }
   }
 
   resolveCopyMessage(messageId: string): string | null {
-    const message = this.messages().find((candidate) => candidate.id === messageId);
+    const message = this.messages().find(
+      (candidate) => candidate.id === messageId,
+    );
     if (!message || !message.canCopy) {
       return null;
     }
@@ -653,6 +700,8 @@ export class AiChatFacade {
     this.sessionGeneration += 1;
     this.backendConversationByLocalId.clear();
     this.backendAllowedSuggestionIds = new Set<string>();
+    this.backendSuggestionsLoaded = false;
+    this.backendCreateToolsEnabled = false;
     this.messageSequence = 0;
     this.localConversationSequence = 0;
     this.conversations.set([]);
@@ -668,29 +717,40 @@ export class AiChatFacade {
     this.clinicDataService.loadClinics();
     this.orderDataService.loadOrders();
 
+    const [suggestionsResult, conversationsResult] = await Promise.allSettled([
+      firstValueFrom(this.assistantDataService.getSuggestions$()),
+      firstValueFrom(this.assistantDataService.listConversations$()),
+    ]);
+    if (generation !== this.sessionGeneration) {
+      return;
+    }
+
     let summaries: AssistantConversationSummaryDto[] = [];
-    try {
-      const [suggestions, loaded] = await Promise.all([
-        firstValueFrom(this.assistantDataService.getSuggestions$()),
-        firstValueFrom(this.assistantDataService.listConversations$()),
-      ]);
-      if (generation !== this.sessionGeneration) {
-        return;
-      }
+    if (suggestionsResult.status === "fulfilled") {
+      this.backendSuggestionsLoaded = true;
       this.backendAllowedSuggestionIds = new Set(
-        suggestions.filter((item) => item.enabled).map((item) => item.id),
+        suggestionsResult.value.suggestions
+          .filter((item) => item.enabled)
+          .map((item) => item.id),
       );
-      summaries = loaded;
-    } catch {
-      if (generation !== this.sessionGeneration) {
-        return;
-      }
-      summaries = [];
+      this.backendCreateToolsEnabled =
+        suggestionsResult.value.capabilities?.createEnabled === true;
+    } else {
+      this.backendSuggestionsLoaded = false;
+      this.backendAllowedSuggestionIds = new Set<string>();
+      this.backendCreateToolsEnabled = false;
+    }
+
+    if (conversationsResult.status === "fulfilled") {
+      summaries = conversationsResult.value;
     }
 
     if (summaries.length === 0) {
       const localId = this.nextLocalConversationId();
-      const conversation = this.createConversationShell(localId, "New conversation");
+      const conversation = this.createConversationShell(
+        localId,
+        "New conversation",
+      );
       this.conversations.set([conversation]);
       this.activeConversationId.set(localId);
       return;
@@ -707,7 +767,10 @@ export class AiChatFacade {
     }
 
     const localId = this.nextLocalConversationId();
-    const freshConversation = this.createConversationShell(localId, "New conversation");
+    const freshConversation = this.createConversationShell(
+      localId,
+      "New conversation",
+    );
     this.conversations.set([freshConversation, ...conversations]);
     this.activeConversationId.set(localId);
   }
@@ -794,7 +857,10 @@ export class AiChatFacade {
     });
   }
 
-  private setWelcomeActions(conversationId: string, showWelcomeActions: boolean): void {
+  private setWelcomeActions(
+    conversationId: string,
+    showWelcomeActions: boolean,
+  ): void {
     this.conversations.update((state) =>
       state.map((conversation) =>
         conversation.id === conversationId
@@ -804,10 +870,16 @@ export class AiChatFacade {
     );
   }
 
-  private refreshConversationTitle(conversationId: string, prompt: string): void {
+  private refreshConversationTitle(
+    conversationId: string,
+    prompt: string,
+  ): void {
     this.conversations.update((state) =>
       state.map((conversation) => {
-        if (conversation.id !== conversationId || conversation.title !== "New conversation") {
+        if (
+          conversation.id !== conversationId ||
+          conversation.title !== "New conversation"
+        ) {
           return conversation;
         }
         return {
@@ -820,11 +892,15 @@ export class AiChatFacade {
 
   private touchConversation(conversationId: string): void {
     this.conversations.update((state) => {
-      const current = state.find((conversation) => conversation.id === conversationId);
+      const current = state.find(
+        (conversation) => conversation.id === conversationId,
+      );
       if (!current) {
         return state;
       }
-      const others = state.filter((conversation) => conversation.id !== conversationId);
+      const others = state.filter(
+        (conversation) => conversation.id !== conversationId,
+      );
       return [current, ...others];
     });
   }
@@ -839,7 +915,9 @@ export class AiChatFacade {
     return `local-conv-${this.localConversationSequence}`;
   }
 
-  private async ensureBackendConversationId(localConversationId: string): Promise<string> {
+  private async ensureBackendConversationId(
+    localConversationId: string,
+  ): Promise<string> {
     const existing = this.backendConversationByLocalId.get(localConversationId);
     if (existing) {
       return existing;
@@ -857,7 +935,8 @@ export class AiChatFacade {
     localConversationId: string,
     prompt: string,
   ): Promise<AssistantMessageResponseDto> {
-    const backendConversationId = await this.ensureBackendConversationId(localConversationId);
+    const backendConversationId =
+      await this.ensureBackendConversationId(localConversationId);
     try {
       return await firstValueFrom(
         this.assistantDataService.postMessage$(backendConversationId, prompt),
@@ -876,7 +955,9 @@ export class AiChatFacade {
     }
   }
 
-  private toAssistantMessage(response: AssistantMessageResponseDto): AiChatMessage {
+  private toAssistantMessage(
+    response: AssistantMessageResponseDto,
+  ): AiChatMessage {
     if (response.result.type === "confirmation") {
       const pendingActions = response.result.pendingActions;
       const actions: AiShortcutAction[] = pendingActions.map((item) => ({
@@ -940,7 +1021,11 @@ export class AiChatFacade {
       }
 
       const result = execution.result as {
-        items?: Array<{ id?: string; orderNumber?: string; patientName?: string }>;
+        items?: Array<{
+          id?: string;
+          orderNumber?: string;
+          patientName?: string;
+        }>;
       };
       for (const item of result.items ?? []) {
         if (!item.id) {
@@ -987,7 +1072,10 @@ export class AiChatFacade {
       await this.loadConversationMessages(conversationId);
     } catch (error) {
       if (generation === this.sessionGeneration) {
-        this.appendAssistantText(this.resolveAssistantErrorText(error), "error");
+        this.appendAssistantText(
+          this.resolveAssistantErrorText(error),
+          "error",
+        );
       }
     } finally {
       if (generation === this.sessionGeneration) {
@@ -1011,8 +1099,11 @@ export class AiChatFacade {
     });
   }
 
-  private async loadConversationMessages(localConversationId: string): Promise<void> {
-    const backendConversationId = this.backendConversationByLocalId.get(localConversationId);
+  private async loadConversationMessages(
+    localConversationId: string,
+  ): Promise<void> {
+    const backendConversationId =
+      this.backendConversationByLocalId.get(localConversationId);
     if (!backendConversationId) {
       return;
     }
@@ -1032,7 +1123,10 @@ export class AiChatFacade {
                 title: loaded.title || conversation.title,
                 updatedAt: loaded.updatedAt,
                 showWelcomeActions: false,
-                messages: mappedMessages.length > 0 ? mappedMessages : conversation.messages,
+                messages:
+                  mappedMessages.length > 0
+                    ? mappedMessages
+                    : conversation.messages,
               }
             : conversation,
         ),
@@ -1092,6 +1186,10 @@ export class AiChatFacade {
       return "This conversation is no longer available. Please try sending your message again.";
     }
 
+    if (candidate?.status === 404 && rawMessage) {
+      return rawMessage;
+    }
+
     return "Assistant service is currently unavailable. Please try again.";
   }
 
@@ -1118,7 +1216,8 @@ export class AiChatFacade {
       code === "ASSISTANT_CONVERSATION_INVALID" ||
       (status === 400 && looksInvalidConversation) ||
       (status === 404 &&
-        (message.includes("conversation") || message.includes("assistant conversation")))
+        (message.includes("conversation") ||
+          message.includes("assistant conversation")))
     );
   }
 
@@ -1167,7 +1266,9 @@ export class AiChatFacade {
     });
 
     const guardrails = getWorkflowGuardrails(workflow.action.id);
-    const guardrailBlock = guardrails.length ? `\n\n${guardrails.join("\n")}` : "";
+    const guardrailBlock = guardrails.length
+      ? `\n\n${guardrails.join("\n")}`
+      : "";
     return `${workflow.action.prefillPrompt}${guardrailBlock}\n\nUse the following user-provided values:\n${lines.join("\n")}\n\nProceed with this request now.`;
   }
 
@@ -1198,9 +1299,7 @@ export class AiChatFacade {
       createdAt: new Date().toISOString(),
       type: "text",
     });
-    this.appendAssistantText(
-      `Let's complete ${action.title} step by step.`,
-    );
+    this.appendAssistantText(`Let's complete ${action.title} step by step.`);
   }
 
   private continueCreateOrderWorkflow(workflow: AiOrderWorkflowState): void {
@@ -1221,7 +1320,8 @@ export class AiChatFacade {
         this.activeOrderWorkflow.set({
           ...workflow,
           input: patientReference,
-          notice: "Multiple patients match this value. Pick one patient to continue.",
+          notice:
+            "Multiple patients match this value. Pick one patient to continue.",
           create: {
             ...create,
             patientCandidates: candidates,
@@ -1235,9 +1335,10 @@ export class AiChatFacade {
       if (!patient) {
         this.activeOrderWorkflow.set({
           ...workflow,
-          step: "doctor",
-          input: "",
-          notice: "Patient was not found. Continuing with a new patient entry for this order.",
+          step: "patient",
+          input: patientReference,
+          notice:
+            "Patient was not found. Select an existing patient before creating the order.",
           create: {
             ...create,
             patient: null,
@@ -1256,7 +1357,11 @@ export class AiChatFacade {
       const hasLinkedClinic = patient.clinicId.trim().length > 0;
       this.activeOrderWorkflow.set({
         ...workflow,
-        step: hasLinkedDoctor ? (hasLinkedClinic ? "billTo" : "clinic") : "doctor",
+        step: hasLinkedDoctor
+          ? hasLinkedClinic
+            ? "billTo"
+            : "clinic"
+          : "doctor",
         input: "",
         notice:
           hasLinkedDoctor && hasLinkedClinic
@@ -1293,7 +1398,8 @@ export class AiChatFacade {
         this.activeOrderWorkflow.set({
           ...workflow,
           input: doctorReference,
-          notice: "Multiple doctors match this value. Pick one doctor to continue.",
+          notice:
+            "Multiple doctors match this value. Pick one doctor to continue.",
           create: {
             ...create,
             doctorCandidates: candidates,
@@ -1352,7 +1458,8 @@ export class AiChatFacade {
         this.activeOrderWorkflow.set({
           ...workflow,
           input: clinicReference,
-          notice: "Multiple clinics match this value. Pick one clinic to continue.",
+          notice:
+            "Multiple clinics match this value. Pick one clinic to continue.",
           create: {
             ...create,
             clinicCandidates: candidates,
@@ -1395,9 +1502,12 @@ export class AiChatFacade {
 
     if (workflow.step === "billTo") {
       if (create.billToTarget === "scan-center") {
-        const scanCenterReference = inputValue || create.scanCenterReference.trim();
+        const scanCenterReference =
+          inputValue || create.scanCenterReference.trim();
         if (!scanCenterReference) {
-          this.setOrderWorkflowError("Scan center ID is required when billing to scan center.");
+          this.setOrderWorkflowError(
+            "Scan center ID is required when billing to scan center.",
+          );
           return;
         }
         this.activeOrderWorkflow.set({
@@ -1439,7 +1549,8 @@ export class AiChatFacade {
         error: null,
         create: {
           ...create,
-          activeServiceId: create.activeServiceId ?? create.selectedServiceIds[0] ?? null,
+          activeServiceId:
+            create.activeServiceId ?? create.selectedServiceIds[0] ?? null,
         },
       });
       return;
@@ -1447,13 +1558,21 @@ export class AiChatFacade {
 
     if (workflow.step === "teeth") {
       const servicesWithoutTeeth = create.selectedServiceIds.filter(
-        (serviceId) => (create.selectedTeethByService[serviceId] ?? []).length === 0,
+        (serviceId) =>
+          (create.selectedTeethByService[serviceId] ?? []).length === 0,
       );
       if (servicesWithoutTeeth.length > 0) {
-        this.setOrderWorkflowError("Please select at least one tooth for each selected service.");
+        this.setOrderWorkflowError(
+          "Please select at least one tooth for each selected service.",
+        );
         return;
       }
-      this.activeOrderWorkflow.set({ ...workflow, step: "review", input: "", error: null });
+      this.activeOrderWorkflow.set({
+        ...workflow,
+        step: "review",
+        input: "",
+        error: null,
+      });
     }
   }
 
@@ -1474,7 +1593,8 @@ export class AiChatFacade {
         this.activeOrderWorkflow.set({
           ...workflow,
           step: "selectOrder",
-          notice: "Multiple orders match this value. Pick one order to continue.",
+          notice:
+            "Multiple orders match this value. Pick one order to continue.",
           update: {
             ...update,
             orderReference,
@@ -1500,13 +1620,26 @@ export class AiChatFacade {
           orderReference: selectedOrder.id,
           selectedOrder,
           orderCandidates: [],
-          baselineServiceIds: selectedOrder.creationData?.services.map((service) => service.serviceId) ?? [],
-          selectedServiceIds: selectedOrder.creationData?.services.map((service) => service.serviceId) ?? [],
-          baselineTeeth: selectedOrder.creationData?.services.flatMap((service) => service.selectedTeeth) ?? [],
-          selectedTeeth: selectedOrder.creationData?.services.flatMap((service) => service.selectedTeeth) ?? [],
+          baselineServiceIds:
+            selectedOrder.creationData?.services.map(
+              (service) => service.serviceId,
+            ) ?? [],
+          selectedServiceIds:
+            selectedOrder.creationData?.services.map(
+              (service) => service.serviceId,
+            ) ?? [],
+          baselineTeeth:
+            selectedOrder.creationData?.services.flatMap(
+              (service) => service.selectedTeeth,
+            ) ?? [],
+          selectedTeeth:
+            selectedOrder.creationData?.services.flatMap(
+              (service) => service.selectedTeeth,
+            ) ?? [],
           baselineTeethByService: buildServiceTeethMap(selectedOrder),
           selectedTeethByService: buildServiceTeethMap(selectedOrder),
-          activeServiceId: selectedOrder.creationData?.services[0]?.serviceId ?? null,
+          activeServiceId:
+            selectedOrder.creationData?.services[0]?.serviceId ?? null,
         },
         error: null,
       });
@@ -1514,14 +1647,17 @@ export class AiChatFacade {
     }
 
     if (workflow.step === "selectOrder") {
-      const orderReference = workflow.input.trim() || update.orderReference.trim();
+      const orderReference =
+        workflow.input.trim() || update.orderReference.trim();
       if (!orderReference) {
         this.setOrderWorkflowError("Order selection is required.");
         return;
       }
       const selectedOrder =
-        update.orderCandidates.find((item) => item.id === orderReference || item.orderNumber === orderReference) ??
-        null;
+        update.orderCandidates.find(
+          (item) =>
+            item.id === orderReference || item.orderNumber === orderReference,
+        ) ?? null;
       if (!selectedOrder) {
         this.setOrderWorkflowError("Please pick one of the listed orders.");
         return;
@@ -1536,13 +1672,26 @@ export class AiChatFacade {
           orderReference: selectedOrder.id,
           selectedOrder,
           orderCandidates: [],
-          baselineServiceIds: selectedOrder.creationData?.services.map((service) => service.serviceId) ?? [],
-          selectedServiceIds: selectedOrder.creationData?.services.map((service) => service.serviceId) ?? [],
-          baselineTeeth: selectedOrder.creationData?.services.flatMap((service) => service.selectedTeeth) ?? [],
-          selectedTeeth: selectedOrder.creationData?.services.flatMap((service) => service.selectedTeeth) ?? [],
+          baselineServiceIds:
+            selectedOrder.creationData?.services.map(
+              (service) => service.serviceId,
+            ) ?? [],
+          selectedServiceIds:
+            selectedOrder.creationData?.services.map(
+              (service) => service.serviceId,
+            ) ?? [],
+          baselineTeeth:
+            selectedOrder.creationData?.services.flatMap(
+              (service) => service.selectedTeeth,
+            ) ?? [],
+          selectedTeeth:
+            selectedOrder.creationData?.services.flatMap(
+              (service) => service.selectedTeeth,
+            ) ?? [],
           baselineTeethByService: buildServiceTeethMap(selectedOrder),
           selectedTeethByService: buildServiceTeethMap(selectedOrder),
-          activeServiceId: selectedOrder.creationData?.services[0]?.serviceId ?? null,
+          activeServiceId:
+            selectedOrder.creationData?.services[0]?.serviceId ?? null,
         },
         error: null,
       });
@@ -1555,7 +1704,12 @@ export class AiChatFacade {
         this.setOrderWorkflowError("Please provide at least one update.");
         return;
       }
-      this.activeOrderWorkflow.set({ ...workflow, step: "reviewUpdate", input: "", error: null });
+      this.activeOrderWorkflow.set({
+        ...workflow,
+        step: "reviewUpdate",
+        input: "",
+        error: null,
+      });
     }
   }
 
@@ -1571,7 +1725,9 @@ export class AiChatFacade {
     });
   }
 
-  private hasUpdateWorkflowChanges(update: NonNullable<AiOrderWorkflowState["update"]>): boolean {
+  private hasUpdateWorkflowChanges(
+    update: NonNullable<AiOrderWorkflowState["update"]>,
+  ): boolean {
     if (this.hasUpdateServiceChanges(update)) {
       return true;
     }
@@ -1579,7 +1735,9 @@ export class AiChatFacade {
     return update.notes.trim().length > 0;
   }
 
-  private hasUpdateServiceChanges(update: NonNullable<AiOrderWorkflowState["update"]>): boolean {
+  private hasUpdateServiceChanges(
+    update: NonNullable<AiOrderWorkflowState["update"]>,
+  ): boolean {
     const baselineServiceIds = normalizedArray(update.baselineServiceIds);
     const selectedServiceIds = normalizedArray(update.selectedServiceIds);
     if (!areStringArraysEqual(baselineServiceIds, selectedServiceIds)) {
@@ -1587,8 +1745,12 @@ export class AiChatFacade {
     }
 
     for (const serviceId of selectedServiceIds) {
-      const baselineTeeth = normalizedNumberArray(update.baselineTeethByService[serviceId] ?? []);
-      const selectedTeeth = normalizedNumberArray(update.selectedTeethByService[serviceId] ?? []);
+      const baselineTeeth = normalizedNumberArray(
+        update.baselineTeethByService[serviceId] ?? [],
+      );
+      const selectedTeeth = normalizedNumberArray(
+        update.selectedTeethByService[serviceId] ?? [],
+      );
       if (!areNumberArraysEqual(baselineTeeth, selectedTeeth)) {
         return true;
       }
@@ -1597,36 +1759,60 @@ export class AiChatFacade {
     return false;
   }
 
-  private buildCreateOrderWorkflowPrompt(workflow: AiOrderWorkflowState): string {
+  private buildCreateOrderWorkflowPrompt(
+    workflow: AiOrderWorkflowState,
+  ): string {
     const create = workflow.create;
     if (!create) {
       return "Create order";
     }
 
-    const selectedServices = create.selectedServiceIds
-      .map((id) => {
-        const service = workflow.services.find((item) => item.id === id);
-        return {
-          id,
-          name: service?.name ?? id,
-        };
-      });
+    const selectedServices = create.selectedServiceIds.map((id) => {
+      const service = workflow.services.find((item) => item.id === id);
+      return {
+        id,
+        name: service?.name ?? id,
+      };
+    });
     const serviceNames = selectedServices
       .map((service) => `${service.name} [${service.id}]`)
       .join(", ");
-    const patientName = (create.patient?.name || create.patientReference || "").trim();
-    const doctorId = create.doctor?.id || create.doctorReference || create.patient?.doctorId || "";
-    const clinicId =
-      create.clinic?.id || create.clinicReference || create.doctor?.clinicId || create.patient?.clinicId || "";
+    const patientName = (
+      create.patient?.name ||
+      create.patientReference ||
+      ""
+    ).trim();
+    const linkedDoctorId =
+      create.patient?.doctorId &&
+      create.doctorReference === create.patient.doctorId
+        ? create.patient.doctorId
+        : "";
+    const linkedClinicId =
+      (create.doctor?.clinicId &&
+      create.clinicReference === create.doctor.clinicId
+        ? create.doctor.clinicId
+        : "") ||
+      (create.patient?.clinicId &&
+      create.clinicReference === create.patient.clinicId
+        ? create.patient.clinicId
+        : "");
+    const doctorId = create.doctor?.id || linkedDoctorId;
+    const doctorName = doctorId ? "" : create.doctorReference.trim();
+    const clinicId = create.clinic?.id || linkedClinicId;
+    const clinicName = clinicId ? "" : create.clinicReference.trim();
     const dueDate = this.buildDefaultCreateOrderDueDate();
     const payload = {
       payload: {
         ...(patientName ? { patientName } : {}),
-        doctorId,
-        clinicId,
+        ...(doctorId ? { doctorId } : {}),
+        ...(doctorName ? { doctorName } : {}),
+        ...(clinicId ? { clinicId } : {}),
+        ...(clinicName ? { clinicName } : {}),
         dueDate,
-        billTo: create.billToTarget === "scan-center" ? "scan-center" : "doctor",
-        ...(create.billToTarget === "scan-center" && create.scanCenterReference.trim().length > 0
+        billTo:
+          create.billToTarget === "scan-center" ? "scan-center" : "doctor",
+        ...(create.billToTarget === "scan-center" &&
+        create.scanCenterReference.trim().length > 0
           ? { scanCenterId: create.scanCenterReference.trim() }
           : {}),
         creationData: {
@@ -1662,7 +1848,9 @@ export class AiChatFacade {
     return dueDate.toISOString();
   }
 
-  private buildUpdateOrderWorkflowPrompt(workflow: AiOrderWorkflowState): string {
+  private buildUpdateOrderWorkflowPrompt(
+    workflow: AiOrderWorkflowState,
+  ): string {
     const update = workflow.update;
     if (!update) {
       return "Update order";
@@ -1670,7 +1858,10 @@ export class AiChatFacade {
 
     const selectedOrder = update.selectedOrder;
     const serviceNames = update.selectedServiceIds
-      .map((id) => workflow.services.find((service) => service.id === id)?.name ?? id)
+      .map(
+        (id) =>
+          workflow.services.find((service) => service.id === id)?.name ?? id,
+      )
       .join(", ");
     const includeServiceChanges = this.hasUpdateServiceChanges(update);
     const payload = {
@@ -1687,13 +1878,21 @@ export class AiChatFacade {
             }
           : {}),
         ...(update.notes.trim() ? { notes: update.notes.trim() } : {}),
-        ...(update.billToTarget ? { billTo: update.billToTarget === "scan-center" ? "scan-center" : "doctor" } : {}),
+        ...(update.billToTarget
+          ? {
+              billTo:
+                update.billToTarget === "scan-center"
+                  ? "scan-center"
+                  : "doctor",
+            }
+          : {}),
       },
     };
     const serviceTeethSummary = update.selectedServiceIds
       .map((serviceId) => {
         const serviceName =
-          workflow.services.find((service) => service.id === serviceId)?.name ?? serviceId;
+          workflow.services.find((service) => service.id === serviceId)?.name ??
+          serviceId;
         const teeth = update.selectedTeethByService[serviceId] ?? [];
         return `${serviceName} [${serviceId}]: ${teeth.join(", ") || "(none)"}`;
       })
@@ -1712,7 +1911,10 @@ export class AiChatFacade {
   }
 
   private buildCreateOrderTitlePrompt(workflow: AiOrderWorkflowState): string {
-    const patientName = workflow.create?.patient?.name || workflow.create?.patientReference || "patient";
+    const patientName =
+      workflow.create?.patient?.name ||
+      workflow.create?.patientReference ||
+      "patient";
     return `Create order for ${patientName}`;
   }
 
@@ -1731,18 +1933,30 @@ export class AiChatFacade {
       return [];
     }
     const patients = this.patientDataService.patients();
-    const byId = patients.filter((item) => normalizeLookup(item.id) === normalized);
+    const byId = patients.filter(
+      (item) => normalizeLookup(item.id) === normalized,
+    );
     if (byId.length > 0) {
       return byId;
     }
-    const byExactName = patients.filter((item) => normalizeLookup(item.name) === normalized);
+    const byExactName = patients.filter(
+      (item) =>
+        normalizeLookup(item.name) === normalized ||
+        matchesBilingualEntityName(reference, item.name),
+    );
     if (byExactName.length > 0) {
       return byExactName;
     }
-    return patients.filter((item) => normalizeLookup(item.name).includes(normalized));
+    return patients.filter((item) =>
+      normalizeLookup(item.name).includes(normalized) ||
+      matchesBilingualText(reference, item.name),
+    );
   }
 
-  private findDoctorCandidates(reference: string, clinicId: string | null): Doctor[] {
+  private findDoctorCandidates(
+    reference: string,
+    clinicId: string | null,
+  ): Doctor[] {
     const normalized = normalizeLookup(reference);
     if (!normalized) {
       return [];
@@ -1750,7 +1964,8 @@ export class AiChatFacade {
     const doctors = this.doctorDataService.doctors();
     const filterByClinic =
       clinicId && clinicId.trim().length > 0
-        ? (items: Doctor[]) => items.filter((item) => item.clinicId === clinicId)
+        ? (items: Doctor[]) =>
+            items.filter((item) => item.clinicId === clinicId)
         : (items: Doctor[]) => items;
     const byId = filterByClinic(
       doctors.filter((item) => normalizeLookup(item.id) === normalized),
@@ -1764,10 +1979,17 @@ export class AiChatFacade {
     if (byExactName.length > 0) {
       return byExactName;
     }
+    const byBilingualName = filterByClinic(
+      doctors.filter((item) => matchesBilingualEntityName(reference, item.name)),
+    );
+    if (byBilingualName.length > 0) {
+      return byBilingualName;
+    }
     return filterByClinic(
       doctors.filter(
         (item) =>
           normalizeLookup(item.name).includes(normalized) ||
+          matchesBilingualText(reference, item.name) ||
           normalizeLookup(item.lookupId ?? "").includes(normalized),
       ),
     );
@@ -1779,17 +2001,24 @@ export class AiChatFacade {
       return [];
     }
     const clinics = this.clinicDataService.clinics();
-    const byId = clinics.filter((item) => normalizeLookup(item.id) === normalized);
+    const byId = clinics.filter(
+      (item) => normalizeLookup(item.id) === normalized,
+    );
     if (byId.length > 0) {
       return byId;
     }
-    const byExactName = clinics.filter((item) => normalizeLookup(item.name) === normalized);
+    const byExactName = clinics.filter(
+      (item) =>
+        normalizeLookup(item.name) === normalized ||
+        matchesBilingualEntityName(reference, item.name),
+    );
     if (byExactName.length > 0) {
       return byExactName;
     }
     return clinics.filter(
       (item) =>
         normalizeLookup(item.name).includes(normalized) ||
+        matchesBilingualText(reference, item.name) ||
         normalizeLookup(item.city).includes(normalized),
     );
   }
@@ -1800,15 +2029,23 @@ export class AiChatFacade {
       return [];
     }
     const orders = this.orderDataService.orders();
-    const byId = orders.filter((item) => normalizeLookup(item.id) === normalized);
+    const byId = orders.filter(
+      (item) => normalizeLookup(item.id) === normalized,
+    );
     if (byId.length > 0) {
       return byId;
     }
-    const byOrderNumber = orders.filter((item) => normalizeLookup(item.orderNumber) === normalized);
+    const byOrderNumber = orders.filter(
+      (item) => normalizeLookup(item.orderNumber) === normalized,
+    );
     if (byOrderNumber.length > 0) {
       return byOrderNumber;
     }
-    const byPatientName = orders.filter((item) => normalizeLookup(item.patientName) === normalized);
+    const byPatientName = orders.filter(
+      (item) =>
+        normalizeLookup(item.patientName) === normalized ||
+        matchesBilingualEntityName(reference, item.patientName),
+    );
     if (byPatientName.length > 0) {
       return byPatientName;
     }
@@ -1816,6 +2053,7 @@ export class AiChatFacade {
       (item) =>
         normalizeLookup(item.orderNumber).includes(normalized) ||
         normalizeLookup(item.patientName).includes(normalized) ||
+        matchesBilingualText(reference, item.patientName) ||
         normalizeLookup(item.doctorName).includes(normalized),
     );
   }
@@ -1824,26 +2062,42 @@ export class AiChatFacade {
     if (!doctorId.trim()) {
       return null;
     }
-    return this.doctorDataService.doctors().find((item) => item.id === doctorId) ?? null;
+    return (
+      this.doctorDataService.doctors().find((item) => item.id === doctorId) ??
+      null
+    );
   }
 
   private findClinicById(clinicId: string): Clinic | null {
     if (!clinicId.trim()) {
       return null;
     }
-    return this.clinicDataService.clinics().find((item) => item.id === clinicId) ?? null;
+    return (
+      this.clinicDataService.clinics().find((item) => item.id === clinicId) ??
+      null
+    );
   }
 
   private isQuickActionVisible(action: AiQuickAction): boolean {
     if (
       action.requiredCapability &&
-      !this.authorizationService.has(action.requiredCapability as DentalCapability)
+      !this.authorizationService.has(
+        action.requiredCapability as DentalCapability,
+      )
     ) {
+      return false;
+    }
+
+    if (!this.backendCreateToolsEnabled && action.requiresCreateTools) {
       return false;
     }
 
     if (action.category === "faq") {
       return true;
+    }
+
+    if (!this.backendSuggestionsLoaded && action.id !== "ops-update-order") {
+      return false;
     }
 
     const suggestionId = mapQuickActionToSuggestionId(action.id);
@@ -1863,7 +2117,9 @@ function flattenSelectedTeeth(
   selectedTeethByService: Record<string, number[]>,
   selectedServiceIds: readonly string[],
 ): number[] {
-  const all = selectedServiceIds.flatMap((serviceId) => selectedTeethByService[serviceId] ?? []);
+  const all = selectedServiceIds.flatMap(
+    (serviceId) => selectedTeethByService[serviceId] ?? [],
+  );
   return normalizedNumberArray(all);
 }
 
@@ -1872,10 +2128,15 @@ function normalizedNumberArray(values: readonly number[]): number[] {
 }
 
 function normalizedArray(values: readonly string[]): string[] {
-  return Array.from(new Set(values)).sort((left, right) => left.localeCompare(right));
+  return Array.from(new Set(values)).sort((left, right) =>
+    left.localeCompare(right),
+  );
 }
 
-function areNumberArraysEqual(left: readonly number[], right: readonly number[]): boolean {
+function areNumberArraysEqual(
+  left: readonly number[],
+  right: readonly number[],
+): boolean {
   if (left.length !== right.length) {
     return false;
   }
@@ -1889,7 +2150,10 @@ function areNumberArraysEqual(left: readonly number[], right: readonly number[])
   return true;
 }
 
-function areStringArraysEqual(left: readonly string[], right: readonly string[]): boolean {
+function areStringArraysEqual(
+  left: readonly string[],
+  right: readonly string[],
+): boolean {
   if (left.length !== right.length) {
     return false;
   }
@@ -1944,14 +2208,35 @@ function getWorkflowFields(actionId: string): readonly AiActionWorkflowField[] {
       ];
     case "ops-create-order":
       return [
-        { key: "patient", label: "Patient name", placeholder: "Enter patient name" },
-        { key: "doctor", label: "Doctor name or ID", placeholder: "Enter doctor" },
-        { key: "clinic", label: "Clinic name or ID", placeholder: "Enter clinic" },
-        { key: "notes", label: "Order notes", placeholder: "Optional notes", optional: true },
+        {
+          key: "patient",
+          label: "Patient name",
+          placeholder: "Enter patient name",
+        },
+        {
+          key: "doctor",
+          label: "Doctor name or ID",
+          placeholder: "Enter doctor",
+        },
+        {
+          key: "clinic",
+          label: "Clinic name or ID",
+          placeholder: "Enter clinic",
+        },
+        {
+          key: "notes",
+          label: "Order notes",
+          placeholder: "Optional notes",
+          optional: true,
+        },
       ];
     case "ops-update-order":
       return [
-        { key: "order", label: "Order ID or number", placeholder: "Enter order id/number" },
+        {
+          key: "order",
+          label: "Order ID or number",
+          placeholder: "Enter order id/number",
+        },
         {
           key: "changes",
           label: "Required updates",
@@ -1959,63 +2244,149 @@ function getWorkflowFields(actionId: string): readonly AiActionWorkflowField[] {
         },
       ];
     case "ops-search-patients":
-      return [{ key: "query", label: "Patient search value", placeholder: "Name, phone, or ID" }];
+      return [
+        {
+          key: "query",
+          label: "Patient search value",
+          placeholder: "Name, phone, or ID",
+        },
+      ];
     case "ops-create-patient":
       return [
-        { key: "name", label: "Patient full name", placeholder: "Enter patient name" },
-        { key: "dob", label: "Date of birth (YYYY-MM-DD)", placeholder: "e.g. 1999-01-01" },
+        {
+          key: "name",
+          label: "Patient full name",
+          placeholder: "Enter patient name",
+        },
+        {
+          key: "dob",
+          label: "Date of birth (YYYY-MM-DD)",
+          placeholder: "e.g. 1999-01-01",
+        },
         { key: "gender", label: "Gender (M/F)", placeholder: "M or F" },
-        { key: "phone", label: "Patient phone", placeholder: "Enter phone number" },
+        {
+          key: "phone",
+          label: "Patient phone",
+          placeholder: "Enter phone number",
+        },
         { key: "email", label: "Patient email", placeholder: "Enter email" },
-        { key: "clinic", label: "Clinic name or ID", placeholder: "Enter clinic name or id" },
-        { key: "doctor", label: "Doctor name or ID", placeholder: "Enter doctor name or id" },
+        {
+          key: "clinic",
+          label: "Clinic name or ID",
+          placeholder: "Enter clinic name or id",
+        },
+        {
+          key: "doctor",
+          label: "Doctor name or ID",
+          placeholder: "Enter doctor name or id",
+        },
       ];
     case "ops-update-patient":
       return [
-        { key: "patient", label: "Patient ID", placeholder: "Enter patient id" },
-        { key: "changes", label: "Required updates", placeholder: "Describe updates" },
+        {
+          key: "patient",
+          label: "Patient ID",
+          placeholder: "Enter patient id",
+        },
+        {
+          key: "changes",
+          label: "Required updates",
+          placeholder: "Describe updates",
+        },
       ];
     case "ops-search-doctors":
-      return [{ key: "query", label: "Doctor search value", placeholder: "Name or specialty" }];
+      return [
+        {
+          key: "query",
+          label: "Doctor search value",
+          placeholder: "Name or specialty",
+        },
+      ];
     case "ops-create-doctor":
       return [
         { key: "name", label: "Doctor name", placeholder: "Enter doctor name" },
-        { key: "specialty", label: "Specialty", placeholder: "Enter specialty" },
+        {
+          key: "specialty",
+          label: "Specialty",
+          placeholder: "Enter specialty",
+        },
         { key: "clinic", label: "Clinic", placeholder: "Enter clinic id/name" },
         { key: "email", label: "Email", placeholder: "Enter doctor email" },
         { key: "phone", label: "Phone", placeholder: "Enter doctor phone" },
-        { key: "joinedDate", label: "Joined date (YYYY-MM-DD)", placeholder: "e.g. 2026-01-15" },
+        {
+          key: "joinedDate",
+          label: "Joined date (YYYY-MM-DD)",
+          placeholder: "e.g. 2026-01-15",
+        },
       ];
     case "ops-update-doctor":
       return [
         { key: "doctor", label: "Doctor ID", placeholder: "Enter doctor id" },
-        { key: "changes", label: "Required updates", placeholder: "Describe updates" },
+        {
+          key: "changes",
+          label: "Required updates",
+          placeholder: "Describe updates",
+        },
       ];
     case "ops-search-clinics":
-      return [{ key: "query", label: "Clinic search value", placeholder: "Name, city, or ID" }];
+      return [
+        {
+          key: "query",
+          label: "Clinic search value",
+          placeholder: "Name, city, or ID",
+        },
+      ];
     case "ops-create-clinic":
       return [
         { key: "name", label: "Clinic name", placeholder: "Enter clinic name" },
-        { key: "address", label: "Address", placeholder: "Enter clinic address" },
+        {
+          key: "address",
+          label: "Address",
+          placeholder: "Enter clinic address",
+        },
         { key: "city", label: "City", placeholder: "Enter city" },
         { key: "phone", label: "Phone", placeholder: "Enter phone" },
         { key: "email", label: "Email", placeholder: "Enter clinic email" },
-        { key: "accountManager", label: "Account manager", placeholder: "Enter account manager" },
+        {
+          key: "accountManager",
+          label: "Account manager",
+          placeholder: "Enter account manager",
+        },
       ];
     case "ops-update-clinic":
       return [
         { key: "clinic", label: "Clinic ID", placeholder: "Enter clinic id" },
-        { key: "changes", label: "Required updates", placeholder: "Describe updates" },
+        {
+          key: "changes",
+          label: "Required updates",
+          placeholder: "Describe updates",
+        },
       ];
     case "ops-change-workflow":
       return [
-        { key: "order", label: "Order ID or number", placeholder: "Enter order id/number" },
-        { key: "status", label: "New workflow status", placeholder: "e.g. In Production" },
+        {
+          key: "order",
+          label: "Order ID or number",
+          placeholder: "Enter order id/number",
+        },
+        {
+          key: "status",
+          label: "New workflow status",
+          placeholder: "e.g. In Production",
+        },
       ];
     case "ops-change-scan-center":
       return [
-        { key: "order", label: "Order ID or number", placeholder: "Enter order id/number" },
-        { key: "scanCenter", label: "Scan center ID", placeholder: "Enter scan center id" },
+        {
+          key: "order",
+          label: "Order ID or number",
+          placeholder: "Enter order id/number",
+        },
+        {
+          key: "scanCenter",
+          label: "Scan center ID",
+          placeholder: "Enter scan center id",
+        },
       ];
     case "ops-open-order-detail":
       return [
@@ -2136,8 +2507,10 @@ function deriveConversationTitle(prompt: string): string {
 }
 
 function isShowQuickActionsCommand(prompt: string): boolean {
-  return /(show quick actions|show shortcuts|quick actions)/i.test(prompt) ||
-    /(اظهر|أظهر).*(الاختصارات|الكويك|الاكشنز)/i.test(prompt);
+  return (
+    /(show quick actions|show shortcuts|quick actions)/i.test(prompt) ||
+    /(اظهر|أظهر).*(الاختصارات|الكويك|الاكشنز)/i.test(prompt)
+  );
 }
 
 function mapAssistantToolToIntent(tool: string): AiShortcutAction["intent"] {

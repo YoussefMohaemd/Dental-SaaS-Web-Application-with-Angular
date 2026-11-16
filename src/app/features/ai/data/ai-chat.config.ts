@@ -5,7 +5,8 @@ export const AI_WELCOME_MESSAGE =
 
 export const AI_FAQ_PROMPTS: Record<AiFaqTopic, string> = {
   company: "Tell me about the company.",
-  services: "List all company services with their prices and a short description.",
+  services:
+    "List all company services with their prices and a short description.",
   pricing: "Show the price of every service.",
   standards: "What are the submission standards?",
 };
@@ -57,7 +58,8 @@ export const AI_QUICK_ACTIONS: readonly AiQuickAction[] = [
     description: "Search by order number, patient name, or doctor name.",
     icon: "search",
     intent: "searchOrders",
-    prefillPrompt: "Search orders for [patient name / order number / doctor name].",
+    prefillPrompt:
+      "Search orders for [patient name / order number / doctor name].",
     behavior: "send",
     category: "operational",
     requiredCapability: "orders.read",
@@ -84,6 +86,7 @@ export const AI_QUICK_ACTIONS: readonly AiQuickAction[] = [
     behavior: "send",
     category: "operational",
     requiredCapability: "orders.create",
+    requiresCreateTools: true,
   },
   {
     id: "ops-update-order",
@@ -103,7 +106,8 @@ export const AI_QUICK_ACTIONS: readonly AiQuickAction[] = [
     description: "Search patients by name and show matches.",
     icon: "users-round",
     intent: "searchPatients",
-    prefillPrompt: "Search patients by name [patient name] and show matching records.",
+    prefillPrompt:
+      "Search patients by name [patient name] and show matching records.",
     behavior: "send",
     category: "operational",
     requiredCapability: "patients.read",
@@ -119,6 +123,7 @@ export const AI_QUICK_ACTIONS: readonly AiQuickAction[] = [
     behavior: "send",
     category: "operational",
     requiredCapability: "patients.create",
+    requiresCreateTools: true,
   },
   {
     id: "ops-update-patient",
@@ -154,6 +159,7 @@ export const AI_QUICK_ACTIONS: readonly AiQuickAction[] = [
     behavior: "send",
     category: "operational",
     requiredCapability: "doctors.manage",
+    requiresCreateTools: true,
   },
   {
     id: "ops-update-doctor",
@@ -189,6 +195,7 @@ export const AI_QUICK_ACTIONS: readonly AiQuickAction[] = [
     behavior: "send",
     category: "operational",
     requiredCapability: "clinics.manage",
+    requiresCreateTools: true,
   },
   {
     id: "ops-update-clinic",
@@ -208,7 +215,8 @@ export const AI_QUICK_ACTIONS: readonly AiQuickAction[] = [
     description: "Change order workflow status.",
     icon: "git-branch",
     intent: "changeWorkflow",
-    prefillPrompt: "Change workflow status for order [order number or id] to [new status].",
+    prefillPrompt:
+      "Change workflow status for order [order number or id] to [new status].",
     behavior: "send",
     category: "operational",
     requiredCapability: "orders.update",
@@ -219,7 +227,8 @@ export const AI_QUICK_ACTIONS: readonly AiQuickAction[] = [
     description: "Update scan center in an order.",
     icon: "scan-line",
     intent: "changeScanCenter",
-    prefillPrompt: "Change scan center for order [order number or id] to [scan center id].",
+    prefillPrompt:
+      "Change scan center for order [order number or id] to [scan center id].",
     behavior: "send",
     category: "operational",
     requiredCapability: "orders.update",

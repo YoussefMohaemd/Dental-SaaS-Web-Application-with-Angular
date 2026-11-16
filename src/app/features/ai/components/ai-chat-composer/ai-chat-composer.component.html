@@ -10,17 +10,75 @@
       (keydown)="onKeyDown($event)"
     ></textarea>
 
-    <app-button
-      data-testid="ai-submit"
-      type="submit"
-      variant="primary"
-      size="icon"
-      [disabled]="!canSend()"
-      [loading]="loading()"
-      ariaLabel="Send message"
-      buttonClass="composer__send"
-    >
-      ➤
-    </app-button>
+    <div class="composer__actions">
+      <app-button
+        data-testid="ai-voice"
+        type="button"
+        variant="ghost"
+        size="icon"
+        [disabled]="loading() || !speechSupported()"
+        [ariaLabel]="isListening() ? 'Stop voice input' : 'Start voice input'"
+        [title]="
+          speechSupported()
+            ? isListening()
+              ? 'Stop voice input'
+              : 'Start voice input'
+            : 'Voice input is not supported in this browser'
+        "
+        [ariaPressed]="isListening()"
+        [buttonClass]="
+          isListening()
+            ? 'composer__voice composer__voice--listening'
+            : 'composer__voice'
+        "
+        (onClick)="toggleSpeechInput()"
+      >
+        @if (isListening()) {
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <rect x="6" y="6" width="12" height="12" rx="1"></rect>
+          </svg>
+        } @else {
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path
+              d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"
+            ></path>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+            <path d="M12 19v3"></path>
+            <path d="M8 22h8"></path>
+          </svg>
+        }
+      </app-button>
+      <app-button
+        data-testid="ai-submit"
+        type="submit"
+        variant="primary"
+        size="icon"
+        [disabled]="!canSend()"
+        [loading]="loading()"
+        ariaLabel="Send message"
+        buttonClass="composer__send"
+      >
+        ➤
+      </app-button>
+    </div>
   </div>
+  <span class="composer__speech-status" aria-live="polite">{{
+    speechStatus()
+  }}</span>
 </form>
