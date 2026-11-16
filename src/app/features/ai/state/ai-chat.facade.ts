@@ -46,6 +46,7 @@ import {
   matchesBilingualEntityName,
   matchesBilingualText,
 } from "./bilingual-lookup";
+import { detectAiInputLanguage } from "./ai-language";
 
 @Injectable({ providedIn: "root" })
 export class AiChatFacade {
@@ -600,7 +601,7 @@ export class AiChatFacade {
       this.replaceMessage(conversationId, loadingMessageId, {
         id: this.nextMessageId(),
         role: "assistant",
-        text: this.resolveAssistantErrorText(error),
+        text: this.resolveAssistantErrorText(error, prompt),
         createdAt: new Date().toISOString(),
         type: "error",
         markdown: true,
@@ -616,7 +617,12 @@ export class AiChatFacade {
   runQuickAction(action: AiQuickAction): void {
     if (!this.isQuickActionVisible(action)) {
       this.appendAssistantText(
-        "You don't have access for that action in this account.",
+        this.localizeByPrompt(
+          "You don't have access for that action in this account.",
+          "ليس لديك صلاحية لتنفيذ هذا الإجراء في هذا الحساب.",
+          this.latestUserMessageText(this.activeConversationId() ?? "") ||
+            action.prefillPrompt,
+        ),
         "error",
       );
       return;
@@ -1073,7 +1079,10 @@ export class AiChatFacade {
     } catch (error) {
       if (generation === this.sessionGeneration) {
         this.appendAssistantText(
-          this.resolveAssistantErrorText(error),
+          this.resolveAssistantErrorText(
+            error,
+            this.latestUserMessageText(conversationId),
+          ),
           "error",
         );
       }
@@ -1150,7 +1159,7 @@ export class AiChatFacade {
     };
   }
 
-  private resolveAssistantErrorText(error: unknown): string {
+  private resolveAssistantErrorText(error: unknown, prompt = ""): string {
     const candidate = error as
       | {
           status?: number;
@@ -1165,11 +1174,19 @@ export class AiChatFacade {
     const rawMessage = candidate?.error?.error?.message?.trim() ?? "";
     const message = rawMessage.toLowerCase();
     if (candidate?.status === 403 || message.includes("permission denied")) {
-      return "You don't have access for that action in this account.";
+      return this.localizeByPrompt(
+        "You don't have access for that action in this account.",
+        "ليس لديك صلاحية لتنفيذ هذا الإجراء في هذا الحساب.",
+        prompt,
+      );
     }
 
     if (candidate?.status === 409 || message.includes("expired")) {
-      return "This pending action is no longer valid. Please send a new request.";
+      return this.localizeByPrompt(
+        "This pending action is no longer valid. Please send a new request.",
+        "هذا الإجراء المعلّق لم يعد صالحًا. أرسل طلبًا جديدًا من فضلك.",
+        prompt,
+      );
     }
 
     const backendCode = candidate?.error?.error?.code ?? "";
@@ -1183,14 +1200,47 @@ export class AiChatFacade {
     }
 
     if (this.isConversationNotFoundError(error)) {
-      return "This conversation is no longer available. Please try sending your message again.";
+      return this.localizeByPrompt(
+        "This conversation is no longer available. Please try sending your message again.",
+        "هذه المحادثة لم تعد متاحة. حاول إرسال رسالتك مرة أخرى.",
+        prompt,
+      );
     }
 
     if (candidate?.status === 404 && rawMessage) {
       return rawMessage;
     }
 
-    return "Assistant service is currently unavailable. Please try again.";
+    return this.localizeByPrompt(
+      "Assistant service is currently unavailable. Please try again.",
+      "خدمة المساعد غير متاحة حاليًا. حاول مرة أخرى.",
+      prompt,
+    );
+  }
+
+  private localizeByPrompt(
+    english: string,
+    arabic: string,
+    prompt: string,
+  ): string {
+    return detectAiInputLanguage(prompt) === "en" ? english : arabic;
+  }
+
+  private latestUserMessageText(conversationId: string): string {
+    const conversation = this.conversations().find(
+      (item) => item.id === conversationId,
+    );
+    if (!conversation) {
+      return "";
+    }
+
+    for (let index = conversation.messages.length - 1; index >= 0; index -= 1) {
+      const message = conversation.messages[index];
+      if (message?.role === "user") {
+        return message.text;
+      }
+    }
+    return "";
   }
 
   private isConversationNotFoundError(error: unknown): boolean {

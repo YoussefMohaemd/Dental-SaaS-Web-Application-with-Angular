@@ -13,10 +13,21 @@ import {
   viewChild,
 } from "@angular/core";
 import { AppButtonComponent } from "@shared/components/button/button.component";
+import {
+  detectAiInputLanguage,
+  type AiInputLanguage,
+} from "../../state/ai-language";
 
 interface SpeechRecognitionResultLike {
   isFinal: boolean;
-  0: { transcript: string; confidence?: number };
+  0: SpeechRecognitionAlternativeLike;
+  length: number;
+  [index: number]: SpeechRecognitionAlternativeLike;
+}
+
+interface SpeechRecognitionAlternativeLike {
+  transcript: string;
+  confidence?: number;
 }
 
 interface SpeechRecognitionEventLike {
@@ -48,6 +59,11 @@ type SpeechRecognitionWindow = Window & {
 
 const SPEECH_LANGUAGES = ["ar-EG", "en-US"] as const;
 type SpeechLanguage = (typeof SPEECH_LANGUAGES)[number];
+const ARABIC_SCRIPT_PATTERN = /[\u0600-\u06ff]/;
+const LATIN_SCRIPT_PATTERN = /[A-Za-z]/;
+const ARABIC_DIACRITICS_PATTERN = /[\u064b-\u065f\u0670]/g;
+const ARABIC_TATWEEL_PATTERN = /\u0640/g;
+const SPACE_BEFORE_PUNCTUATION_PATTERN = /\s+([،,.!?؟:;])/g;
 
 interface SpeechCandidate {
   finalizedText: string;
@@ -82,7 +98,6 @@ export class AiChatComposerComponent
   private activeSpeechRecognitionCount = 0;
   private speechUpdateOrder = 0;
   private speechBaseDraft = "";
-  private speechErrorOccurred = false;
   private speechStopping = false;
   private speechStarting = false;
   private speechErroredRecognitions = new Set<SpeechRecognitionLike>();
@@ -98,17 +113,12 @@ export class AiChatComposerComponent
     () =>
       this.speechStatusText() ||
       (!this.speechSupported()
-        ? "Voice input is not supported in this browser."
+        ? this.speechMessage(
+            "Voice input is not supported in this browser.",
+            "الإدخال الصوتي غير مدعوم في هذا المتصفح.",
+          )
         : ""),
   );
-
-  public constructor() {
-    if (!this.speechSupported()) {
-      this.speechStatusText.set(
-        "Voice input is not supported in this browser.",
-      );
-    }
-  }
 
   ngAfterViewInit(): void {
     this.syncFieldValue();
@@ -164,8 +174,9 @@ export class AiChatComposerComponent
 
     const Recognition = getSpeechRecognitionConstructor();
     if (!Recognition) {
-      this.speechStatusText.set(
+      this.setSpeechStatus(
         "Voice input is not supported in this browser.",
+        "الإدخال الصوتي غير مدعوم في هذا المتصفح.",
       );
       return;
     }
@@ -177,20 +188,21 @@ export class AiChatComposerComponent
     this.activeSpeechRecognitionCount = 0;
     this.speechStopping = false;
     this.speechStarting = true;
-    this.speechErrorOccurred = false;
     this.speechErroredRecognitions.clear();
     this.speechSuccessfulRecognitions.clear();
     const sessionId = ++this.speechSessionId;
     this.isListening.set(true);
-    this.speechStatusText.set("Listening...");
+    this.setSpeechStatus("Listening...", "جاري الاستماع...");
 
     for (const language of SPEECH_LANGUAGES) {
       let recognition: SpeechRecognitionLike;
       try {
         recognition = new Recognition();
       } catch {
-        this.speechErrorOccurred = true;
-        this.speechStatusText.set("Voice input failed. Try again.");
+        this.setSpeechStatus(
+          "Voice input failed. Try again.",
+          "فشل الإدخال الصوتي. حاول مرة أخرى.",
+        );
         continue;
       }
       recognition.lang = language;
@@ -281,7 +293,14 @@ export class AiChatComposerComponent
       if (!result) {
         continue;
       }
-      const confidence = result[0].confidence;
+      const bestAlternative = this.pickBestAlternative(result, language);
+      const transcript = this.normalizeSpeechFragment(
+        bestAlternative.transcript,
+      );
+      if (transcript.length === 0) {
+        continue;
+      }
+      const confidence = bestAlternative.confidence;
       if (
         typeof confidence === "number" &&
         Number.isFinite(confidence) &&
@@ -290,9 +309,9 @@ export class AiChatComposerComponent
         strongestConfidence = confidence;
       }
       if (result.isFinal) {
-        finalized = `${finalized} ${result[0].transcript}`.trim();
+        finalized = this.appendSpeechChunk(finalized, transcript);
       } else {
-        interim = `${interim} ${result[0].transcript}`.trim();
+        interim = this.appendSpeechChunk(interim, transcript);
       }
     }
 
@@ -307,7 +326,7 @@ export class AiChatComposerComponent
           : Math.max(candidate.confidence, strongestConfidence);
     candidate.updateOrder = ++this.speechUpdateOrder;
     this.emitSpeechDraft(true);
-    this.speechStatusText.set("Listening...");
+    this.setSpeechStatus("Listening...", "جاري الاستماع...");
   }
 
   private onSpeechEndForRecognition(
@@ -325,14 +344,12 @@ export class AiChatComposerComponent
   }
 
   private onSpeechErrorForRecognition(recognition: SpeechRecognitionLike): void {
-    this.speechErrorOccurred = true;
     this.speechErroredRecognitions.add(recognition);
     const language = this.languageForRecognition(recognition);
     if (language) {
       this.speechCandidates[language].interimText = "";
     }
     this.finishSpeechRecognition(recognition);
-    this.speechStatusText.set("Voice input failed. Try again.");
   }
 
   private cancelSpeechInput(): void {
@@ -354,8 +371,10 @@ export class AiChatComposerComponent
       if (reportSessionError) {
         this.onSpeechErrorForRecognition(recognition);
       } else {
-        this.speechErrorOccurred = true;
-        this.speechStatusText.set("Voice input failed. Try again.");
+        this.setSpeechStatus(
+          "Voice input failed. Try again.",
+          "فشل الإدخال الصوتي. حاول مرة أخرى.",
+        );
       }
     }
   }
@@ -423,10 +442,15 @@ export class AiChatComposerComponent
     this.isListening.set(false);
     this.emitSpeechDraft(false);
     if (
-      !this.speechErrorOccurred ||
-      this.speechSuccessfulRecognitions.size > 0
+      this.speechSuccessfulRecognitions.size > 0 ||
+      this.speechBaseDraft.length > 0
     ) {
-      this.speechStatusText.set("Voice input stopped.");
+      this.setSpeechStatus("Voice input stopped.", "تم إيقاف الإدخال الصوتي.");
+    } else {
+      this.setSpeechStatus(
+        "Voice input failed. Try again.",
+        "فشل الإدخال الصوتي. حاول مرة أخرى.",
+      );
     }
     for (const recognition of this.speechRecognitions) {
       recognition.onresult = null;
@@ -466,10 +490,15 @@ export class AiChatComposerComponent
       return "";
     }
 
-    const arabicScriptMatch = candidates.filter(({ text }) =>
+    const finalizedCandidates = candidates.filter(
+      ({ candidate }) => candidate.finalizedText.length > 0,
+    );
+    const preferredCandidates =
+      finalizedCandidates.length > 0 ? finalizedCandidates : candidates;
+    const arabicScriptMatch = preferredCandidates.filter(({ text }) =>
       /[\u0600-\u06ff]/.test(text),
     );
-    const latinScriptMatch = candidates.filter(({ text }) =>
+    const latinScriptMatch = preferredCandidates.filter(({ text }) =>
       /[A-Za-z]/.test(text) && !/[\u0600-\u06ff]/.test(text),
     );
     const scriptMatch =
@@ -477,7 +506,7 @@ export class AiChatComposerComponent
         ? arabicScriptMatch
         : latinScriptMatch;
     const languageCandidates =
-      scriptMatch.length > 0 ? scriptMatch : candidates;
+      scriptMatch.length > 0 ? scriptMatch : preferredCandidates;
     const hasConfidence = languageCandidates.some(
       ({ candidate }) => candidate.confidence !== null,
     );
@@ -505,6 +534,42 @@ export class AiChatComposerComponent
     return fallback[0].text;
   }
 
+  voiceActionLabel(): string {
+    const isArabic =
+      detectAiInputLanguage(this.currentDraftValue().trim()) !== "en";
+    if (isArabic) {
+      return this.isListening() ? "إيقاف الإدخال الصوتي" : "بدء الإدخال الصوتي";
+    }
+    return this.isListening() ? "Stop voice input" : "Start voice input";
+  }
+
+  voiceButtonTitle(): string {
+    if (!this.speechSupported()) {
+      return this.speechMessage(
+        "Voice input is not supported in this browser",
+        "الإدخال الصوتي غير مدعوم في هذا المتصفح",
+      );
+    }
+    return this.voiceActionLabel();
+  }
+
+  private setSpeechStatus(english: string, arabic: string): void {
+    this.speechStatusText.set(this.speechMessage(english, arabic));
+  }
+
+  private speechMessage(english: string, arabic: string): string {
+    return this.speechLanguage() === "en" ? english : arabic;
+  }
+
+  private speechLanguage(): AiInputLanguage {
+    const baseDraft =
+      this.speechBaseDraft || this.draft().trim() || this.currentDraftValue();
+    const value = [baseDraft, this.selectSpeechText(true)]
+      .filter((item) => item.length > 0)
+      .join(" ");
+    return detectAiInputLanguage(value);
+  }
+
   private createSpeechCandidates(): Record<SpeechLanguage, SpeechCandidate> {
     return {
       "ar-EG": {
@@ -520,6 +585,69 @@ export class AiChatComposerComponent
         updateOrder: 0,
       },
     };
+  }
+
+  private pickBestAlternative(
+    result: SpeechRecognitionResultLike,
+    language: SpeechLanguage,
+  ): SpeechRecognitionAlternativeLike {
+    let bestAlternative = result[0];
+    let bestScore = Number.NEGATIVE_INFINITY;
+    for (let index = 0; index < result.length; index += 1) {
+      const alternative = result[index];
+      if (!alternative) {
+        continue;
+      }
+      const score = this.scoreAlternative(alternative, language);
+      if (score > bestScore) {
+        bestScore = score;
+        bestAlternative = alternative;
+      }
+    }
+    return bestAlternative;
+  }
+
+  private scoreAlternative(
+    alternative: SpeechRecognitionAlternativeLike,
+    language: SpeechLanguage,
+  ): number {
+    const normalizedTranscript = this.normalizeSpeechFragment(
+      alternative.transcript,
+    );
+    const confidence =
+      typeof alternative.confidence === "number" &&
+      Number.isFinite(alternative.confidence)
+        ? alternative.confidence
+        : 0;
+    const hasArabic = ARABIC_SCRIPT_PATTERN.test(normalizedTranscript);
+    const hasLatin = LATIN_SCRIPT_PATTERN.test(normalizedTranscript);
+    const scriptScore =
+      language === "ar-EG"
+        ? hasArabic
+          ? 1
+          : hasLatin
+            ? -0.5
+            : 0
+        : hasLatin && !hasArabic
+          ? 0.5
+          : hasArabic
+            ? -0.5
+            : 0;
+    return confidence + scriptScore;
+  }
+
+  private appendSpeechChunk(base: string, chunk: string): string {
+    return [base, chunk].filter((value) => value.length > 0).join(" ");
+  }
+
+  private normalizeSpeechFragment(value: string): string {
+    return value
+      .normalize("NFKC")
+      .replace(ARABIC_TATWEEL_PATTERN, "")
+      .replace(ARABIC_DIACRITICS_PATTERN, "")
+      .replace(/\s+/g, " ")
+      .replace(SPACE_BEFORE_PUNCTUATION_PATTERN, "$1")
+      .trim();
   }
 }
 

@@ -527,6 +527,69 @@ describe("AiChatFacade", () => {
     );
   });
 
+  it("shows Arabic generic service errors for Arabic prompts", async () => {
+    assistantDataService.postMessage$.and.returnValue(
+      throwError(() => ({
+        status: 500,
+        error: { error: { message: "Internal assistant failure" } },
+      })),
+    );
+
+    await facade.submitPrompt("اعرض الطلبات المتأخرة");
+
+    expect(facade.messages().at(-1)?.text).toBe(
+      "خدمة المساعد غير متاحة حاليًا. حاول مرة أخرى.",
+    );
+  });
+
+  it("keeps English generic service errors for English prompts", async () => {
+    assistantDataService.postMessage$.and.returnValue(
+      throwError(() => ({
+        status: 500,
+        error: { error: { message: "Internal assistant failure" } },
+      })),
+    );
+
+    await facade.submitPrompt("Show delayed orders");
+
+    expect(facade.messages().at(-1)?.text).toBe(
+      "Assistant service is currently unavailable. Please try again.",
+    );
+  });
+
+  it("shows Arabic permission errors for Arabic prompts", async () => {
+    assistantDataService.postMessage$.and.returnValue(
+      throwError(() => ({
+        status: 403,
+        error: { error: { message: "Assistant tool permission denied" } },
+      })),
+    );
+
+    await facade.submitPrompt("احذف الطلب 500");
+
+    expect(facade.messages().at(-1)?.text).toBe(
+      "ليس لديك صلاحية لتنفيذ هذا الإجراء في هذا الحساب.",
+    );
+  });
+
+  it("localizes denied quick-action permission errors from the latest Arabic message", async () => {
+    const action = facade
+      .quickActions()
+      .find((item) => item.id === "ops-update-order");
+    expect(action).toBeDefined();
+    if (!action) {
+      throw new Error("Missing ops-update-order quick action");
+    }
+
+    await facade.submitPrompt("اعرض الطلبات المتأخرة");
+    authorizationService.has.and.returnValue(false);
+    facade.runQuickAction(action);
+
+    expect(facade.messages().at(-1)?.text).toBe(
+      "ليس لديك صلاحية لتنفيذ هذا الإجراء في هذا الحساب.",
+    );
+  });
+
   it("shows backend business-rule message instead of generic unavailable error", async () => {
     assistantDataService.postMessage$.and.returnValue(
       throwError(() => ({
@@ -540,6 +603,49 @@ describe("AiChatFacade", () => {
     await facade.submitPrompt("create order");
     expect(facade.messages().at(-1)?.text).toContain(
       "Clinic f5d9afd005f77d5531ffefe5 does not exist",
+    );
+  });
+
+  it("shows Arabic expired-action errors using the latest Arabic user message", async () => {
+    assistantDataService.postMessage$.and.returnValue(
+      of({
+        conversationId: "conv-backend-1",
+        messageId: "m2",
+        result: {
+          type: "confirmation",
+          text: "Review and confirm",
+          pendingActions: [
+            {
+              actionId: "a-pending-expired",
+              tool: "update_order",
+              expiresAt: new Date().toISOString(),
+              confirmationToken: "token-expired",
+              payload: { orderId: "order-1" },
+            },
+          ],
+        },
+      }),
+    );
+    assistantDataService.confirmAction$.and.returnValue(
+      throwError(() => ({
+        status: 409,
+        error: { error: { message: "Confirmation token expired" } },
+      })),
+    );
+
+    await facade.submitPrompt("حدّث حالة الطلب 1");
+    const action = facade.messages().at(-1)?.actions?.[0];
+    expect(action).toBeDefined();
+    if (!action) {
+      throw new Error("Missing confirmation action");
+    }
+
+    facade.runShortcutAction(action);
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(facade.messages().at(-1)?.text).toBe(
+      "هذا الإجراء المعلّق لم يعد صالحًا. أرسل طلبًا جديدًا من فضلك.",
     );
   });
 

@@ -387,6 +387,144 @@ describe("AiChatComposerComponent", () => {
     expect(component.speechStatus()).not.toContain("failed");
   });
 
+  it("waits for all recognizers before showing a failure status", () => {
+    Object.defineProperty(window, "SpeechRecognition", {
+      configurable: true,
+      value: FakeSpeechRecognition,
+    });
+    fixture.detectChanges();
+
+    component.toggleSpeechInput();
+    const [arabic, english] = FakeSpeechRecognition.instances;
+    arabic?.onerror?.({ error: "no-speech" });
+
+    expect(component.speechStatus()).toBe("Listening...");
+
+    english?.onresult?.({
+      resultIndex: 0,
+      results: [speechResult("Hello", true, 0.9)],
+    });
+    english?.onend?.();
+
+    expect(component.speechStatus()).toBe("Voice input stopped.");
+  });
+
+  it("keeps finalized English text over Arabic interim text", () => {
+    Object.defineProperty(window, "SpeechRecognition", {
+      configurable: true,
+      value: FakeSpeechRecognition,
+    });
+    fixture.detectChanges();
+
+    component.toggleSpeechInput();
+    const [arabic, english] = FakeSpeechRecognition.instances;
+    arabic?.onresult?.({
+      resultIndex: 0,
+      results: [speechResult("اعرض الطلبات", false, 0.99)],
+    });
+    english?.onresult?.({
+      resultIndex: 0,
+      results: [speechResult("Show orders", true, 0.1)],
+    });
+
+    const textarea = fixture.debugElement.query(By.css("#ai-prompt"))
+      .nativeElement as HTMLTextAreaElement;
+    expect(textarea.value).toBe("Show orders");
+  });
+
+  it("prefers Arabic-script alternatives from the same recognition result", () => {
+    Object.defineProperty(window, "SpeechRecognition", {
+      configurable: true,
+      value: FakeSpeechRecognition,
+    });
+    fixture.detectChanges();
+
+    component.toggleSpeechInput();
+    const [arabic] = FakeSpeechRecognition.instances;
+    arabic?.onresult?.({
+      resultIndex: 0,
+      results: [
+        speechResultWithAlternatives(
+          [
+            { transcript: "salam", confidence: 0.95 },
+            { transcript: "سلام", confidence: 0.4 },
+          ],
+          true,
+        ),
+      ],
+    });
+
+    const textarea = fixture.debugElement.query(By.css("#ai-prompt"))
+      .nativeElement as HTMLTextAreaElement;
+    expect(textarea.value).toBe("سلام");
+  });
+
+  it("normalizes Arabic transcript output before it is written", () => {
+    Object.defineProperty(window, "SpeechRecognition", {
+      configurable: true,
+      value: FakeSpeechRecognition,
+    });
+    fixture.detectChanges();
+
+    component.toggleSpeechInput();
+    const [arabic] = FakeSpeechRecognition.instances;
+    arabic?.onresult?.({
+      resultIndex: 0,
+      results: [speechResult("الــــسَّلامُ   عليكم", true, 0.9)],
+    });
+
+    const textarea = fixture.debugElement.query(By.css("#ai-prompt"))
+      .nativeElement as HTMLTextAreaElement;
+    expect(textarea.value).toBe("السلام عليكم");
+  });
+
+  it("reports a retryable failure when both recognizers end without text", () => {
+    Object.defineProperty(window, "SpeechRecognition", {
+      configurable: true,
+      value: FakeSpeechRecognition,
+    });
+    fixture.detectChanges();
+
+    component.toggleSpeechInput();
+    FakeSpeechRecognition.instances.forEach((item) => item.onend?.());
+
+    expect(component.isListening()).toBeFalse();
+    expect(component.speechStatus()).toBe("Voice input failed. Try again.");
+  });
+
+  it("uses Arabic status copy for an Arabic draft", () => {
+    fixture.componentRef.setInput("draft", "اعرض الطلبات");
+    fixture.detectChanges();
+    Object.defineProperty(window, "SpeechRecognition", {
+      configurable: true,
+      value: FakeSpeechRecognition,
+    });
+    fixture.detectChanges();
+
+    component.toggleSpeechInput();
+    expect(component.speechStatus()).toBe("جاري الاستماع...");
+
+    FakeSpeechRecognition.instances.forEach((item) => item.onend?.());
+    expect(component.speechStatus()).toBe("تم إيقاف الإدخال الصوتي.");
+  });
+
+  it("uses Arabic unsupported-browser status for an Arabic draft", () => {
+    delete (window as Window & { SpeechRecognition?: unknown })
+      .SpeechRecognition;
+    delete (window as Window & { webkitSpeechRecognition?: unknown })
+      .webkitSpeechRecognition;
+    fixture = TestBed.createComponent(AiChatComposerComponent);
+    component = fixture.componentInstance;
+    fixture.componentRef.setInput("draft", "اعرض الطلبات");
+    fixture.componentRef.setInput("canSend", true);
+    fixture.componentRef.setInput("loading", false);
+    fixture.detectChanges();
+
+    expect(component.speechStatus()).toBe(
+      "الإدخال الصوتي غير مدعوم في هذا المتصفح.",
+    );
+  });
+
   it("cleans up when recognition start fails synchronously", () => {
     Object.defineProperty(window, "SpeechRecognition", {
       configurable: true,
@@ -484,9 +622,34 @@ function speechResult(
   transcript: string,
   isFinal: boolean,
   confidence?: number,
-): { isFinal: boolean; 0: { transcript: string; confidence?: number } } {
+): {
+  isFinal: boolean;
+  0: { transcript: string; confidence?: number };
+  length: number;
+} {
   return {
     isFinal,
     0: { transcript, confidence },
+    length: 1,
+  };
+}
+
+function speechResultWithAlternatives(
+  alternatives: Array<{ transcript: string; confidence?: number }>,
+  isFinal: boolean,
+): {
+  isFinal: boolean;
+  0: { transcript: string; confidence?: number };
+  length: number;
+  [index: number]: { transcript: string; confidence?: number };
+} {
+  const fallback = alternatives[0] ?? { transcript: "" };
+  return {
+    isFinal,
+    0: fallback,
+    length: Math.max(1, alternatives.length),
+    ...Object.fromEntries(
+      alternatives.map((alternative, index) => [index, alternative]),
+    ),
   };
 }

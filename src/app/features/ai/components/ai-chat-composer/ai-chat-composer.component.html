@@ -17,14 +17,8 @@
         variant="ghost"
         size="icon"
         [disabled]="loading() || !speechSupported()"
-        [ariaLabel]="isListening() ? 'Stop voice input' : 'Start voice input'"
-        [title]="
-          speechSupported()
-            ? isListening()
-              ? 'Stop voice input'
-              : 'Start voice input'
-            : 'Voice input is not supported in this browser'
-        "
+        [ariaLabel]="voiceActionLabel()"
+        [title]="voiceButtonTitle()"
         [ariaPressed]="isListening()"
         [buttonClass]="
           isListening()
