@@ -45,6 +45,14 @@
   gap: 0.25rem;
 }
 
+.composer__recording-time {
+  direction: ltr;
+  font-size: 0.72rem;
+  color: var(--danger);
+  font-variant-numeric: tabular-nums;
+  min-width: 2.5rem;
+}
+
 .composer__speech-status {
   display: block;
   min-height: 1rem;
@@ -76,8 +84,28 @@
   height: 1.1rem;
 }
 
+:host ::ng-deep .composer__voice--busy {
+  opacity: 0.9;
+}
+
 :host ::ng-deep .composer__voice--listening {
   color: var(--danger) !important;
   background: color-mix(in srgb, var(--danger) 12%, transparent) !important;
   border-color: color-mix(in srgb, var(--danger) 35%, transparent) !important;
+}
+
+.composer__spinner {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, var(--foreground) 20%, transparent);
+  border-top-color: var(--foreground);
+  animation: composer-spin 0.8s linear infinite;
+  display: inline-block;
+}
+
+@keyframes composer-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }

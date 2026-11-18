@@ -16,18 +16,20 @@
         type="button"
         variant="ghost"
         size="icon"
-        [disabled]="loading() || !speechSupported()"
+        [disabled]="loading() || isTranscribing() || !speechSupported()"
         [ariaLabel]="voiceActionLabel()"
-        [title]="voiceButtonTitle()"
-        [ariaPressed]="isListening()"
+        [title]="voiceActionLabel()"
+        [ariaPressed]="isRecording()"
         [buttonClass]="
-          isListening()
+          isRecording()
             ? 'composer__voice composer__voice--listening'
+            : isTranscribing()
+              ? 'composer__voice composer__voice--busy'
             : 'composer__voice'
         "
-        (onClick)="toggleSpeechInput()"
+        (onClick)="onVoiceAction()"
       >
-        @if (isListening()) {
+        @if (isRecording()) {
           <svg
             viewBox="0 0 24 24"
             fill="none"
@@ -39,6 +41,8 @@
           >
             <rect x="6" y="6" width="12" height="12" rx="1"></rect>
           </svg>
+        } @else if (isTranscribing()) {
+          <span class="composer__spinner" aria-hidden="true"></span>
         } @else {
           <svg
             viewBox="0 0 24 24"
@@ -58,6 +62,9 @@
           </svg>
         }
       </app-button>
+      @if (isRecording()) {
+        <span class="composer__recording-time">{{ recordingTimerLabel() }}</span>
+      }
       <app-button
         data-testid="ai-submit"
         type="submit"

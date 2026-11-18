@@ -87,6 +87,11 @@ export interface AssistantConfirmActionResponseDto {
   message: string;
 }
 
+export interface AssistantTranscriptionResponseDto {
+  text: string;
+  provider: string;
+}
+
 @Injectable({ providedIn: "root" })
 export class AssistantDataService {
   private readonly http = inject(HttpClient);
@@ -156,6 +161,20 @@ export class AssistantDataService {
         ApiEndpoint.aiConfirmAction(actionId),
         {
           confirmationToken,
+        },
+      )
+      .pipe(map((response) => response.data));
+  }
+
+  transcribe$(audio: Blob): Observable<AssistantTranscriptionResponseDto> {
+    return this.http
+      .post<ApiEnvelope<AssistantTranscriptionResponseDto>>(
+        ApiEndpoint.AI_TRANSCRIBE,
+        audio,
+        {
+          headers: {
+            "Content-Type": audio.type || "audio/webm",
+          },
         },
       )
       .pipe(map((response) => response.data));
