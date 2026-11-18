@@ -118,6 +118,15 @@ export class VoiceInputService implements OnDestroy {
       type: recorder.mimeType || "audio/webm",
     });
     this.chunks.length = 0;
+    if (audioBlob.size <= 1_024) {
+      this.setError(
+        localizedMessage(language, {
+          en: "No clear speech was detected.",
+          ar: "لم يتم التقاط كلام واضح.",
+        }),
+      );
+      return null;
+    }
     this.stateSignal.set("transcribing");
     try {
       const result = await firstValueFrom(
@@ -215,6 +224,21 @@ function mapVoiceError(error: unknown, language: VoiceLanguage): string {
     typeof (error as { status?: unknown }).status === "number"
       ? (error as { status: number }).status
       : 0;
+  const errorCode =
+    typeof error === "object" &&
+    error !== null &&
+    "error" in error &&
+    typeof (error as { error?: unknown }).error === "object" &&
+    (error as { error?: { error?: { code?: unknown } } }).error?.error &&
+    typeof (error as { error?: { error?: { code?: unknown } } }).error?.error?.code === "string"
+      ? (error as { error: { error: { code: string } } }).error.error.code
+      : "";
+  if (status === 400 && errorCode === "VALIDATION_ERROR") {
+    return localizedMessage(language, {
+      en: "No clear speech was detected.",
+      ar: "لم يتم التقاط كلام واضح.",
+    });
+  }
   if (status === 429) {
     return localizedMessage(language, {
       en: "Voice requests are limited right now. Try again shortly.",

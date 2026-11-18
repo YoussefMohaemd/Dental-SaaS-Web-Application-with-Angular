@@ -93,7 +93,7 @@ describe("VoiceInputService", () => {
 
     await service.start();
     nowMs = 1_000;
-    recorder.emitData(new Blob(["voice"], { type: "audio/webm" }));
+    recorder.emitData(new Blob([new Uint8Array(2_048)], { type: "audio/webm" }));
     const result = await service.stop();
 
     expect(assistantDataService.transcribe$).toHaveBeenCalled();
@@ -127,12 +127,26 @@ describe("VoiceInputService", () => {
 
     await service.start();
     nowMs = 1_000;
-    recorder.emitData(new Blob(["voice-data-more-than-half-second"], { type: "audio/webm" }));
+    recorder.emitData(new Blob([new Uint8Array(2_048)], { type: "audio/webm" }));
     await service.stop();
 
     expect(service.state()).toBe("error");
     expect(service.errorMessage()).toContain("limit");
     expect(fakeTrack.stop).toHaveBeenCalled();
+  });
+
+  it("does not call backend when recorder produced no audio data", async () => {
+    const recorder = createRecorderSpy();
+    mediaRecorderFactory = () => recorder.instance;
+
+    await service.start();
+    nowMs = 1_000;
+    const result = await service.stop();
+
+    expect(result).toBeNull();
+    expect(assistantDataService.transcribe$).not.toHaveBeenCalled();
+    expect(service.state()).toBe("error");
+    expect(service.errorMessage()).toContain("speech");
   });
 
   it("auto-stops after 60 seconds", async () => {

@@ -13,7 +13,7 @@ export class ApiEndpoint {
   static readonly DASHBOARD_VOLUME = `${environment.apiBaseUrl}/v1/dashboard/volume`;
   static readonly AI_SUGGESTIONS = `${environment.apiBaseUrl}/v1/ai/suggestions`;
   static readonly AI_CONVERSATIONS = `${environment.apiBaseUrl}/v1/ai/conversations`;
-  static readonly AI_TRANSCRIBE = `${environment.apiBaseUrl}/v1/assistant/transcribe`;
+  static readonly AI_TRANSCRIBE = `${environment.apiBaseUrl}/v1/ai/transcribe`;
   static readonly DOCTORS = `${environment.apiBaseUrl}/v1/doctors`;
   static readonly DOCUMENTS = `${environment.apiBaseUrl}/v1/documents`;
   static readonly NOTIFICATIONS = `${environment.apiBaseUrl}/v1/notifications`;
