@@ -130,7 +130,7 @@ export class VoiceInputService implements OnDestroy {
     this.stateSignal.set("transcribing");
     try {
       const result = await firstValueFrom(
-        this.assistantDataService.transcribe$(audioBlob),
+        this.assistantDataService.transcribe$(audioBlob, language),
       );
       if (!result.text?.trim()) {
         this.setError(localizedMessage(language, {

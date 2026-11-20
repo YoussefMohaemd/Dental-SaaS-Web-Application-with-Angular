@@ -97,9 +97,28 @@ describe("VoiceInputService", () => {
     const result = await service.stop();
 
     expect(assistantDataService.transcribe$).toHaveBeenCalled();
+    expect(assistantDataService.transcribe$).toHaveBeenCalledWith(jasmine.any(Blob), "en");
     expect(result?.text).toBe("عايز أعمل order");
     expect(service.state()).toBe("idle");
     expect(fakeTrack.stop).toHaveBeenCalled();
+  });
+
+  it("passes explicit language hint to transcription call", async () => {
+    const recorder = createRecorderSpy();
+    mediaRecorderFactory = () => recorder.instance;
+    assistantDataService.transcribe$.and.returnValue(
+      of({ text: "النص", provider: "groq" }),
+    );
+
+    await service.start("ar");
+    nowMs = 1_000;
+    recorder.emitData(new Blob([new Uint8Array(2_048)], { type: "audio/webm" }));
+    await service.stop("ar");
+
+    expect(assistantDataService.transcribe$).toHaveBeenCalledWith(
+      jasmine.any(Blob),
+      "ar",
+    );
   });
 
   it("does not upload clips shorter than half second", async () => {
