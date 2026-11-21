@@ -1,142 +1,74 @@
+import { signal } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 import { of, throwError } from "rxjs";
 
 import { AssistantDataService } from "@core/services/assistant-data.service";
+import { VoiceRecorderService } from "./voice-recorder.service";
 import { VoiceInputService } from "./voice-input.service";
 
 describe("VoiceInputService", () => {
   let service: VoiceInputService;
   let assistantDataService: jasmine.SpyObj<AssistantDataService>;
-  let fakeTrack: { stop: jasmine.Spy };
-  let mediaRecorderFactory: ((stream: MediaStream, options?: MediaRecorderOptions) => MediaRecorder) | null;
+  let recorder: FakeVoiceRecorderService;
   let nowMs: number;
-  let scheduledAutoStop: (() => void) | null;
 
   beforeEach(() => {
     assistantDataService = jasmine.createSpyObj<AssistantDataService>(
       "AssistantDataService",
       ["transcribe$"],
     );
-    fakeTrack = { stop: jasmine.createSpy("stop") };
-    mediaRecorderFactory = null;
+    recorder = new FakeVoiceRecorderService();
     nowMs = 0;
-    scheduledAutoStop = null;
     spyOn(Date, "now").and.callFake(() => nowMs);
-    spyOn(window, "setTimeout").and.callFake(
-      ((handler: TimerHandler) => {
-        scheduledAutoStop =
-          typeof handler === "function" ? (handler as () => void) : null;
-        return 1;
-      }) as typeof window.setTimeout,
-    );
-
-    Object.defineProperty(navigator, "mediaDevices", {
-      configurable: true,
-      value: {
-        getUserMedia: jasmine
-          .createSpy("getUserMedia")
-          .and.resolveTo({ getTracks: () => [fakeTrack] }),
-      },
-    });
-
-    (window as unknown as { MediaRecorder: typeof MediaRecorder }).MediaRecorder =
-      class FakeMediaRecorder {
-        static isTypeSupported(type: string): boolean {
-          return type === "audio/webm;codecs=opus";
-        }
-
-        public ondataavailable: ((event: BlobEvent) => void) | null = null;
-        public onstop: (() => void) | null = null;
-        public state: RecordingState = "inactive";
-
-        constructor(
-          stream: MediaStream,
-          options?: MediaRecorderOptions,
-        ) {
-          if (!mediaRecorderFactory) {
-            return;
-          }
-          return mediaRecorderFactory(stream, options) as unknown as FakeMediaRecorder;
-        }
-
-        start(): void {}
-        stop(): void {}
-      } as unknown as typeof MediaRecorder;
 
     TestBed.configureTestingModule({
       providers: [
         VoiceInputService,
         { provide: AssistantDataService, useValue: assistantDataService },
+        { provide: VoiceRecorderService, useValue: recorder },
       ],
     });
     service = TestBed.inject(VoiceInputService);
   });
 
-  it("prefers audio/webm;codecs=opus when supported", async () => {
-    const recorder = createRecorderSpy();
-    mediaRecorderFactory = (_stream, options) => {
-      recorder.capturedOptions = options;
-      return recorder.instance;
-    };
+  it("starts recorder with selected language", async () => {
+    await service.start("ar");
 
-    await service.start();
-    expect(recorder.capturedOptions?.mimeType).toBe("audio/webm;codecs=opus");
+    expect(recorder.start).toHaveBeenCalledWith({ language: "ar" });
     expect(service.state()).toBe("recording");
   });
 
   it("uploads blob on stop and transitions to idle", async () => {
-    const recorder = createRecorderSpy();
-    mediaRecorderFactory = () => recorder.instance;
+    recorder.nextBlob = new Blob([new Uint8Array(2_048)], { type: "audio/webm" });
     assistantDataService.transcribe$.and.returnValue(
       of({ text: "عايز أعمل order", provider: "groq" }),
     );
 
-    await service.start();
+    await service.start("en");
     nowMs = 1_000;
-    recorder.emitData(new Blob([new Uint8Array(2_048)], { type: "audio/webm" }));
-    const result = await service.stop();
-
-    expect(assistantDataService.transcribe$).toHaveBeenCalled();
-    expect(assistantDataService.transcribe$).toHaveBeenCalledWith(jasmine.any(Blob), "en");
-    expect(result?.text).toBe("عايز أعمل order");
-    expect(service.state()).toBe("idle");
-    expect(fakeTrack.stop).toHaveBeenCalled();
-  });
-
-  it("passes explicit language hint to transcription call", async () => {
-    const recorder = createRecorderSpy();
-    mediaRecorderFactory = () => recorder.instance;
-    assistantDataService.transcribe$.and.returnValue(
-      of({ text: "النص", provider: "groq" }),
-    );
-
-    await service.start("ar");
-    nowMs = 1_000;
-    recorder.emitData(new Blob([new Uint8Array(2_048)], { type: "audio/webm" }));
-    await service.stop("ar");
+    const result = await service.stop("en");
 
     expect(assistantDataService.transcribe$).toHaveBeenCalledWith(
       jasmine.any(Blob),
-      "ar",
+      "en",
     );
+    expect(result?.text).toBe("عايز أعمل order");
+    expect(service.state()).toBe("idle");
   });
 
   it("does not upload clips shorter than half second", async () => {
-    const recorder = createRecorderSpy();
-    mediaRecorderFactory = () => recorder.instance;
+    recorder.nextBlob = new Blob([new Uint8Array(2_048)], { type: "audio/webm" });
 
-    await service.start();
+    await service.start("auto");
     nowMs = 200;
-    recorder.emitData(new Blob(["a"], { type: "audio/webm" }));
-    const result = await service.stop();
+    const result = await service.stop("auto");
 
     expect(result).toBeNull();
     expect(assistantDataService.transcribe$).not.toHaveBeenCalled();
   });
 
   it("maps rate-limit error to user friendly message", async () => {
-    const recorder = createRecorderSpy();
-    mediaRecorderFactory = () => recorder.instance;
+    recorder.nextBlob = new Blob([new Uint8Array(2_048)], { type: "audio/webm" });
     assistantDataService.transcribe$.and.returnValue(
       throwError(() => ({
         status: 429,
@@ -144,89 +76,41 @@ describe("VoiceInputService", () => {
       })),
     );
 
-    await service.start();
+    await service.start("en");
     nowMs = 1_000;
-    recorder.emitData(new Blob([new Uint8Array(2_048)], { type: "audio/webm" }));
-    await service.stop();
+    await service.stop("en");
 
     expect(service.state()).toBe("error");
-    expect(service.errorMessage()).toContain("limit");
-    expect(fakeTrack.stop).toHaveBeenCalled();
+    expect(service.errorMessage()).toContain("limited");
   });
 
-  it("does not call backend when recorder produced no audio data", async () => {
-    const recorder = createRecorderSpy();
-    mediaRecorderFactory = () => recorder.instance;
+  it("returns null when recorder reports no speech", async () => {
+    recorder.nextBlob = null;
 
-    await service.start();
+    await service.start("ar");
     nowMs = 1_000;
-    const result = await service.stop();
+    const result = await service.stop("ar");
 
     expect(result).toBeNull();
     expect(assistantDataService.transcribe$).not.toHaveBeenCalled();
     expect(service.state()).toBe("error");
-    expect(service.errorMessage()).toContain("speech");
-  });
-
-  it("auto-stops after 60 seconds", async () => {
-    const recorder = createRecorderSpy();
-    mediaRecorderFactory = () => recorder.instance;
-    assistantDataService.transcribe$.and.returnValue(of({ text: "ready", provider: "groq" }));
-
-    await service.start();
-    nowMs = 1_000;
-    recorder.emitData(new Blob(["voice-data-more-than-half-second"], { type: "audio/webm" }));
-    scheduledAutoStop?.();
-    await Promise.resolve();
-
-    expect(recorder.stop).toHaveBeenCalled();
-    expect(fakeTrack.stop).toHaveBeenCalled();
   });
 });
 
-function createRecorderSpy(): {
-  instance: MediaRecorder;
-  stop: jasmine.Spy;
-  emitData: (blob: Blob) => void;
-  capturedOptions?: MediaRecorderOptions;
-} {
-  const state = { value: "inactive" as RecordingState };
-  const listeners: {
-    ondataavailable: ((event: BlobEvent) => void) | null;
-    onstop: (() => void) | null;
-  } = { ondataavailable: null, onstop: null };
-
-  const stop = jasmine.createSpy("stop").and.callFake(() => {
-    state.value = "inactive";
-    listeners.onstop?.();
+class FakeVoiceRecorderService {
+  private readonly levelSignal = signal(0);
+  private readonly stateSignal = signal<"idle" | "recording">("idle");
+  readonly level = this.levelSignal.asReadonly();
+  readonly state = this.stateSignal.asReadonly();
+  nextBlob: Blob | null = null;
+  readonly start = jasmine
+    .createSpy("start")
+    .and.callFake(async () => this.stateSignal.set("recording"));
+  readonly stop = jasmine.createSpy("stop").and.callFake(async () => {
+    this.stateSignal.set("idle");
+    return this.nextBlob;
   });
-
-  const instance = {
-    start: jasmine.createSpy("start").and.callFake(() => {
-      state.value = "recording";
-    }),
-    stop,
-    get state() {
-      return state.value;
-    },
-    set ondataavailable(handler: ((event: BlobEvent) => void) | null) {
-      listeners.ondataavailable = handler;
-    },
-    get ondataavailable() {
-      return listeners.ondataavailable;
-    },
-    set onstop(handler: (() => void) | null) {
-      listeners.onstop = handler;
-    },
-    get onstop() {
-      return listeners.onstop;
-    },
-  } as unknown as MediaRecorder;
-
-  return {
-    instance,
-    stop,
-    emitData: (blob: Blob) =>
-      listeners.ondataavailable?.({ data: blob } as BlobEvent),
-  };
+  readonly cancel = jasmine
+    .createSpy("cancel")
+    .and.callFake(() => this.stateSignal.set("idle"));
 }

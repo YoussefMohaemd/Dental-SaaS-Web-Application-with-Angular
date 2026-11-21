@@ -15,8 +15,15 @@ import {
 } from "@angular/core";
 
 import { AppButtonComponent } from "@shared/components/button/button.component";
+import {
+  type AssistantVoiceLanguageHint,
+  type AssistantTranscriptionResponseDto,
+} from "@core/services/assistant-data.service";
 import { VoiceInputService } from "../../state/voice-input.service";
-import { detectAiInputLanguage, type AiInputLanguage } from "../../state/ai-language";
+import {
+  readVoiceLanguagePreference,
+  writeVoiceLanguagePreference,
+} from "../../state/voice-language-preference";
 
 @Component({
   selector: "app-ai-chat-composer",
@@ -39,6 +46,12 @@ export class AiChatComposerComponent
     viewChild<ElementRef<HTMLTextAreaElement>>("promptField");
   private readonly voiceInput = inject(VoiceInputService);
   private readonly speechStatusText = signal("");
+  private readonly selectedVoiceLanguageSignal = signal<AssistantVoiceLanguageHint>(
+    readVoiceLanguagePreference(),
+  );
+  private readonly ambiguitiesSignal = signal<
+    NonNullable<AssistantTranscriptionResponseDto["ambiguities"]>
+  >([]);
 
   readonly voiceState = this.voiceInput.state;
   readonly elapsedSeconds = this.voiceInput.elapsedSeconds;
@@ -51,6 +64,8 @@ export class AiChatComposerComponent
     }
     return this.speechStatusText();
   });
+  readonly selectedVoiceLanguage = computed(() => this.selectedVoiceLanguageSignal());
+  readonly ambiguities = computed(() => this.ambiguitiesSignal());
 
   ngAfterViewInit(): void {
     this.syncFieldValue();
@@ -68,6 +83,7 @@ export class AiChatComposerComponent
   onInput(event: Event): void {
     const value = (event.target as HTMLTextAreaElement).value;
     this.draftChanged.emit(value);
+    this.ambiguitiesSignal.set([]);
     this.resize();
   }
 
@@ -93,6 +109,7 @@ export class AiChatComposerComponent
       field.focus();
     }
     this.speechStatusText.set("");
+    this.ambiguitiesSignal.set([]);
     this.draftChanged.emit("");
   }
 
@@ -101,13 +118,14 @@ export class AiChatComposerComponent
       return;
     }
 
-    const language = this.activeInputLanguage();
+    const language = this.selectedVoiceLanguageSignal();
     if (this.isRecording()) {
       this.setSpeechStatus(
         "Transcribing...",
         "جاري تحويل الصوت إلى نص...",
       );
       const result = await this.voiceInput.stop(language);
+      this.handleAmbiguities(result);
       if (result?.text.trim()) {
         this.insertTranscript(result.text);
       } else if (this.voiceState() !== "error") {
@@ -117,6 +135,7 @@ export class AiChatComposerComponent
     }
 
     await this.voiceInput.start(language);
+    this.ambiguitiesSignal.set([]);
     if (this.voiceState() === "recording") {
       this.setSpeechStatus("Listening...", "جاري الاستماع...");
       return;
@@ -149,6 +168,21 @@ export class AiChatComposerComponent
     this.onSubmit();
   }
 
+  onVoiceLanguageChange(event: Event): void {
+    const nextValue = (event.target as HTMLSelectElement)
+      .value as AssistantVoiceLanguageHint;
+    if (!["auto", "ar", "en", "mixed"].includes(nextValue)) {
+      return;
+    }
+    this.selectedVoiceLanguageSignal.set(nextValue);
+    writeVoiceLanguagePreference(nextValue);
+  }
+
+  onAmbiguityCandidateSelected(label: string): void {
+    this.insertTranscript(label);
+    this.ambiguitiesSignal.set([]);
+  }
+
   syncFieldValue(): void {
     const field = this.promptField()?.nativeElement;
     if (!field) {
@@ -173,20 +207,26 @@ export class AiChatComposerComponent
     field.style.overflowY = field.scrollHeight > maxHeight ? "auto" : "hidden";
   }
 
-  private currentDraftValue(): string {
-    return this.promptField()?.nativeElement.value ?? this.draft();
-  }
-
-  private activeInputLanguage(): AiInputLanguage {
-    return detectAiInputLanguage(this.currentDraftValue().trim());
-  }
-
   private speechMessage(english: string, arabic: string): string {
-    return this.activeInputLanguage() === "en" ? english : arabic;
+    const language = this.selectedVoiceLanguageSignal();
+    if (language === "ar" || language === "mixed") {
+      return arabic;
+    }
+    return english;
   }
 
   private setSpeechStatus(english: string, arabic: string): void {
     this.speechStatusText.set(this.speechMessage(english, arabic));
+  }
+
+  private handleAmbiguities(
+    result: AssistantTranscriptionResponseDto | null,
+  ): void {
+    if (result?.ambiguities?.length) {
+      this.ambiguitiesSignal.set(result.ambiguities);
+      return;
+    }
+    this.ambiguitiesSignal.set([]);
   }
 
   private insertTranscript(text: string): void {

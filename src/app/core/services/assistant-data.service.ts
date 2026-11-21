@@ -90,9 +90,16 @@ export interface AssistantConfirmActionResponseDto {
 export interface AssistantTranscriptionResponseDto {
   text: string;
   provider: string;
+  ambiguities?: Array<{
+    kind: "doctor" | "clinic" | "service" | "patient";
+    candidates: Array<{
+      id: string;
+      label: string;
+    }>;
+  }>;
 }
 
-export type AssistantVoiceLanguageHint = "ar" | "en" | "mixed";
+export type AssistantVoiceLanguageHint = "auto" | "ar" | "en" | "mixed";
 
 @Injectable({ providedIn: "root" })
 export class AssistantDataService {
@@ -170,16 +177,19 @@ export class AssistantDataService {
 
   transcribe$(
     audio: Blob,
-    languageHint?: AssistantVoiceLanguageHint,
+    languageHint: AssistantVoiceLanguageHint = "auto",
   ): Observable<AssistantTranscriptionResponseDto> {
     return this.http
       .post<ApiEnvelope<AssistantTranscriptionResponseDto>>(
         ApiEndpoint.AI_TRANSCRIBE,
         audio,
         {
+          params: {
+            language: languageHint,
+          },
           headers: {
             "Content-Type": audio.type || "audio/webm",
-            ...(languageHint
+            ...(languageHint !== "auto"
               ? { "X-Language-Hint": languageHint }
               : {}),
           },

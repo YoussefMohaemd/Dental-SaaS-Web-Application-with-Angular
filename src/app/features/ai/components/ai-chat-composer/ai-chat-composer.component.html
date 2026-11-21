@@ -11,6 +11,20 @@
     ></textarea>
 
     <div class="composer__actions">
+      <label class="composer__language-wrap">
+        <span class="sr-only">Voice language</span>
+        <select
+          data-testid="voice-language"
+          class="composer__language"
+          [value]="selectedVoiceLanguage()"
+          (change)="onVoiceLanguageChange($event)"
+        >
+          <option value="auto">Auto</option>
+          <option value="ar">العربية</option>
+          <option value="en">English</option>
+          <option value="mixed">Mixed</option>
+        </select>
+      </label>
       <app-button
         data-testid="ai-voice"
         type="button"
@@ -82,4 +96,20 @@
   <span class="composer__speech-status" aria-live="polite">{{
     speechStatus()
   }}</span>
+  @if (ambiguities().length > 0) {
+    <div class="composer__ambiguities">
+      @for (group of ambiguities(); track group.kind) {
+        @for (candidate of group.candidates; track candidate.id) {
+          <button
+            type="button"
+            data-testid="ambiguity-chip"
+            class="composer__chip"
+            (click)="onAmbiguityCandidateSelected(candidate.label)"
+          >
+            {{ candidate.label }}
+          </button>
+        }
+      }
+    </div>
+  }
 </form>

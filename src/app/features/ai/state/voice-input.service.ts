@@ -3,122 +3,70 @@ import { firstValueFrom } from "rxjs";
 
 import {
   AssistantDataService,
+  type AssistantVoiceLanguageHint,
   type AssistantTranscriptionResponseDto,
 } from "@core/services/assistant-data.service";
+import { VoiceRecorderService } from "./voice-recorder.service";
 
 export type VoiceInputState = "idle" | "recording" | "transcribing" | "error";
-type VoiceLanguage = "ar" | "en" | "mixed";
+type VoiceLanguage = AssistantVoiceLanguageHint;
 
 @Injectable({ providedIn: "root" })
 export class VoiceInputService implements OnDestroy {
-  private readonly chunks: Blob[] = [];
-  private mediaRecorder: MediaRecorder | null = null;
-  private mediaStream: MediaStream | null = null;
   private startedAtMs = 0;
   private timerId: ReturnType<typeof setInterval> | null = null;
-  private autoStopTimerId: ReturnType<typeof setTimeout> | null = null;
   private readonly stateSignal = signal<VoiceInputState>("idle");
   private readonly elapsedSecondsSignal = signal(0);
   private readonly errorMessageSignal = signal("");
-  private readonly activeLanguageSignal = signal<VoiceLanguage>("en");
+  private readonly activeLanguageSignal = signal<VoiceLanguage>("auto");
 
   readonly state = computed(() => this.stateSignal());
   readonly elapsedSeconds = computed(() => this.elapsedSecondsSignal());
   readonly errorMessage = computed(() => this.errorMessageSignal());
+  readonly level = this.recorder.level;
 
-  public constructor(private readonly assistantDataService: AssistantDataService) {}
+  public constructor(
+    private readonly assistantDataService: AssistantDataService,
+    private readonly recorder: VoiceRecorderService,
+  ) {}
 
-  async start(language: VoiceLanguage = "en"): Promise<void> {
+  async start(language: VoiceLanguage = "auto"): Promise<void> {
     this.activeLanguageSignal.set(language);
     this.clearError();
     this.stopTimers();
-    this.chunks.length = 0;
-
-    const mediaDevices = navigator.mediaDevices;
-    if (!mediaDevices?.getUserMedia) {
-      this.setError(localizedMessage(language, {
-        en: "No microphone is available in this browser.",
-        ar: "الميكروفون غير متاح في هذا المتصفح.",
-      }));
-      return;
-    }
-
-    try {
-      this.mediaStream = await mediaDevices.getUserMedia({ audio: true });
-    } catch {
-      this.setError(localizedMessage(language, {
-        en: "Microphone permission was denied.",
-        ar: "تم رفض إذن الميكروفون.",
-      }));
-      return;
-    }
-
-    const mimeType = selectMimeType();
-    try {
-      this.mediaRecorder = mimeType
-        ? new MediaRecorder(this.mediaStream, { mimeType })
-        : new MediaRecorder(this.mediaStream);
-    } catch {
-      this.releaseMicrophone();
-      this.setError(localizedMessage(language, {
-        en: "Unable to start voice recording.",
-        ar: "تعذر بدء تسجيل الصوت.",
-      }));
-      return;
-    }
-
-    this.mediaRecorder.ondataavailable = (event: BlobEvent) => {
-      if (event.data.size > 0) {
-        this.chunks.push(event.data);
-      }
-    };
 
     this.startedAtMs = Date.now();
     this.elapsedSecondsSignal.set(0);
-    this.stateSignal.set("recording");
-    this.timerId = setInterval(() => {
-      const elapsed = Math.floor((Date.now() - this.startedAtMs) / 1_000);
-      this.elapsedSecondsSignal.set(Math.max(0, elapsed));
-    }, 1_000);
-    this.autoStopTimerId = setTimeout(() => {
-      void this.stop();
-    }, 60_000);
-    this.mediaRecorder.start();
+    try {
+      await this.recorder.start({ language });
+      this.stateSignal.set("recording");
+      this.timerId = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - this.startedAtMs) / 1_000);
+        this.elapsedSecondsSignal.set(Math.max(0, elapsed));
+      }, 1_000);
+    } catch {
+      this.setError(
+        localizedMessage(language, {
+          en: "Microphone permission was denied.",
+          ar: "تم رفض إذن الميكروفون.",
+        }),
+      );
+    }
   }
 
   async stop(language: VoiceLanguage = this.activeLanguageSignal()): Promise<AssistantTranscriptionResponseDto | null> {
     this.activeLanguageSignal.set(language);
-    const recorder = this.mediaRecorder;
-    if (!recorder) {
-      this.releaseMicrophone();
-      this.stopTimers();
-      this.stateSignal.set("idle");
-      return null;
-    }
-
     const recordingDurationMs = Date.now() - this.startedAtMs;
-    if (recorder.state !== "inactive") {
-      await new Promise<void>((resolve) => {
-        recorder.onstop = () => resolve();
-        recorder.stop();
-      });
-    }
-
     this.stopTimers();
-    this.releaseMicrophone();
-    this.mediaRecorder = null;
 
     if (recordingDurationMs < 500) {
       this.stateSignal.set("idle");
-      this.chunks.length = 0;
+      await this.recorder.stop();
       return null;
     }
 
-    const audioBlob = new Blob(this.chunks, {
-      type: recorder.mimeType || "audio/webm",
-    });
-    this.chunks.length = 0;
-    if (audioBlob.size <= 1_024) {
+    const audioBlob = await this.recorder.stop();
+    if (!audioBlob) {
       this.setError(
         localizedMessage(language, {
           en: "No clear speech was detected.",
@@ -148,17 +96,8 @@ export class VoiceInputService implements OnDestroy {
   }
 
   cancel(): void {
-    try {
-      if (this.mediaRecorder && this.mediaRecorder.state !== "inactive") {
-        this.mediaRecorder.stop();
-      }
-    } catch {
-      // ignore stop failures, cleanup still runs
-    }
-    this.mediaRecorder = null;
-    this.chunks.length = 0;
+    this.recorder.cancel();
     this.stopTimers();
-    this.releaseMicrophone();
     this.clearError();
     this.stateSignal.set("idle");
   }
@@ -181,39 +120,7 @@ export class VoiceInputService implements OnDestroy {
       clearInterval(this.timerId);
       this.timerId = null;
     }
-    if (this.autoStopTimerId) {
-      clearTimeout(this.autoStopTimerId);
-      this.autoStopTimerId = null;
-    }
   }
-
-  private releaseMicrophone(): void {
-    if (!this.mediaStream) {
-      return;
-    }
-    for (const track of this.mediaStream.getTracks()) {
-      track.stop();
-    }
-    this.mediaStream = null;
-  }
-}
-
-function selectMimeType(): string | undefined {
-  if (typeof MediaRecorder === "undefined") {
-    return undefined;
-  }
-
-  if (MediaRecorder.isTypeSupported("audio/webm;codecs=opus")) {
-    return "audio/webm;codecs=opus";
-  }
-  if (MediaRecorder.isTypeSupported("audio/mp4")) {
-    return "audio/mp4";
-  }
-  if (MediaRecorder.isTypeSupported("audio/webm")) {
-    return "audio/webm";
-  }
-
-  return undefined;
 }
 
 function mapVoiceError(error: unknown, language: VoiceLanguage): string {
