@@ -56,6 +56,43 @@ describe("VoiceInputService", () => {
     expect(service.state()).toBe("idle");
   });
 
+  it("keeps the recording after a 503 and retries without re-recording", async () => {
+    recorder.nextBlob = new Blob([new Uint8Array(2_048)], { type: "audio/webm" });
+    assistantDataService.transcribe$.and.returnValues(
+      throwError(() => ({ status: 503 })),
+      of({ text: "hello doctor", provider: "gemini" }),
+    );
+
+    await service.start("en");
+    nowMs = 1_000;
+    const first = await service.stop("en");
+
+    expect(first).toBeNull();
+    expect(service.state()).toBe("error");
+    expect(service.canRetry()).toBeTrue();
+
+    const second = await service.retry("en");
+
+    expect(second?.text).toBe("hello doctor");
+    expect(service.state()).toBe("idle");
+    expect(service.canRetry()).toBeFalse();
+    expect(recorder.start).toHaveBeenCalledTimes(1);
+    expect(assistantDataService.transcribe$).toHaveBeenCalledTimes(2);
+  });
+
+  it("does not offer retry for non-transient errors", async () => {
+    recorder.nextBlob = new Blob([new Uint8Array(2_048)], { type: "audio/webm" });
+    assistantDataService.transcribe$.and.returnValue(
+      throwError(() => ({ status: 415 })),
+    );
+
+    await service.start("en");
+    nowMs = 1_000;
+    await service.stop("en");
+
+    expect(service.canRetry()).toBeFalse();
+  });
+
   it("does not upload clips shorter than half second", async () => {
     recorder.nextBlob = new Blob([new Uint8Array(2_048)], { type: "audio/webm" });
 

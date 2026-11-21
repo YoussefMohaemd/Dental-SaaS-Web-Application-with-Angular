@@ -55,6 +55,7 @@ export class AiChatComposerComponent
 
   readonly voiceState = this.voiceInput.state;
   readonly elapsedSeconds = this.voiceInput.elapsedSeconds;
+  readonly canRetryVoice = this.voiceInput.canRetry;
   readonly isRecording = computed(() => this.voiceState() === "recording");
   readonly isTranscribing = computed(() => this.voiceState() === "transcribing");
   readonly speechSupported = computed(() => supportsVoiceRecording());
@@ -141,6 +142,20 @@ export class AiChatComposerComponent
       return;
     }
     if (this.voiceState() !== "error") {
+      this.speechStatusText.set("");
+    }
+  }
+
+  async onVoiceRetry(): Promise<void> {
+    if (this.loading() || this.isTranscribing()) {
+      return;
+    }
+    this.setSpeechStatus("Transcribing...", "جاري تحويل الصوت إلى نص...");
+    const result = await this.voiceInput.retry(this.selectedVoiceLanguageSignal());
+    this.handleAmbiguities(result);
+    if (result?.text.trim()) {
+      this.insertTranscript(result.text);
+    } else if (this.voiceState() !== "error") {
       this.speechStatusText.set("");
     }
   }

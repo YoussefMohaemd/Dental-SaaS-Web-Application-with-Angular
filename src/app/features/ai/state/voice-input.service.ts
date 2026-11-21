@@ -19,10 +19,14 @@ export class VoiceInputService implements OnDestroy {
   private readonly elapsedSecondsSignal = signal(0);
   private readonly errorMessageSignal = signal("");
   private readonly activeLanguageSignal = signal<VoiceLanguage>("auto");
+  /** Last recording that failed to transcribe for a transient reason, kept so the user can retry without re-speaking. */
+  private pendingAudio: Blob | null = null;
+  private readonly canRetrySignal = signal(false);
 
   readonly state = computed(() => this.stateSignal());
   readonly elapsedSeconds = computed(() => this.elapsedSecondsSignal());
   readonly errorMessage = computed(() => this.errorMessageSignal());
+  readonly canRetry = computed(() => this.canRetrySignal());
   readonly level = this.recorder.level;
 
   public constructor(
@@ -33,6 +37,7 @@ export class VoiceInputService implements OnDestroy {
   async start(language: VoiceLanguage = "auto"): Promise<void> {
     this.activeLanguageSignal.set(language);
     this.clearError();
+    this.discardPendingAudio();
     this.stopTimers();
 
     this.startedAtMs = Date.now();
@@ -75,27 +80,57 @@ export class VoiceInputService implements OnDestroy {
       );
       return null;
     }
+    return this.transcribeBlob(audioBlob, language);
+  }
+
+  /** Re-sends the last recording after a transient failure (no need to speak again). */
+  async retry(
+    language: VoiceLanguage = this.activeLanguageSignal(),
+  ): Promise<AssistantTranscriptionResponseDto | null> {
+    const audioBlob = this.pendingAudio;
+    if (!audioBlob || this.stateSignal() === "transcribing") {
+      return null;
+    }
+    this.activeLanguageSignal.set(language);
+    this.clearError();
+    return this.transcribeBlob(audioBlob, language);
+  }
+
+  private async transcribeBlob(
+    audioBlob: Blob,
+    language: VoiceLanguage,
+  ): Promise<AssistantTranscriptionResponseDto | null> {
     this.stateSignal.set("transcribing");
+    this.canRetrySignal.set(false);
     try {
       const result = await firstValueFrom(
         this.assistantDataService.transcribe$(audioBlob, language),
       );
       if (!result.text?.trim()) {
+        this.discardPendingAudio();
         this.setError(localizedMessage(language, {
           en: "No clear speech was detected.",
           ar: "لم يتم التقاط كلام واضح.",
         }));
         return null;
       }
+      this.discardPendingAudio();
       this.stateSignal.set("idle");
       return result;
     } catch (error) {
+      if (isTransientVoiceError(error)) {
+        this.pendingAudio = audioBlob;
+        this.canRetrySignal.set(true);
+      } else {
+        this.discardPendingAudio();
+      }
       this.setError(mapVoiceError(error, language));
       return null;
     }
   }
 
   cancel(): void {
+    this.discardPendingAudio();
     this.recorder.cancel();
     this.stopTimers();
     this.clearError();
@@ -111,6 +146,11 @@ export class VoiceInputService implements OnDestroy {
     this.stateSignal.set("error");
   }
 
+  private discardPendingAudio(): void {
+    this.pendingAudio = null;
+    this.canRetrySignal.set(false);
+  }
+
   private clearError(): void {
     this.errorMessageSignal.set("");
   }
@@ -121,6 +161,17 @@ export class VoiceInputService implements OnDestroy {
       this.timerId = null;
     }
   }
+}
+
+function isTransientVoiceError(error: unknown): boolean {
+  const status =
+    typeof error === "object" &&
+    error !== null &&
+    "status" in error &&
+    typeof (error as { status?: unknown }).status === "number"
+      ? (error as { status: number }).status
+      : 0;
+  return status === 0 || status === 429 || status >= 500;
 }
 
 function mapVoiceError(error: unknown, language: VoiceLanguage): string {

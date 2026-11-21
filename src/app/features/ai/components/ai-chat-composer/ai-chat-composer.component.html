@@ -96,6 +96,16 @@
   <span class="composer__speech-status" aria-live="polite">{{
     speechStatus()
   }}</span>
+  @if (canRetryVoice()) {
+    <button
+      type="button"
+      class="composer__voice-retry"
+      data-testid="voice-retry"
+      (click)="onVoiceRetry()"
+    >
+      Retry / إعادة المحاولة
+    </button>
+  }
   @if (ambiguities().length > 0) {
     <div class="composer__ambiguities">
       @for (group of ambiguities(); track group.kind) {
