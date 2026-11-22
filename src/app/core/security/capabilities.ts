@@ -35,6 +35,8 @@ export const DENTAL_CAPABILITIES = [
   "users.read",
   "users.manage",
   "auth.sessions.revoke",
+  "assistant.conversations.review",
+  "assistant.catalog.manage",
   "forms.read",
   "grid.read",
 ] as const;

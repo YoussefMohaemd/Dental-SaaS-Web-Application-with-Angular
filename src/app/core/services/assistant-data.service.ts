@@ -87,6 +87,80 @@ export interface AssistantConfirmActionResponseDto {
   message: string;
 }
 
+export interface AssistantAdminConversationSummaryDto {
+  id: string;
+  ownerUserId: string;
+  ownerName: string;
+  ownerRoles: string[];
+  title: string;
+  status: "active" | "pending_confirmation";
+  createdAt: string;
+  updatedAt: string;
+  preview: string;
+}
+
+export interface AssistantAdminConversationsResponseDto {
+  items: AssistantAdminConversationSummaryDto[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export interface AssistantAdminConversationDetailsDto {
+  conversation: AssistantConversationViewDto & { ownerUserId: string };
+  llmCalls: Array<{
+    callId: string;
+    messageId: string;
+    provider: string;
+    model: string;
+    promptVersion: string;
+    languageHint: "ar" | "en" | "mixed";
+    latencyMs: number;
+    createdAt: string;
+    plan: Array<{ tool: string; arguments: Record<string, unknown> }>;
+    toolResults: Array<{ tool: string; status: string; summary: string }>;
+    error?: { code: string; message: string };
+  }>;
+}
+
+export interface AssistantAdminReviewRequestDto {
+  conversationId: string;
+  messageId: string;
+  verdict: "correct" | "incorrect";
+  reason?: string;
+  correctedReply?: string;
+  approvedQuestion?: string;
+}
+
+export interface AssistantAdminReviewResponseDto {
+  reviewId: string;
+  verdict: "correct" | "incorrect";
+  reason?: string;
+  correctedReply?: string;
+  createdAt: string;
+}
+
+export interface AssistantCompanyProfileDto {
+  name: string;
+  about: string;
+  email: string;
+  phone: string;
+  address: string;
+  workingHours: string;
+  submissionStandards: string[];
+}
+
+export interface AssistantCatalogServiceDto {
+  serviceId: string;
+  name: string;
+  description: string;
+  basePrice: number;
+  turnaroundDays: number;
+  scanRequirements: string[];
+  isActive?: boolean;
+  sortOrder?: number;
+}
+
 export interface AssistantTranscriptionResponseDto {
   text: string;
   provider: string;
@@ -194,6 +268,101 @@ export class AssistantDataService {
               : {}),
           },
         },
+      )
+      .pipe(map((response) => response.data));
+  }
+
+  listAdminConversations$(params?: {
+    page?: number;
+    pageSize?: number;
+    search?: string;
+    userId?: string;
+    userSearch?: string;
+    status?: "active" | "pending_confirmation";
+  }): Observable<AssistantAdminConversationsResponseDto> {
+    return this.http
+      .get<ApiEnvelope<AssistantAdminConversationsResponseDto>>(
+        ApiEndpoint.AI_ADMIN_CONVERSATIONS,
+        {
+          params: {
+            ...(params?.page ? { page: params.page } : {}),
+            ...(params?.pageSize ? { pageSize: params.pageSize } : {}),
+            ...(params?.search ? { search: params.search } : {}),
+            ...(params?.userId ? { userId: params.userId } : {}),
+            ...(params?.userSearch ? { userSearch: params.userSearch } : {}),
+            ...(params?.status ? { status: params.status } : {}),
+          },
+        },
+      )
+      .pipe(map((response) => response.data));
+  }
+
+  getAdminConversation$(conversationId: string): Observable<AssistantAdminConversationDetailsDto> {
+    return this.http
+      .get<ApiEnvelope<AssistantAdminConversationDetailsDto>>(
+        ApiEndpoint.aiAdminConversation(conversationId),
+      )
+      .pipe(map((response) => response.data));
+  }
+
+  createAdminReview$(
+    payload: AssistantAdminReviewRequestDto,
+  ): Observable<AssistantAdminReviewResponseDto> {
+    return this.http
+      .post<ApiEnvelope<AssistantAdminReviewResponseDto>>(
+        ApiEndpoint.AI_ADMIN_REVIEWS,
+        payload,
+      )
+      .pipe(map((response) => response.data));
+  }
+
+  getAdminCompanyProfile$(): Observable<AssistantCompanyProfileDto | null> {
+    return this.http
+      .get<ApiEnvelope<AssistantCompanyProfileDto | null>>(
+        ApiEndpoint.AI_ADMIN_CATALOG_COMPANY_PROFILE,
+      )
+      .pipe(map((response) => response.data));
+  }
+
+  updateAdminCompanyProfile$(
+    payload: AssistantCompanyProfileDto,
+  ): Observable<{ success: boolean }> {
+    return this.http
+      .put<ApiEnvelope<{ success: boolean }>>(
+        ApiEndpoint.AI_ADMIN_CATALOG_COMPANY_PROFILE,
+        payload,
+      )
+      .pipe(map((response) => response.data));
+  }
+
+  listAdminCatalogServices$(
+    includeInactive = true,
+  ): Observable<AssistantCatalogServiceDto[]> {
+    return this.http
+      .get<ApiEnvelope<AssistantCatalogServiceDto[]>>(
+        ApiEndpoint.AI_ADMIN_CATALOG_SERVICES,
+        {
+          params: { includeInactive },
+        },
+      )
+      .pipe(map((response) => response.data));
+  }
+
+  upsertAdminCatalogService$(
+    payload: AssistantCatalogServiceDto,
+  ): Observable<{ success: boolean }> {
+    return this.http
+      .post<ApiEnvelope<{ success: boolean }>>(
+        ApiEndpoint.AI_ADMIN_CATALOG_SERVICES,
+        payload,
+      )
+      .pipe(map((response) => response.data));
+  }
+
+  deactivateAdminCatalogService$(serviceId: string): Observable<{ success: boolean }> {
+    return this.http
+      .delete<ApiEnvelope<{ success: boolean }>>(
+        ApiEndpoint.aiAdminCatalogService(serviceId),
       )
       .pipe(map((response) => response.data));
   }

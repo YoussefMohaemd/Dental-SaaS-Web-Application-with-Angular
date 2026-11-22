@@ -1,0 +1,514 @@
+<section class="ai-admin-page">
+  <header class="admin-topbar">
+    <div>
+      <h1>AI Assistant Review Console</h1>
+      <p>
+        Read conversations clearly, review responses per message, and manage
+        profile/catalog data from one place.
+      </p>
+    </div>
+    <form class="admin-topbar__controls" (submit)="$event.preventDefault(); applyFilters()">
+      <input
+        type="search"
+        [ngModel]="searchTerm"
+        (ngModelChange)="searchTerm = $event"
+        name="conversationSearch"
+        placeholder="Search by title, text, or user"
+      />
+      <input
+        type="search"
+        [ngModel]="userSearchTerm"
+        (ngModelChange)="userSearchTerm = $event"
+        name="userSearch"
+        placeholder="Filter by doctor/user name"
+      />
+      <button type="submit" [disabled]="loading()">Apply</button>
+    </form>
+  </header>
+
+  <div class="admin-layout">
+    <aside class="surface panel-list">
+      <div class="panel-title-row">
+        <h2>Conversations</h2>
+        <span class="count-chip">{{ totalConversations() }}</span>
+      </div>
+      <p *ngIf="loading()" class="muted">Loading conversations…</p>
+      <p *ngIf="!loading() && conversationItems().length === 0" class="muted">
+        No conversations found.
+      </p>
+      <ul class="conversation-list">
+        <li *ngFor="let item of conversationItems()">
+          <button
+            type="button"
+            class="conversation-card"
+            [class.is-selected]="isSelectedConversation(item.id)"
+            (click)="selectConversation(item.id)"
+          >
+            <div class="conversation-card__row">
+              <strong>{{ item.title }}</strong>
+              <span class="status-pill" [class.pending]="item.status === 'pending_confirmation'">
+                {{ item.status === "pending_confirmation" ? "Pending" : "Active" }}
+              </span>
+            </div>
+            <p>{{ item.preview }}</p>
+            <small>{{ item.ownerName }} ({{ item.ownerRoles.join(", ") || "user" }})</small>
+            <small>{{ formatDate(item.updatedAt) }}</small>
+          </button>
+        </li>
+      </ul>
+      <div class="pager-row">
+        <button type="button" (click)="goToPrevPage()" [disabled]="!canGoPrev()">
+          Previous
+        </button>
+        <span>Page {{ page() }} / {{ totalPages() }}</span>
+        <button type="button" (click)="goToNextPage()" [disabled]="!canGoNext()">
+          Next
+        </button>
+      </div>
+    </aside>
+
+    <section class="surface panel-messages">
+      <ng-container *ngIf="selectedConversation() as details; else emptyConversation">
+        <div class="panel-title-row">
+          <div>
+            <h2>{{ details.conversation.title }}</h2>
+            <p class="muted">
+              Owner: {{ details.conversation.ownerUserId }} · Updated:
+              {{ formatDate(details.conversation.updatedAt) }}
+            </p>
+          </div>
+        </div>
+
+        <ul class="message-list">
+          <li
+            *ngFor="let message of selectedMessages()"
+            class="message-card"
+            [class.user]="message.role === 'user'"
+            [class.assistant]="message.role === 'assistant'"
+          >
+            <div class="message-card__header">
+              <span class="role-chip">{{ messageRoleLabel(message.role) }}</span>
+              <small>{{ formatDate(message.createdAt) }}</small>
+            </div>
+            <p class="message-card__text">{{ message.text }}</p>
+            <div class="message-card__meta">
+              <span>ID: {{ message.id }}</span>
+              <button type="button" (click)="setReviewMessageId(message.id)">
+                Review this message
+              </button>
+            </div>
+            <details *ngIf="message.metadata">
+              <summary>Message metadata</summary>
+              <pre>{{ message.metadata | json }}</pre>
+            </details>
+          </li>
+        </ul>
+      </ng-container>
+      <ng-template #emptyConversation>
+        <div class="empty-state">
+          <h3>Select a conversation</h3>
+          <p>Choose one from the left panel to inspect messages and apply review feedback.</p>
+        </div>
+      </ng-template>
+    </section>
+
+    <aside class="side-stack">
+      <section class="surface">
+        <h2>Review and correction</h2>
+        <label>
+          Message ID
+          <input
+            [ngModel]="reviewForm.messageId"
+            (ngModelChange)="reviewForm.messageId = $event"
+            name="reviewMessageId"
+            placeholder="Paste message id"
+          />
+        </label>
+        <label>
+          Verdict
+          <select
+            [ngModel]="reviewForm.verdict"
+            (ngModelChange)="reviewForm.verdict = $event"
+            name="reviewVerdict"
+          >
+            <option value="correct">Correct</option>
+            <option value="incorrect">Incorrect</option>
+          </select>
+        </label>
+        <label>
+          Why
+          <textarea
+            [ngModel]="reviewForm.reason"
+            (ngModelChange)="reviewForm.reason = $event"
+            name="reviewReason"
+            placeholder="Explain why this verdict was chosen"
+          ></textarea>
+        </label>
+        <label>
+          Corrected answer
+          <textarea
+            [ngModel]="reviewForm.correctedReply"
+            (ngModelChange)="reviewForm.correctedReply = $event"
+            name="reviewCorrectedReply"
+            placeholder="Write the approved answer for this message"
+          ></textarea>
+        </label>
+        <label>
+          Approved question
+          <input
+            [ngModel]="reviewForm.approvedQuestion"
+            (ngModelChange)="reviewForm.approvedQuestion = $event"
+            name="reviewApprovedQuestion"
+            placeholder="Question that should map to corrected answer"
+          />
+        </label>
+        <button type="button" class="primary" (click)="submitReview()">
+          Save review
+        </button>
+      </section>
+
+      <section class="surface">
+        <div class="panel-title-row">
+          <h2>Linked LLM calls</h2>
+          <span class="count-chip">{{ selectedLlmCalls().length }}</span>
+        </div>
+        <p *ngIf="selectedLlmCalls().length === 0" class="muted">
+          No LLM calls for the selected conversation.
+        </p>
+        <ul class="llm-list">
+          <li *ngFor="let call of selectedLlmCalls()" class="llm-card">
+            <div class="llm-card__row">
+              <strong>{{ call.provider }} / {{ call.model }}</strong>
+              <span>{{ call.latencyMs }}ms</span>
+            </div>
+            <small>{{ formatDate(call.createdAt) }}</small>
+            <p>Prompt version: {{ call.promptVersion }}</p>
+            <p *ngIf="call.error" class="error-text">
+              {{ call.error.code }}: {{ call.error.message }}
+            </p>
+          </li>
+        </ul>
+      </section>
+    </aside>
+  </div>
+
+  <section class="surface catalog-section">
+    <header class="catalog-section__header">
+      <div>
+        <h2>Catalog management</h2>
+        <p class="catalog-section__subtitle">
+          Keep company info and service cards consistent so admins can edit faster.
+        </p>
+      </div>
+      <button
+        type="button"
+        class="primary"
+        [disabled]="savingCatalog()"
+        (click)="saveCompanyProfile()"
+      >
+        {{ savingCatalog() ? "Saving…" : "Save profile" }}
+      </button>
+    </header>
+
+    <div class="catalog-layout">
+      <section class="catalog-panel catalog-profile">
+        <header class="catalog-panel__header">
+          <h3>Company profile</h3>
+          <p>The text here appears in assistant responses and customer-facing explanations.</p>
+        </header>
+
+        <div class="catalog-field-grid">
+          <label>
+            Company name
+            <input
+              [ngModel]="companyProfileForm.name"
+              (ngModelChange)="companyProfileForm.name = $event"
+              name="companyName"
+            />
+          </label>
+          <label>
+            Working hours
+            <input
+              [ngModel]="companyProfileForm.workingHours"
+              (ngModelChange)="companyProfileForm.workingHours = $event"
+              name="companyHours"
+            />
+          </label>
+          <label>
+            Email
+            <input
+              [ngModel]="companyProfileForm.email"
+              (ngModelChange)="companyProfileForm.email = $event"
+              name="companyEmail"
+            />
+          </label>
+          <label>
+            Phone
+            <input
+              [ngModel]="companyProfileForm.phone"
+              (ngModelChange)="companyProfileForm.phone = $event"
+              name="companyPhone"
+            />
+          </label>
+        </div>
+
+        <label>
+          About
+          <textarea
+            [ngModel]="companyProfileForm.about"
+            (ngModelChange)="companyProfileForm.about = $event"
+            name="companyAbout"
+          ></textarea>
+        </label>
+        <label>
+          Address
+          <textarea
+            [ngModel]="companyProfileForm.address"
+            (ngModelChange)="companyProfileForm.address = $event"
+            name="companyAddress"
+          ></textarea>
+        </label>
+        <label>
+          Submission standards (one per line)
+          <textarea
+            [ngModel]="standardsText()"
+            (ngModelChange)="updateSubmissionStandards($event)"
+            name="submissionStandards"
+          ></textarea>
+        </label>
+      </section>
+
+      <section class="catalog-panel catalog-services">
+        <header class="catalog-panel__header">
+          <h3>Services catalog</h3>
+          <p>Manage each service card with a cleaner layout built for fast edits.</p>
+        </header>
+
+        <div class="services-toolbar">
+          <p class="muted">Select any card to edit details and save only that service.</p>
+          <button type="button" class="primary" (click)="openCreateServiceModal()">
+            New service
+          </button>
+        </div>
+
+        <ul class="services-grid" aria-label="Services catalog cards">
+          <li *ngFor="let service of services()">
+            <article class="service-card" [class.is-selected]="isSelectedService(service.serviceId)">
+              <button
+                type="button"
+                class="service-card__selection"
+                (click)="selectService(service.serviceId)"
+                [attr.aria-pressed]="isSelectedService(service.serviceId)"
+              >
+                <div class="service-card__row">
+                  <h4>{{ service.name || "Untitled service" }}</h4>
+                  <span
+                    class="service-status-chip"
+                    [class.service-status-chip--inactive]="service.isActive === false"
+                  >
+                    {{ service.isActive === false ? "Inactive" : "Active" }}
+                  </span>
+                </div>
+                <p>{{ service.description || "No description yet." }}</p>
+                <div class="service-card__meta">
+                  <span>{{ service.serviceId }}</span>
+                  <span>{{ service.basePrice }} EGP</span>
+                  <span>{{ service.turnaroundDays }} days</span>
+                </div>
+              </button>
+              <div class="service-card__actions">
+                <button type="button" (click)="openEditServiceModal(service)">
+                  Edit details
+                </button>
+                <button type="button" (click)="toggleServiceActive(service)">
+                  {{ service.isActive === false ? "Activate" : "Deactivate" }}
+                </button>
+              </div>
+            </article>
+          </li>
+        </ul>
+
+        <section
+          class="service-modal-backdrop"
+          *ngIf="isCreateServiceModalOpen()"
+          (click)="closeCreateServiceModal()"
+          (keydown.escape)="closeCreateServiceModal()"
+          tabindex="-1"
+        >
+          <div
+            class="service-modal service-modal--compact"
+            role="dialog"
+            aria-modal="true"
+            (click)="$event.stopPropagation()"
+          >
+            <header class="service-modal__header">
+              <h4>New service</h4>
+              <button type="button" class="service-modal__icon-close" (click)="closeCreateServiceModal()">
+                ×
+              </button>
+            </header>
+            <p class="service-modal__subtitle">
+              Add service ID, pricing, and scan requirements for this catalog item.
+            </p>
+            <div class="service-form-grid service-form-grid--modal">
+              <label>
+                Service ID
+                <input
+                  [ngModel]="newServiceDraft().serviceId"
+                  (ngModelChange)="updateNewServiceField('serviceId', $event)"
+                  name="new-service-id"
+                  placeholder="e.g. aligner-plan"
+                />
+              </label>
+              <label>
+                Name
+                <input
+                  [ngModel]="newServiceDraft().name"
+                  (ngModelChange)="updateNewServiceField('name', $event)"
+                  name="new-service-name"
+                />
+              </label>
+              <label>
+                Price
+                <input
+                  type="number"
+                  [ngModel]="newServiceDraft().basePrice"
+                  (ngModelChange)="updateNewServiceField('basePrice', $event)"
+                  name="new-service-price"
+                />
+              </label>
+              <label>
+                Turnaround days
+                <input
+                  type="number"
+                  [ngModel]="newServiceDraft().turnaroundDays"
+                  (ngModelChange)="updateNewServiceField('turnaroundDays', $event)"
+                  name="new-service-days"
+                />
+              </label>
+              <label>
+                Sort order
+                <input
+                  type="number"
+                  [ngModel]="newServiceDraft().sortOrder ?? 0"
+                  (ngModelChange)="updateNewServiceField('sortOrder', $event)"
+                  name="new-service-sort"
+                />
+              </label>
+            </div>
+            <label>
+              Description
+              <textarea
+                [ngModel]="newServiceDraft().description"
+                (ngModelChange)="updateNewServiceField('description', $event)"
+                name="new-service-description"
+              ></textarea>
+            </label>
+            <label>
+              Scan requirements (one per line)
+              <textarea
+                [ngModel]="newServiceRequirementsText()"
+                (ngModelChange)="updateNewServiceRequirements($event)"
+                name="new-service-requirements"
+              ></textarea>
+            </label>
+            <div class="service-modal__actions">
+              <button type="button" (click)="closeCreateServiceModal()">Cancel</button>
+              <button type="button" class="primary" (click)="createService()">Create service</button>
+            </div>
+          </div>
+        </section>
+
+        <section
+          class="service-modal-backdrop"
+          *ngIf="isEditServiceModalOpen()"
+          (click)="closeEditServiceModal()"
+          (keydown.escape)="closeEditServiceModal()"
+          tabindex="-1"
+        >
+          <div
+            class="service-modal service-modal--compact"
+            role="dialog"
+            aria-modal="true"
+            (click)="$event.stopPropagation()"
+            *ngIf="editServiceDraft() as service"
+          >
+            <header class="service-modal__header">
+              <h4>Edit {{ service.name || "Untitled service" }}</h4>
+              <button type="button" class="service-modal__icon-close" (click)="closeEditServiceModal()">
+                ×
+              </button>
+            </header>
+            <p class="service-modal__subtitle">
+              Update service details, then save to apply only this card.
+            </p>
+
+            <div class="service-form-grid service-form-grid--modal">
+              <label>
+                Service ID
+                <input [ngModel]="service.serviceId" name="edit-service-id-{{ service.serviceId }}" disabled />
+              </label>
+              <label>
+                Name
+                <input
+                  [ngModel]="service.name"
+                  (ngModelChange)="updateEditServiceField('name', $event)"
+                  name="edit-service-name-{{ service.serviceId }}"
+                />
+              </label>
+              <label>
+                Price
+                <input
+                  type="number"
+                  [ngModel]="service.basePrice"
+                  (ngModelChange)="updateEditServiceField('basePrice', $event)"
+                  name="edit-service-price-{{ service.serviceId }}"
+                />
+              </label>
+              <label>
+                Turnaround days
+                <input
+                  type="number"
+                  [ngModel]="service.turnaroundDays"
+                  (ngModelChange)="updateEditServiceField('turnaroundDays', $event)"
+                  name="edit-service-days-{{ service.serviceId }}"
+                />
+              </label>
+              <label>
+                Sort order
+                <input
+                  type="number"
+                  [ngModel]="service.sortOrder ?? 0"
+                  (ngModelChange)="updateEditServiceField('sortOrder', $event)"
+                  name="edit-service-sort-{{ service.serviceId }}"
+                />
+              </label>
+            </div>
+
+            <label>
+              Description
+              <textarea
+                [ngModel]="service.description"
+                (ngModelChange)="updateEditServiceField('description', $event)"
+                name="edit-service-description-{{ service.serviceId }}"
+              ></textarea>
+            </label>
+            <label>
+              Scan requirements (one per line)
+              <textarea
+                [ngModel]="service.scanRequirements.join('\n')"
+                (ngModelChange)="updateEditServiceRequirements($event)"
+                name="edit-service-requirements-{{ service.serviceId }}"
+              ></textarea>
+            </label>
+
+            <div class="service-modal__actions">
+              <button type="button" (click)="closeEditServiceModal()">Cancel</button>
+              <button type="button" class="primary" (click)="saveEditedService()">Save service</button>
+            </div>
+          </div>
+        </section>
+      </section>
+    </div>
+  </section>
+</section>

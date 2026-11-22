@@ -13,7 +13,7 @@
       class="w-full lg:w-52 shrink-0 flex lg:block gap-1.5 lg:space-y-1 overflow-x-auto pb-1"
       aria-label="Settings sections"
     >
-      @for (item of sections; track item.id) {
+      @for (item of sections(); track item.id) {
         <button
           type="button"
           (click)="setSection(item.id)"
@@ -328,6 +328,26 @@
               >
             </div>
           </form>
+        }
+        @case ("aiAssistant") {
+          <section
+            class="rounded-xl border border-border bg-card p-5"
+            aria-label="AI assistant administration"
+          >
+            <h2 class="mb-2 text-sm font-semibold text-foreground">
+              AI Assistant Administration
+            </h2>
+            <p class="mb-4 text-sm text-muted-foreground">
+              Review conversations, submit correctness feedback, and manage
+              company profile/services from the AI admin dashboard.
+            </p>
+            <a
+              routerLink="/ai/admin"
+              class="inline-flex items-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90"
+            >
+              Open AI Admin
+            </a>
+          </section>
         }
         @default {
           <form

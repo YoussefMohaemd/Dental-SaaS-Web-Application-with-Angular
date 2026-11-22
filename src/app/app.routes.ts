@@ -32,6 +32,20 @@ export const appRoutes: Routes = [
           import("./features/ai/ai.component").then((m) => m.AiComponent),
       },
       {
+        path: "ai/admin",
+        canActivate: [capabilityGuard],
+        data: {
+          requiredCapabilities: [
+            "assistant.conversations.review",
+            "assistant.catalog.manage",
+          ],
+        },
+        loadComponent: () =>
+          import("./features/ai-admin/ai-admin.component").then(
+            (m) => m.AiAdminComponent,
+          ),
+      },
+      {
         path: "orders",
         loadComponent: () =>
           import("./features/orders/orders.component").then(

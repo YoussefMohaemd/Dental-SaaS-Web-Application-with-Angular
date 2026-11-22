@@ -12,6 +12,8 @@ import { AppButtonComponent } from "@shared/components/button/button.component";
 import { AppTextFieldComponent } from "@shared/components/input/input.component";
 import { AppSelectComponent } from "@shared/components/select/select.component";
 import { SafeHtmlPipe } from "../../shared/pipes/safe-html.pipe";
+import { RouterLink } from "@angular/router";
+import { normalizeRoleAlias } from "@core/security/capabilities";
 
 type SettingsSection =
   | "profile"
@@ -19,7 +21,8 @@ type SettingsSection =
   | "appearance"
   | "language"
   | "security"
-  | "organization";
+  | "organization"
+  | "aiAssistant";
 
 @Component({
   selector: "app-settings",
@@ -31,6 +34,7 @@ type SettingsSection =
     AppTextFieldComponent,
     AppSelectComponent,
     SafeHtmlPipe,
+    RouterLink,
   ],
   templateUrl: "./settings.component.html",
   styleUrl: "./settings.component.scss",
@@ -66,14 +70,26 @@ export class SettingsComponent implements OnInit {
     weeklySummary: true,
   });
 
-  readonly sections: { id: SettingsSection; label: string; icon: string }[] = [
-    { id: "profile", label: "Profile", icon: "user" },
-    { id: "notifications", label: "Notifications", icon: "bell" },
-    { id: "appearance", label: "Appearance", icon: "palette" },
-    { id: "language", label: "Language & Region", icon: "globe" },
-    { id: "security", label: "Security", icon: "shield" },
-    { id: "organization", label: "Organization", icon: "building" },
-  ];
+  readonly isAdminUser = computed(() =>
+    (this.currentUser()?.roles ?? []).some(
+      (role) => normalizeRoleAlias(role) === "admin",
+    ),
+  );
+
+  readonly sections = computed<{ id: SettingsSection; label: string; icon: string }[]>(() => {
+    const base: { id: SettingsSection; label: string; icon: string }[] = [
+      { id: "profile", label: "Profile", icon: "user" },
+      { id: "notifications", label: "Notifications", icon: "bell" },
+      { id: "appearance", label: "Appearance", icon: "palette" },
+      { id: "language", label: "Language & Region", icon: "globe" },
+      { id: "security", label: "Security", icon: "shield" },
+      { id: "organization", label: "Organization", icon: "building" },
+    ];
+    if (this.isAdminUser()) {
+      base.push({ id: "aiAssistant", label: "AI Assistant", icon: "sparkles" });
+    }
+    return base;
+  });
 
   readonly profileForm = this.fb.nonNullable.group({
     firstName: ["", Validators.required],
@@ -144,6 +160,10 @@ export class SettingsComponent implements OnInit {
   }
 
   setSection(next: SettingsSection): void {
+    if (next === "aiAssistant" && !this.isAdminUser()) {
+      this.section.set("profile");
+      return;
+    }
     this.section.set(next);
     this.saved.set(false);
     this.saveError.set(null);
@@ -314,6 +334,8 @@ export class SettingsComponent implements OnInit {
         '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
       building:
         '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><path d="M9 22v-4h6v4"/></svg>',
+      sparkles:
+        '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8L12 3z"/><path d="M19 14l.9 2.1L22 17l-2.1.9L19 20l-.9-2.1L16 17l2.1-.9L19 14z"/><path d="M5 14l.9 2.1L8 17l-2.1.9L5 20l-.9-2.1L2 17l2.1-.9L5 14z"/></svg>',
       save: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>',
     };
     return icons[name] || "";

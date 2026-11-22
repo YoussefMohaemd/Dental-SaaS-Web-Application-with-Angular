@@ -91,4 +91,19 @@ describe("SettingsComponent", () => {
       newPassword: "new-password",
     });
   });
+
+  it("should show AI Assistant tab for admin users only", () => {
+    expect(component.sections().some((item) => item.id === "aiAssistant")).toBeTrue();
+
+    const auth = TestBed.inject(AuthService) as unknown as {
+      user: ReturnType<typeof signal<AuthenticatedUser | null>>;
+    };
+    auth.user.set({
+      ...user,
+      roles: ["doctor"],
+    });
+    fixture.detectChanges();
+
+    expect(component.sections().some((item) => item.id === "aiAssistant")).toBeFalse();
+  });
 });

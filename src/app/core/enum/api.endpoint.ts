@@ -14,6 +14,12 @@ export class ApiEndpoint {
   static readonly AI_SUGGESTIONS = `${environment.apiBaseUrl}/v1/ai/suggestions`;
   static readonly AI_CONVERSATIONS = `${environment.apiBaseUrl}/v1/ai/conversations`;
   static readonly AI_TRANSCRIBE = `${environment.apiBaseUrl}/v1/ai/transcribe`;
+  static readonly AI_ADMIN_CONVERSATIONS = `${environment.apiBaseUrl}/v1/ai/admin/conversations`;
+  static readonly AI_ADMIN_REVIEWS = `${environment.apiBaseUrl}/v1/ai/admin/reviews`;
+  static readonly AI_ADMIN_APPROVED_ANSWERS = `${environment.apiBaseUrl}/v1/ai/admin/approved-answers`;
+  static readonly AI_ADMIN_AUDIT_EVENTS = `${environment.apiBaseUrl}/v1/ai/admin/audit-events`;
+  static readonly AI_ADMIN_CATALOG_COMPANY_PROFILE = `${environment.apiBaseUrl}/v1/ai/admin/catalog/company-profile`;
+  static readonly AI_ADMIN_CATALOG_SERVICES = `${environment.apiBaseUrl}/v1/ai/admin/catalog/services`;
   static readonly DOCTORS = `${environment.apiBaseUrl}/v1/doctors`;
   static readonly DOCUMENTS = `${environment.apiBaseUrl}/v1/documents`;
   static readonly NOTIFICATIONS = `${environment.apiBaseUrl}/v1/notifications`;
@@ -49,5 +55,13 @@ export class ApiEndpoint {
 
   static aiConfirmAction(actionId: string): string {
     return `${environment.apiBaseUrl}/v1/ai/actions/${actionId}/confirm`;
+  }
+
+  static aiAdminConversation(conversationId: string): string {
+    return `${this.AI_ADMIN_CONVERSATIONS}/${conversationId}`;
+  }
+
+  static aiAdminCatalogService(serviceId: string): string {
+    return `${this.AI_ADMIN_CATALOG_SERVICES}/${serviceId}`;
   }
 }
