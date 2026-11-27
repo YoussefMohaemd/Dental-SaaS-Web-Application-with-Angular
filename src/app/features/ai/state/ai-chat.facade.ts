@@ -1919,6 +1919,7 @@ export class AiChatFacade {
       payload: {
         ...(includeServiceChanges
           ? {
+              servicesMode: "replace",
               creationData: {
                 services: update.selectedServiceIds.map((serviceId) => ({
                   serviceId,
