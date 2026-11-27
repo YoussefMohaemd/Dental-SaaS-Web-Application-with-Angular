@@ -19,23 +19,10 @@
     <p class="workflow-panel__error">{{ workflow().error }}</p>
   }
 
-  @if (
-    workflow().step === "patient" ||
-    workflow().step === "doctor" ||
-    workflow().step === "clinic" ||
-    workflow().step === "lookupOrder"
-  ) {
+  @if (workflow().step === "lookupOrder") {
     <div class="workflow-panel__field">
       <label class="workflow-panel__label">
-        @if (workflow().step === "patient") {
-          Patient name
-        } @else if (workflow().step === "doctor") {
-          Doctor name or ID
-        } @else if (workflow().step === "clinic") {
-          Clinic name or ID
-        } @else {
-          Order ID / order number / patient name
-        }
+        Order ID / order number / patient name
       </label>
       <input
         class="workflow-panel__input"
@@ -47,49 +34,13 @@
     </div>
   }
 
-  @if (workflow().step === "billTo") {
-    <div class="workflow-panel__choices">
-      <app-button
-        type="button"
-        variant="outline"
-        [buttonClass]="workflow().create?.billToTarget === 'doctor' ? '!border-primary' : ''"
-        (onClick)="billToChanged.emit('doctor')"
-      >
-        Bill to Doctor
-      </app-button>
-      <app-button
-        type="button"
-        variant="outline"
-        [buttonClass]="workflow().create?.billToTarget === 'scan-center' ? '!border-primary' : ''"
-        (onClick)="billToChanged.emit('scan-center')"
-      >
-        Bill to Scan Center
-      </app-button>
-    </div>
-    @if (workflow().create?.billToTarget === "scan-center") {
-      <div class="workflow-panel__field">
-        <label class="workflow-panel__label">Scan center ID</label>
-        <input
-          class="workflow-panel__input"
-          [value]="workflow().input"
-          (input)="inputChanged.emit($any($event.target).value)"
-          (keydown.enter)="continueRequested.emit()"
-          placeholder="Enter scan center id"
-        />
-      </div>
-    }
-  }
-
-  @if (workflow().step === "services" || workflow().step === "editOrder") {
+  @if (workflow().step === "editOrder") {
     <div class="workflow-panel__services">
       @for (service of workflow().services; track service.id) {
         <div
           class="workflow-panel__service-card"
           [class.is-selected]="
-            (workflow().mode === 'create'
-              ? workflow().create?.selectedServiceIds
-              : workflow().update?.selectedServiceIds
-            )?.includes(service.id)
+            workflow().update?.selectedServiceIds?.includes(service.id)
           "
           [class.is-active]="activeServiceId() === service.id"
           (click)="serviceToggled.emit(service.id)"
@@ -103,9 +54,7 @@
         </div>
       }
     </div>
-  }
 
-  @if (workflow().step === "teeth" || workflow().step === "editOrder") {
     <div class="workflow-panel__active-services">
       @for (service of selectedServiceItems(); track service.id) {
         <button
@@ -133,9 +82,7 @@
       [serviceTeeth]="selectedServiceTeethMap()"
       (toothToggle)="toothToggled.emit($event)"
     />
-  }
 
-  @if (workflow().step === "editOrder") {
     <div class="workflow-panel__field">
       <label class="workflow-panel__label">Order notes</label>
       <textarea
@@ -165,42 +112,6 @@
   }
 
   @if (
-    workflow().step === "patient" && workflow().create?.patientCandidates?.length
-  ) {
-    <div class="workflow-panel__candidates">
-      @for (item of workflow().create?.patientCandidates ?? []; track item.id) {
-        <button type="button" (click)="onPick(item.id)">
-          {{ item.name }} ({{ item.id }})
-        </button>
-      }
-    </div>
-  }
-
-  @if (
-    workflow().step === "doctor" && workflow().create?.doctorCandidates?.length
-  ) {
-    <div class="workflow-panel__candidates">
-      @for (item of workflow().create?.doctorCandidates ?? []; track item.id) {
-        <button type="button" (click)="onPick(item.id)">
-          {{ item.name }} ({{ item.id }})
-        </button>
-      }
-    </div>
-  }
-
-  @if (
-    workflow().step === "clinic" && workflow().create?.clinicCandidates?.length
-  ) {
-    <div class="workflow-panel__candidates">
-      @for (item of workflow().create?.clinicCandidates ?? []; track item.id) {
-        <button type="button" (click)="onPick(item.id)">
-          {{ item.name }} ({{ item.id }})
-        </button>
-      }
-    </div>
-  }
-
-  @if (
     workflow().step === "selectOrder" && workflow().update?.orderCandidates?.length
   ) {
     <div class="workflow-panel__candidates">
@@ -213,7 +124,7 @@
   }
 
   <footer class="workflow-panel__actions">
-    @if (workflow().step === "review" || workflow().step === "reviewUpdate") {
+    @if (workflow().step === "reviewUpdate") {
       <app-button type="button" (onClick)="submitRequested.emit()">
         Submit
       </app-button>

@@ -96,9 +96,9 @@ describe("VoiceInputService", () => {
   it("does not upload clips shorter than half second", async () => {
     recorder.nextBlob = new Blob([new Uint8Array(2_048)], { type: "audio/webm" });
 
-    await service.start("auto");
+    await service.start("ar");
     nowMs = 200;
-    const result = await service.stop("auto");
+    const result = await service.stop("ar");
 
     expect(result).toBeNull();
     expect(assistantDataService.transcribe$).not.toHaveBeenCalled();

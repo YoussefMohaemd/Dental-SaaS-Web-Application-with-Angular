@@ -18,7 +18,7 @@ export class VoiceInputService implements OnDestroy {
   private readonly stateSignal = signal<VoiceInputState>("idle");
   private readonly elapsedSecondsSignal = signal(0);
   private readonly errorMessageSignal = signal("");
-  private readonly activeLanguageSignal = signal<VoiceLanguage>("auto");
+  private readonly activeLanguageSignal = signal<VoiceLanguage>("ar");
   /** Last recording that failed to transcribe for a transient reason, kept so the user can retry without re-speaking. */
   private pendingAudio: Blob | null = null;
   private readonly canRetrySignal = signal(false);
@@ -34,7 +34,7 @@ export class VoiceInputService implements OnDestroy {
     private readonly recorder: VoiceRecorderService,
   ) {}
 
-  async start(language: VoiceLanguage = "auto"): Promise<void> {
+  async start(language: VoiceLanguage = "ar"): Promise<void> {
     this.activeLanguageSignal.set(language);
     this.clearError();
     this.discardPendingAudio();
@@ -225,5 +225,5 @@ function localizedMessage(
   language: VoiceLanguage,
   value: { en: string; ar: string },
 ): string {
-  return language === "ar" || language === "mixed" ? value.ar : value.en;
+  return language === "ar" ? value.ar : value.en;
 }

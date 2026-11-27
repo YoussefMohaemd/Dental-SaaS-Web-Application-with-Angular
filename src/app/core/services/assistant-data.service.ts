@@ -173,7 +173,7 @@ export interface AssistantTranscriptionResponseDto {
   }>;
 }
 
-export type AssistantVoiceLanguageHint = "auto" | "ar" | "en" | "mixed";
+export type AssistantVoiceLanguageHint = "ar" | "en";
 
 @Injectable({ providedIn: "root" })
 export class AssistantDataService {
@@ -216,11 +216,12 @@ export class AssistantDataService {
   postMessage$(
     conversationId: string,
     content: string,
+    languageHint: AssistantVoiceLanguageHint = "ar",
   ): Observable<AssistantMessageResponseDto> {
     return this.http
       .post<ApiEnvelope<AssistantMessageResponseDto>>(
         ApiEndpoint.aiConversationMessages(conversationId),
-        { content },
+        { content, languageHint },
       )
       .pipe(map((response) => response.data));
   }
@@ -251,7 +252,7 @@ export class AssistantDataService {
 
   transcribe$(
     audio: Blob,
-    languageHint: AssistantVoiceLanguageHint = "auto",
+    languageHint: AssistantVoiceLanguageHint = "ar",
   ): Observable<AssistantTranscriptionResponseDto> {
     return this.http
       .post<ApiEnvelope<AssistantTranscriptionResponseDto>>(
@@ -263,9 +264,7 @@ export class AssistantDataService {
           },
           headers: {
             "Content-Type": audio.type || "audio/webm",
-            ...(languageHint !== "auto"
-              ? { "X-Language-Hint": languageHint }
-              : {}),
+            "X-Language-Hint": languageHint,
           },
         },
       )

@@ -76,19 +76,6 @@ export const AI_QUICK_ACTIONS: readonly AiQuickAction[] = [
     category: "operational",
   },
   {
-    id: "ops-create-order",
-    title: "Create Order",
-    description: "Start guided create-order flow step by step.",
-    icon: "file-plus",
-    intent: "createOrder",
-    prefillPrompt:
-      "Create order step by step. First ask me for patient name, then doctor name, then clinic name, and continue field by field until submit.",
-    behavior: "send",
-    category: "operational",
-    requiredCapability: "orders.create",
-    requiresCreateTools: true,
-  },
-  {
     id: "ops-update-order",
     title: "Update Order",
     description: "Update existing order fields through assistant.",

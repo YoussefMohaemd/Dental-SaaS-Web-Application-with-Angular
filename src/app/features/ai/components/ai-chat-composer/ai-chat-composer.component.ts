@@ -186,7 +186,7 @@ export class AiChatComposerComponent
   onVoiceLanguageChange(event: Event): void {
     const nextValue = (event.target as HTMLSelectElement)
       .value as AssistantVoiceLanguageHint;
-    if (!["auto", "ar", "en", "mixed"].includes(nextValue)) {
+    if (!["ar", "en"].includes(nextValue)) {
       return;
     }
     this.selectedVoiceLanguageSignal.set(nextValue);
@@ -224,7 +224,7 @@ export class AiChatComposerComponent
 
   private speechMessage(english: string, arabic: string): string {
     const language = this.selectedVoiceLanguageSignal();
-    if (language === "ar" || language === "mixed") {
+    if (language === "ar") {
       return arabic;
     }
     return english;
@@ -245,15 +245,15 @@ export class AiChatComposerComponent
   }
 
   private insertTranscript(text: string): void {
-    const normalized = text.trim();
-    if (!normalized) {
+    if (!text.trim()) {
       return;
     }
+    const transcript = text;
 
     const field = this.promptField()?.nativeElement;
     if (!field) {
       const current = this.draft();
-      const withSpacing = [current.trim(), normalized].filter(Boolean).join(" ");
+      const withSpacing = [current.trim(), transcript].filter(Boolean).join(" ");
       this.draftChanged.emit(withSpacing);
       return;
     }
@@ -265,7 +265,7 @@ export class AiChatComposerComponent
     const after = value.slice(selectionEnd);
     const prefix = before.length > 0 && !/\s$/.test(before) ? " " : "";
     const suffix = after.length > 0 && !/^\s/.test(after) ? " " : "";
-    const inserted = `${prefix}${normalized}${suffix}`;
+    const inserted = `${prefix}${transcript}${suffix}`;
     const nextValue = `${before}${inserted}${after}`;
     const caretPosition = before.length + inserted.length;
 

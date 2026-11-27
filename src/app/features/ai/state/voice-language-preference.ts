@@ -1,7 +1,7 @@
 import { type AssistantVoiceLanguageHint } from "@core/services/assistant-data.service";
 
 const STORAGE_KEY = "ai.voice.language";
-const ALLOWED_VALUES: AssistantVoiceLanguageHint[] = ["auto", "ar", "en", "mixed"];
+const ALLOWED_VALUES: AssistantVoiceLanguageHint[] = ["ar", "en"];
 
 export function readVoiceLanguagePreference(): AssistantVoiceLanguageHint {
   try {
@@ -12,7 +12,7 @@ export function readVoiceLanguagePreference(): AssistantVoiceLanguageHint {
   } catch {
     // ignore localStorage read failures
   }
-  return "auto";
+  return "ar";
 }
 
 export function writeVoiceLanguagePreference(value: AssistantVoiceLanguageHint): void {

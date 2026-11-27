@@ -27,20 +27,11 @@ export class AiOrderWorkflowPanelComponent {
   readonly submitRequested = output<void>();
   readonly cancelRequested = output<void>();
 
-  readonly heading = computed(() => {
-    const state = this.workflow();
-    if (state.mode === "create") {
-      return "Create Order Workflow";
-    }
-    return "Update Order Workflow";
-  });
+  readonly heading = computed(() => "Update Order Workflow");
 
   readonly selectedServiceNames = computed(() => {
     const state = this.workflow();
-    const selected =
-      state.mode === "create"
-        ? state.create?.selectedServiceIds ?? []
-        : state.update?.selectedServiceIds ?? [];
+    const selected = state.update?.selectedServiceIds ?? [];
     return selected
       .map((id) => state.services.find((item) => item.id === id)?.name ?? id)
       .join(", ");
@@ -48,9 +39,6 @@ export class AiOrderWorkflowPanelComponent {
 
   readonly activeServiceId = computed(() => {
     const state = this.workflow();
-    if (state.mode === "create") {
-      return state.create?.activeServiceId ?? null;
-    }
     return state.update?.activeServiceId ?? null;
   });
 
@@ -60,26 +48,17 @@ export class AiOrderWorkflowPanelComponent {
     if (!activeServiceId) {
       return [];
     }
-    if (state.mode === "create") {
-      return state.create?.selectedTeethByService[activeServiceId] ?? [];
-    }
     return state.update?.selectedTeethByService[activeServiceId] ?? [];
   });
 
   readonly selectedServiceTeethMap = computed<Record<string, number[]>>(() => {
     const state = this.workflow();
-    if (state.mode === "create") {
-      return state.create?.selectedTeethByService ?? {};
-    }
     return state.update?.selectedTeethByService ?? {};
   });
 
   readonly selectedServiceItems = computed(() => {
     const state = this.workflow();
-    const selectedIds =
-      state.mode === "create"
-        ? state.create?.selectedServiceIds ?? []
-        : state.update?.selectedServiceIds ?? [];
+    const selectedIds = state.update?.selectedServiceIds ?? [];
     const map = this.selectedServiceTeethMap();
     return selectedIds.map((id) => ({
       id,

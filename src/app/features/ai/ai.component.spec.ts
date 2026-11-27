@@ -253,23 +253,6 @@ describe("AiComponent", () => {
     ).toBeTruthy();
   });
 
-  it("should show order workflow panel when create-order quick action is selected", () => {
-    const action = component
-      .quickActions()
-      .find((item) => item.id === "ops-create-order");
-    expect(action).toBeDefined();
-    if (!action) {
-      throw new Error("Missing ops-create-order quick action");
-    }
-
-    component.onQuickAction(action);
-    fixture.detectChanges();
-
-    expect(
-      fixture.debugElement.query(By.css("app-ai-order-workflow-panel")),
-    ).toBeTruthy();
-  });
-
   it("should keep composer outside scroll viewport in the chat shell", () => {
     const shell = fixture.debugElement.query(By.css(".chat-shell"));
     const body = fixture.debugElement.query(

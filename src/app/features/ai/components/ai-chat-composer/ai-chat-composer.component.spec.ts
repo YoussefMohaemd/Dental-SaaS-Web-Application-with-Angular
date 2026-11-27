@@ -186,9 +186,11 @@ class FakeVoiceInputService {
   );
   readonly elapsedSignal = signal(0);
   readonly errorSignal = signal("");
+  readonly canRetrySignal = signal(false);
   readonly state = this.stateSignal.asReadonly();
   readonly elapsedSeconds = this.elapsedSignal.asReadonly();
   readonly errorMessage = this.errorSignal.asReadonly();
+  readonly canRetry = this.canRetrySignal.asReadonly();
   nextStopResult:
     | {
         text: string;

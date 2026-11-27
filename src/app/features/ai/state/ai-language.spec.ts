@@ -9,8 +9,8 @@ describe("detectAiInputLanguage", () => {
     expect(detectAiInputLanguage("Show delayed orders")).toBe("en");
   });
 
-  it("detects mixed input", () => {
-    expect(detectAiInputLanguage("اعرض delayed orders")).toBe("mixed");
+  it("treats Arabic-English mixed input as Arabic", () => {
+    expect(detectAiInputLanguage("اعرض delayed orders")).toBe("ar");
   });
 
   it("defaults non-letter input to English", () => {

@@ -9,12 +9,9 @@ import {
 import {
   AVAILABLE_SERVICES,
   AiChatMessage,
-  Clinic,
-  Doctor,
   AiConversation,
   AiConversationSummary,
   Order,
-  Patient,
   AiPromptDraft,
   AiQuickAction,
   AiShortcutAction,
@@ -47,6 +44,7 @@ import {
   matchesBilingualText,
 } from "./bilingual-lookup";
 import { detectAiInputLanguage } from "./ai-language";
+import { readVoiceLanguagePreference } from "./voice-language-preference";
 
 @Injectable({ providedIn: "root" })
 export class AiChatFacade {
@@ -275,11 +273,6 @@ export class AiChatFacade {
       return;
     }
 
-    if (workflow.mode === "create") {
-      this.continueCreateOrderWorkflow(workflow);
-      return;
-    }
-
     this.continueUpdateOrderWorkflow(workflow);
   }
 
@@ -303,18 +296,7 @@ export class AiChatFacade {
       return;
     }
 
-    if (workflow.mode === "create" && workflow.create) {
-      this.activeOrderWorkflow.set({
-        ...workflow,
-        create: {
-          ...workflow.create,
-          billToTarget: target,
-        },
-      });
-      return;
-    }
-
-    if (workflow.mode === "update" && workflow.update) {
+    if (workflow.update) {
       this.activeOrderWorkflow.set({
         ...workflow,
         update: {
@@ -331,39 +313,7 @@ export class AiChatFacade {
       return;
     }
 
-    if (workflow.mode === "create" && workflow.create) {
-      const selected = workflow.create.selectedServiceIds.includes(serviceId)
-        ? workflow.create.selectedServiceIds.filter((id) => id !== serviceId)
-        : [...workflow.create.selectedServiceIds, serviceId];
-      const selectedTeethByService = {
-        ...workflow.create.selectedTeethByService,
-      };
-      if (selected.includes(serviceId)) {
-        selectedTeethByService[serviceId] =
-          selectedTeethByService[serviceId] ?? [];
-      } else {
-        delete selectedTeethByService[serviceId];
-      }
-      const activeServiceId =
-        workflow.create.activeServiceId === serviceId &&
-        !selected.includes(serviceId)
-          ? (selected[0] ?? null)
-          : (workflow.create.activeServiceId ?? selected[0] ?? null);
-      this.activeOrderWorkflow.set({
-        ...workflow,
-        create: {
-          ...workflow.create,
-          selectedServiceIds: selected,
-          selectedTeethByService,
-          selectedTeeth: flattenSelectedTeeth(selectedTeethByService, selected),
-          activeServiceId,
-        },
-        error: null,
-      });
-      return;
-    }
-
-    if (workflow.mode === "update" && workflow.update) {
+    if (workflow.update) {
       const selected = workflow.update.selectedServiceIds.includes(serviceId)
         ? workflow.update.selectedServiceIds.filter((id) => id !== serviceId)
         : [...workflow.update.selectedServiceIds, serviceId];
@@ -404,20 +354,6 @@ export class AiChatFacade {
     }
 
     if (
-      workflow.mode === "create" &&
-      workflow.create &&
-      workflow.create.selectedServiceIds.includes(serviceId)
-    ) {
-      this.activeOrderWorkflow.set({
-        ...workflow,
-        create: { ...workflow.create, activeServiceId: serviceId },
-        error: null,
-      });
-      return;
-    }
-
-    if (
-      workflow.mode === "update" &&
       workflow.update &&
       workflow.update.selectedServiceIds.includes(serviceId)
     ) {
@@ -435,39 +371,7 @@ export class AiChatFacade {
       return;
     }
 
-    if (workflow.mode === "create" && workflow.create) {
-      const activeServiceId = workflow.create.activeServiceId;
-      if (!activeServiceId) {
-        this.setOrderWorkflowError(
-          "Please choose a service before selecting teeth.",
-        );
-        return;
-      }
-      const current =
-        workflow.create.selectedTeethByService[activeServiceId] ?? [];
-      const nextTeeth = current.includes(tooth)
-        ? current.filter((value) => value !== tooth)
-        : [...current, tooth];
-      const selectedTeethByService = {
-        ...workflow.create.selectedTeethByService,
-        [activeServiceId]: nextTeeth,
-      };
-      this.activeOrderWorkflow.set({
-        ...workflow,
-        create: {
-          ...workflow.create,
-          selectedTeethByService,
-          selectedTeeth: flattenSelectedTeeth(
-            selectedTeethByService,
-            workflow.create.selectedServiceIds,
-          ),
-        },
-        error: null,
-      });
-      return;
-    }
-
-    if (workflow.mode === "update" && workflow.update) {
+    if (workflow.update) {
       const activeServiceId = workflow.update.activeServiceId;
       if (!activeServiceId) {
         this.setOrderWorkflowError(
@@ -501,7 +405,7 @@ export class AiChatFacade {
 
   updateOrderWorkflowNotes(value: string): void {
     const workflow = this.activeOrderWorkflow();
-    if (!workflow || workflow.mode !== "update" || !workflow.update) {
+    if (!workflow || !workflow.update) {
       return;
     }
 
@@ -515,17 +419,6 @@ export class AiChatFacade {
   submitOrderWorkflow(): void {
     const workflow = this.activeOrderWorkflow();
     if (!workflow) {
-      return;
-    }
-
-    if (workflow.mode === "create") {
-      const prompt = this.buildCreateOrderWorkflowPrompt(workflow);
-      const titlePrompt = this.buildCreateOrderTitlePrompt(workflow);
-      this.activeOrderWorkflow.set(null);
-      void this.submitPrompt(prompt, {
-        displayPrompt: titlePrompt,
-        titlePrompt,
-      });
       return;
     }
 
@@ -943,9 +836,14 @@ export class AiChatFacade {
   ): Promise<AssistantMessageResponseDto> {
     const backendConversationId =
       await this.ensureBackendConversationId(localConversationId);
+    const languageHint = readVoiceLanguagePreference();
     try {
       return await firstValueFrom(
-        this.assistantDataService.postMessage$(backendConversationId, prompt),
+        this.assistantDataService.postMessage$(
+          backendConversationId,
+          prompt,
+          languageHint,
+        ),
       );
     } catch (error) {
       if (!this.isConversationNotFoundError(error)) {
@@ -956,7 +854,11 @@ export class AiChatFacade {
       const recreatedConversationId =
         await this.ensureBackendConversationId(localConversationId);
       return firstValueFrom(
-        this.assistantDataService.postMessage$(recreatedConversationId, prompt),
+        this.assistantDataService.postMessage$(
+          recreatedConversationId,
+          prompt,
+          languageHint,
+        ),
       );
     }
   }
@@ -1328,11 +1230,7 @@ export class AiChatFacade {
 
   private startOrderWorkflow(action: AiQuickAction): void {
     this.activeWorkflow.set(null);
-    this.activeOrderWorkflow.set(
-      action.id === "ops-update-order"
-        ? buildInitialUpdateOrderWorkflow()
-        : buildInitialCreateOrderWorkflow(),
-    );
+    this.activeOrderWorkflow.set(buildInitialUpdateOrderWorkflow());
     this.beginWorkflowChatTurn(action);
   }
 
@@ -1350,280 +1248,6 @@ export class AiChatFacade {
       type: "text",
     });
     this.appendAssistantText(`Let's complete ${action.title} step by step.`);
-  }
-
-  private continueCreateOrderWorkflow(workflow: AiOrderWorkflowState): void {
-    const create = workflow.create;
-    if (!create) {
-      return;
-    }
-
-    const inputValue = workflow.input.trim();
-    if (workflow.step === "patient") {
-      const patientReference = inputValue || create.patientReference.trim();
-      if (!patientReference) {
-        this.setOrderWorkflowError("Patient name is required.");
-        return;
-      }
-      const candidates = this.findPatientCandidates(patientReference);
-      if (candidates.length > 1) {
-        this.activeOrderWorkflow.set({
-          ...workflow,
-          input: patientReference,
-          notice:
-            "Multiple patients match this value. Pick one patient to continue.",
-          create: {
-            ...create,
-            patientCandidates: candidates,
-          },
-          error: null,
-        });
-        return;
-      }
-
-      const [patient] = candidates;
-      if (!patient) {
-        this.activeOrderWorkflow.set({
-          ...workflow,
-          step: "patient",
-          input: patientReference,
-          notice:
-            "Patient was not found. Select an existing patient before creating the order.",
-          create: {
-            ...create,
-            patient: null,
-            patientReference,
-            patientCandidates: [],
-            doctorCandidates: [],
-            clinicCandidates: [],
-          },
-          error: null,
-        });
-        return;
-      }
-      const doctor = this.findDoctorById(patient.doctorId);
-      const clinic = this.findClinicById(patient.clinicId);
-      const hasLinkedDoctor = patient.doctorId.trim().length > 0;
-      const hasLinkedClinic = patient.clinicId.trim().length > 0;
-      this.activeOrderWorkflow.set({
-        ...workflow,
-        step: hasLinkedDoctor
-          ? hasLinkedClinic
-            ? "billTo"
-            : "clinic"
-          : "doctor",
-        input: "",
-        notice:
-          hasLinkedDoctor && hasLinkedClinic
-            ? "Doctor and clinic were auto-selected from the patient profile."
-            : null,
-        create: {
-          ...create,
-          patient,
-          doctor: doctor ?? create.doctor,
-          clinic: clinic ?? create.clinic,
-          patientReference: patient.name,
-          doctorReference: patient.doctorId || create.doctorReference,
-          clinicReference: patient.clinicId || create.clinicReference,
-          patientCandidates: [],
-          doctorCandidates: [],
-          clinicCandidates: [],
-        },
-        error: null,
-      });
-      return;
-    }
-
-    if (workflow.step === "doctor") {
-      const doctorReference = inputValue || create.doctorReference.trim();
-      if (!doctorReference) {
-        this.setOrderWorkflowError("Doctor name or ID is required.");
-        return;
-      }
-      const candidates = this.findDoctorCandidates(
-        doctorReference,
-        create.patient?.clinicId ?? null,
-      );
-      if (candidates.length > 1) {
-        this.activeOrderWorkflow.set({
-          ...workflow,
-          input: doctorReference,
-          notice:
-            "Multiple doctors match this value. Pick one doctor to continue.",
-          create: {
-            ...create,
-            doctorCandidates: candidates,
-          },
-          error: null,
-        });
-        return;
-      }
-      const [doctor] = candidates;
-      if (!doctor) {
-        this.activeOrderWorkflow.set({
-          ...workflow,
-          step: "clinic",
-          input: "",
-          notice: null,
-          create: {
-            ...create,
-            doctorReference,
-            doctorCandidates: [],
-          },
-          error: null,
-        });
-        return;
-      }
-      const clinic = this.findClinicById(doctor.clinicId);
-      this.activeOrderWorkflow.set({
-        ...workflow,
-        step: doctor.clinicId.trim().length > 0 ? "billTo" : "clinic",
-        input: "",
-        notice:
-          doctor.clinicId.trim().length > 0
-            ? "Clinic was auto-selected from the doctor profile."
-            : null,
-        create: {
-          ...create,
-          doctor,
-          clinic: clinic ?? create.clinic,
-          doctorReference: doctor.id,
-          clinicReference: doctor.clinicId || create.clinicReference,
-          doctorCandidates: [],
-          clinicCandidates: [],
-        },
-        error: null,
-      });
-      return;
-    }
-
-    if (workflow.step === "clinic") {
-      const clinicReference = inputValue || create.clinicReference.trim();
-      if (!clinicReference) {
-        this.setOrderWorkflowError("Clinic name or ID is required.");
-        return;
-      }
-      const candidates = this.findClinicCandidates(clinicReference);
-      if (candidates.length > 1) {
-        this.activeOrderWorkflow.set({
-          ...workflow,
-          input: clinicReference,
-          notice:
-            "Multiple clinics match this value. Pick one clinic to continue.",
-          create: {
-            ...create,
-            clinicCandidates: candidates,
-          },
-          error: null,
-        });
-        return;
-      }
-      const [clinic] = candidates;
-      if (!clinic) {
-        this.activeOrderWorkflow.set({
-          ...workflow,
-          step: "billTo",
-          input: "",
-          notice: null,
-          create: {
-            ...create,
-            clinicReference,
-            clinicCandidates: [],
-          },
-          error: null,
-        });
-        return;
-      }
-      this.activeOrderWorkflow.set({
-        ...workflow,
-        step: "billTo",
-        input: "",
-        notice: null,
-        create: {
-          ...create,
-          clinic,
-          clinicReference: clinic.id,
-          clinicCandidates: [],
-        },
-        error: null,
-      });
-      return;
-    }
-
-    if (workflow.step === "billTo") {
-      if (create.billToTarget === "scan-center") {
-        const scanCenterReference =
-          inputValue || create.scanCenterReference.trim();
-        if (!scanCenterReference) {
-          this.setOrderWorkflowError(
-            "Scan center ID is required when billing to scan center.",
-          );
-          return;
-        }
-        this.activeOrderWorkflow.set({
-          ...workflow,
-          step: "services",
-          input: "",
-          notice: null,
-          create: {
-            ...create,
-            scanCenterReference,
-          },
-          error: null,
-        });
-        return;
-      }
-      this.activeOrderWorkflow.set({
-        ...workflow,
-        step: "services",
-        input: "",
-        notice: null,
-        create: {
-          ...create,
-          scanCenterReference: "",
-        },
-        error: null,
-      });
-      return;
-    }
-
-    if (workflow.step === "services") {
-      if (create.selectedServiceIds.length === 0) {
-        this.setOrderWorkflowError("Please select at least one service.");
-        return;
-      }
-      this.activeOrderWorkflow.set({
-        ...workflow,
-        step: "teeth",
-        input: "",
-        error: null,
-        create: {
-          ...create,
-          activeServiceId:
-            create.activeServiceId ?? create.selectedServiceIds[0] ?? null,
-        },
-      });
-      return;
-    }
-
-    if (workflow.step === "teeth") {
-      const servicesWithoutTeeth = create.selectedServiceIds.filter(
-        (serviceId) =>
-          (create.selectedTeethByService[serviceId] ?? []).length === 0,
-      );
-      if (servicesWithoutTeeth.length > 0) {
-        this.setOrderWorkflowError(
-          "Please select at least one tooth for each selected service.",
-        );
-        return;
-      }
-      this.activeOrderWorkflow.set({
-        ...workflow,
-        step: "review",
-        input: "",
-        error: null,
-      });
-    }
   }
 
   private continueUpdateOrderWorkflow(workflow: AiOrderWorkflowState): void {
@@ -1809,95 +1433,6 @@ export class AiChatFacade {
     return false;
   }
 
-  private buildCreateOrderWorkflowPrompt(
-    workflow: AiOrderWorkflowState,
-  ): string {
-    const create = workflow.create;
-    if (!create) {
-      return "Create order";
-    }
-
-    const selectedServices = create.selectedServiceIds.map((id) => {
-      const service = workflow.services.find((item) => item.id === id);
-      return {
-        id,
-        name: service?.name ?? id,
-      };
-    });
-    const serviceNames = selectedServices
-      .map((service) => `${service.name} [${service.id}]`)
-      .join(", ");
-    const patientName = (
-      create.patient?.name ||
-      create.patientReference ||
-      ""
-    ).trim();
-    const linkedDoctorId =
-      create.patient?.doctorId &&
-      create.doctorReference === create.patient.doctorId
-        ? create.patient.doctorId
-        : "";
-    const linkedClinicId =
-      (create.doctor?.clinicId &&
-      create.clinicReference === create.doctor.clinicId
-        ? create.doctor.clinicId
-        : "") ||
-      (create.patient?.clinicId &&
-      create.clinicReference === create.patient.clinicId
-        ? create.patient.clinicId
-        : "");
-    const doctorId = create.doctor?.id || linkedDoctorId;
-    const doctorName = doctorId ? "" : create.doctorReference.trim();
-    const clinicId = create.clinic?.id || linkedClinicId;
-    const clinicName = clinicId ? "" : create.clinicReference.trim();
-    const dueDate = this.buildDefaultCreateOrderDueDate();
-    const payload = {
-      payload: {
-        ...(patientName ? { patientName } : {}),
-        ...(doctorId ? { doctorId } : {}),
-        ...(doctorName ? { doctorName } : {}),
-        ...(clinicId ? { clinicId } : {}),
-        ...(clinicName ? { clinicName } : {}),
-        dueDate,
-        billTo:
-          create.billToTarget === "scan-center" ? "scan-center" : "doctor",
-        ...(create.billToTarget === "scan-center" &&
-        create.scanCenterReference.trim().length > 0
-          ? { scanCenterId: create.scanCenterReference.trim() }
-          : {}),
-        creationData: {
-          services: selectedServices.map((service) => ({
-            serviceId: service.id,
-            selectedTeeth: create.selectedTeethByService[service.id] ?? [],
-          })),
-        },
-      },
-    };
-    const serviceTeethSummary = selectedServices
-      .map((service) => {
-        const teeth = create.selectedTeethByService[service.id] ?? [];
-        return `${service.name} [${service.id}]: ${teeth.join(", ") || "(none)"}`;
-      })
-      .join(" | ");
-    return [
-      "Create order using assistant tools.",
-      "MANDATORY: MUST include a create_order action in this same response.",
-      "Use the exact IDs supplied below.",
-      "Backend confirmation is required automatically for write actions.",
-      `Patient name: ${patientName || "(missing)"}`,
-      `Services: ${serviceNames}`,
-      `Selected teeth by service: ${serviceTeethSummary}`,
-      `Default due date: ${dueDate}`,
-      `Action JSON: ${JSON.stringify({ tool: "create_order", arguments: payload })}`,
-    ].join("\n");
-  }
-
-  private buildDefaultCreateOrderDueDate(): string {
-    const dueDate = new Date();
-    dueDate.setDate(dueDate.getDate() + 7);
-    return dueDate.toISOString();
-  }
-
   private buildUpdateOrderWorkflowPrompt(
     workflow: AiOrderWorkflowState,
   ): string {
@@ -1961,14 +1496,6 @@ export class AiChatFacade {
     ].join("\n");
   }
 
-  private buildCreateOrderTitlePrompt(workflow: AiOrderWorkflowState): string {
-    const patientName =
-      workflow.create?.patient?.name ||
-      workflow.create?.patientReference ||
-      "patient";
-    return `Create order for ${patientName}`;
-  }
-
   private buildUpdateOrderTitlePrompt(workflow: AiOrderWorkflowState): string {
     const reference =
       workflow.update?.selectedOrder?.orderNumber ||
@@ -1976,102 +1503,6 @@ export class AiChatFacade {
       workflow.update?.orderReference ||
       "order";
     return `Update order ${reference}`;
-  }
-
-  private findPatientCandidates(reference: string): Patient[] {
-    const normalized = normalizeLookup(reference);
-    if (!normalized) {
-      return [];
-    }
-    const patients = this.patientDataService.patients();
-    const byId = patients.filter(
-      (item) => normalizeLookup(item.id) === normalized,
-    );
-    if (byId.length > 0) {
-      return byId;
-    }
-    const byExactName = patients.filter(
-      (item) =>
-        normalizeLookup(item.name) === normalized ||
-        matchesBilingualEntityName(reference, item.name),
-    );
-    if (byExactName.length > 0) {
-      return byExactName;
-    }
-    return patients.filter((item) =>
-      normalizeLookup(item.name).includes(normalized) ||
-      matchesBilingualText(reference, item.name),
-    );
-  }
-
-  private findDoctorCandidates(
-    reference: string,
-    clinicId: string | null,
-  ): Doctor[] {
-    const normalized = normalizeLookup(reference);
-    if (!normalized) {
-      return [];
-    }
-    const doctors = this.doctorDataService.doctors();
-    const filterByClinic =
-      clinicId && clinicId.trim().length > 0
-        ? (items: Doctor[]) =>
-            items.filter((item) => item.clinicId === clinicId)
-        : (items: Doctor[]) => items;
-    const byId = filterByClinic(
-      doctors.filter((item) => normalizeLookup(item.id) === normalized),
-    );
-    if (byId.length > 0) {
-      return byId;
-    }
-    const byExactName = filterByClinic(
-      doctors.filter((item) => normalizeLookup(item.name) === normalized),
-    );
-    if (byExactName.length > 0) {
-      return byExactName;
-    }
-    const byBilingualName = filterByClinic(
-      doctors.filter((item) => matchesBilingualEntityName(reference, item.name)),
-    );
-    if (byBilingualName.length > 0) {
-      return byBilingualName;
-    }
-    return filterByClinic(
-      doctors.filter(
-        (item) =>
-          normalizeLookup(item.name).includes(normalized) ||
-          matchesBilingualText(reference, item.name) ||
-          normalizeLookup(item.lookupId ?? "").includes(normalized),
-      ),
-    );
-  }
-
-  private findClinicCandidates(reference: string): Clinic[] {
-    const normalized = normalizeLookup(reference);
-    if (!normalized) {
-      return [];
-    }
-    const clinics = this.clinicDataService.clinics();
-    const byId = clinics.filter(
-      (item) => normalizeLookup(item.id) === normalized,
-    );
-    if (byId.length > 0) {
-      return byId;
-    }
-    const byExactName = clinics.filter(
-      (item) =>
-        normalizeLookup(item.name) === normalized ||
-        matchesBilingualEntityName(reference, item.name),
-    );
-    if (byExactName.length > 0) {
-      return byExactName;
-    }
-    return clinics.filter(
-      (item) =>
-        normalizeLookup(item.name).includes(normalized) ||
-        matchesBilingualText(reference, item.name) ||
-        normalizeLookup(item.city).includes(normalized),
-    );
   }
 
   private findOrderCandidates(reference: string): Order[] {
@@ -2106,26 +1537,6 @@ export class AiChatFacade {
         normalizeLookup(item.patientName).includes(normalized) ||
         matchesBilingualText(reference, item.patientName) ||
         normalizeLookup(item.doctorName).includes(normalized),
-    );
-  }
-
-  private findDoctorById(doctorId: string): Doctor | null {
-    if (!doctorId.trim()) {
-      return null;
-    }
-    return (
-      this.doctorDataService.doctors().find((item) => item.id === doctorId) ??
-      null
-    );
-  }
-
-  private findClinicById(clinicId: string): Clinic | null {
-    if (!clinicId.trim()) {
-      return null;
-    }
-    return (
-      this.clinicDataService.clinics().find((item) => item.id === clinicId) ??
-      null
     );
   }
 
@@ -2230,8 +1641,6 @@ function mapQuickActionToSuggestionId(actionId: string): string | null {
   switch (actionId) {
     case "ops-search-orders":
       return "assistant-search-orders";
-    case "ops-create-order":
-      return "assistant-create-order";
     case "ops-search-patients":
       return "assistant-search-patients";
     case "faq-about-company":
@@ -2255,30 +1664,6 @@ function getWorkflowFields(actionId: string): readonly AiActionWorkflowField[] {
           key: "query",
           label: "Order lookup value",
           placeholder: "Patient name, order number, or doctor name",
-        },
-      ];
-    case "ops-create-order":
-      return [
-        {
-          key: "patient",
-          label: "Patient name",
-          placeholder: "Enter patient name",
-        },
-        {
-          key: "doctor",
-          label: "Doctor name or ID",
-          placeholder: "Enter doctor",
-        },
-        {
-          key: "clinic",
-          label: "Clinic name or ID",
-          placeholder: "Enter clinic",
-        },
-        {
-          key: "notes",
-          label: "Order notes",
-          placeholder: "Optional notes",
-          optional: true,
         },
       ];
     case "ops-update-order":
@@ -2485,52 +1870,19 @@ function getWorkflowGuardrails(actionId: string): readonly string[] {
 
 function isOrderWorkflowAction(actionId: string): boolean {
   return (
-    actionId === "ops-create-order" ||
     actionId === "ops-update-order" ||
     actionId === "ops-open-order-detail"
   );
 }
 
-function buildInitialCreateOrderWorkflow(): AiOrderWorkflowState {
-  return {
-    mode: "create",
-    step: "patient",
-    input: "",
-    loading: false,
-    error: null,
-    notice: null,
-    services: AVAILABLE_SERVICES,
-    create: {
-      patient: null,
-      doctor: null,
-      clinic: null,
-      patientReference: "",
-      doctorReference: "",
-      clinicReference: "",
-      scanCenterReference: "",
-      billToTarget: "doctor",
-      selectedServiceIds: [],
-      selectedTeeth: [],
-      selectedTeethByService: {},
-      activeServiceId: null,
-      patientCandidates: [],
-      doctorCandidates: [],
-      clinicCandidates: [],
-    },
-    update: null,
-  };
-}
-
 function buildInitialUpdateOrderWorkflow(): AiOrderWorkflowState {
   return {
-    mode: "update",
     step: "lookupOrder",
     input: "",
     loading: false,
     error: null,
     notice: null,
     services: AVAILABLE_SERVICES,
-    create: null,
     update: {
       orderCandidates: [],
       selectedOrder: null,
@@ -2566,8 +1918,6 @@ function isShowQuickActionsCommand(prompt: string): boolean {
 
 function mapAssistantToolToIntent(tool: string): AiShortcutAction["intent"] {
   switch (tool) {
-    case "create_order":
-      return "createOrder";
     case "update_order":
       return "updateOrder";
     case "search_orders":
