@@ -70,6 +70,13 @@ export interface AssistantMessageResponseDto {
     | {
         type: "confirmation";
         text: string;
+        executions?: Array<{
+          actionId: string;
+          tool: string;
+          status: "executed" | "failed";
+          result?: unknown;
+          error?: string;
+        }>;
         pendingActions: Array<{
           actionId: string;
           tool: string;
